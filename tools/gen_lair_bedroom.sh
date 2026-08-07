@@ -37,9 +37,9 @@ $G $O/bed_wardrobe.png portrait "A tall open walnut wardrobe seen from the side 
 
 $G $O/bed_nightstand.png landscape "A low smoked glass and brass nightstand seen from the side, a small brass table lamp with an oxblood shade lit on top of it, a silver ice bucket with a champagne bottle in it and two tall crystal flutes beside the bucket, $L, $S"
 
-$G $O/bed_fire.png landscape "A tall fire of burning logs seen from the side, orange and yellow flames licking upward from a stack of three charred split logs on a bed of glowing embers, no fireplace and no surround around it, just the burning logs alone, $S"
+# the fire moved to its own four-frame set - see the fire section in CLAUDE.md
 
-$G $O/bed_rug.png landscape "A large opulent antique Persian rug lying flat on the floor, seen from a low angle almost edge on so it reads as a long low shape. Deep oxblood burgundy ground with a big gold and ivory medallion in the centre, ornate gold corner spandrels and a wide ivory and gold patterned border running all the way round, knotted fringe at both ends. The pattern is BOLD and high contrast so it still reads when the rug is only twenty pixels tall, not fine and busy. $S"
+$G $O/bed_rug.png landscape "An enormous sabretooth cat pelt lying flat on the floor as a rug, seen from a low angle almost edge on so it reads as a long low sprawling shape. Thick tawny gold fur with faint darker tan stripes along the flanks, the four legs and paws splayed out wide to the sides with the claws still on them, and a long tail. At the RIGHT hand end the flattened head is turned out towards the viewer, jaws parted, with TWO ENORMOUS CURVED IVORY SABRE FANGS hanging down well below the jaw, a dark nose and amber glass eyes. The fangs and the sprawling limbs are the silhouette and must be clear and bold, because this is drawn small. Ragged irregular fur edge all the way round, no border, no backing, no rug pattern. $S"
 
 echo "=== bedroom done ==="
 echo "  ./.venv/bin/python tools/build_lair_extras.py bed"

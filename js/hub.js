@@ -134,7 +134,9 @@ const LAIR_ART = [
   { art: 'lair_gym_plates', x: 1250, y: WALL_BASE, w: 34, h: 56 },
   // the master suite. The rug lies on the floor, so it sits forward of the wall base and
   // CHAD walks over it; everything else stands against the panelling.
-  { art: 'lair_bed_rug', x: 1560, y: WALL_BASE + 30, w: 140, h: 26 },
+  // a sabretooth pelt, head and fangs at the right. Warm gold rather than white: the
+  // tiger sleeps in this room too and two pale animals in one shot read as muddle.
+  { art: 'lair_bed_rug', x: 1566, y: WALL_BASE + 32, w: 138, h: 28 },
   // as close to the bed as the wall allows - the window jamb starts at 1723
   { art: 'lair_bed_wardrobe', x: 1688, y: WALL_BASE, w: 62, h: 96 },
   { art: 'lair_bed_nightstand', x: 1750, y: WALL_BASE, w: 33, h: 40 },   // beside the footboard
