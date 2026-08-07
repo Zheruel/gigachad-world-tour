@@ -465,11 +465,15 @@ function lairAmbient(ctx, camX) {
 // The fire is a sprite, but a fire that does not move the room around it reads as a
 // poster of a fire. This is its light on the granite, breathing on its own rhythm.
 // Four frames off one reference, so the logs hold still and only the flames move.
-const FIRE_RATE = 7;
+// The order is not 0,1,2,3: measured pairwise, that runs a 26% step next to a 14% one
+// and the flame snaps. 0,1,3,2 is the cycle with the smallest worst step, and 9 frames
+// each (~6.7fps) is slow enough to read as flicker rather than as a strobe.
+const FIRE_ORDER = [0, 1, 3, 2];
+const FIRE_RATE = 9;
 function drawFire(ctx, camX) {
   const [bx, by, bw, bh] = FIREBOX;
   if (bx - camX > W || bx - camX + bw < 0) return;
-  const img = ASSETS['lair_fire_' + (((G.rawTime / FIRE_RATE) | 0) & 3)]
+  const img = ASSETS['lair_fire_' + FIRE_ORDER[((G.rawTime / FIRE_RATE) | 0) % FIRE_ORDER.length]]
     || artFor({ art: 'lair_bed_fire', w: 26, h: 28 });
   ctx.save();
   ctx.beginPath();                       // never spill onto the marble jambs or lintel

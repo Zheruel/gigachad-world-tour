@@ -80,6 +80,15 @@ two halves: clip the sprite to the opening measured off the plate (`FIREBOX`), a
 the fender out of the plate as its own sprite (`build_fender()`, keyed on luminance so
 the dark firebox behind it is dropped) to blit back over the fire.
 
+**A looping effect needs its frames measured too, twice over.** The first fire pulsed from
+a huge flame to almost nothing and redrew its log stack every frame — at any speed that
+is a strobe, not a fire. Both halves are fixable and both are worth checking: ask for the
+flame to be *the same height and brightness* in every frame and only the tongues to
+differ, then take the logs from frame 0 with the cut at the flame/log brightness edge, and
+the log band goes from 15% drift to 0.00%. Then pick the play ORDER by measuring every
+pair — 0,1,2,3 happened to put a 26% step next to a 14% one and the flame snapped;
+0,1,3,2 is the cycle with the smallest worst step.
+
 **Its glass is a hole.** `tools/build_lair_wide.py` stitches three generated panels and
 keys the chroma-green window out of the plate, so the city shows through as TWO layers
 at different parallax (`bg_lair_sky_far` at 0.20, `bg_lair_sky_near` at 0.42) with

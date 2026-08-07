@@ -411,6 +411,29 @@ def build_fire():
     box = (int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1)
     frames = [f.crop(box) for f in keyed_frames]
     frames = [rescale(f, FIRE_W * RS / frames[0].width) for f in frames]
+
+    # Same story as the bed: told four times to draw the identical log stack the model
+    # draws four similar ones, measured at 15% of the log band differing, and logs that
+    # reshape themselves every frame are exactly what makes a fire look wrong. So the
+    # logs come from frame 0 and only the flame above them moves. The cut is the sharpest
+    # brightness drop down the sprite - flame above, charred wood below - which is a real
+    # edge in the art.
+    a0 = np.asarray(frames[0]).astype(float)
+    opaque = a0[..., 3] > 128
+    lum = a0[..., 0] * .3 + a0[..., 1] * .6 + a0[..., 2] * .1
+    rows = np.array([lum[y][opaque[y]].mean() if opaque[y].sum() > 4 else 0.0
+                     for y in range(a0.shape[0])])
+    lo, hi = int(a0.shape[0] * .35), int(a0.shape[0] * .75)
+    cut = lo + int(np.argmin(np.diff(rows)[lo:hi])) + 1
+    print(f"  logs from frame 0 below row {cut} of {frames[0].height} "
+          f"({round(100 * cut / frames[0].height)}%, the flame/log edge)")
+    fixed = [frames[0]]
+    for f in frames[1:]:
+        c = f.copy()
+        c.paste(frames[0].crop((0, cut, f.width, f.height)), (0, cut))
+        fixed.append(c)
+    frames = fixed
+
     os.makedirs(OUT, exist_ok=True)
     for i, f in enumerate(finish_set(frames, 32)):
         f.save(f"{OUT}fire_{i}.png")
