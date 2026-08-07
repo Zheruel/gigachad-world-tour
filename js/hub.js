@@ -7,8 +7,8 @@
 //
 // Nothing in the room is painted into the plate. Wall-mounted and wall-standing things
 // are drawn here in the wall plane, before drawWorld, so CHAD occludes all of them and
-// none of them is a combat target; the heavy bag is an ordinary G.props entry; the dog
-// and the tiger go on G.actors so drawWorld y-sorts them with everybody else.
+// none of them is a combat target; the heavy bag is an ordinary G.props entry; the
+// tiger goes on G.actors so drawWorld y-sorts him with everybody else.
 //
 // The glass is a HOLE. tools/build_lair_wide.py keys the window out of the plate, so
 // the city shows through it as TWO layers at different parallax - bg_lair_sky_far and
@@ -102,7 +102,13 @@ function rigFrame(r) {
 // The master suite, the fourth screen. Same walnut and brass as the lounge: a black
 // lacquer boudoir would have read as a different apartment.
 // measured off the plate: the firebox opening is 1548-1618, hearth at y 168
-const FIREPLACE = { x: 1564, y: 164 };
+const FIREPLACE = { x: 1562, y: 163 };
+// Measured off the plate: the firebox interior, and the brass fender standing in front
+// of it. The fender is painted INTO the plate, so a fire sprite drawn over the plate
+// covers it and reads as burning in front of the fireplace. The fix is to blit that
+// band of the plate back over the fire - see drawFire.
+const FIREBOX = [1533, 128, 59, 35];
+const FENDER = [1530, 148, 68, 20];
 const OVERMANTEL = [1528, 48, 66, 55];   // the mirror glass above it
 // One generation per pose - see the bed section in CLAUDE.md for why a strip could not
 // do this. She does not react to CHAD; she is just someone living in the room.
@@ -128,7 +134,6 @@ const LAIR_ART = [
   { art: 'lair_gym_plates', x: 1250, y: WALL_BASE, w: 34, h: 56 },
   // the master suite. The rug lies on the floor, so it sits forward of the wall base and
   // CHAD walks over it; everything else stands against the panelling.
-  { art: 'lair_bed_fire', x: FIREPLACE.x, y: FIREPLACE.y, w: 20, h: 26 },
   { art: 'lair_bed_rug', x: 1560, y: WALL_BASE + 30, w: 140, h: 26 },
   // as close to the bed as the wall allows - the window jamb starts at 1723
   { art: 'lair_bed_wardrobe', x: 1688, y: WALL_BASE, w: 62, h: 96 },
@@ -459,6 +464,27 @@ function lairAmbient(ctx, camX) {
 
 // The fire is a sprite, but a fire that does not move the room around it reads as a
 // poster of a fire. This is its light on the granite, breathing on its own rhythm.
+// Four frames off one reference, so the logs hold still and only the flames move.
+const FIRE_RATE = 7;
+function drawFire(ctx, camX) {
+  const [bx, by, bw, bh] = FIREBOX;
+  if (bx - camX > W || bx - camX + bw < 0) return;
+  const img = ASSETS['lair_fire_' + (((G.rawTime / FIRE_RATE) | 0) & 3)]
+    || artFor({ art: 'lair_bed_fire', w: 26, h: 28 });
+  ctx.save();
+  ctx.beginPath();                       // never spill onto the marble jambs or lintel
+  ctx.rect(bx - camX, by, bw, bh);
+  ctx.clip();
+  blit(ctx, img, Math.round(FIREPLACE.x - camX - frameW(img) / 2),
+       Math.round(FIREPLACE.y - frameH(img)));
+  ctx.restore();
+  // and the brass fender back on top, so the fire burns behind it. It is cut out of the
+  // plate by build_lair_extras.py rather than blitted from it: blitting the band would
+  // paint the dark firebox back over the flames too.
+  const fender = ASSETS.lair_fender;
+  if (fender) blit(ctx, fender, FENDER[0] - camX, FENDER[1]);
+}
+
 function drawFirelight(ctx, camX) {
   const fx = FIREPLACE.x - camX;
   if (fx < -140 || fx > W + 140) return;
@@ -804,21 +830,20 @@ function drawBed(ctx, camX) {
   drawBubble(ctx, x + 40, BED.y - BED.h + 4 + rise, bed.line, a);   // over her, not the bed's centre
 }
 
-// ---------------------------------------------------------------- the pets
-// Neither is a prop (nothing can hit them) and neither is an enemy, so they go on
-// G.actors, which drawWorld y-sorts by calling whatever the entry's own draw() says.
-// The tiger is white because the room is walnut and black granite: the doberman
-// already half vanishes in the unlit stretches.
+// ----------------------------------------------------------------- the tiger
+// Not a prop (nothing can hit him) and not an enemy, so he goes on G.actors, which
+// drawWorld y-sorts by calling whatever the entry's own draw() says. White on purpose:
+// the room is walnut and black granite and a dark animal sinks into it - which is also
+// why the doberman that used to share the room with him is gone. One animal padding
+// about reads as a pet; two reads as a kennel.
 function makePet(prefix, x, speed, rest, frames) {
   return { prefix, x, y: 226, face: 1, state: 'rest', t: 0, target: x, frame: 0,
     phase: 0, speed, rest, frames, alert: 0 };
 }
-const dog = makePet('dog', 250, 0.62, 'sit', 6);
 const tiger = makePet('tiger', 1290, 0.42, 'lie', 6);
-const PETS = [dog, tiger];
-const PET_GAP = 70;    // they will stand inside each other without this
+const PETS = [tiger];
 
-// Something happened over there: both look, and the closer one goes to watch.
+// Something happened over there: he looks, and comes to watch if he is close enough.
 export function petsWatch(x, urgency) {
   for (const p of PETS) {
     p.alert = Math.max(p.alert, urgency === undefined ? 150 : urgency);
@@ -827,19 +852,15 @@ export function petsWatch(x, urgency) {
     p.state = 'walk';
     p.t = 0;
   }
-  separate();
 }
 
-// they bolt for opposite ends when the room goes up
+// he clears out when the room goes up
 function petsScatter() {
-  dog.target = 140;
-  tiger.target = HUB_WIDTH - 140;
-  for (const p of PETS) { p.state = 'walk'; p.t = 0; p.alert = 0; }
-}
-
-function separate() {
-  if (Math.abs(dog.target - tiger.target) < PET_GAP) {
-    tiger.target = clamp(tiger.target + PET_GAP, 90, HUB_WIDTH - 90);
+  for (const p of PETS) {
+    p.target = HUB_WIDTH - 140;
+    p.state = 'walk';
+    p.t = 0;
+    p.alert = 0;
   }
 }
 
@@ -853,7 +874,6 @@ function updatePet(p) {
       p.target = clamp(player.x + rand(-200, 200), 90, HUB_WIDTH - 90);
       p.state = 'walk';
       p.t = 0;
-      separate();
     }
     return;
   }
@@ -904,7 +924,6 @@ const petActors = PETS.map((p) => ({
 export const hubBed = () => bed;
 
 export function resetHub() {
-  dog.x = 250; dog.y = 226; dog.state = 'rest'; dog.t = 0; dog.face = 1; dog.alert = 0;
   tiger.x = 1290; tiger.y = 232; tiger.state = 'rest'; tiger.t = 0; tiger.face = -1; tiger.alert = 0;
   resetTank();
   resetBed();
@@ -1019,6 +1038,7 @@ export function drawHubWall(ctx, camX) {
   drawTank(ctx, camX);
 
   for (const d of LAIR_ART) drawFixtureArt(ctx, camX, d, artFor(d));
+  drawFire(ctx, camX);
   drawFixtureArt(ctx, camX, LOUNGE, artFor({
     art: G.hubStation === 'lounge' ? 'lair_lounge_chad' : 'lair_lounge_empty',
     w: LOUNGE.w, h: LOUNGE.h,

@@ -551,7 +551,7 @@ function drawWorld(ctx) {
   for (const pr of G.props) if (!pr.broken && pr.shadowR) drawShadow(ctx, pr, camX);
   if (G.boss && !G.boss.removeMe) drawShadow(ctx, G.boss, camX);
   // y-sorted entities (props included, so you can stand behind a crate). G.actors is
-  // scenery that draws itself - the lair's dog - and CHAD drops out of the list while
+  // scenery that draws itself - the lair's tiger - and CHAD drops out of the list while
   // he is sat on the sofa, because the seated art draws him.
   const ents = [...G.enemies, ...G.props, ...G.actors];
   if (!G.hubSeat) ents.push(G.player);
@@ -933,7 +933,7 @@ if (autoMode) {
       step(180);
       t('hub-tank-settles', G.hubFeed === 0);
       // both pets, drawing themselves, and facing the way they are walking
-      t('hub-pets-present', G.actors.length === 2
+      t('hub-tiger-present', G.actors.length === 1
         && G.actors.every((a) => typeof a.draw === 'function'));
       // the master suite: she shifts about on her own and speaks now and then. She does
       // NOT react to him, so walking up must change nothing.

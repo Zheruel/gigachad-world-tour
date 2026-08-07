@@ -480,7 +480,7 @@ export function initStageObj(st) {
     });
   }
   G.props = (st.props || []).map((d) => createProp(d.kind, d.x, d.y));
-  // lair leftovers that must not survive into a fight: its dog, and CHAD sat down
+  // lair leftovers that must not survive into a fight: its tiger, and CHAD sat down
   G.actors = [];
   G.hubSeat = 0;
   initAmbience(st);

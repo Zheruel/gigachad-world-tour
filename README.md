@@ -373,7 +373,7 @@ processed files from `assets/` and `assets/frames/`. Image generation goes throu
 | `tools/gen_lair_pets.sh` | the shark and shoal for the tank, and the tiger's sheets |
 | `tools/gen_lair_props.sh` | the lair's fixtures: world map, arcade cabinet, hi-fi, heavy bag, map panel |
 | `tools/gen_lair_lounge.sh` | the sofa pair (empty / CHAD sitting smoking) and the dog's walk sheet |
-| `tools/build_lair_extras.py` | the lair sprite sets whose frames must register with each other: the lounge pair, the two gym stations, the dog, the tiger and the tank |
+| `tools/build_lair_extras.py` | the lair sprite sets whose frames must register with each other: the lounge pair, the two gym stations, the bed, the fire, the tiger and the tank |
 | `tools/make_portrait.py` | crop a HUD portrait out of a reference sheet |
 | `tools/build_sfx.sh` | rebuild `audio/sfx/*.wav` from `audio/sfx/raw/` using the slot map |
 | `tools/serve.py` | no-cache dev server, with byte ranges so media loads |

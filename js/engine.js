@@ -68,7 +68,7 @@ export const G = {
   hubFeed: 0,        // frames left of feeding the tank
   hubRelicT: 0,      // frames left of the "you came home with this" beat
   hubRelicKey: null, // which boss that relic came off
-  actors: [],        // scenery that draws itself and y-sorts with the fighters (the dog)
+  actors: [],        // scenery that draws itself and y-sorts with the fighters (the tiger)
   bestComboAll: 0,   // best combo across every run, for the lair's records panel
   actBest: {},       // stage index -> best score, same
   shakePoster: 0,    // frames of "that one is locked" wobble

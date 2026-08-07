@@ -10,12 +10,10 @@ share a screen position. These two do:
           - the bottom band, which is the sofa and the side table in both pictures and
           therefore is not dragged sideways by CHAD's arm.
 
-  dog     a six frame walk cycle plus a sit pose. One factor for all seven, measured
-          off the tallest walk frame, then every frame bottom-anchored and centred on
-          its own lower body so the dog does not bob or slide.
-
-  tiger   the same as the dog, plus a lying pose. White on purpose: the room is walnut
-          and black granite and a dark animal sinks into it.
+  tiger   a six frame walk cycle plus sit and lying poses. One factor for all of the
+          walk, measured off the tallest frame, then every frame bottom-anchored and
+          centred on its own lower body so he does not bob or slide. White on purpose:
+          the room is walnut and black granite and a dark animal sinks into it.
 
   tank    the shark and one piranha, both swim cycles. Centred rather than
           bottom-anchored - nothing in water stands on anything.
@@ -31,7 +29,7 @@ share a screen position. These two do:
           bed_fire/bed_rug/bed_wardrobe/bed_nightstand, which process_props.py owns.
           `rm assets/lair/bed_*.png` takes all of them.
 
-  ./.venv/bin/python tools/build_lair_extras.py [lounge|dog|tiger|tank|curl|bench|bed]
+  ./.venv/bin/python tools/build_lair_extras.py [lounge|tiger|tank|curl|bench|bed]
 """
 import os
 import sys
@@ -47,14 +45,13 @@ SRC = "assets/ai/lair/"
 OUT = "assets/lair/"
 
 SOFA_H = 46      # logical height of the empty sofa + side table
-DOG_H = 40       # logical height of the standing dog
-DOG_SIT_H = 46   # a doberman sits up taller than it stands; and it is its own
-                 # generation, so it does not share the walk sheet's scale
 TIGER_H = 58     # shoulder-to-ground on a big cat, against CHAD's 96
 TIGER_SIT_H = 70
 TIGER_LIE_H = 32
 SHARK_H = 26     # nose-to-tail comes out around 4x this
 SHOAL_H = 6
+FIRE_W = 32      # the firebox interior is 59x35 logical; the flames clip at the lintel
+FENDER = (1530, 148, 68, 20)   # must match FENDER in js/hub.js
 BED_W = 140      # bed length. The art is 2:1, so this puts the headboard near 70 -
                  # a solid shape beside CHAD's 96 rather than a long thin slab
 CURL_RIG_H = 38  # the dumbbell rack alone; set so CHAD beside it comes out at his 96
@@ -377,6 +374,50 @@ def build_bed():
           f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})  "
           f"{len(frames)} poses, last is the greeting")
 
+def build_fender():
+    """Cut the fireplace's brass fender out of the wall plate as its own sprite.
+
+    The fender is painted INTO the plate, so a fire drawn over the plate covers it and
+    reads as burning in front of the fireplace instead of inside it. Blitting the whole
+    band back over the fire would paint the dark firebox back too, so only the bright
+    brass is kept and everything darker is dropped to transparent.
+    """
+    plate = Image.open("assets/bg_lair_wall.png").convert("RGBA")
+    x, y, w, h = (v * RS for v in FENDER)
+    band = np.asarray(plate.crop((x, y, x + w, y + h))).astype(int)
+    lum = band[..., 0] * .3 + band[..., 1] * .6 + band[..., 2] * .1
+    band[..., 3] = np.where(lum > 42, 255, 0)      # brass rail in, dark firebox out
+    out = Image.fromarray(band.astype(np.uint8), "RGBA")
+    os.makedirs(OUT, exist_ok=True)
+    out.save(f"{OUT}fender.png")
+    kept = (band[..., 3] > 0).mean() * 100
+    print(f"{OUT}fender.png  {out.width}x{out.height}  "
+          f"(logical {FENDER[2]}x{FENDER[3]}, {kept:.0f}% brass)")
+
+
+def build_fire():
+    """The fireplace fire: four frames off one reference, logs still, flames moving.
+
+    Same shape as build_bed and for the same reason - a shared crop box so the logs
+    cannot shift, and one shared palette so the embers do not shimmer between frames.
+    """
+    src = SRC + "fire/"
+    names = sorted(n for n in os.listdir(src) if n.endswith(".png"))
+    keyed_frames = [hard_alpha(key_green(Image.open(src + n), tol=40), 128) for n in names]
+    any_ink = np.zeros(np.asarray(keyed_frames[0].getchannel("A")).shape, bool)
+    for f in keyed_frames:
+        any_ink |= np.asarray(f.getchannel("A")) > 128
+    ys, xs = np.where(any_ink)
+    box = (int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1)
+    frames = [f.crop(box) for f in keyed_frames]
+    frames = [rescale(f, FIRE_W * RS / frames[0].width) for f in frames]
+    os.makedirs(OUT, exist_ok=True)
+    for i, f in enumerate(finish_set(frames, 32)):
+        f.save(f"{OUT}fire_{i}.png")
+    print(f"{OUT}fire_0..{len(frames) - 1}.png  {frames[0].width}x{frames[0].height}  "
+          f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})")
+
+
 def build_curl():
     # the rack sits to CHAD's right in every pose, so it is the right edge that registers
     build_rig("gym_curl", CURL_RIG_H, "right")
@@ -384,10 +425,6 @@ def build_curl():
 
 def build_bench():
     build_rig("gym_bench", BENCH_RIG_H, "left")
-
-
-def build_dog():
-    build_walker("dog", DOG_H, {"sit": DOG_SIT_H})
 
 
 def build_tiger():
@@ -414,8 +451,8 @@ def build_tank():
 
 
 if __name__ == "__main__":
-    jobs = sys.argv[1:] or ["lounge", "dog", "tiger", "tank", "curl", "bench", "bed"]
+    jobs = sys.argv[1:] or ["lounge", "tiger", "tank", "curl", "bench", "bed", "fire", "fender"]
     for j in jobs:
-        {"lounge": build_lounge, "dog": build_dog, "tiger": build_tiger,
+        {"lounge": build_lounge, "tiger": build_tiger,
          "tank": build_tank, "curl": build_curl, "bench": build_bench,
-         "bed": build_bed}[j]()
+         "bed": build_bed, "fire": build_fire, "fender": build_fender}[j]()

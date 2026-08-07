@@ -69,9 +69,16 @@ Module map (see README "Files" for one-liners): `input.js` `sprites.js` `stages.
 goes through `initStageObj()` like any other, so the camera, arena walls and y-sort come
 for free. Its furniture is *not* in `G.props`: fixtures are drawn in the wall plane
 inside `drawHubWall` (before `drawWorld`, so CHAD always occludes them) and are
-therefore not combat targets. Only the heavy bag is a real prop; the dog and the tiger
-are `G.actors` entries, which are anything that draws itself and y-sorts — give one a
-`y` getter and a `draw(ctx, camX)`.
+therefore not combat targets. Only the heavy bag is a real prop; the tiger is a
+`G.actors` entry, which is anything that draws itself and y-sorts — give one a `y`
+getter and a `draw(ctx, camX)`.
+
+**Anything the plate paints is behind every sprite**, and that is a trap for things that
+belong *inside* the architecture. The fireplace's brass fender is painted into the plate,
+so the fire sprite drew over it and read as burning in front of the hearth. The fix has
+two halves: clip the sprite to the opening measured off the plate (`FIREBOX`), and cut
+the fender out of the plate as its own sprite (`build_fender()`, keyed on luminance so
+the dark firebox behind it is dropped) to blit back over the fire.
 
 **Its glass is a hole.** `tools/build_lair_wide.py` stitches three generated panels and
 keys the chroma-green window out of the plate, so the city shows through as TWO layers
