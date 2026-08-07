@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ASSET LAB - GIGACHAD: WORLD TOUR</title>
+<style>
+  :root {
+    --bg: #14101a; --panel: #1e1826; --line: #3a3048;
+    --ink: #e8e0f0; --dim: #9a90ac; --hot: #ffd94a; --red: #d82838;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  body { display: grid; grid-template-columns: 232px 1fr; }
+  aside { background: var(--panel); border-right: 1px solid var(--line);
+    padding: 12px; overflow-y: auto; }
+  h1 { font-size: 13px; letter-spacing: 2px; color: var(--hot); margin: 0 0 12px; }
+  h2 { font-size: 11px; letter-spacing: 1px; color: var(--dim); margin: 16px 0 6px;
+    text-transform: uppercase; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+  button { font: inherit; color: var(--ink); background: #2a2236; border: 1px solid var(--line);
+    padding: 4px 8px; cursor: pointer; }
+  button:hover { border-color: var(--hot); }
+  button.on { background: var(--red); border-color: var(--red); color: #fff; }
+  label { display: flex; align-items: center; gap: 6px; padding: 2px 0; cursor: pointer; }
+  select, input[type=range] { width: 100%; font: inherit; background: #2a2236; color: var(--ink);
+    border: 1px solid var(--line); padding: 3px; }
+  main { overflow: auto; padding: 16px; }
+  canvas { image-rendering: pixelated; display: block; background: #0a0810; }
+  .readout { color: var(--dim); margin-bottom: 10px; white-space: pre-wrap; }
+  .readout b { color: var(--hot); font-weight: normal; }
+  .warn { color: #ff7a5a; }
+</style>
+</head>
+<body>
+<aside>
+  <h1>ASSET LAB</h1>
+  <div class="tabs" id="tabs"></div>
+  <div id="controls"></div>
+</aside>
+<main>
+  <div class="readout" id="readout"></div>
+  <canvas id="view" width="1200" height="760"></canvas>
+</main>
+<script type="module" src="js/lab.js"></script>
+</body>
+</html>

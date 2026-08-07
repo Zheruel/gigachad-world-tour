@@ -1,0 +1,538 @@
+{
+  "player": {
+    "idle": [
+      "chad_sidle1.png",
+      "chad_sidle2.png",
+      "chad_sidle3.png",
+      "chad_sidle4.png"
+    ],
+    "walk": [
+      "chad_swlk1.png",
+      "chad_swlk2.png",
+      "chad_swlk3.png",
+      "chad_swlk4.png",
+      "chad_swlk5.png",
+      "chad_swlk6.png"
+    ],
+    "run": [
+      "chad_srun1.png",
+      "chad_srun2.png",
+      "chad_srun3.png",
+      "chad_srun4.png",
+      "chad_srun5.png",
+      "chad_srun6.png"
+    ],
+    "dash": [
+      "chad_dash1.png",
+      "chad_dash2.png"
+    ],
+    "jump": [
+      "chad_jump.png"
+    ],
+    "jumpfall": [
+      "chad_jumpfall.png"
+    ],
+    "jumpkick": [
+      "chad_jumpkick.png"
+    ],
+    "jab": [
+      "chad_sjab1.png",
+      "chad_sjab2.png",
+      "chad_sjab3.png",
+      "chad_sjab4.png"
+    ],
+    "hook": [
+      "chad_shook1.png",
+      "chad_shook2.png",
+      "chad_shook3.png",
+      "chad_shook4.png"
+    ],
+    "upper": [
+      "chad_supper1.png",
+      "chad_supper2.png",
+      "chad_supper3.png",
+      "chad_supper4.png"
+    ],
+    "combo_power_a": [
+      "chad_combo_power_a_1.png",
+      "chad_combo_power_a_2.png",
+      "chad_combo_power_a_3.png",
+      "chad_combo_power_a_4.png",
+      "chad_combo_power_a_5.png",
+      "chad_combo_power_a_6.png",
+      "chad_combo_power_a_7.png",
+      "chad_combo_power_a_8.png"
+    ],
+    "combo_power_b": [
+      "chad_combo_power_b_1.png",
+      "chad_combo_power_b_2.png",
+      "chad_combo_power_b_3.png",
+      "chad_combo_power_b_4.png",
+      "chad_combo_power_b_5.png",
+      "chad_combo_power_b_6.png",
+      "chad_combo_power_b_7.png",
+      "chad_combo_power_b_8.png"
+    ],
+    "combo_power_finish": [
+      "chad_combo_power_a_7.png",
+      "chad_combo_power_a_8.png",
+      "chad_combo_power_b_1.png",
+      "chad_combo_power_b_2.png",
+      "chad_combo_power_b_3.png"
+    ],
+    "parry_counter": [
+      "chad_parry_counter_1.png",
+      "chad_parry_counter_2.png",
+      "chad_parry_counter_3.png",
+      "chad_parry_counter_4.png",
+      "chad_parry_counter_5.png",
+      "chad_parry_counter_6.png",
+      "chad_parry_counter_7.png",
+      "chad_parry_counter_8.png"
+    ],
+    "meteor_lariat": [
+      "chad_meteor_lariat_1.png",
+      "chad_meteor_lariat_2.png",
+      "chad_meteor_lariat_3.png",
+      "chad_meteor_lariat_4.png",
+      "chad_meteor_lariat_5.png",
+      "chad_meteor_lariat_6.png",
+      "chad_meteor_lariat_7.png",
+      "chad_meteor_lariat_8.png"
+    ],
+    "ragnarok_ground": [
+      "chad_ragnarok_ground_1.png",
+      "chad_ragnarok_ground_2.png",
+      "chad_ragnarok_ground_3.png",
+      "chad_ragnarok_ground_4.png",
+      "chad_ragnarok_ground_5.png",
+      "chad_ragnarok_ground_6.png",
+      "chad_ragnarok_ground_7.png",
+      "chad_ragnarok_ground_8.png"
+    ],
+    "ragnarok_air": [
+      "chad_ragnarok_air_1.png",
+      "chad_ragnarok_air_2.png",
+      "chad_ragnarok_air_3.png",
+      "chad_ragnarok_air_4.png",
+      "chad_ragnarok_air_5.png",
+      "chad_ragnarok_air_6.png",
+      "chad_ragnarok_air_7.png",
+      "chad_ragnarok_air_8.png"
+    ],
+    "grab": [
+      "chad_grab.png"
+    ],
+    "knee": [
+      "chad_kne1.png",
+      "chad_kne2.png"
+    ],
+    "throw": [
+      "chad_throw1.png",
+      "chad_throw2.png"
+    ],
+    "suplex": [
+      "chad_suplex1.png",
+      "chad_suplex2.png"
+    ],
+    "hurt": [
+      "chad_hurt.png"
+    ],
+    "down": [
+      "chad_down.png"
+    ],
+    "getup": [
+      "chad_getup.png"
+    ],
+    "wallsplat": [
+      "chad_wallsplat.png"
+    ],
+    "victory": [
+      "chad_victory.png"
+    ],
+    "taunt": [
+      "chad_taunt.png"
+    ],
+    "special": [
+      "chad_sup1.png",
+      "chad_sup2.png",
+      "chad_sup3.png",
+      "chad_sup4.png"
+    ],
+    "idle_cigar": [
+      "chad_idle_cigar1.png",
+      "chad_idle_cigar2.png",
+      "chad_idle_cigar3.png",
+      "chad_idle_cigar4.png",
+      "chad_idle_cigar5.png",
+      "chad_idle_cigar6.png"
+    ],
+    "idle_shades": [
+      "chad_idle_shades1.png",
+      "chad_idle_shades2.png",
+      "chad_idle_shades3.png",
+      "chad_idle_shades4.png"
+    ],
+    "idle_flex": [
+      "chad_idle_flex1.png",
+      "chad_idle_flex2.png",
+      "chad_idle_flex3.png",
+      "chad_idle_flex4.png"
+    ],
+    "idle_knuckles": [
+      "chad_idle_knuckles1.png",
+      "chad_idle_knuckles2.png",
+      "chad_idle_knuckles3.png",
+      "chad_idle_knuckles4.png"
+    ]
+  },
+  "goonda": {
+    "idle": [
+      "goonda_idle.png"
+    ],
+    "walk": [
+      "goonda_walk1.png",
+      "goonda_walk2.png",
+      "goonda_walk3.png",
+      "goonda_walk4.png"
+    ],
+    "atk": [
+      "goonda_atk.png",
+      "goonda_atk2.png",
+      "goonda_atk3.png"
+    ],
+    "hurt": [
+      "goonda_hurt.png",
+      "goonda_hurt2.png"
+    ],
+    "down": [
+      "goonda_down.png"
+    ],
+    "getup": [
+      "goonda_idle.png"
+    ]
+  },
+  "batta": {
+    "idle": [
+      "batta_idle.png"
+    ],
+    "walk": [
+      "batta_walk1.png",
+      "batta_walk2.png",
+      "batta_walk3.png",
+      "batta_walk4.png"
+    ],
+    "atk": [
+      "batta_atk.png",
+      "batta_atk2.png",
+      "batta_atk3.png"
+    ],
+    "hurt": [
+      "batta_hurt.png",
+      "batta_hurt2.png"
+    ],
+    "down": [
+      "batta_down.png"
+    ],
+    "getup": [
+      "batta_idle.png"
+    ]
+  },
+  "masala": {
+    "idle": [
+      "masala_idle.png"
+    ],
+    "walk": [
+      "masala_walk1.png",
+      "masala_walk2.png",
+      "masala_walk3.png",
+      "masala_walk4.png"
+    ],
+    "atk": [
+      "masala_atk.png",
+      "masala_atk2.png",
+      "masala_atk3.png"
+    ],
+    "hurt": [
+      "masala_hurt.png",
+      "masala_hurt2.png"
+    ],
+    "down": [
+      "masala_down.png"
+    ],
+    "getup": [
+      "masala_idle.png"
+    ]
+  },
+  "bandar": {
+    "idle": [
+      "bandar_idle.png"
+    ],
+    "walk": [
+      "bandar_walk1.png",
+      "bandar_walk2.png",
+      "bandar_walk3.png",
+      "bandar_walk4.png"
+    ],
+    "atk": [
+      "bandar_atk.png",
+      "bandar_atk2.png",
+      "bandar_atk3.png"
+    ],
+    "hurt": [
+      "bandar_hurt.png",
+      "bandar_hurt2.png"
+    ],
+    "down": [
+      "bandar_down.png"
+    ],
+    "getup": [
+      "bandar_idle.png"
+    ]
+  },
+  "pehlwan": {
+    "idle": [
+      "pehlwan_idle.png"
+    ],
+    "walk": [
+      "pehlwan_walk1.png",
+      "pehlwan_walk2.png",
+      "pehlwan_walk3.png",
+      "pehlwan_walk4.png"
+    ],
+    "atk": [
+      "pehlwan_atk.png",
+      "pehlwan_atk2.png",
+      "pehlwan_atk3.png"
+    ],
+    "hurt": [
+      "pehlwan_hurt.png",
+      "pehlwan_hurt2.png"
+    ],
+    "down": [
+      "pehlwan_down.png"
+    ],
+    "getup": [
+      "pehlwan_idle.png"
+    ]
+  },
+  "constable": {
+    "idle": [
+      "constable_idle.png"
+    ],
+    "walk": [
+      "constable_walk1.png",
+      "constable_walk2.png",
+      "constable_walk3.png",
+      "constable_walk4.png"
+    ],
+    "atk": [
+      "constable_atk.png",
+      "constable_atk2.png",
+      "constable_atk3.png"
+    ],
+    "hurt": [
+      "constable_hurt.png",
+      "constable_hurt2.png"
+    ],
+    "down": [
+      "constable_down.png"
+    ],
+    "getup": [
+      "constable_idle.png"
+    ]
+  },
+  "operator": {
+    "idle": [
+      "operator_idle.png"
+    ],
+    "walk": [
+      "operator_walk1.png",
+      "operator_walk2.png",
+      "operator_walk3.png",
+      "operator_walk4.png"
+    ],
+    "atk": [
+      "operator_atk.png",
+      "operator_atk2.png",
+      "operator_atk3.png"
+    ],
+    "hurt": [
+      "operator_hurt.png",
+      "operator_hurt2.png"
+    ],
+    "down": [
+      "operator_down.png"
+    ],
+    "getup": [
+      "operator_idle.png"
+    ]
+  },
+  "sepoy": {
+    "idle": [
+      "sepoy_idle.png"
+    ],
+    "walk": [
+      "sepoy_walk1.png",
+      "sepoy_walk2.png",
+      "sepoy_walk3.png",
+      "sepoy_walk4.png"
+    ],
+    "atk": [
+      "sepoy_atk.png",
+      "sepoy_atk2.png",
+      "sepoy_atk3.png"
+    ],
+    "hurt": [
+      "sepoy_hurt.png",
+      "sepoy_hurt2.png"
+    ],
+    "down": [
+      "sepoy_down.png"
+    ],
+    "getup": [
+      "sepoy_idle.png"
+    ]
+  },
+  "raja": {
+    "idle": [
+      "raja_idle.png"
+    ],
+    "walk": [
+      "raja_walk1.png",
+      "raja_walk2.png"
+    ],
+    "punch": [
+      "raja_punch.png",
+      "raja_punch2.png",
+      "raja_punch3.png"
+    ],
+    "grab": [
+      "raja_grab.png"
+    ],
+    "slam": [
+      "raja_slam.png",
+      "raja_slam2.png",
+      "raja_slam3.png"
+    ],
+    "hurt": [
+      "raja_hurt.png",
+      "raja_hurt2.png"
+    ],
+    "down": [
+      "raja_down.png"
+    ]
+  },
+  "mirchi": {
+    "idle": [
+      "mirchi_idle.png"
+    ],
+    "walk": [
+      "mirchi_walk1.png",
+      "mirchi_walk2.png"
+    ],
+    "punch": [
+      "mirchi_punch.png",
+      "mirchi_punch2.png",
+      "mirchi_punch3.png"
+    ],
+    "grab": [
+      "mirchi_grab.png"
+    ],
+    "slam": [
+      "mirchi_slam.png",
+      "mirchi_slam2.png",
+      "mirchi_slam3.png"
+    ],
+    "hurt": [
+      "mirchi_hurt.png",
+      "mirchi_hurt2.png"
+    ],
+    "down": [
+      "mirchi_down.png"
+    ]
+  },
+  "refund": {
+    "idle": [
+      "refund_idle.png"
+    ],
+    "walk": [
+      "refund_walk1.png",
+      "refund_walk2.png"
+    ],
+    "punch": [
+      "refund_punch.png",
+      "refund_punch2.png",
+      "refund_punch3.png"
+    ],
+    "grab": [
+      "refund_grab.png"
+    ],
+    "slam": [
+      "refund_slam.png",
+      "refund_slam2.png",
+      "refund_slam3.png"
+    ],
+    "hurt": [
+      "refund_hurt.png",
+      "refund_hurt2.png"
+    ],
+    "down": [
+      "refund_down.png"
+    ]
+  },
+  "yadav": {
+    "idle": [
+      "yadav_idle.png"
+    ],
+    "walk": [
+      "yadav_walk1.png",
+      "yadav_walk2.png"
+    ],
+    "punch": [
+      "yadav_punch.png",
+      "yadav_punch2.png",
+      "yadav_punch3.png"
+    ],
+    "grab": [
+      "yadav_grab.png"
+    ],
+    "slam": [
+      "yadav_slam.png",
+      "yadav_slam2.png",
+      "yadav_slam3.png"
+    ],
+    "hurt": [
+      "yadav_hurt.png",
+      "yadav_hurt2.png"
+    ],
+    "down": [
+      "yadav_down.png"
+    ]
+  },
+  "rana": {
+    "idle": [
+      "rana_1.png"
+    ],
+    "walk": [
+      "rana_2.png",
+      "rana_3.png"
+    ],
+    "punch": [
+      "rana_4.png",
+      "rana_chain_lash.png"
+    ],
+    "grab": [
+      "rana_4.png"
+    ],
+    "slam": [
+      "rana_chain_slam.png"
+    ],
+    "hurt": [
+      "rana_react_hurt.png"
+    ],
+    "down": [
+      "rana_react_down.png"
+    ]
+  }
+}

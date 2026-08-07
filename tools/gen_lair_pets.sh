@@ -1,0 +1,38 @@
+#!/bin/bash
+# gen_lair_pets.sh - what lives in the lair: the tank's occupants and the tiger.
+#
+# The tiger is white on purpose. The room is walnut, black glass and black granite, and
+# a dark animal sinks into it - the doberman already half vanishes in the unlit
+# stretches. White fur reads at any size, and stripes survive the downscale where flat
+# fur turns into a blob.
+#
+# Walk and swim cycles are one horizontal strip per cycle, per the sheet rule in
+# CLAUDE.md, sliced and registered by tools/build_lair_extras.py.
+set -uo pipefail
+cd /Users/tinzeljar/Documents/gachi
+G=tools/gen_codex.sh
+O=assets/ai/lair
+mkdir -p $O
+
+SHEET="32-bit arcade beat em up game pixel art sprite in the style of Streets of Rage 4, side view, solid flat bright green chroma-key background (RGB 0,255,0), no shadows, no ground line, no water, no bubbles, no text, no numbers, no labels, no borders, no watermark"
+
+S="32-bit arcade beat em up game object sprite in the style of Streets of Rage 4 and Metal Slug: highly detailed pixel art with rich four-tone shading, crisp dark 1px outline, dramatic top-left key light, seen from the side, solid flat bright green chroma-key background (RGB 0,255,0), no shadow, no ground line, no text, no watermark, no border"
+
+TIGER="a huge white Bengal tiger with black stripes, pale blue eyes, wearing tiny wraparound black sunglasses and a thick brass studded leather harness across its chest"
+
+echo "=== the tank ==="
+$G $O/shark.png landscape "One horizontal row containing a four frame swim cycle of the same shark, evenly spaced, identical scale, all on the same horizontal line, with a clear band of empty flat green between each pose so they never touch. The shark is a big grey bull shark seen in exact side profile facing right, wearing tiny wraparound black sunglasses, and it is identical in every pose: same body, same colour, same sunglasses. Left to right the four poses are: 1 tail swung fully to the left, 2 tail passing through the centre, 3 tail swung fully to the right, 4 tail passing back through the centre. The head and the body stay at exactly the same height and never rotate; only the tail and the fins change. $SHEET" &
+
+$G $O/shoal.png landscape "One horizontal row containing a four frame swim cycle of the same small fish, evenly spaced, identical scale, all on the same horizontal line, with a clear band of empty flat green between each pose so they never touch. The fish is a small red bellied piranha seen in exact side profile facing right, silver flank and an orange belly, identical in every pose. Left to right the four poses are: 1 tail swung left, 2 tail centred, 3 tail swung right, 4 tail centred. Only the tail and fins change. $SHEET" &
+wait
+
+echo "=== the tiger ==="
+$G $O/tiger_walk.png landscape "One horizontal row containing a six frame walk cycle of the same tiger, evenly spaced, identical scale, all standing on the same ground line, with a clear band of empty flat green between each pose so they never touch. The tiger is $TIGER, and it is identical in every pose: same body, same stripes, same colour, same harness, same sunglasses. Left to right the six poses are: 1 front left paw reaching forward and rear right leg pushing back, 2 legs passing under the body, 3 front right paw reaching forward and rear left leg pushing back, 4 legs gathered under the body, 5 front left paw planted and the body at its lowest, 6 mid stride with all four legs spread. The tiger faces to the right in every pose. Its head and body stay at exactly the same height and never rotate; only the legs and the tail change. $SHEET" &
+wait
+
+$G $O/tiger_lie.png square "$TIGER lying down asleep on its side seen from the side facing right, front paws stretched out forward, head resting down on them, eyes closed behind the sunglasses, tail curled round, completely relaxed and flat to the ground, $S" &
+$G $O/tiger_sit.png square "$TIGER sitting up on its haunches seen from the side facing right, front legs straight and planted, chest out, head raised and alert, tail curled round its paws, $S" &
+wait
+
+echo "=== pets done ==="
+ls -la $O

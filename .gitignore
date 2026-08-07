@@ -1,0 +1,16 @@
+# The project-local Python venv (PIL, numpy, requests). Recreate it, do not track it.
+.venv/
+
+# Raw GPT Image generations. ~1.1GB, and the game never loads any of it: the pipeline
+# in tools/ processes these into assets/ and assets/frames/, which ARE tracked. Every
+# prompt that produced them is checked in as a tools/gen_*.sh, so this directory is
+# reproducible rather than precious.
+assets/ai/
+
+# Superseded plates and portraits kept around for A/B comparison, and the raw audio the
+# SFX slots were cut from. Both are working scratch, not part of the build.
+assets/_archive/
+assets/qa/
+audio/_archive/
+
+.DS_Store

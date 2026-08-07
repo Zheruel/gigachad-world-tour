@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STAGE 1-1 REVIEW — BAZAAR HEAT</title>
+<style>
+  :root {
+    --bg: #100d13;
+    --panel: #19151e;
+    --panel2: #211b27;
+    --line: #403648;
+    --ink: #f0e8dc;
+    --dim: #a99eac;
+    --gold: #ffd45c;
+    --red: #db3f47;
+    --green: #55d58c;
+    --blue: #65c7e8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: radial-gradient(circle at 50% -20%, #332427 0, var(--bg) 48rem);
+    color: var(--ink);
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  button, input, select, textarea { font: inherit; }
+  button {
+    border: 1px solid var(--line);
+    background: #2a2330;
+    color: var(--ink);
+    padding: 7px 10px;
+    cursor: pointer;
+  }
+  button:hover, button:focus-visible { border-color: var(--gold); outline: none; }
+  button.primary { background: var(--red); border-color: #f06464; }
+  button.small { padding: 3px 7px; font-size: 11px; }
+  .shell { width: min(1460px, 100%); margin: 0 auto; padding: 22px; }
+  header { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 18px; }
+  h1 { margin: 0; color: var(--gold); letter-spacing: .12em; font-size: clamp(20px, 3vw, 34px); }
+  h2 { color: var(--gold); margin: 0 0 8px; font-size: 17px; letter-spacing: .08em; }
+  h3 { color: var(--ink); margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+  p { margin: 0; }
+  .eyebrow { color: var(--red); text-transform: uppercase; letter-spacing: .18em; font-size: 11px; }
+  .muted { color: var(--dim); }
+  .status { text-align: right; color: var(--dim); }
+  .review-grid { display: block; }
+  .panel { background: color-mix(in srgb, var(--panel) 94%, transparent); border: 1px solid var(--line); }
+  .stage-panel { padding: 12px; }
+  .stage-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 10px; }
+  .viewport-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--gold);
+    padding: 0 2px 8px;
+    letter-spacing: .04em;
+  }
+  #stageView { width: 100%; height: auto; display: block; background: #050507; image-rendering: pixelated; cursor: ew-resize; }
+  #overview { width: 100%; height: 74px; display: block; margin-top: 8px; background: #0c0910; cursor: pointer; }
+  .scrub-row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; margin-top: 10px; }
+  #camera { width: 100%; accent-color: var(--red); }
+  #entrancePlayerSection {
+    width: min(1600px, calc(100vw - 24px));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+  .entrance-player { background: var(--panel); border: 1px solid var(--line); padding: 16px; }
+  #entranceView { width: 100%; height: auto; display: block; margin: 0 auto; background: #050507; image-rendering: pixelated; }
+  .entrance-controls { display: grid; grid-template-columns: auto auto auto auto minmax(180px, 1fr) auto; gap: 8px; align-items: center; margin-top: 10px; }
+  #entranceFrame { width: 100%; accent-color: var(--red); }
+  #entranceReadout { min-width: 190px; color: var(--gold); text-align: right; }
+  .entrance-options { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 9px; color: var(--dim); }
+  .entrance-options select { color: var(--ink); background: #2a2330; border: 1px solid var(--line); padding: 5px 7px; }
+  .entrance-options input { accent-color: var(--red); }
+  .cue-track { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+  .cue-track button { padding: 3px 6px; font-size: 10px; color: var(--blue); }
+  .toggles { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 8px; color: var(--dim); }
+  .toggles label { cursor: pointer; }
+  .toggles input { accent-color: var(--red); }
+  .section { margin-top: 28px; }
+  .section-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 10px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 10px; }
+  .asset-card { background: var(--panel); border: 1px solid var(--line); min-width: 0; }
+  .asset-card .preview {
+    height: 170px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background-color: #17131c;
+    background-image: linear-gradient(45deg,#201a27 25%,transparent 25%),linear-gradient(-45deg,#201a27 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#201a27 75%),linear-gradient(-45deg,transparent 75%,#201a27 75%);
+    background-size: 20px 20px;
+    background-position: 0 0,0 10px,10px -10px,-10px 0;
+  }
+  .asset-card .preview.wide { height: 205px; }
+  .asset-card img { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: pixelated; }
+  .asset-card canvas { width: 100%; height: 170px; image-rendering: pixelated; }
+  .asset-card .meta { padding: 9px; }
+  .asset-card .meta p { color: var(--dim); font-size: 11px; min-height: 34px; }
+  .asset-card code { color: var(--blue); overflow-wrap: anywhere; font-size: 10px; }
+  .plate-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+  .plate-card { background: var(--panel); border: 1px solid var(--line); padding: 10px; min-width: 0; }
+  .plate-card img { width: 100%; max-height: 350px; object-fit: contain; image-rendering: pixelated; background: #09070b; }
+  .wave-table { width: 100%; border-collapse: collapse; background: var(--panel); }
+  .wave-table th, .wave-table td { text-align: left; border-bottom: 1px solid var(--line); padding: 8px; vertical-align: top; }
+  .wave-table th { color: var(--gold); font-weight: normal; }
+  .wave-table tr { cursor: pointer; }
+  .wave-table tbody tr:hover { background: #2a222d; }
+  .audio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+  .audio-card { background: var(--panel); border: 1px solid var(--line); padding: 10px; }
+  audio { width: 100%; height: 34px; margin-top: 7px; }
+  .loading { padding: 40px; text-align: center; color: var(--gold); }
+  footer { margin: 30px 0 10px; color: var(--dim); text-align: center; }
+  @media (max-width: 940px) {
+    .plate-grid { grid-template-columns: 1fr; }
+    #entrancePlayerSection { width: auto; margin-left: 0; transform: none; }
+    .entrance-controls { grid-template-columns: auto auto auto; }
+    .entrance-controls input, #entranceReadout { grid-column: 1 / -1; width: 100%; text-align: left; }
+    header { align-items: start; flex-direction: column; }
+    .status { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div>
+      <h1>STAGE 1-1 · BAZAAR HEAT</h1>
+      <p class="muted">Full route, encounter plan, and every production asset used by the opening stage.</p>
+    </div>
+    <div class="status"><span id="loadState">Loading production assets…</span><br>5,000 world pixels · 7 waves · Rickshaw Raja</div>
+  </header>
+
+  <div class="review-grid">
+    <section class="panel stage-panel" aria-label="Stage route reviewer">
+      <div class="stage-toolbar">
+        <button id="prevWave">◀ WAVE</button>
+        <button id="playRoute">PLAY ROUTE</button>
+        <button id="nextWave">WAVE ▶</button>
+        <button id="impactStage">IMPACT TEST</button>
+      </div>
+      <div class="viewport-info"><span>STAGE 1-1 · BAZAAR HEAT</span><span id="cameraReadout">camera 0 · world 240 / 5000</span></div>
+      <canvas id="stageView" width="960" height="540" aria-label="Current Stage 1 viewport"></canvas>
+      <canvas id="overview" width="1200" height="74" aria-label="Clickable overview of Stage 1"></canvas>
+      <div class="scrub-row">
+        <span>START</span>
+        <input id="camera" type="range" min="0" max="4520" value="0" step="1" aria-label="Stage camera position">
+        <span>BOSS</span>
+      </div>
+      <div class="toggles">
+        <label><input id="showAmbience" type="checkbox" checked> ambience</label>
+        <label><input id="showProps" type="checkbox" checked> props</label>
+        <label><input id="showMarkers" type="checkbox" checked> wave markers</label>
+        <label><input id="showCast" type="checkbox"> encounter silhouettes</label>
+        <label><input id="showGrid" type="checkbox"> depth grid</label>
+      </div>
+    </section>
+
+  </div>
+
+  <section class="section" id="wavesSection">
+    <div class="section-head">
+      <div><h2>ENCOUNTER ROUTE</h2><p class="muted">Click a row to jump to its actual gate position.</p></div>
+    </div>
+    <table class="wave-table">
+      <thead><tr><th>Gate</th><th>World x</th><th>Composition</th><th>Purpose</th></tr></thead>
+      <tbody id="waveRows"></tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>STAGE PLATES</h2><p class="muted">The non-repeating production route beneath all Stage 1 action.</p></div></div>
+    <div class="plate-grid">
+      <div class="plate-card"><h3>Market facade</h3><img src="assets/stages/bazaar_v2/wall.png" alt="Bazaar Heat wall plate"><code>assets/stages/bazaar_v2/wall.png</code></div>
+      <div class="plate-card"><h3>Street floor</h3><img src="assets/stages/bazaar_v2/floor.png" alt="Bazaar Heat floor plate"><code>assets/stages/bazaar_v2/floor.png</code></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>CAST USED IN 1-1</h2><p class="muted">Production sprites at their real in-game relative scales.</p></div></div>
+    <div class="cards" id="castCards"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>BREAKABLE PROPS</h2><p class="muted">Every intact and destroyed prop state placed along the route.</p></div></div>
+    <div class="cards" id="propCards"></div>
+  </section>
+
+  <section class="section" id="entrancePlayerSection">
+    <div class="section-head"><div><h2>ENTRANCE ANIMATION PLAYER</h2><p class="muted">Play the complete in-level entrance or inspect it one rendered frame at a time.</p></div></div>
+    <div class="entrance-player">
+      <canvas id="entranceView" width="960" height="540" aria-label="Motorcycle entrance animation frame"></canvas>
+      <div class="entrance-controls">
+        <button id="entrancePrev" aria-label="Previous entrance frame">◀ FRAME</button>
+        <button id="entrancePlay" class="primary">PLAY</button>
+        <button id="entranceNext" aria-label="Next entrance frame">FRAME ▶</button>
+        <select id="entranceSpeed" aria-label="Entrance playback speed">
+          <option value="0.25">0.25×</option>
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+        </select>
+        <input id="entranceFrame" type="range" min="0" max="840" value="0" step="1" aria-label="Entrance animation frame">
+        <span id="entranceReadout" aria-live="polite">frame 000 / 840 · empty street</span>
+      </div>
+      <div class="entrance-options">
+        <label><input id="entranceOnion" type="checkbox"> onion-skin previous frame</label>
+        <label><input id="entranceGuides" type="checkbox"> ground + rig anchors</label>
+        <span>Slow playback is visual-only; 1× plays the synchronized production audio.</span>
+      </div>
+      <div class="cue-track" aria-label="Entrance cue markers">
+        <button data-entrance-frame="0">000 ENGINE</button>
+        <button data-entrance-frame="24">024 ENTER</button>
+        <button data-entrance-frame="72">072 BRAKE</button>
+        <button data-entrance-frame="116">116 SLIDE</button>
+        <button data-entrance-frame="140">140 APEX</button>
+        <button data-entrance-frame="190">190 RECOVER</button>
+        <button data-entrance-frame="214">214 BOOT</button>
+        <button data-entrance-frame="268">268 LEG</button>
+        <button data-entrance-frame="296">296 APEX</button>
+        <button data-entrance-frame="324">324 LAND</button>
+        <button data-entrance-frame="372">372 PUFF</button>
+        <button data-entrance-frame="438">438 EXHALE</button>
+        <button data-entrance-frame="456">456 VOICE</button>
+        <button data-entrance-frame="734">734 CRACK PREP</button>
+        <button data-entrance-frame="760">760 CRACK</button>
+        <button data-entrance-frame="804">804 READY</button>
+        <button data-entrance-frame="837">837 HANDOFF</button>
+        <button data-entrance-frame="840">840 END</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>ENTRANCE STORY FRAMES</h2><p class="muted">Motorcycle arrival sequence and its parked-bike resolution.</p></div></div>
+    <div class="cards" id="storyCards"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>STAGE-SPECIFIC EFFECT ART</h2><p class="muted">Image effects visible during normal Stage 1 play; sparks, dust, smoke, and rings are procedural.</p></div></div>
+    <div class="cards" id="effectCards"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>AUDIO CHECK</h2><p class="muted">Entrance, first-wave, combat, parry, and boss-impact samples used during the opening act.</p></div></div>
+    <div class="audio-grid" id="audioCards"></div>
+  </section>
+
+  <footer>Stage 1-1 production reviewer</footer>
+</div>
+<script type="module" src="js/review-1-1.js"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SFX LAB - GIGACHAD: WORLD TOUR</title>
+<style>
+  body { background:#14100f; color:#e8e0d0; font:13px/1.5 ui-monospace,Menlo,monospace; margin:0; padding:24px; }
+  h1 { font-size:16px; color:#ffd94a; margin:0 0 4px; letter-spacing:2px; }
+  p  { color:#9a9088; margin:0 0 20px; max-width:70ch; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:8px; }
+  button { background:#241c18; color:#e8e0d0; border:1px solid #4a3c30; border-radius:4px;
+           padding:9px 10px; font:inherit; cursor:pointer; text-align:left; }
+  button:hover { background:#3a2c22; border-color:#ffd94a; }
+  .slot { color:#ffd94a; font-weight:700; }
+  .src  { color:#8a8078; float:right; }
+  h2 { font-size:13px; color:#d85838; margin:26px 0 8px; letter-spacing:1px; }
+  code { background:#241c18; padding:1px 5px; border-radius:3px; color:#c8c0a8; }
+</style>
+</head>
+<body>
+<h1>SFX LAB</h1>
+<p>Top row: what the game currently plays for each slot. Bottom: every sound in the
+Streets of Rage 2 rip, by its sound-test number. If a slot sounds wrong, find a better
+number below and change that slot in <code>audio/sfx/manifest.json</code>, then re-run
+<code>tools/build_sfx.sh</code>.</p>
+
+<h2>GAME SLOTS</h2>
+<div class="grid" id="slots"></div>
+
+<h2>ALL SOURCE SOUNDS</h2>
+<div class="grid" id="all"></div>
+
+<script type="module">
+const SLOTS = ['punch','heavy','kick','whiff','land','slam','ko','throw','grab',
+  'dash','jump','pickup','blip','armor','enrage','super','phurt','weapon','go'];
+
+const manifest = await fetch('audio/sfx/manifest.json').then(r => r.json()).catch(() => ({map:{}}));
+
+function button(parent, label, sub, url) {
+  const b = document.createElement('button');
+  b.innerHTML = `<span class="slot">${label}</span><span class="src">${sub}</span>`;
+  b.onclick = () => { const a = new Audio(url); a.volume = 0.9; a.play(); };
+  parent.appendChild(b);
+}
+
+const slots = document.getElementById('slots');
+for (const s of SLOTS) button(slots, s, manifest.map?.[s] ?? '?', `audio/sfx/${s}.wav`);
+
+// the raw rip lives outside the shipped build; point at wherever you extracted it
+const all = document.getElementById('all');
+const RAW = manifest.rawDir || 'audio/sfx/raw';
+const nums = [...Array(50).keys()].map(n => String(n).padStart(2,'0'))
+  .filter(n => n !== '19' && n !== '21' && n !== '44')
+  .concat(['19, 21','44a','44b']);
+for (const n of nums) button(all, n, '', `${RAW}/${n}.wav`);
+</script>
+</body>
+</html>

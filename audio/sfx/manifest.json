@@ -1,0 +1,26 @@
+{
+  "source": "Streets of Rage 2 (Sega Genesis) sound effects, ripped set from The Sounds Resource asset 359 (media/assets/391/393998.zip). Used under the project's stated licence agreement for these sounds.",
+  "note": "map = game slot -> sound-test index in raw/. The rip ships numbered, not named, so these were matched by acoustic analysis (duration, attack time, spectral centroid, low/high energy split) and have NOT been verified by ear. Open sfxlab.html to audition every slot against every source sound, fix any that are wrong here, then run tools/build_sfx.sh.",
+  "rawDir": "audio/sfx/raw",
+  "map": {
+    "punch": "02",
+    "heavy": "05",
+    "kick": "00",
+    "whiff": "04",
+    "land": "32",
+    "slam": "31",
+    "ko": "16",
+    "throw": "13",
+    "grab": "22",
+    "dash": "49",
+    "jump": "23",
+    "pickup": "37",
+    "blip": "48",
+    "armor": "15",
+    "enrage": "26",
+    "super": "44a",
+    "phurt": "25",
+    "weapon": "11",
+    "go": "29"
+  }
+}
