@@ -61,7 +61,7 @@ LAIR = {
     "bed_wardrobe": (60, 96),
     "bed_nightstand": (44, 40),
     "bed_fire": (30, 26),
-    "bed_rug": (96, 14),
+    "bed_rug": (140, 26),   # sized by HEIGHT here, so 26 is what gives 140 across
 }
 
 

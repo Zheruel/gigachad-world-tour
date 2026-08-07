@@ -129,9 +129,10 @@ const LAIR_ART = [
   // the master suite. The rug lies on the floor, so it sits forward of the wall base and
   // CHAD walks over it; everything else stands against the panelling.
   { art: 'lair_bed_fire', x: FIREPLACE.x, y: FIREPLACE.y, w: 20, h: 26 },
-  { art: 'lair_bed_rug', x: 1564, y: WALL_BASE + 24, w: 98, h: 14 },
-  { art: 'lair_bed_wardrobe', x: 1651, y: WALL_BASE, w: 69, h: 96 },
-  { art: 'lair_bed_nightstand', x: 1706, y: WALL_BASE, w: 33, h: 40 },
+  { art: 'lair_bed_rug', x: 1560, y: WALL_BASE + 30, w: 140, h: 26 },
+  // as close to the bed as the wall allows - the window jamb starts at 1723
+  { art: 'lair_bed_wardrobe', x: 1688, y: WALL_BASE, w: 62, h: 96 },
+  { art: 'lair_bed_nightstand', x: 1750, y: WALL_BASE, w: 33, h: 40 },   // beside the footboard
 ];
 // The lounge is a pair: the same sofa empty and with CHAD sitting in it, registered on
 // the sofa's own foot by tools/build_lair_extras.py. His boots hang below the sofa
@@ -513,7 +514,7 @@ export const HUB_STAGE = {
     { key: 'bg_lair_sky_near', par: NEAR_PAR },
   ],
   music: 'lair', bossMusic: null, boss: null,
-  lamps: [60, 395, 1100, 1564, 1706], lampCol: '255,140,60', lampA: 0.09,
+  lamps: [60, 395, 1100, 1564, 1750], lampCol: '255,140,60', lampA: 0.09,
   rim: null, grade: '150,80,220', gradeA: 0.05,
   moteCount: 34, moteStyle: 'dust',
   // the plate lights the alcove and the tank; these are only their spill on the floor
@@ -528,8 +529,8 @@ export const HUB_STAGE = {
     // the master suite. The fire has its own breathing light in drawFirelight; these are
     // the standing lamps, without which the walk from the wardrobe to the bed is unlit.
     { x: 1472, y: 130, r: 46, col: '255,190,110', a: 0.15 },
-    { x: 1651, y: 140, r: 38, col: '255,200,130', a: 0.12 },
-    { x: 1706, y: 158, r: 40, col: '255,180,120', a: 0.17 },
+    { x: 1688, y: 140, r: 38, col: '255,200,130', a: 0.12 },
+    { x: 1750, y: 158, r: 40, col: '255,180,120', a: 0.17 },
   ],
   props: [], birds: [], ambience: [], emitters: [], waves: [],
   fg: [{ art: 'fg_table', x: 300, y: 278 }, { art: 'fg_lamp', x: 640, y: 284 },

@@ -33,13 +33,13 @@ $G $O/bed.png landscape "$BEDDESC Three poses read left to right. Pose 1: both p
 $G $O/bed_b.png landscape "$BEDDESC The bed is exactly the bed in the reference image, same shape, same length, same headboard, same carving, same colours, drawn at the same size, and the two women are the same small size in it. Three poses read left to right. Pose 1: one lying on her front with her ankles crossed in the air behind her, the other on her side watching her. Pose 2: both stretched out lazily on their backs staring at the ceiling, thoroughly bored. Pose 3: both sitting up against the headboard smiling and looking out of the picture to the LEFT, one raising a hand to beckon. $SHEET $S" "$O/bed.png"
 
 echo "=== the furniture ==="
-$G $O/bed_wardrobe.png portrait "A tall open walnut wardrobe seen from the side with both doors swung open, a brass rail across it hung with a row of six identical black leather biker waistcoats with the sleeves cut off, a shelf above holding four pairs of folded black wraparound sunglasses in a neat row, a shelf below with folded blue denim jeans, brass fittings, warm light inside the cabinet, $L, $S"
+$G $O/bed_wardrobe.png portrait "A tall open walnut wardrobe seen from the side with both doors swung open, warm light glowing inside it, brass rail and brass fittings. It is packed with a VARIED wardrobe, not a row of identical things: on the rail hang a black leather biker jacket, a cream double breasted suit, a white dinner jacket, a burgundy silk robe, a black leather waistcoat with the sleeves cut off and a dark tailored overcoat, all different colours and cuts. A shelf above holds a folded stack of coloured shirts, three pairs of black wraparound sunglasses and a fedora. A shelf below holds folded blue denim jeans, a pair of white trainers and a pair of black buckled boots. $L, $S"
 
 $G $O/bed_nightstand.png landscape "A low smoked glass and brass nightstand seen from the side, a small brass table lamp with an oxblood shade lit on top of it, a silver ice bucket with a champagne bottle in it and two tall crystal flutes beside the bucket, $L, $S"
 
 $G $O/bed_fire.png landscape "A tall fire of burning logs seen from the side, orange and yellow flames licking upward from a stack of three charred split logs on a bed of glowing embers, no fireplace and no surround around it, just the burning logs alone, $S"
 
-$G $O/bed_rug.png landscape "A large thick white sheepskin fur rug lying flat on the floor seen from a low angle almost edge on, so it reads as a long low soft shape with a shaggy irregular edge and deep shadow under it, $S"
+$G $O/bed_rug.png landscape "A large opulent antique Persian rug lying flat on the floor, seen from a low angle almost edge on so it reads as a long low shape. Deep oxblood burgundy ground with a big gold and ivory medallion in the centre, ornate gold corner spandrels and a wide ivory and gold patterned border running all the way round, knotted fringe at both ends. The pattern is BOLD and high contrast so it still reads when the rug is only twenty pixels tall, not fine and busy. $S"
 
 echo "=== bedroom done ==="
 echo "  ./.venv/bin/python tools/build_lair_extras.py bed"
