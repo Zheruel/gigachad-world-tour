@@ -200,5 +200,6 @@ against what the art was baked to, stability via `process_npcs.py --check`).
 
 - No build step, no bundler, no framework. Plain ES modules loaded by `index.html`.
 - New game constants belong in `js/engine.js`; new shared runtime state belongs on `G`.
-- Music is off by default (`"silent": true` in `audio/manifest.json`); drop an mp3 in a slot and remove the flag — no code change.
+- Music: `"silent": true` in `audio/manifest.json` only suppresses the *chiptune fallback*; a slot holding a real mp3 plays regardless. THE LAIR has its own `lair` slot (`neon_shadows.mp3`) so the hub scores itself without the title screen losing its chiptune. Drop an mp3 in a slot — no code change.
+- `tools/serve.py` must serve byte ranges: an `<audio>` element sits at `readyState 0` forever, with no error raised, on a server that answers `Range` with the whole file.
 - The SFX slot mapping in `audio/sfx/manifest.json` was matched by acoustic analysis and **has not been verified by ear** (`sfxlab.html`).

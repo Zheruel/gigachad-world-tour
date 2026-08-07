@@ -137,7 +137,7 @@ function enterHub(fresh) {
   G.fade = 1;
   G.camX = clamp(G.player.x - W / 2, 0, G.camMax);
   setState('hub');
-  audio.music('title');
+  audio.music(HUB_STAGE.music);
 }
 
 function spawnFromQueue() {
@@ -284,7 +284,9 @@ function checkBossClear() {
     addScore(G.lives * 500 + G.bestCombo * 25);
     G.player.state = 'victory';
     setState('clear');
-    audio.music(G.stageIndex >= STAGES.length - 1 ? null : 'title');
+    // the lair's track, started here so it carries through the tally and into the hub
+    // without restarting - audio.music() is a no-op when the slot is already playing
+    audio.music(G.stageIndex >= STAGES.length - 1 ? null : HUB_STAGE.music);
     persist();
   }
 }

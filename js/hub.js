@@ -451,7 +451,7 @@ export const HUB_STAGE = {
     { draw: lairCity },
     { key: 'bg_lair_sky_near', par: NEAR_PAR },
   ],
-  music: 'title', bossMusic: null, boss: null,
+  music: 'lair', bossMusic: null, boss: null,
   lamps: [60, 395, 1100], lampCol: '255,140,60', lampA: 0.09,
   rim: null, grade: '150,80,220', gradeA: 0.05,
   moteCount: 34, moteStyle: 'dust',

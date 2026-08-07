@@ -1,6 +1,7 @@
 {
   "note": "slot -> mp3 in audio/. null plays nothing (see silent below). Drop a file in a slot and it plays instead of the built-in chiptune, no code change.",
   "silent": true,
+  "lair": "neon_shadows.mp3",
   "title": null,
   "stage1": null,
   "boss": null,

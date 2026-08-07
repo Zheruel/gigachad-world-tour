@@ -64,7 +64,8 @@ export function openPanel(id) {
 }
 
 export function closePanel() {
-  if (G.hubPanel === 'hifi') audio.music('title');
+  // back to whatever the room you are standing in plays, not a hardcoded slot
+  if (G.hubPanel === 'hifi') audio.music(G.stage.music);
   G.hubPanel = null;
   G.audio.sfx('blip');
 }
@@ -266,14 +267,16 @@ function drawMap(ctx) {
 // -------------------------------------------------------------- jukebox panel
 // Names for the chiptunes in js/audio.js SONGS; the slot ids are positional.
 const TRACK_NAMES = {
-  title: 'THE LAIR', stage1: 'CHANDNI CHOWK RUN', boss: 'NO REFUNDS',
+  lair: 'NEON SHADOWS', title: 'ATTRACT', stage1: 'CHANDNI CHOWK RUN', boss: 'NO REFUNDS',
   stage2: 'THE DUNGEON', boss2: 'VAN DARKHOLME',
   stage3: 'THE LOCKER ROOM', boss3: 'MARK WOLFF',
   stage4: 'THE OIL PIT', boss4: 'JIRKA KALVODA',
   stage5: 'THE ARENA', boss5: 'NINO BACCI',
   ending: 'VICTORY',
 };
-const JB_ROWS = 6;
+// 13 slots have something behind them; at 6 rows that spills into a third column the
+// panel is not wide enough for, so the list runs 7 down and 6 down.
+const JB_ROWS = 7;
 
 function drawJukebox(ctx) {
   panelFrame(ctx, 'SOUND TEST', 'CHAD PICKS THE TRACK', 'Z  PLAY     ESC  BACK');

@@ -115,8 +115,10 @@ function stopEntranceBike(fade = .04) {
 }
 let currentSlot = null;
 let seqTimer = null, nextStepTime = 0, stepIdx = 0, song = null;
+// 'lair' is its own slot rather than sharing the title's: the hub has a real track and
+// the title screen still wants the chiptune under it.
 const SLOTS = [
-  'title', 'stage1', 'stage2', 'stage3', 'stage4', 'stage5',
+  'lair', 'title', 'stage1', 'stage2', 'stage3', 'stage4', 'stage5',
   'boss', 'boss2', 'boss3', 'boss4', 'boss5', 'ending',
 ];
 const htmlTracks = Object.fromEntries(SLOTS.map((s) => [s, null]));

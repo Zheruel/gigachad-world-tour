@@ -27,8 +27,11 @@ right around the characters.
 ```
 
 `tools/serve.py` is `http.server` with `Cache-Control: no-store`, so an edited
-module is picked up on reload. Any static file server works otherwise (one is
-needed so ES modules and the manifests can be fetched).
+module is picked up on reload. It also serves byte ranges over HTTP/1.1 on a
+threaded server, which stock `SimpleHTTPRequestHandler` does not — an `<audio>`
+element will not load at all from a server that answers a `Range` request with the
+whole file. Any static file server works otherwise, as long as it does ranges (one
+is needed so ES modules and the manifests can be fetched).
 
 ## Controls
 
@@ -252,9 +255,11 @@ low/high energy split) — **it has not been verified by ear**. Open `sfxlab.htm
 to audition every slot against all 103 source sounds, fix any that are wrong in
 the manifest, and run `tools/build_sfx.sh` to rebuild.
 
-Music is **off**: `audio/manifest.json` has `"silent": true`, which plays nothing
-rather than falling back to the chiptune. Drop an mp3 into a slot and remove that
-flag and it plays, no code change.
+Music is **mostly off**: `audio/manifest.json` has `"silent": true`, which plays
+nothing rather than falling back to the chiptune. That flag only gates the chiptune
+fallback — a slot with a real mp3 in it still plays, which is how THE LAIR has
+`neon_shadows.mp3` while the rest of the game stays quiet. Drop an mp3 into a slot
+and it plays, no code change; remove the flag to get the chiptunes everywhere else.
 
 ## Feature checklist
 
@@ -369,7 +374,7 @@ processed files from `assets/` and `assets/frames/`. Image generation goes throu
 | `tools/build_lair_extras.py` | the lair sprite sets whose frames must register with each other: the lounge pair, the two gym stations, the dog, the tiger and the tank |
 | `tools/make_portrait.py` | crop a HUD portrait out of a reference sheet |
 | `tools/build_sfx.sh` | rebuild `audio/sfx/*.wav` from `audio/sfx/raw/` using the slot map |
-| `tools/serve.py` | no-cache dev server |
+| `tools/serve.py` | no-cache dev server, with byte ranges so media loads |
 
 The uniform-scale + shared-palette pass in `process_char.py` is what stops size
 popping and colour drift between frames; check it in `lab.html` CAST mode, which
