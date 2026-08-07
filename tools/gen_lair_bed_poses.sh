@@ -22,22 +22,23 @@ S="32-bit arcade beat em up game object sprite in the style of Streets of Rage 4
 
 BED="A huge opulent king size four poster bed, seen from directly at its SIDE in flat side elevation exactly like a sofa photographed side on, drawn small and centred with a wide margin of flat green all around it. It is about twice as long as it is tall. A deeply buttoned oxblood leather headboard at the RIGHT hand end with carved dark walnut posts and polished brass finials, a low carved footboard at the LEFT hand end, a heavy folded dark red brocade throw lying across the foot of the bed, big white pillows at the head, thick cream silk sheets and a deep carved walnut base."
 
-WOMEN="Two beautiful adult women with long platinum blonde hair are in the bed, both wide awake, bored and languid. They have realistic slim adult human proportions and small heads. They are lying on the bed under the sheets which cover them from the chest down, so their heads, bare shoulders and arms are above the bedding and the shape of their legs is visible under the sheet. They fill the right hand TWO THIRDS of the bed - only the last third at the footboard end is empty sheet - and each woman's head is about one twelfth of the length of the bed, so they read as normal sized people in a big bed rather than dolls in a vast one."
+WOMAN="One beautiful adult woman with long platinum blonde hair is in the bed, awake, relaxed and languid, entirely on her own. She is wearing a BLACK silk and lace lingerie camisole with thin straps, which reads as dark against the cream bedding. She has realistic slim adult human proportions and a small head. She lies on the bed with the sheets pulled up over her legs, so her head, bare shoulders and arms and the black camisole are above the bedding. She occupies the right hand half of the bed near the headboard, and her head is about one fourteenth of the length of the bed, so she reads as a normal sized person in a very big bed."
 
 SAME="This image is the SAME PICTURE as the reference image with only one thing changed. The bed is pixel for pixel identical to the reference: the same length, the same height, the same headboard, the same posts and finials, the same carving on the base, the same folded red throw in the same place at the foot, the same pillows, drawn at exactly the same size and in exactly the same position within the frame, with exactly the same margins of green around it. Do NOT move the bed, do NOT resize it, do NOT zoom in or out, do NOT redraw the furniture. The ONLY difference from the reference image is the pose of the two women."
 
 echo "=== pose 0: the reference every other pose is measured against ==="
-$G $O/p0.png landscape "$BED $WOMEN Both are propped up on their elbows side by side near the headboard, chins resting in their hands, looking out of the picture to the LEFT, bored and waiting. $S"
+$G $O/p0.png landscape "$BED $WOMAN She is sitting up against the headboard with her knees drawn up under the sheet, looking out of the picture to the LEFT. $S"
 
-echo "=== poses 1-4, each against pose 0 ==="
-# The idle poses are a GENTLE PROGRESSION, not four unrelated pictures. The room steps
-# between neighbouring poses, so 0->1->2->3 has to read as two people settling rather
-# than as a cut: measured with check_bed_anim.py, unrelated poses changed 61-78% of the
-# occupant area, which is a cut however long you hold it. Pose 4 is the greeting and is
-# allowed to be a big change - it is triggered, not idle.
-$G $O/p1.png landscape "$BED $WOMEN Both are still propped up on their elbows near the headboard exactly as in the reference image, but the nearer one has taken her chin off her hand and let that arm drop loosely onto the sheet in front of her, and has turned her head slightly towards the other. Everything else about both of them is unchanged from the reference. $SAME $S" "$O/p0.png"
-$G $O/p2.png landscape "$BED $WOMEN The further one is still propped up on her elbow near the headboard as in the reference image, but the nearer one has now lowered herself down onto her side with her head resting on the pillow and one arm along the sheet, and the further one has turned her head to look down at her. $SAME $S" "$O/p0.png"
-$G $O/p3.png landscape "$BED $WOMEN Both have now lowered themselves down onto their sides with their heads resting on the pillows, facing each other, arms loose along the sheets, thoroughly bored. $SAME $S" "$O/p0.png"
+echo "=== poses 1-5, each against pose 0 ==="
+# A GENTLE PROGRESSION, not six unrelated pictures. The room steps between neighbouring
+# poses, so 0->1->2->3->4->5 has to read as one person settling and shifting rather than
+# as cuts: measured with check_bed_anim.py, unrelated poses changed 61-78% of the
+# occupant area, which is a cut however long you hold it.
+$G $O/p1.png landscape "$BED $WOMAN She is in the same place against the headboard as in the reference image but has leaned back onto both hands behind her, chin lifted, knees still up under the sheet. $SAME $S" "$O/p0.png"
+$G $O/p2.png landscape "$BED $WOMAN She has slid down a little from the headboard and is now propped up on one elbow on her side, her other hand resting on the sheet in front of her, looking out to the LEFT. $SAME $S" "$O/p0.png"
+$G $O/p3.png landscape "$BED $WOMAN She is lying on her side with her head resting on the pillow, one hand up playing idly with a strand of her hair, the other arm along the sheet. $SAME $S" "$O/p0.png"
+$G $O/p4.png landscape "$BED $WOMAN She has rolled onto her back with one knee raised under the sheet and both arms loose at her sides, head turned on the pillow. $SAME $S" "$O/p0.png"
+$G $O/p5.png landscape "$BED $WOMAN She has rolled onto her front with her chin resting on her folded hands and her ankles crossed in the air behind her under the sheet, looking out to the LEFT. $SAME $S" "$O/p0.png"
 
 echo "=== poses done - now check them ==="
 echo "  ./.venv/bin/python tools/check_bed_poses.py"

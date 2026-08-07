@@ -104,13 +104,10 @@ function rigFrame(r) {
 // measured off the plate: the firebox opening is 1548-1618, hearth at y 168
 const FIREPLACE = { x: 1564, y: 164 };
 const OVERMANTEL = [1528, 48, 66, 55];   // the mirror glass above it
-// One strip like the gym rigs, so the bed cannot shift between frames. 0-2 are the two
-// of them turning over in their sleep; 3 is one propped up on an elbow, which is the
-// pose the room holds while CHAD is standing there.
+// One generation per pose - see the bed section in CLAUDE.md for why a strip could not
+// do this. She does not react to CHAD; she is just someone living in the room.
 export const BED_X = 1822;   // centred in front of the corner glass
-const BED = { x: BED_X, y: WALL_BASE + 2, w: 165, h: 88 };
-const BED_WAKE = 4;   // the last pose: sitting up, beckoning him over
-const NEAR_BED = 120;    // he does not have to be on top of it for them to notice
+const BED = { x: BED_X, y: WALL_BASE + 2, w: 165, h: 102 };
 
 // Sprites in the wall plane. Sizes mirror LAIR in tools/process_props.py; y is the
 // bottom edge and art is centred on x.
@@ -697,94 +694,112 @@ function drawTank(ctx, camX) {
 // They are asleep until CHAD walks into the room, then one of them props herself up and
 // says something. IDLE lines go round on their own; WAKE lines only fire on arrival, so
 // walking in always gets a reaction rather than whatever the cycle happened to be on.
+// She is not waiting for him and does not react to him - she is just someone living in
+// the room. Poses drift on their own and a line goes off now and then with a long gap
+// either side of it; a line every few seconds reads as a chatbot, not as company.
 const IDLE_LINES = [
-  'chaaad... we are bored',
   'you work too hard...',
   'it is four in the morning',
   'the city can wait',
-  'are you still hitting that bag',
+  'still hitting that bag?',
   'you already won, big guy',
   'the bag will still be there',
   'one more act, you said',
-];
-const WAKE_LINES = [
-  'there you are',
-  'done training already?',
-  'come back, chad',
-  'we kept it warm',
-  'you are all sweaty again',
-  'five more minutes. with us',
+  'come back to bed, chad',
+  'mm...',
 ];
 
-// Poses 0-3 are the two of them lounging, 4 is sitting up and beckoning. They do NOT
-// run as a cycle: a fixed loop reads as an animation flicking over rather than two
-// people waiting. One pose is held for several seconds and then the state steps to a
-// NEIGHBOURING pose, so the change is always small and the timing is never regular.
-const SLEEP_POSES = 4;
-const bed = { pose: 0, hold: 260, awake: 0, line: null, lineT: 0, next: 240, said: -1 };
+// Six poses that chain: sitting against the headboard, down onto an elbow, onto her
+// side, onto her back, onto her front. The room steps between NEIGHBOURS only, so the
+// change is always small; a fixed loop over all six reads as an animation flicking over.
+const BED_POSES = 6;
+const LINE_HOLD = 260;             // ~4.3s on screen
+const LINE_GAP = [1400, 3000];     // ~23-50s between lines
+const POSE_HOLD = [200, 520];      // ~3.3-8.7s per pose
+
+const bed = { pose: 0, hold: 300, line: null, lineT: 0, next: 900, said: -1 };
 
 function resetBed() {
-  bed.pose = 0; bed.hold = 260; bed.awake = 0;
-  bed.line = null; bed.lineT = 0; bed.next = 240; bed.said = -1;
+  bed.pose = irand(0, BED_POSES - 1);
+  bed.hold = irand(...POSE_HOLD);
+  bed.line = null;
+  bed.lineT = 0;
+  bed.next = irand(...LINE_GAP);
+  bed.said = -1;
 }
 
-function say(list) {
-  let i = irand(0, list.length - 1);
-  if (i === bed.said) i = (i + 1) % list.length;   // never the same line twice running
+function say() {
+  let i = irand(0, IDLE_LINES.length - 1);
+  if (i === bed.said) i = (i + 1) % IDLE_LINES.length;  // never the same line twice running
   bed.said = i;
-  bed.line = list[i];
-  bed.lineT = 280;
+  bed.line = IDLE_LINES[i];
+  bed.lineT = LINE_HOLD;
 }
 
 function updateBed() {
   if (bed.lineT > 0) bed.lineT--;
-  const near = Math.abs(G.player.x - BED.x) < NEAR_BED;
-  if (near && bed.awake === 0) { say(WAKE_LINES); bed.next = 340; }   // he just walked in
-  bed.awake = near ? 150 : Math.max(0, bed.awake - 1);
   if (--bed.hold <= 0) {
     // a step to an adjacent pose, never a jump across the set
-    const dir = Math.random() < 0.5 ? -1 : 1;
-    bed.pose = clamp(bed.pose + dir, 0, SLEEP_POSES - 1);
-    bed.hold = irand(260, 620);
+    bed.pose = clamp(bed.pose + (Math.random() < 0.5 ? -1 : 1), 0, BED_POSES - 1);
+    bed.hold = irand(...POSE_HOLD);
   }
-  // she keeps talking while he is standing there - one line and then silence made
-  // walking up feel like a trigger rather than someone actually in the room
   if (--bed.next <= 0) {
-    bed.next = near ? irand(220, 340) : irand(360, 620);
-    say(near ? WAKE_LINES : IDLE_LINES);
+    bed.next = irand(...LINE_GAP);
+    say();
   }
 }
 
-const bedFrame = () => 'lair_bed_' + (bed.awake > 0 ? BED_WAKE : bed.pose);
+const bedFrame = () => 'lair_bed_' + bed.pose;
 
 // A speech bubble in the wall plane, so CHAD passes in front of it like everything else.
-function drawBubble(ctx, cx, bottom, text) {
-  const s = 1, pad = 4;
-  const tw = textWidth(text, s);
-  const w = tw + pad * 2, h = 7 + pad * 2;
-  const x = Math.round(clamp(cx - w / 2, 2, W - w - 2)), y = Math.round(bottom - h - 5);
-  ctx.fillStyle = 'rgba(250,246,238,0.94)';
-  ctx.fillRect(x + 1, y, w - 2, h);
-  ctx.fillRect(x, y + 1, w, h - 2);
-  ctx.beginPath();                       // the tail, pointing down at whoever spoke
-  ctx.moveTo(Math.round(cx) - 3, y + h);
-  ctx.lineTo(Math.round(cx) + 3, y + h);
-  ctx.lineTo(Math.round(cx), y + h + 5);
+// Chamfered corners, a dark rule and a dropped shadow: a plain white rectangle reads as
+// debug text sitting on top of the game rather than something in the room.
+function drawBubble(ctx, cx, bottom, text, a) {
+  const pad = 5, tail = 5;
+  const w = textWidth(text, 1) + pad * 2, h = 7 + pad * 2;
+  const x = Math.round(clamp(cx - w / 2, 3, W - w - 3)), y = Math.round(bottom - h - tail);
+  const tx = Math.round(clamp(cx, x + 6, x + w - 6));
+
+  const body = (dx, dy, col) => {
+    ctx.fillStyle = col;
+    ctx.fillRect(x + dx + 1, y + dy, w - 2, h);          // chamfer: 1px off each corner
+    ctx.fillRect(x + dx, y + dy + 1, w, h - 2);
+    ctx.beginPath();
+    ctx.moveTo(tx + dx - 3, y + dy + h - 1);
+    ctx.lineTo(tx + dx + 4, y + dy + h - 1);
+    ctx.lineTo(tx + dx, y + dy + h + tail);
+    ctx.closePath();
+    ctx.fill();
+  };
+
+  ctx.save();
+  ctx.globalAlpha = a * 0.35;
+  body(1, 2, '#0c0812');                                  // dropped shadow
+  ctx.globalAlpha = a;
+  body(0, 0, '#241c2e');                                  // dark rule...
+  ctx.fillStyle = '#f6efdd';                              // ...with the paper inside it
+  ctx.fillRect(x + 2, y + 1, w - 4, h - 2);
+  ctx.fillRect(x + 1, y + 2, w - 2, h - 4);
+  ctx.beginPath();
+  ctx.moveTo(tx - 2, y + h - 1);
+  ctx.lineTo(tx + 3, y + h - 1);
+  ctx.lineTo(tx, y + h + tail - 2);
   ctx.closePath();
   ctx.fill();
-  drawText(ctx, text, x + pad, y + pad, '#2a2030', s);
+  drawText(ctx, text, x + pad, y + pad, '#2a2030', 1);
+  ctx.restore();
 }
 
 function drawBed(ctx, camX) {
-  const img = artFor({ art: bedFrame(), w: BED.w, h: BED.h });
-  drawFixtureArt(ctx, camX, BED, img);
+  drawFixtureArt(ctx, camX, BED, artFor({ art: bedFrame(), w: BED.w, h: BED.h }));
   if (bed.lineT <= 0 || !bed.line) return;
   const x = BED.x - camX;
-  if (x < -80 || x > W + 80) return;
-  ctx.save();
-  ctx.globalAlpha = Math.min(1, bed.lineT / 24);
-  drawBubble(ctx, x + 22, BED.y - BED.h + 6, bed.line);
-  ctx.restore();
+  if (x < -90 || x > W + 90) return;
+  // fades in fast and out slow, and rises a couple of pixels as it goes
+  const inA = Math.min(1, (LINE_HOLD - bed.lineT) / 6);
+  const a = Math.min(inA, Math.min(1, bed.lineT / 30));
+  const rise = Math.round((1 - Math.min(1, (LINE_HOLD - bed.lineT) / 10)) * 3);
+  drawBubble(ctx, x + 46, BED.y - BED.h + 4 + rise, bed.line, a);   // over her, not the bed's centre
 }
 
 // ---------------------------------------------------------------- the pets

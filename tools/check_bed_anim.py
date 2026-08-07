@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image
 
 OUT = "assets/lair/"
-FURNITURE_BAND = 0.82      # below this is the carved base - the mattress/base edge
+FURNITURE_BAND = 0.88      # below this is the carved base - the mattress/base edge
 
 
 def load():

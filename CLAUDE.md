@@ -103,8 +103,9 @@ What works is ONE GENERATION PER POSE, each passed pose 0 as a reference with an
   the furniture;
 - the poses agree on geometry but *not* on shading (the same pixel of the base measured
   (48,8,4) and (114,48,21)), so the carved base is taken from pose 0 for every frame. The
-  cut is at the mattress/base junction found by luminance — a real edge. Cutting at an
-  arbitrary fraction is what left the seam;
+  cut is at the mattress/base junction found by luminance **searched only in the lower
+  quarter** — unconstrained it picked 57% of the height for one set of poses and 86% for
+  the next. Cutting at an arbitrary fraction is what left the seam;
 - `finish_set()` quantizes the whole set against ONE palette, the same rule
   `process_char.py` uses per character.
 
@@ -112,7 +113,12 @@ What works is ONE GENERATION PER POSE, each passed pose 0 as a reference with an
 `tools/check_bed_anim.py` measures whether the furniture moves and how far apart
 consecutive poses are — you cannot watch a sprite animate from here, so measure it.
 Poses the room steps between must be a PROGRESSION: unrelated poses changed 61-78% of the
-occupant area, which reads as a cut however long you hold it. The bed's frame 3 is the "awake"
+occupant area, which reads as a cut however long you hold it.
+
+The room's ambient life is **not** reactive. She shifts pose every ~8s on a random walk
+over neighbours and speaks once every ~30s, silent 86% of the time; nothing she does keys
+off where CHAD is standing. A proximity trigger made walking past feel like tripping a
+switch, and a line every few seconds reads as a chatbot rather than company. The bed's frame 3 is the "awake"
 pose, held while CHAD is within `NEAR_BED` — the sleepers are proximity-driven, not a
 `FIXTURES` entry, so there is no walk-up prompt.
 

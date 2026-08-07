@@ -83,17 +83,18 @@ def finish(img, colors=40):
 def base_junction(frame):
     """The row where the mattress meets the carved wooden base.
 
-    Found as the sharpest drop in row-mean luminance in the lower half: cream bedding
-    above, dark walnut below. It is a real horizontal edge in the art, which is what
-    makes it safe to cut along - the earlier attempt cut at an arbitrary fraction, went
-    straight through the drapery and left a visible line across the mattress.
+    The sharpest drop in row-mean luminance - cream bedding above, dark walnut below -
+    searched only in the LOWER QUARTER of the sprite. Unconstrained it picked 57% of the
+    height in one set of poses and 86% in the next; the base is always near the bottom,
+    and it is the base that matters because it is the biggest dark mass in the sprite and
+    the place shading drift shows up worst.
     """
     a = np.asarray(frame).astype(float)
     opaque = a[..., 3] > 128
     lum = a[..., 0] * .3 + a[..., 1] * .6 + a[..., 2] * .1
     rows = np.array([lum[y][opaque[y]].mean() if opaque[y].sum() > 10 else 0.0
                      for y in range(a.shape[0])])
-    lo, hi = int(a.shape[0] * .45), int(a.shape[0] * .9)
+    lo, hi = int(a.shape[0] * .70), int(a.shape[0] * .93)
     return lo + int(np.argmin(np.diff(rows)[lo:hi])) + 1
 
 
@@ -338,13 +339,25 @@ def build_bed():
     box = (int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1)
     frames = [f.crop(box) for f in keyed_frames]
 
+    # The generations land within a pixel of each other but not always ON it, and a 1px
+    # jiggle in a bed that is otherwise perfectly still is more obvious than a big one.
+    # Judged on the furniture band so her arms cannot drag the alignment.
+    band = int(frames[0].height * 0.55)
+    aligned = [frames[0]]
+    for f in frames[1:]:
+        dx, dy = best_shift(frames[0], f, band, limit=3)
+        canvas = Image.new("RGBA", frames[0].size, (0, 0, 0, 0))
+        canvas.paste(f, (dx, dy), f)
+        aligned.append(canvas)
+    frames = aligned
+
     # The poses agree on geometry but not on shading - the same pixel of the carved base
     # came back (48,8,4) in one pose and (114,48,21) in another, which on screen is the
     # woodwork brightening every time they move. A global exposure fit does not fix it
     # because the variation is local, so the base is taken from p0 for every frame. The
     # cut is at the mattress/base junction, a real horizontal edge in the art.
     cut = base_junction(frames[0])
-    print(f"  base from pose 0 below row {cut} of {frames[0].height} "
+    print(f"  carved base from pose 0 below row {cut} of {frames[0].height} "
           f"({round(100 * cut / frames[0].height)}%, the mattress/base edge)")
     fixed = [frames[0]]
     for f in frames[1:]:

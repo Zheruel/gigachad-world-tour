@@ -935,15 +935,26 @@ if (autoMode) {
       // both pets, drawing themselves, and facing the way they are walking
       t('hub-pets-present', G.actors.length === 2
         && G.actors.every((a) => typeof a.draw === 'function'));
-      // the master suite: they sleep until he walks in, then one sits up and speaks
-      G.player.x = 900; step(200);
-      t('hub-bed-sleeps', !hubBed().awake);
-      G.player.x = BED_X - 80; step(4);
-      t('hub-bed-wakes', hubBed().awake > 0 && !!hubBed().line);
-      const saidOnArrival = hubBed().line;
-      G.player.x = 900; step(200);
-      t('hub-bed-settles', hubBed().awake === 0);
-      t('hub-bed-line-was-a-greeting', typeof saidOnArrival === 'string' && saidOnArrival.length > 0);
+      // the master suite: she shifts about on her own and speaks now and then. She does
+      // NOT react to him, so walking up must change nothing.
+      {
+        const poses = new Set();
+        let lineFrames = 0, changes = 0, last = hubBed().pose;
+        G.player.x = 900;
+        for (let i = 0; i < 400; i++) {
+          step(15);
+          poses.add(hubBed().pose);
+          if (hubBed().lineT > 0) lineFrames++;
+          if (hubBed().pose !== last) { changes++; last = hubBed().pose; }
+        }
+        t('hub-bed-shifts-about', poses.size >= 3 && changes >= 3);
+        t('hub-bed-poses-are-adjacent-steps', [...poses].every((p) => p >= 0 && p < 6));
+        // a line now and then, not a running commentary: well under half the time
+        t('hub-bed-speaks-with-pauses', lineFrames > 0 && lineFrames < 400 * 0.45);
+        const before = hubBed().pose;
+        G.player.x = BED_X - 60; step(6);
+        t('hub-bed-ignores-him', hubBed().pose === before);
+      }
       t('hub-room-is-four-screens', G.stage.width === 1920 && G.camMax === 1920 - W);
       // the map panel: cursor moves, a locked act refuses, an unlocked one starts
       G.unlockedStage = 0;
@@ -1308,7 +1319,7 @@ if (autoMode) {
   } else if (autoMode.startsWith('hub')) {
     // ?auto=hub[-<fixture id>] parks CHAD at that fixture with its panel open, plus
     // hub-bag (mid-punch), hub-window (the bag framed against the sunset) and hub-bed
-    // (close enough to the master suite that they wake up and say something).
+    // (standing in the master suite while she shifts about and says something).
     enterHub(true);
     G.unlockedStage = parseInt(params.get('unlocked') || '2', 10) || 0;
     G.fade = 0;
@@ -1321,8 +1332,10 @@ if (autoMode) {
     } else if (autoMode === 'hub-window') {
       G.player.x = 1000; G.player.y = 232; step(30);
     } else if (autoMode === 'hub-bed') {
-      // the bed is proximity, not a fixture: no prompt, they just notice him
-      G.player.x = BED_X - 90; G.player.y = 236; step(40);
+      // not a fixture and not a reaction - just park him there and let her talk
+      G.player.x = BED_X - 110; G.player.y = 236;
+      hubBed().line = 'you work too hard...'; hubBed().lineT = 200;
+      step(20);
     } else if (f) {
       G.player.x = f.x; step(3);
       debugPress('up'); step(2); debugRelease('up'); step(20);
