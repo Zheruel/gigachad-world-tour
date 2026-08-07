@@ -60,7 +60,7 @@ LAIR = {
     # the master suite. The bed itself is a strip and comes from build_lair_extras.py.
     "bed_wardrobe": (60, 96),
     "bed_nightstand": (44, 40),
-    "bed_rug": (140, 28),   # sized by HEIGHT here; 28 is what gives ~140 across
+    "bed_rug": (126, 54),   # sized by HEIGHT here; the width follows the art
 }
 
 

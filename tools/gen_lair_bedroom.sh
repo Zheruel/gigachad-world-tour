@@ -39,7 +39,12 @@ $G $O/bed_nightstand.png landscape "A low smoked glass and brass nightstand seen
 
 # the fire moved to its own four-frame set - see the fire section in CLAUDE.md
 
-$G $O/bed_rug.png landscape "An enormous sabretooth cat pelt lying flat on the floor as a rug, seen from a low angle almost edge on so it reads as a long low sprawling shape. Thick tawny gold fur with faint darker tan stripes along the flanks, the four legs and paws splayed out wide to the sides with the claws still on them, and a long tail. At the RIGHT hand end the flattened head is turned out towards the viewer, jaws parted, with TWO ENORMOUS CURVED IVORY SABRE FANGS hanging down well below the jaw, a dark nose and amber glass eyes. The fangs and the sprawling limbs are the silhouette and must be clear and bold, because this is drawn small. Ragged irregular fur edge all the way round, no border, no backing, no rug pattern. $S"
+# The first two tries at this asked for the pelt "almost edge on" and got a flat squished
+# smear with a tiny head. A trophy rug's head is MOUNTED - taxidermied whole and standing
+# proud of the floor - and that is both what stops it reading as squished and where the
+# fangs live. Three colourways were generated and compared at game size; the dark mane
+# won because it frames the head so the ivory fangs still read at 126 logical wide.
+$G $O/bed_rug.png landscape "A huge sabretooth cat pelt laid out flat on the floor as a trophy rug, seen from the front and slightly above. The flattened body, the four splayed legs with claws and the tail all lie FLAT on the ground and recede away to the RIGHT. At the LEFT hand end the taxidermied HEAD is mounted whole and three dimensional, raised well up off the floor and turned to face the viewer, snarling with its jaws wide open. The head is LARGE - about a third of the whole length of the rug - and is the focal point. Two colossal curved ivory sabre fangs hang from the upper jaw, far longer and thicker than any other feature, reaching down past the lower jaw. They are the boldest shape in the whole sprite and must read clearly even when the rug is small. This animal was a hard fight and it shows: a long scar across the muzzle, one ear torn and notched, the tip of one fang chipped, and old claw scars raked through the fur of the flank. Deep russet and burnt orange fur with heavy black striping across the shoulders, a shaggy black mane round the head, molten gold glass eyes, and the jaws lined with smaller teeth behind the two great fangs. $S"
 
 echo "=== bedroom done ==="
 echo "  ./.venv/bin/python tools/build_lair_extras.py bed"
