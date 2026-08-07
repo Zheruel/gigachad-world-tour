@@ -91,7 +91,14 @@ floor's reflection of those bars too, or the granite goes on reflecting the old 
 
 **Anything animated in the room is one strip**, never separate generations: the gym rigs,
 the lounge sofa and the bedroom's bed all hold their furniture and their occupants in the
-same sprite, so the furniture cannot drift between frames. The bed's frame 3 is the "awake"
+same sprite. That is necessary but **not sufficient** — asked for the same bed six times
+the model returns six subtly different beds, and more than half the pixel difference
+between poses lands in the bed BASE, which should be identical. `stabilise()` in
+`build_lair_extras.py` settles it: the furniture comes from one frame and every other
+frame contributes only the box its occupants lie in. Cell width is also the budget for
+how long a thing can be drawn — six poses in a 1536px sheet is 256px each and the bed
+came back as tall as it was long, so it is two sheets of three with the first passed as
+a reference to the second. The bed's frame 3 is the "awake"
 pose, held while CHAD is within `NEAR_BED` — the sleepers are proximity-driven, not a
 `FIXTURES` entry, so there is no walk-up prompt.
 

@@ -52,7 +52,10 @@ TIGER_SIT_H = 70
 TIGER_LIE_H = 32
 SHARK_H = 26     # nose-to-tail comes out around 4x this
 SHOAL_H = 6
-BED_H = 96       # headboard to floor; CHAD is 96 standing beside it
+BED_W = 190      # a king size is what says 'king': its LENGTH against CHAD's 96
+# where the two of them lie, as fractions of the built frame: clear of the footboard,
+# the headboard posts and the whole carved base, all of which come from frame 0
+BED_SLEEPER_BOX = (0.13, 0.20, 0.97, 0.64)
 CURL_RIG_H = 38  # the dumbbell rack alone; set so CHAD beside it comes out at his 96
 BENCH_RIG_H = 62 # the bench plus its posts and the racked bar
 
@@ -224,20 +227,90 @@ def build_rig(prefix, rig_h, side):
           f"y = WALL_BASE + {round(floor_pad / RS)}")
 
 
+def best_shift(base, other, band, limit=6):
+    """Translation that best lines `other` up with `base`, judged on `band` only.
+
+    The band is the furniture - the part that is supposed to be identical - so the
+    people moving about above it cannot drag the alignment around."""
+    a = (np.asarray(base.getchannel("A")) > 128)[band:]
+    best, bestdx, bestdy = -1, 0, 0
+    for dy in range(-limit, limit + 1):
+        for dx in range(-limit, limit + 1):
+            b = (np.asarray(other.getchannel("A")) > 128)[band:]
+            b = np.roll(np.roll(b, dy, axis=0), dx, axis=1)
+            score = (a & b).sum() - (a ^ b).sum()
+            if score > best:
+                best, bestdx, bestdy = score, dx, dy
+    return bestdx, bestdy
+
+
+def stabilise(frames, box):
+    """Take the FURNITURE from one frame and let only the occupants vary.
+
+    Asked for the same bed six times the model draws six subtly different beds - the
+    valance, the carving, the posts and the colours all breathe - and against a still
+    room that reads as the whole bed morphing every time someone rolls over. Prompting
+    does not fix it and neither does alignment, because the drift is in the drawing and
+    not in the placement: measured on the built frames, more than half of the difference
+    between poses is in the bed BASE, which is supposed to be identical.
+
+    So the pixels settle it. Frame 0 is the bed. Every frame contributes only `box`, the
+    band the sleepers lie in, given as (x0, y0, x1, y1) fractions of the frame - a
+    diff-derived box is no use here because the frames differ everywhere.
+    """
+    w, h = frames[0].size
+    x0, y0, x1, y1 = (round(box[0] * w), round(box[1] * h),
+                      round(box[2] * w), round(box[3] * h))
+    out = []
+    for f in frames:
+        canvas = frames[0].copy()
+        canvas.paste(f.crop((x0, y0, x1, y1)), (x0, y0))
+        out.append(canvas)
+    print(f"  stabilised: bed from frame 0, sleepers from a {x1 - x0}x{y1 - y0} "
+          f"box at ({x0},{y0})")
+    return out
+
+
 def build_bed():
-    """The bed and its two sleepers, four poses off one strip. Scaled by the WHOLE frame
-    rather than by frame 0 the way the gym rigs are: the bed is identical in every pose,
-    so there is no rig-only frame to measure, and the tallest thing is the headboard."""
-    frames = slice_strip(SRC + "bed.png", 4, blob=False)
-    factor = BED_H * RS / max(f.height for f in frames)
-    frames, floor_pad = register([rescale(f, factor) for f in frames], side="left")
+    """The bed and its two sleepers, six poses off TWO strips of three.
+
+    Three per sheet because cell width is the budget for how long the bed can be drawn:
+    six cells in a 1536px sheet is 256px each and the bed comes back as tall as it is
+    long. The second sheet takes the first as a reference so it draws the same bed.
+
+    Scaled by WIDTH, not height: it is a king size, and what says so is its length
+    against CHAD's 96. Aligned on the footboard end, then stabilised so the furniture
+    comes from a single frame - see stabilise() for why that is not optional.
+    """
+    frames = (slice_strip(SRC + "bed.png", 3, blob=False)
+              + slice_strip(SRC + "bed_b.png", 3, blob=False))
+    # The model does not always draw the bed to the same proportions - one pose came back
+    # 11% longer than its five siblings at the same height. That is a different bed, not a
+    # different scale, so aligning cannot fix it. Every frame is resized to ONE size
+    # instead, taken from the median aspect: an 11% squeeze on a bed is invisible, and it
+    # keeps all six poses where dropping the odd ones out would leave four.
+    aspect = sorted(f.width / f.height for f in frames)[len(frames) // 2]
+    size = (BED_W * RS, round(BED_W * RS / aspect))
+    frames = [f.resize((size[0] * 3, size[1] * 3), Image.LANCZOS).resize(size, Image.LANCZOS)
+              for f in frames]
+    frames, floor_pad = register(frames, side="left")
+    # then shave off any residual drift, judged on the base band - the part that is
+    # supposed to be identical - so the sleepers cannot drag the alignment around
+    base_band = int(frames[0].height * 0.55)
+    fixed = [frames[0]]
+    for f in frames[1:]:
+        dx, dy = best_shift(frames[0], f, base_band)
+        canvas = Image.new("RGBA", frames[0].size, (0, 0, 0, 0))
+        canvas.paste(f, (dx, dy), f)
+        fixed.append(canvas)
+    frames = fixed
+    frames = stabilise(frames, BED_SLEEPER_BOX)
     os.makedirs(OUT, exist_ok=True)
     for i, f in enumerate(frames):
         finish(f, 56).save(f"{OUT}bed_{i}.png")
-    print(f"{OUT}bed_0..3.png  {frames[0].width}x{frames[0].height}  "
+    print(f"{OUT}bed_0..{len(frames) - 1}.png  {frames[0].width}x{frames[0].height}  "
           f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})  "
           f"y = WALL_BASE + {round(floor_pad / RS)}")
-
 
 def build_curl():
     # the rack sits to CHAD's right in every pose, so it is the right edge that registers

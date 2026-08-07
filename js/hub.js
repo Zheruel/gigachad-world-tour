@@ -44,7 +44,7 @@ const TANK = { x: 150, y: 41, w: 150, h: 114 };     // the lit water, not the fr
 const ALCOVE = [629, 747];                          // niche interior
 // Every glass opening build_lair_wide.py leaves in the plate - it prints this list. The
 // gym's long run, then the bedroom's corner window.
-const OPENINGS = [[922, 1294], [1791, 1920]];
+const OPENINGS = [[922, 1294], [1723, 1920]];
 const WINDOW = OPENINGS[0];                         // the gym's, which the sun shines through
 // The glass, and the gilt frame around it. Two rects because the glint clips to the
 // glass and the select bracket goes round the frame; one rect used for both was 14px
@@ -102,14 +102,14 @@ function rigFrame(r) {
 // The master suite, the fourth screen. Same walnut and brass as the lounge: a black
 // lacquer boudoir would have read as a different apartment.
 // measured off the plate: the firebox opening is 1548-1618, hearth at y 168
-const FIREPLACE = { x: 1583, y: 168 };
-const OVERMANTEL = [1548, 35, 79, 75];   // the mirror glass above it
+const FIREPLACE = { x: 1564, y: 164 };
+const OVERMANTEL = [1528, 48, 66, 55];   // the mirror glass above it
 // One strip like the gym rigs, so the bed cannot shift between frames. 0-2 are the two
 // of them turning over in their sleep; 3 is one propped up on an elbow, which is the
 // pose the room holds while CHAD is standing there.
-export const BED_X = 1845;   // centred in front of the corner glass
-const BED = { x: BED_X, y: WALL_BASE + 2, w: 105, h: 97, rate: 46, loop: [0, 1, 0, 2] };
-const BED_WAKE = 3;
+export const BED_X = 1822;   // centred in front of the corner glass
+const BED = { x: BED_X, y: WALL_BASE + 2, w: 191, h: 141 };
+const BED_WAKE = 5;
 const NEAR_BED = 120;    // he does not have to be on top of it for them to notice
 
 // Sprites in the wall plane. Sizes mirror LAIR in tools/process_props.py; y is the
@@ -132,9 +132,9 @@ const LAIR_ART = [
   // the master suite. The rug lies on the floor, so it sits forward of the wall base and
   // CHAD walks over it; everything else stands against the panelling.
   { art: 'lair_bed_fire', x: FIREPLACE.x, y: FIREPLACE.y, w: 20, h: 26 },
-  { art: 'lair_bed_rug', x: 1583, y: WALL_BASE + 24, w: 98, h: 14 },
-  { art: 'lair_bed_wardrobe', x: 1700, y: WALL_BASE, w: 69, h: 96 },
-  { art: 'lair_bed_nightstand', x: 1775, y: WALL_BASE, w: 33, h: 40 },
+  { art: 'lair_bed_rug', x: 1564, y: WALL_BASE + 24, w: 98, h: 14 },
+  { art: 'lair_bed_wardrobe', x: 1651, y: WALL_BASE, w: 69, h: 96 },
+  { art: 'lair_bed_nightstand', x: 1706, y: WALL_BASE, w: 33, h: 40 },
 ];
 // The lounge is a pair: the same sofa empty and with CHAD sitting in it, registered on
 // the sofa's own foot by tools/build_lair_extras.py. His boots hang below the sofa
@@ -516,7 +516,7 @@ export const HUB_STAGE = {
     { key: 'bg_lair_sky_near', par: NEAR_PAR },
   ],
   music: 'lair', bossMusic: null, boss: null,
-  lamps: [60, 395, 1100, 1583, 1762], lampCol: '255,140,60', lampA: 0.09,
+  lamps: [60, 395, 1100, 1564, 1706], lampCol: '255,140,60', lampA: 0.09,
   rim: null, grade: '150,80,220', gradeA: 0.05,
   moteCount: 34, moteStyle: 'dust',
   // the plate lights the alcove and the tank; these are only their spill on the floor
@@ -531,8 +531,8 @@ export const HUB_STAGE = {
     // the master suite. The fire has its own breathing light in drawFirelight; these are
     // the standing lamps, without which the walk from the wardrobe to the bed is unlit.
     { x: 1472, y: 130, r: 46, col: '255,190,110', a: 0.15 },
-    { x: 1700, y: 140, r: 38, col: '255,200,130', a: 0.12 },
-    { x: 1762, y: 158, r: 40, col: '255,180,120', a: 0.17 },
+    { x: 1651, y: 140, r: 38, col: '255,200,130', a: 0.12 },
+    { x: 1706, y: 158, r: 40, col: '255,180,120', a: 0.17 },
   ],
   props: [], birds: [], ambience: [], emitters: [], waves: [],
   fg: [{ art: 'fg_table', x: 300, y: 278 }, { art: 'fg_lamp', x: 640, y: 284 },
@@ -704,18 +704,28 @@ const IDLE_LINES = [
   'the city can wait',
   'zzz...',
   'you already won, big guy',
+  'the bag will still be there',
+  'one more act, you said',
 ];
 const WAKE_LINES = [
   'there you are',
   'done training already?',
   'come back, chad',
   'we kept it warm',
+  'you are all sweaty again',
+  'five more minutes. with us',
 ];
 
-const bed = { t: 0, awake: 0, line: null, lineT: 0, next: 240, said: -1 };
+// Poses 0-4 are asleep, 5 is propped up on an elbow. They do NOT run as a cycle: a
+// fixed loop through six poses reads as an animation flicking over, not as two people
+// asleep. Instead one pose is held for several seconds and then the state steps to a
+// NEIGHBOURING pose, so the change is always small and the timing is never regular.
+const SLEEP_POSES = 5;
+const bed = { pose: 0, hold: 90, awake: 0, line: null, lineT: 0, next: 240, said: -1 };
 
 function resetBed() {
-  bed.t = 0; bed.awake = 0; bed.line = null; bed.lineT = 0; bed.next = 240; bed.said = -1;
+  bed.pose = 0; bed.hold = 90; bed.awake = 0;
+  bed.line = null; bed.lineT = 0; bed.next = 240; bed.said = -1;
 }
 
 function say(list) {
@@ -723,25 +733,29 @@ function say(list) {
   if (i === bed.said) i = (i + 1) % list.length;   // never the same line twice running
   bed.said = i;
   bed.line = list[i];
-  bed.lineT = 200;
+  bed.lineT = 280;
 }
 
 function updateBed() {
-  bed.t++;
   if (bed.lineT > 0) bed.lineT--;
   const near = Math.abs(G.player.x - BED.x) < NEAR_BED;
-  if (near && bed.awake === 0) say(WAKE_LINES);          // he just walked in
+  if (near && bed.awake === 0) { say(WAKE_LINES); bed.next = 340; }   // he just walked in
   bed.awake = near ? 150 : Math.max(0, bed.awake - 1);
+  if (--bed.hold <= 0) {
+    // a step to an adjacent pose, never a jump across the set
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    bed.pose = clamp(bed.pose + dir, 0, SLEEP_POSES - 1);
+    bed.hold = irand(150, 420);
+  }
+  // she keeps talking while he is standing there - one line and then silence made
+  // walking up feel like a trigger rather than someone actually in the room
   if (--bed.next <= 0) {
-    bed.next = irand(320, 560);
-    if (!near) say(IDLE_LINES);
+    bed.next = near ? irand(220, 340) : irand(360, 620);
+    say(near ? WAKE_LINES : IDLE_LINES);
   }
 }
 
-function bedFrame() {
-  if (bed.awake > 0) return 'lair_bed_' + BED_WAKE;
-  return 'lair_bed_' + BED.loop[((bed.t / BED.rate) | 0) % BED.loop.length];
-}
+const bedFrame = () => 'lair_bed_' + (bed.awake > 0 ? BED_WAKE : bed.pose);
 
 // A speech bubble in the wall plane, so CHAD passes in front of it like everything else.
 function drawBubble(ctx, cx, bottom, text) {
