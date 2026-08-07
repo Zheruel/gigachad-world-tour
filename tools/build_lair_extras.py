@@ -55,10 +55,7 @@ TIGER_SIT_H = 70
 TIGER_LIE_H = 32
 SHARK_H = 26     # nose-to-tail comes out around 4x this
 SHOAL_H = 6
-BED_W = 190      # a king size is what says 'king': its LENGTH against CHAD's 96
-# where the two of them lie, as fractions of the built frame: clear of the footboard,
-# the headboard posts and the whole carved base, all of which come from frame 0
-BED_SLEEPER_BOX = (0.13, 0.20, 0.97, 0.64)
+BED_W = 165      # bed length; set so a head lands near CHAD's own 13-14 logical
 CURL_RIG_H = 38  # the dumbbell rack alone; set so CHAD beside it comes out at his 96
 BENCH_RIG_H = 62 # the bench plus its posts and the racked bar
 
@@ -81,6 +78,73 @@ def finish(img, colors=40):
     q = rgb.quantize(colors=colors, method=Image.MEDIANCUT, dither=Image.NONE).convert("RGBA")
     q.putalpha(alpha)
     return q
+
+
+def base_junction(frame):
+    """The row where the mattress meets the carved wooden base.
+
+    Found as the sharpest drop in row-mean luminance in the lower half: cream bedding
+    above, dark walnut below. It is a real horizontal edge in the art, which is what
+    makes it safe to cut along - the earlier attempt cut at an arbitrary fraction, went
+    straight through the drapery and left a visible line across the mattress.
+    """
+    a = np.asarray(frame).astype(float)
+    opaque = a[..., 3] > 128
+    lum = a[..., 0] * .3 + a[..., 1] * .6 + a[..., 2] * .1
+    rows = np.array([lum[y][opaque[y]].mean() if opaque[y].sum() > 10 else 0.0
+                     for y in range(a.shape[0])])
+    lo, hi = int(a.shape[0] * .45), int(a.shape[0] * .9)
+    return lo + int(np.argmin(np.diff(rows)[lo:hi])) + 1
+
+
+def match_exposure(frame, ref, band):
+    """Pull `frame` onto `ref`'s exposure, fitted on the furniture band alone.
+
+    The poses come back with identical GEOMETRY but not identical shading - the same
+    pixel of the carved base measured (48,8,4) in one pose and (114,48,21) in another,
+    which on screen is the bed's woodwork brightening and dimming every time they move.
+    A per-channel gain and offset fitted on the part that is supposed to be identical
+    fixes that without touching a single edge, which compositing would.
+    """
+    a = np.asarray(frame).astype(float)
+    b = np.asarray(ref).astype(float)
+    mask = (a[..., 3] > 128) & (b[..., 3] > 128)
+    mask[:band] = False
+    if mask.sum() < 500:
+        return frame
+    out = a.copy()
+    for c in range(3):
+        x, y = a[..., c][mask], b[..., c][mask]
+        var = x.var()
+        gain = 1.0 if var < 1e-6 else np.clip(np.cov(x, y)[0, 1] / var, 0.6, 1.7)
+        offset = y.mean() - gain * x.mean()
+        out[..., c] = np.clip(a[..., c] * gain + offset, 0, 255)
+    return Image.fromarray(out.astype(np.uint8), "RGBA")
+
+
+def finish_set(frames, colors=56):
+    """finish() every frame against ONE shared palette.
+
+    Quantising each frame on its own gives each its own palette, and then every pixel of
+    the bed shifts a little from pose to pose - measured at 22-32% of the furniture
+    differing, which on screen is the whole bed shimmering as they move. Same rule as
+    process_char.py's one-palette-per-character: the palette comes from frame 0 and
+    everything else is mapped onto it.
+    """
+    prepped = [outline(hard_alpha(f, 110)) for f in frames]
+    alphas = [f.getchannel("A") for f in prepped]
+    rgbs = []
+    for f, a in zip(prepped, alphas):
+        rgb = Image.new("RGB", f.size, (0, 0, 0))
+        rgb.paste(f.convert("RGB"), (0, 0), a)
+        rgbs.append(rgb)
+    ref = rgbs[0].quantize(colors=colors, method=Image.MEDIANCUT, dither=Image.NONE)
+    out = []
+    for rgb, a in zip(rgbs, alphas):
+        q = rgb.quantize(palette=ref, dither=Image.NONE).convert("RGBA")
+        q.putalpha(a)
+        out.append(q)
+    return out
 
 
 def foot_centre(img, band=0.25):
@@ -247,73 +311,57 @@ def best_shift(base, other, band, limit=6):
     return bestdx, bestdy
 
 
-def stabilise(frames, box):
-    """Take the FURNITURE from one frame and let only the occupants vary.
-
-    Asked for the same bed six times the model draws six subtly different beds - the
-    valance, the carving, the posts and the colours all breathe - and against a still
-    room that reads as the whole bed morphing every time someone rolls over. Prompting
-    does not fix it and neither does alignment, because the drift is in the drawing and
-    not in the placement: measured on the built frames, more than half of the difference
-    between poses is in the bed BASE, which is supposed to be identical.
-
-    So the pixels settle it. Frame 0 is the bed. Every frame contributes only `box`, the
-    band the sleepers lie in, given as (x0, y0, x1, y1) fractions of the frame - a
-    diff-derived box is no use here because the frames differ everywhere.
-    """
-    w, h = frames[0].size
-    x0, y0, x1, y1 = (round(box[0] * w), round(box[1] * h),
-                      round(box[2] * w), round(box[3] * h))
-    out = []
-    for f in frames:
-        canvas = frames[0].copy()
-        canvas.paste(f.crop((x0, y0, x1, y1)), (x0, y0))
-        out.append(canvas)
-    print(f"  stabilised: bed from frame 0, sleepers from a {x1 - x0}x{y1 - y0} "
-          f"box at ({x0},{y0})")
-    return out
-
-
 def build_bed():
-    """The bed and its two sleepers, six poses off TWO strips of three.
+    """The master suite's bed, one generation per pose from assets/ai/lair/bed/.
 
-    Three per sheet because cell width is the budget for how long the bed can be drawn:
-    six cells in a 1536px sheet is 256px each and the bed comes back as tall as it is
-    long. The second sheet takes the first as a reference so it draws the same bed.
+    No compositing and no per-frame alignment, because there is nothing to correct:
+    every pose is generated against p0 with an instruction not to move or redraw the
+    furniture, and tools/check_bed_poses.py measures the result at 0.1% furniture drift.
+    That is the whole trick - the frames are cropped to ONE shared box rather than each
+    to its own bbox, so a pose where an arm reaches further left cannot shift the bed.
 
-    Scaled by WIDTH, not height: it is a king size, and what says so is its length
-    against CHAD's 96. Aligned on the footboard end, then stabilised so the furniture
-    comes from a single frame - see stabilise() for why that is not optional.
+    What this replaced: a six-pose strip (cells too narrow to draw a long bed), then two
+    three-pose strips (the sheets disagreed about the bed), then compositing the
+    furniture out of one frame - which held the bed still and left a hard horizontal seam
+    across the mattress where the box edge cut through drapery.
     """
-    frames = (slice_strip(SRC + "bed.png", 3, blob=False)
-              + slice_strip(SRC + "bed_b.png", 3, blob=False))
-    # The model does not always draw the bed to the same proportions - one pose came back
-    # 11% longer than its five siblings at the same height. That is a different bed, not a
-    # different scale, so aligning cannot fix it. Every frame is resized to ONE size
-    # instead, taken from the median aspect: an 11% squeeze on a bed is invisible, and it
-    # keeps all six poses where dropping the odd ones out would leave four.
-    aspect = sorted(f.width / f.height for f in frames)[len(frames) // 2]
-    size = (BED_W * RS, round(BED_W * RS / aspect))
-    frames = [f.resize((size[0] * 3, size[1] * 3), Image.LANCZOS).resize(size, Image.LANCZOS)
-              for f in frames]
-    frames, floor_pad = register(frames, side="left")
-    # then shave off any residual drift, judged on the base band - the part that is
-    # supposed to be identical - so the sleepers cannot drag the alignment around
-    base_band = int(frames[0].height * 0.55)
+    src = SRC + "bed/"
+    names = sorted(n for n in os.listdir(src) if n.endswith(".png"))
+    keyed_frames = [hard_alpha(key_green(Image.open(src + n), tol=40), 128) for n in names]
+
+    # one box for all of them: the union of every pose's ink
+    boxes = [np.asarray(f.getchannel("A")) > 128 for f in keyed_frames]
+    any_ink = np.zeros_like(boxes[0])
+    for m in boxes:
+        any_ink |= m
+    ys, xs = np.where(any_ink)
+    box = (int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1)
+    frames = [f.crop(box) for f in keyed_frames]
+
+    # The poses agree on geometry but not on shading - the same pixel of the carved base
+    # came back (48,8,4) in one pose and (114,48,21) in another, which on screen is the
+    # woodwork brightening every time they move. A global exposure fit does not fix it
+    # because the variation is local, so the base is taken from p0 for every frame. The
+    # cut is at the mattress/base junction, a real horizontal edge in the art.
+    cut = base_junction(frames[0])
+    print(f"  base from pose 0 below row {cut} of {frames[0].height} "
+          f"({round(100 * cut / frames[0].height)}%, the mattress/base edge)")
     fixed = [frames[0]]
     for f in frames[1:]:
-        dx, dy = best_shift(frames[0], f, base_band)
-        canvas = Image.new("RGBA", frames[0].size, (0, 0, 0, 0))
-        canvas.paste(f, (dx, dy), f)
-        fixed.append(canvas)
+        c = f.copy()
+        c.paste(frames[0].crop((0, cut, f.width, f.height)), (0, cut))
+        fixed.append(c)
     frames = fixed
-    frames = stabilise(frames, BED_SLEEPER_BOX)
+
+    factor = BED_W * RS / frames[0].width
+    frames = [rescale(f, factor) for f in frames]
     os.makedirs(OUT, exist_ok=True)
-    for i, f in enumerate(frames):
-        finish(f, 56).save(f"{OUT}bed_{i}.png")
+    for i, f in enumerate(finish_set(frames, 56)):
+        f.save(f"{OUT}bed_{i}.png")
+    # the bed's own floor line is the bottom of the shared box
     print(f"{OUT}bed_0..{len(frames) - 1}.png  {frames[0].width}x{frames[0].height}  "
           f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})  "
-          f"y = WALL_BASE + {round(floor_pad / RS)}")
+          f"{len(frames)} poses, last is the greeting")
 
 def build_curl():
     # the rack sits to CHAD's right in every pose, so it is the right edge that registers

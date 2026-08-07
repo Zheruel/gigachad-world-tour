@@ -108,8 +108,8 @@ const OVERMANTEL = [1528, 48, 66, 55];   // the mirror glass above it
 // of them turning over in their sleep; 3 is one propped up on an elbow, which is the
 // pose the room holds while CHAD is standing there.
 export const BED_X = 1822;   // centred in front of the corner glass
-const BED = { x: BED_X, y: WALL_BASE + 2, w: 191, h: 94 };
-const BED_WAKE = 5;
+const BED = { x: BED_X, y: WALL_BASE + 2, w: 165, h: 88 };
+const BED_WAKE = 4;   // the last pose: sitting up, beckoning him over
 const NEAR_BED = 120;    // he does not have to be on top of it for them to notice
 
 // Sprites in the wall plane. Sizes mirror LAIR in tools/process_props.py; y is the
@@ -716,15 +716,15 @@ const WAKE_LINES = [
   'five more minutes. with us',
 ];
 
-// Poses 0-4 are asleep, 5 is propped up on an elbow. They do NOT run as a cycle: a
-// fixed loop through six poses reads as an animation flicking over, not as two people
-// asleep. Instead one pose is held for several seconds and then the state steps to a
+// Poses 0-3 are the two of them lounging, 4 is sitting up and beckoning. They do NOT
+// run as a cycle: a fixed loop reads as an animation flicking over rather than two
+// people waiting. One pose is held for several seconds and then the state steps to a
 // NEIGHBOURING pose, so the change is always small and the timing is never regular.
-const SLEEP_POSES = 5;
-const bed = { pose: 0, hold: 90, awake: 0, line: null, lineT: 0, next: 240, said: -1 };
+const SLEEP_POSES = 4;
+const bed = { pose: 0, hold: 260, awake: 0, line: null, lineT: 0, next: 240, said: -1 };
 
 function resetBed() {
-  bed.pose = 0; bed.hold = 90; bed.awake = 0;
+  bed.pose = 0; bed.hold = 260; bed.awake = 0;
   bed.line = null; bed.lineT = 0; bed.next = 240; bed.said = -1;
 }
 
@@ -745,7 +745,7 @@ function updateBed() {
     // a step to an adjacent pose, never a jump across the set
     const dir = Math.random() < 0.5 ? -1 : 1;
     bed.pose = clamp(bed.pose + dir, 0, SLEEP_POSES - 1);
-    bed.hold = irand(150, 420);
+    bed.hold = irand(260, 620);
   }
   // she keeps talking while he is standing there - one line and then silence made
   // walking up feel like a trigger rather than someone actually in the room

@@ -91,14 +91,28 @@ floor's reflection of those bars too, or the granite goes on reflecting the old 
 
 **Anything animated in the room is one strip**, never separate generations: the gym rigs,
 the lounge sofa and the bedroom's bed all hold their furniture and their occupants in the
-same sprite. That is necessary but **not sufficient** — asked for the same bed six times
-the model returns six subtly different beds, and more than half the pixel difference
-between poses lands in the bed BASE, which should be identical. `stabilise()` in
-`build_lair_extras.py` settles it: the furniture comes from one frame and every other
-frame contributes only the box its occupants lie in. Cell width is also the budget for
-how long a thing can be drawn — six poses in a 1536px sheet is 256px each and the bed
-came back as tall as it was long, so it is two sheets of three with the first passed as
-a reference to the second. The bed's frame 3 is the "awake"
+same sprite. **The bed is the exception, and the reason is worth reading before you
+build another animated set.** A strip could not do it: six poses in a 1536px sheet is
+256px cells, too narrow to draw a long bed; two sheets of three drew two different beds;
+and compositing the furniture out of one frame left a hard seam across the mattress.
+What works is ONE GENERATION PER POSE, each passed pose 0 as a reference with an explicit
+"do not move, resize or redraw the bed" — that lands at **0.04% furniture drift**, against
+>50% for the strips. Then three rules in `build_lair_extras.py`:
+
+- crop every pose to ONE shared box, never each to its own bbox, or a reaching arm shifts
+  the furniture;
+- the poses agree on geometry but *not* on shading (the same pixel of the base measured
+  (48,8,4) and (114,48,21)), so the carved base is taken from pose 0 for every frame. The
+  cut is at the mattress/base junction found by luminance — a real edge. Cutting at an
+  arbitrary fraction is what left the seam;
+- `finish_set()` quantizes the whole set against ONE palette, the same rule
+  `process_char.py` uses per character.
+
+`tools/check_bed_poses.py` measures whether a pose held before you build, and
+`tools/check_bed_anim.py` measures whether the furniture moves and how far apart
+consecutive poses are — you cannot watch a sprite animate from here, so measure it.
+Poses the room steps between must be a PROGRESSION: unrelated poses changed 61-78% of the
+occupant area, which reads as a cut however long you hold it. The bed's frame 3 is the "awake"
 pose, held while CHAD is within `NEAR_BED` — the sleepers are proximity-driven, not a
 `FIXTURES` entry, so there is no walk-up prompt.
 
