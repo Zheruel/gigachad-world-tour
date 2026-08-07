@@ -55,7 +55,8 @@ TIGER_SIT_H = 70
 TIGER_LIE_H = 32
 SHARK_H = 26     # nose-to-tail comes out around 4x this
 SHOAL_H = 6
-BED_W = 165      # bed length; set so a head lands near CHAD's own 13-14 logical
+BED_W = 140      # bed length. The art is 2:1, so this puts the headboard near 70 -
+                 # a solid shape beside CHAD's 96 rather than a long thin slab
 CURL_RIG_H = 38  # the dumbbell rack alone; set so CHAD beside it comes out at his 96
 BENCH_RIG_H = 62 # the bench plus its posts and the racked bar
 

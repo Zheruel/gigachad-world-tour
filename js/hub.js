@@ -106,8 +106,8 @@ const FIREPLACE = { x: 1564, y: 164 };
 const OVERMANTEL = [1528, 48, 66, 55];   // the mirror glass above it
 // One generation per pose - see the bed section in CLAUDE.md for why a strip could not
 // do this. She does not react to CHAD; she is just someone living in the room.
-export const BED_X = 1822;   // centred in front of the corner glass
-const BED = { x: BED_X, y: WALL_BASE + 2, w: 165, h: 102 };
+export const BED_X = 1840;   // tucked into the corner, headboard end against it
+const BED = { x: BED_X, y: WALL_BASE + 2, w: 140, h: 72 };
 
 // Sprites in the wall plane. Sizes mirror LAIR in tools/process_props.py; y is the
 // bottom edge and art is centred on x.
@@ -709,10 +709,11 @@ const IDLE_LINES = [
   'mm...',
 ];
 
-// Six poses that chain: sitting against the headboard, down onto an elbow, onto her
-// side, onto her back, onto her front. The room steps between NEIGHBOURS only, so the
-// change is always small; a fixed loop over all six reads as an animation flicking over.
-const BED_POSES = 6;
+// Eight poses in a tight chain: sitting against the headboard, a hand slips, leaning
+// back on one hand then both, down onto an elbow, hand to her hair, onto her side, onto
+// her front. The room steps between NEIGHBOURS only, so the size of one step is the
+// whole quality of it; a fixed loop over all eight reads as an animation flicking over.
+const BED_POSES = 8;
 const LINE_HOLD = 260;             // ~4.3s on screen
 const LINE_GAP = [1400, 3000];     // ~23-50s between lines
 const POSE_HOLD = [200, 520];      // ~3.3-8.7s per pose
@@ -799,7 +800,7 @@ function drawBed(ctx, camX) {
   const inA = Math.min(1, (LINE_HOLD - bed.lineT) / 6);
   const a = Math.min(inA, Math.min(1, bed.lineT / 30));
   const rise = Math.round((1 - Math.min(1, (LINE_HOLD - bed.lineT) / 10)) * 3);
-  drawBubble(ctx, x + 46, BED.y - BED.h + 4 + rise, bed.line, a);   // over her, not the bed's centre
+  drawBubble(ctx, x + 40, BED.y - BED.h + 4 + rise, bed.line, a);   // over her, not the bed's centre
 }
 
 // ---------------------------------------------------------------- the pets

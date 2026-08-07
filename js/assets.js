@@ -33,6 +33,8 @@ const FILES = {
   lair_bed_3: 'assets/lair/bed_3.png',
   lair_bed_4: 'assets/lair/bed_4.png',
   lair_bed_5: 'assets/lair/bed_5.png',
+  lair_bed_6: 'assets/lair/bed_6.png',
+  lair_bed_7: 'assets/lair/bed_7.png',
   lair_bed_fire: 'assets/lair/bed_fire.png',
   lair_bed_rug: 'assets/lair/bed_rug.png',
   lair_bed_wardrobe: 'assets/lair/bed_wardrobe.png',

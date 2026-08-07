@@ -948,7 +948,7 @@ if (autoMode) {
           if (hubBed().pose !== last) { changes++; last = hubBed().pose; }
         }
         t('hub-bed-shifts-about', poses.size >= 3 && changes >= 3);
-        t('hub-bed-poses-are-adjacent-steps', [...poses].every((p) => p >= 0 && p < 6));
+        t('hub-bed-poses-are-adjacent-steps', [...poses].every((p) => p >= 0 && p < 8));
         // a line now and then, not a running commentary: well under half the time
         t('hub-bed-speaks-with-pauses', lineFrames > 0 && lineFrames < 400 * 0.45);
         const before = hubBed().pose;
