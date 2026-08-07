@@ -39,12 +39,17 @@ $G $O/bed_nightstand.png landscape "A low smoked glass and brass nightstand seen
 
 # the fire moved to its own four-frame set - see the fire section in CLAUDE.md
 
-# The first two tries at this asked for the pelt "almost edge on" and got a flat squished
-# smear with a tiny head. A trophy rug's head is MOUNTED - taxidermied whole and standing
-# proud of the floor - and that is both what stops it reading as squished and where the
-# fangs live. Three colourways were generated and compared at game size; the dark mane
-# won because it frames the head so the ivory fangs still read at 126 logical wide.
-$G $O/bed_rug.png landscape "A huge sabretooth cat pelt laid out flat on the floor as a trophy rug, seen from the front and slightly above. The flattened body, the four splayed legs with claws and the tail all lie FLAT on the ground and recede away to the RIGHT. At the LEFT hand end the taxidermied HEAD is mounted whole and three dimensional, raised well up off the floor and turned to face the viewer, snarling with its jaws wide open. The head is LARGE - about a third of the whole length of the rug - and is the focal point. Two colossal curved ivory sabre fangs hang from the upper jaw, far longer and thicker than any other feature, reaching down past the lower jaw. They are the boldest shape in the whole sprite and must read clearly even when the rug is small. This animal was a hard fight and it shows: a long scar across the muzzle, one ear torn and notched, the tip of one fang chipped, and old claw scars raked through the fur of the flank. Deep russet and burnt orange fur with heavy black striping across the shoulders, a shaggy black mane round the head, molten gold glass eyes, and the jaws lined with smaller teeth behind the two great fangs. $S"
+# Three tries to get this right, and each failure taught something specific.
+#   1. "almost edge on" flattened the whole animal into a squished smear with a tiny head.
+#      A trophy rug's head is MOUNTED - taxidermied whole and standing proud of the floor.
+#   2. With the head mounted but facing DEAD ON to the camera it read as a plush toy: at
+#      127 logical px a round symmetrical face with two matching wide eyes and an O of a
+#      mouth is a mascot, not a predator. Turning it three quarters and putting a heavy
+#      brow, narrowed asymmetric eyes and a one-sided snarl on it is what fixed that.
+#   3. Colour was chosen by comparing three ways AT GAME SIZE on the real floor, not at
+#      full resolution: the shaggy black mane wins because it frames the head so the
+#      ivory fangs still read once everything shrinks.
+$G $O/bed_rug.png landscape "A huge sabretooth cat pelt laid out flat on the floor as a trophy rug, seen from the front and slightly above. The flattened body, the four splayed legs with claws and the tail all lie FLAT on the ground and recede away to the RIGHT. At the LEFT hand end the taxidermied HEAD is mounted whole and three dimensional, raised up off the floor. The head is turned to a THREE QUARTER angle facing down and to the left, NOT straight at the camera, so one cheek and the side of the muzzle are visible and the far eye is partly hidden. The skull is LOW, BROAD and ANGULAR rather than round, with a heavy bony brow ridge overhanging the eyes so they sit in deep shadow and catch only a hard glint of molten gold. The snarl is ASYMMETRIC - the lip curled higher on one side, baring more teeth there - not a symmetrical open circle. Two colossal curved ivory sabre fangs hang from the upper jaw, far longer and thicker than any other feature, reaching down past the lower jaw; they are the boldest shape in the whole sprite and must read clearly even when the rug is small. This animal was a hard fight and it shows: a long scar across the muzzle, one ear torn and notched, the tip of one fang chipped, and old claw scars raked through the fur of the flank. Deep russet and burnt orange fur with heavy black striping across the shoulders, a shaggy black mane round the head. $S"
 
 echo "=== bedroom done ==="
 echo "  ./.venv/bin/python tools/build_lair_extras.py bed"

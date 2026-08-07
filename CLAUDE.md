@@ -125,6 +125,14 @@ What works is ONE GENERATION PER POSE, each passed pose 0 as a reference with an
 - `finish_set()` quantizes the whole set against ONE palette, the same rule
   `process_char.py` uses per character.
 
+**A face drawn DEAD ON reads as a mascot at sprite size.** The sabretooth pelt's head
+took three attempts: edge-on flattened it to a smear, then a mounted head facing straight
+at the camera came back as a plush toy - at ~127 logical px a round symmetrical face with
+two matching wide eyes and an O of a mouth is a cartoon however well it is drawn. What
+fixes it is structure and asymmetry: a three-quarter turn, a heavy brow ridge with the
+eyes in its shadow catching one glint, and a snarl curled higher on one side. Judge it by
+cropping the head out at final size, not by looking at the 1536px generation.
+
 `tools/check_bed_poses.py` measures whether a pose held before you build, and
 `tools/check_bed_anim.py` measures whether the furniture moves and how far apart
 consecutive poses are — you cannot watch a sprite animate from here, so measure it.
