@@ -57,6 +57,11 @@ LAIR = {
     "relic_rana": (26, 26),
     "bar_stools": (44, 40),
     "gloves": (20, 30),
+    # the master suite. The bed itself is a strip and comes from build_lair_extras.py.
+    "bed_wardrobe": (60, 96),
+    "bed_nightstand": (44, 40),
+    "bed_fire": (30, 26),
+    "bed_rug": (96, 14),
 }
 
 

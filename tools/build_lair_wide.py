@@ -34,7 +34,8 @@ from PIL import Image, ImageEnhance, ImageFilter, ImageStat
 RS = 2
 PANELS = ("assets/ai/lair_room5/panel_a.png",
           "assets/ai/lair_room5/panel_b.png",
-          "assets/ai/lair_room5/panel_c.png")
+          "assets/ai/lair_room5/panel_c.png",
+          "assets/ai/lair_room5/panel_d.png")
 SKY_DIR = "assets/ai/lair_sky/"
 
 VIEW_W = 480 * RS            # each panel covers 480 logical px
@@ -133,7 +134,7 @@ def fill_glass_reflection(img):
 
 
 def rebuild_window(wall, floor):
-    """Repaint the window as five tall bays instead of the generated 9x4 cage.
+    """Repaint every window in the plate as tall bays instead of the generated cage.
 
     The generator draws the mullions at whatever pitch it feels like, panel B's grid does
     not line up with panel C's where they meet, and the bars came out 5 logical px thick -
@@ -145,47 +146,72 @@ def rebuild_window(wall, floor):
     granite goes on reflecting a window that is no longer there.
     """
     a = np.asarray(wall).copy()
-    hole = a[..., 3] == 0
-    cols = np.flatnonzero(hole.any(0))
-    x0, x1 = int(cols[0]), int(cols[-1]) + 1
-    # Median, not min: one column near the panel B join has a fragment reaching higher
-    # than the real head, and taking the min would drop the head rail 13px.
-    tops = [int(np.flatnonzero(hole[:, x])[0]) for x in range(x0, x1) if hole[:, x].any()]
-    y0 = int(np.median(tops))
-
-    STEEL, LIT, STEEL_FILL = (8, 8, 11, 255), (26, 26, 34, 255), (8, 8, 11, 255)
-    JAMB, HEAD, POST, BAYS = 4 * RS, 5 * RS, 3 * RS, 5
-
-    a[y0:, x0:x1] = 0
-    # panel B leaves a couple of stray transparent fragments above the head; they were
-    # part of its own window and are holes in the wall once the head rail moves.
-    above = a[:y0, x0:x1]
-    above[above[..., 3] == 0] = STEEL_FILL
-    bars = [(x0, x0 + JAMB), (x1 - JAMB, x1)]
-    inner0, inner1 = x0 + JAMB, x1 - JAMB
-    for i in range(1, BAYS):
-        c = inner0 + round((inner1 - inner0) * i / BAYS)
-        bars.append((c - POST // 2, c - POST // 2 + POST))
-    for bx0, bx1 in bars:
-        a[y0:, bx0:bx1] = STEEL
-        a[y0:, bx0:bx0 + 1] = LIT      # one lit edge, so a post is not a flat black slab
-    a[y0:y0 + HEAD, x0:x1] = STEEL
-    a[y0:y0 + 1, x0:x1] = LIT
-    print(f"  window: {BAYS} bays across logical {x0 // RS}-{x1 // RS}, head at y {y0 // RS}")
-
-    # ---- and the same posts reflected in the granite ----
     f = np.asarray(floor).copy()
-    depth = 96          # how far down the floor the old streaks reach before they fade out
-    band = f[:depth, x0:x1].astype(int)
-    # erase: every column becomes the median of the 12 either side of it, which is the
-    # granite without the streak, then paint the new posts back in.
-    med = np.median(np.stack([np.roll(band, s, axis=1) for s in range(-12, 13)]), axis=0)
-    f[:depth, x0:x1] = med.astype(np.uint8)
-    for bx0, bx1 in bars:
-        for y in range(depth):
-            t = 1 - y / depth
-            row = f[y, bx0:bx1].astype(int)
-            f[y, bx0:bx1] = (row * (1 - 0.55 * t * t)).astype(np.uint8)
+    hole = a[..., 3] == 0
+    STEEL, LIT = (8, 8, 11, 255), (26, 26, 34, 255)
+    JAMB, HEAD, POST = 4 * RS, 5 * RS, 3 * RS
+    BAY_W = 74 * RS       # target bay; the count is rounded from the opening's own width
+    openings, bars = [], []
+
+    # One opening per window. The bedroom has its own corner glass, and taking the
+    # bounding box of every hole at once - which is what this did when there was only the
+    # one - would paint a single window straight across the wall between them.
+    #
+    # The generated mullions are opaque, so the glass of ONE window already arrives as a
+    # dozen separate runs. Anything parted by less than a wall is the same window: merge
+    # across gaps under MERGE, split on anything wider.
+    MERGE = 60 * RS
+    cols = np.flatnonzero(hole.any(0))
+    if len(cols):
+        for run in np.split(cols, np.flatnonzero(np.diff(cols) > 1) + 1):
+            lo, hi = int(run[0]), int(run[-1]) + 1
+            if openings and lo - openings[-1][1] < MERGE:
+                openings[-1] = (openings[-1][0], hi)
+            else:
+                openings.append((lo, hi))
+        openings = [o for o in openings if o[1] - o[0] > 40 * RS]
+
+    for x0, x1 in openings:
+        # Median, not min: a stray fragment at a panel join reaches higher than the real
+        # head, and taking the min would drop the head rail 13px.
+        tops = [int(np.flatnonzero(hole[:, x])[0]) for x in range(x0, x1) if hole[:, x].any()]
+        y0 = int(np.median(tops))
+        bays = max(1, round((x1 - x0) / BAY_W))
+
+        a[y0:, x0:x1] = 0
+        # a panel leaves stray transparent fragments above the head; they were part of its
+        # own window and are holes in the wall once the head rail moves
+        above = a[:y0, x0:x1]
+        above[above[..., 3] == 0] = STEEL
+        mine = [(x0, x0 + JAMB), (x1 - JAMB, x1)]
+        inner0, inner1 = x0 + JAMB, x1 - JAMB
+        for i in range(1, bays):
+            c = inner0 + round((inner1 - inner0) * i / bays)
+            mine.append((c - POST // 2, c - POST // 2 + POST))
+        for bx0, bx1 in mine:
+            a[y0:, bx0:bx1] = STEEL
+            a[y0:, bx0:bx0 + 1] = LIT   # one lit edge, so a post is not a flat black slab
+        a[y0:y0 + HEAD, x0:x1] = STEEL
+        a[y0:y0 + 1, x0:x1] = LIT
+        bars += mine
+        print(f"  window: {bays} bays across logical {x0 // RS}-{x1 // RS}, head at y {y0 // RS}")
+
+        # ---- and the same posts reflected in the granite ----
+        depth = 96      # how far down the floor the old streaks reach before they fade out
+        band = f[:depth, x0:x1].astype(int)
+        # erase: every column becomes the median of the 12 either side of it, which is the
+        # granite without the streak, then paint the new posts back in.
+        med = np.median(np.stack([np.roll(band, s, axis=1) for s in range(-12, 13)]), axis=0)
+        f[:depth, x0:x1] = med.astype(np.uint8)
+        for bx0, bx1 in mine:
+            for y in range(depth):
+                t = 1 - y / depth
+                row = f[y, bx0:bx1].astype(int)
+                f[y, bx0:bx1] = (row * (1 - 0.55 * t * t)).astype(np.uint8)
+
+    # the openings are the one thing js/hub.js cannot measure for itself at runtime
+    print("  OPENINGS for js/hub.js: "
+          + str([[x0 // RS, x1 // RS] for x0, x1 in openings]))
     return Image.fromarray(a, "RGBA"), Image.fromarray(f, floor.mode)
 
 
@@ -204,6 +230,8 @@ def quantized(img, colors):
 
 
 def build_room(seams, key=True):
+    if len(seams) != len(PANELS):
+        seams = (list(seams) + [seams[-1]] * len(PANELS))[:len(PANELS)]
     walls, floors = [], []
     for name, seam in zip(PANELS, seams):
         src = Image.open(name).convert("RGB")
@@ -243,28 +271,44 @@ def sky_band(src, centre=0.5):
     return resample(img.crop((0, top, img.width, top + band_h)), (VIEW_W, WALL_H))
 
 
-def build_sky(far_centre=0.5, near_centre=0.46):
-    """FAR is two panels stitched; NEAR is one panel with the sky keyed out of it, so
-    the far city shows through and the two move at different speeds."""
-    far = [f"{SKY_DIR}far_a.png", f"{SKY_DIR}far_b.png"]
-    if all(os.path.exists(p) for p in far):
-        parts = [finish(sky_band(p, far_centre)) for p in far]
-        parts[1] = feather_from_previous(parts[1], parts[0], 120)
-        # stitch() expects SOURCE_VIEW_W-wide parts; pad each by the overlap
-        parts = [p.resize((SOURCE_VIEW_W, WALL_H), Image.Resampling.LANCZOS) for p in parts]
-        quantized(stitch(parts, WALL_H), 128).save("assets/bg_lair_sky_far.png")
-        print(f"sky far:  {VIEW_W * 2}x{WALL_H} ({VIEW_W * 2 // RS} logical, tiles)")
+def stitch_sky(srcs, centre, feather):
+    """Band-crop each panel and stitch them into one tiling layer."""
+    parts = [finish(sky_band(p, centre)) for p in srcs]
+    for i in range(1, len(parts)):
+        parts[i] = feather_from_previous(parts[i], parts[i - 1], feather)
+    # stitch() expects SOURCE_VIEW_W-wide parts; pad each by the overlap
+    parts = [p.resize((SOURCE_VIEW_W, WALL_H), Image.Resampling.LANCZOS) for p in parts]
+    return stitch(parts, WALL_H)
 
-    near_src = f"{SKY_DIR}near.png"
-    if os.path.exists(near_src):
-        near = key_glass(finish(sky_band(near_src, near_centre)))
-        quantized(near, 96).save("assets/bg_lair_sky_near.png")
-        print(f"sky near: {VIEW_W}x{WALL_H} ({VIEW_W // RS} logical, tiles)")
+
+def build_sky(far_centre=0.5, near_centre=0.46):
+    """Both layers are stitched from panels, and NEAR additionally gets its sky keyed out
+    so the far city shows through it.
+
+    Each layer has to be wider than the camera drags it or it repeats inside a single pan:
+    at HUB_WIDTH 1920 the camera travels 1440, so FAR (0.20) needs > 288 logical and NEAR
+    (0.42) needs > 605. Two 480-wide panels each gives 960, which clears both.
+    """
+    for name, srcs, centre, colors, feather, key in (
+            ("far", ["far_a.png", "far_b.png"], far_centre, 128, 120, False),
+            ("near", ["near.png", "near_b.png"], near_centre, 96, 90, True)):
+        paths = [SKY_DIR + s for s in srcs]
+        paths = [p for p in paths if os.path.exists(p)]
+        if not paths:
+            continue
+        layer = stitch_sky(paths, centre, feather)
+        if key:
+            layer = key_glass(layer)
+        quantized(layer, colors).save(f"assets/bg_lair_sky_{name}.png")
+        drag = round(1440 * (0.20 if name == "far" else 0.42))
+        print(f"sky {name}: {layer.width}x{WALL_H} ({layer.width // RS} logical, tiles; "
+              f"camera drags it {drag} - {'ok' if layer.width // RS > drag else 'REPEATS'})")
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--seams", nargs=3, type=float, default=[0.74, 0.74, 0.74],
+    # one per panel; zip() would silently drop a panel if this list were ever short
+    p.add_argument("--seams", nargs="*", type=float, default=[0.74] * len(PANELS),
                    help="floor seam per panel, as a fraction of that panel's height")
     p.add_argument("--far-centre", type=float, default=0.5,
                    help="where in the far city generation the visible band sits")

@@ -20,7 +20,7 @@ There is no test runner, linter or package manager. Verification is in-browser, 
 - `index.html?auto=soak` — 50k-frame stuck-entity hunt over knockdowns and enemy holds. Clean run prints `SOAK-CLEAN`.
 - `index.html?auto=bot&stage=0` — naive bot plays a whole stage; reports pacing/damage/KOs.
 - `?auto=play|walk|jab|combo|parry|combat|super|super-hammer|super-express|boss|bossfight|miniboss|clear|over|ending` — steps the game into a state for screenshots.
-- `?auto=hub[-<fixture>]` — THE LAIR. Bare, or a fixture id from `FIXTURES` in `js/hub.js` (`hub-bar`, `hub-tank`, `hub-trophies`, `hub-lounge`, `hub-map`, `hub-hifi`, `hub-curl`, `hub-bench`, `hub-mirror`) to park CHAD there and trigger it, plus `hub-bag` (mid-punch) and `hub-window` (the bag against the sunset). `&unlocked=N` sets how far the tour has got, which drives the relics on the shelves, the locked acts and how dark the window is.
+- `?auto=hub[-<fixture>]` — THE LAIR. Bare, or a fixture id from `FIXTURES` in `js/hub.js` (`hub-bar`, `hub-tank`, `hub-trophies`, `hub-lounge`, `hub-map`, `hub-hifi`, `hub-curl`, `hub-bench`, `hub-mirror`) to park CHAD there and trigger it, plus `hub-bag` (mid-punch), `hub-window` (the bag against the sunset) and `hub-bed` (close enough to the master suite that they wake up and speak). `&unlocked=N` sets how far the tour has got, which drives the relics on the shelves, the locked acts and how dark the window is.
 - `lab.html` — asset lab (CAST / ANIM / CROWD / SCALE / STAGE / CONTRAST / EFFECTS). ANIM exposes the selected sequence as a frame-by-frame contact sheet; comma/period step authored drawings. `sfxlab.html` — SFX slot audition.
 
 To run a single check, read the `autoMode === 'verify'` block in `js/main.js` and drive
@@ -65,7 +65,7 @@ Module map (see README "Files" for one-liners): `input.js` `sprites.js` `stages.
 `screens.js` `audio.js` `assets.js` `aiframes.js` `crowd.js` `fg.js` `fx.js`
 `hub.js` `hubpanels.js`.
 
-**THE LAIR (`js/hub.js`) is a stage with no waves**, 1440 logical px wide. `HUB_STAGE`
+**THE LAIR (`js/hub.js`) is a stage with no waves**, 1920 logical px wide (four screens: THE LOUNGE, TROPHIES AND MEDIA, THE VIEW, THE MASTER SUITE). `HUB_STAGE`
 goes through `initStageObj()` like any other, so the camera, arena walls and y-sort come
 for free. Its furniture is *not* in `G.props`: fixtures are drawn in the wall plane
 inside `drawHubWall` (before `drawWorld`, so CHAD always occludes them) and are
@@ -80,11 +80,20 @@ at different parallax (`bg_lair_sky_far` at 0.20, `bg_lair_sky_near` at 0.42) wi
 `drawStage` grew an optional `skyLayers` list for this — each entry is a tiling plate at
 its own parallax or a draw hook — and any stage can use it.
 
-The **mullions over that hole are painted, not generated**: `rebuild_window()` in the same
-tool finds the opening from the alpha and repaints it as five tall bays. The generator drew
+The **mullions over those holes are painted, not generated**: `rebuild_window()` in the
+same tool finds every opening from the alpha and repaints each as tall bays. It groups the
+alpha into openings by merging runs closer than 60 logical px — the *generated* mullions
+are opaque, so one window already arrives as a dozen separate runs, and only a real wall
+should split one window from the next. The generator drew
 a 9x4 cage of 5px bars and panel B's grid did not line up with panel C's; a grid of black
 rectangles is geometry, and geometry is cheaper to paint than to ask for. It repaints the
 floor's reflection of those bars too, or the granite goes on reflecting the old window.
+
+**Anything animated in the room is one strip**, never separate generations: the gym rigs,
+the lounge sofa and the bedroom's bed all hold their furniture and their occupants in the
+same sprite, so the furniture cannot drift between frames. The bed's frame 3 is the "awake"
+pose, held while CHAD is within `NEAR_BED` — the sleepers are proximity-driven, not a
+`FIXTURES` entry, so there is no walk-up prompt.
 
 **A station CHAD uses is one sprite set holding the furniture AND him** — `lair_lounge_*`,
 `lair_gym_curl_*`, `lair_gym_bench_*`. `G.hubSeat` counts frames occupying one and
@@ -201,5 +210,6 @@ against what the art was baked to, stability via `process_npcs.py --check`).
 - No build step, no bundler, no framework. Plain ES modules loaded by `index.html`.
 - New game constants belong in `js/engine.js`; new shared runtime state belongs on `G`.
 - Music: `"silent": true` in `audio/manifest.json` only suppresses the *chiptune fallback*; a slot holding a real mp3 plays regardless. THE LAIR has its own `lair` slot (`neon_shadows.mp3`) so the hub scores itself without the title screen losing its chiptune. Drop an mp3 in a slot — no code change.
+- `tools/gen_codex.sh` caps each call at `GEN_TIMEOUT` (420s). Codex sessions hang indefinitely, especially with more than one in flight, and a stale one blocks every generation after it.
 - `tools/serve.py` must serve byte ranges: an `<audio>` element sits at `readyState 0` forever, with no error raised, on a server that answers `Range` with the whole file.
 - The SFX slot mapping in `audio/sfx/manifest.json` was matched by acoustic analysis and **has not been verified by ear** (`sfxlab.html`).

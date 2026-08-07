@@ -3,7 +3,7 @@ import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, clamp, addSco
 import { initInput, input, endFrameInput, pollGamepad, debugPress, debugRelease } from './input.js';
 import { SPR, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { initStage, initStageObj, drawStage, updateMotes, STAGES, stageDef } from './stages.js';
-import { HUB_STAGE, CHAPTERS, FIXTURES, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
+import { HUB_STAGE, CHAPTERS, FIXTURES, BED_X, hubBed, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
 import { createProp } from './props.js';
 import { loadAmbience, updateAmbience, reactStage } from './ambience.js';
 import { loadFX, fx } from './fx.js';
@@ -935,6 +935,16 @@ if (autoMode) {
       // both pets, drawing themselves, and facing the way they are walking
       t('hub-pets-present', G.actors.length === 2
         && G.actors.every((a) => typeof a.draw === 'function'));
+      // the master suite: they sleep until he walks in, then one sits up and speaks
+      G.player.x = 900; step(200);
+      t('hub-bed-sleeps', !hubBed().awake);
+      G.player.x = BED_X - 80; step(4);
+      t('hub-bed-wakes', hubBed().awake > 0 && !!hubBed().line);
+      const saidOnArrival = hubBed().line;
+      G.player.x = 900; step(200);
+      t('hub-bed-settles', hubBed().awake === 0);
+      t('hub-bed-line-was-a-greeting', typeof saidOnArrival === 'string' && saidOnArrival.length > 0);
+      t('hub-room-is-four-screens', G.stage.width === 1920 && G.camMax === 1920 - W);
       // the map panel: cursor moves, a locked act refuses, an unlocked one starts
       G.unlockedStage = 0;
       at('map'); tap('up');
@@ -1297,7 +1307,8 @@ if (autoMode) {
     step(30);
   } else if (autoMode.startsWith('hub')) {
     // ?auto=hub[-<fixture id>] parks CHAD at that fixture with its panel open, plus
-    // hub-bag (mid-punch) and hub-window (the bag framed against the sunset).
+    // hub-bag (mid-punch), hub-window (the bag framed against the sunset) and hub-bed
+    // (close enough to the master suite that they wake up and say something).
     enterHub(true);
     G.unlockedStage = parseInt(params.get('unlocked') || '2', 10) || 0;
     G.fade = 0;
@@ -1309,6 +1320,9 @@ if (autoMode) {
       debugPress('attack'); step(10); debugRelease('attack'); step(6);
     } else if (autoMode === 'hub-window') {
       G.player.x = 1000; G.player.y = 232; step(30);
+    } else if (autoMode === 'hub-bed') {
+      // the bed is proximity, not a fixture: no prompt, they just notice him
+      G.player.x = BED_X - 90; G.player.y = 236; step(40);
     } else if (f) {
       G.player.x = f.x; step(3);
       debugPress('up'); step(2); debugRelease('up'); step(20);

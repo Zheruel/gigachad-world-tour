@@ -28,10 +28,26 @@ Do not ask any questions, do not write any other files, do not edit code. Just g
 Image description:
 $desc"
 
+# A codex session hangs indefinitely often enough - especially with more than one in
+# flight - that an unbounded call means a generation script never returns and the stale
+# process blocks the next one. Cap it and retry instead.
+TIMEOUT="${GEN_TIMEOUT:-420}"
+run_codex() {
+  "$CODEX" exec --sandbox danger-full-access --skip-git-repo-check ${refs[@]+"${refs[@]}"} -- "$prompt" >/dev/null 2>&1 &
+  local pid=$!
+  local waited=0
+  while kill -0 "$pid" 2>/dev/null; do
+    [ "$waited" -ge "$TIMEOUT" ] && { kill -9 "$pid" 2>/dev/null; wait "$pid" 2>/dev/null; return 124; }
+    sleep 2
+    waited=$((waited + 2))
+  done
+  wait "$pid" 2>/dev/null
+}
+
 for attempt in 1 2 3; do
-  "$CODEX" exec --sandbox danger-full-access --skip-git-repo-check ${refs[@]+"${refs[@]}"} -- "$prompt" >/dev/null 2>&1
+  run_codex
   [ -s "$out" ] && { echo "OK $out"; exit 0; }
-  echo "retry $attempt failed for $out" >&2
+  echo "retry $attempt failed for $out (timeout ${TIMEOUT}s)" >&2
   sleep 5
 done
 echo "FAILED $out" >&2

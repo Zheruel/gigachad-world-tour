@@ -20,7 +20,7 @@
 // generates as three panels with those zones in them by name. Regenerating the plate
 // without keeping the zones puts every fixture on the wrong bit of wall.
 import { G, W, H, METER_MAX, addMeter, clamp, rand, irand } from './engine.js';
-import { Pix, frameW, frameH, blit, drawTextShadow, textWidth } from './sprites.js';
+import { Pix, frameW, frameH, blit, drawText, drawTextShadow, textWidth } from './sprites.js';
 import { ASSETS } from './assets.js';
 import { STAGES } from './stages.js';
 import { BOSSES } from './bosses.js';
@@ -31,7 +31,7 @@ import { CHAPTERS, openPanel, updateHubPanel, drawHubPanel } from './hubpanels.j
 export { CHAPTERS };
 
 const FLOOR_Y = 181;
-export const HUB_WIDTH = 1440;
+export const HUB_WIDTH = 1920;
 const WALL_BASE = 191;     // where something standing against the back wall has its feet
 const REACH = 40;          // how close you stand before a fixture is the active one
 const CEIL_MOUNT = 20;     // the window head beam, which is what the bag hangs off
@@ -42,7 +42,10 @@ const CEIL_MOUNT = 20;     // the window head beam, which is what the bag hangs 
 const BAR = [0, 132];
 const TANK = { x: 150, y: 41, w: 150, h: 114 };     // the lit water, not the frame
 const ALCOVE = [629, 747];                          // niche interior
-const WINDOW = [922, 1294];                         // the opening build_lair_wide.py leaves
+// Every glass opening build_lair_wide.py leaves in the plate - it prints this list. The
+// gym's long run, then the bedroom's corner window.
+const OPENINGS = [[922, 1294], [1791, 1920]];
+const WINDOW = OPENINGS[0];                         // the gym's, which the sun shines through
 // The glass, and the gilt frame around it. Two rects because the glint clips to the
 // glass and the select bracket goes round the frame; one rect used for both was 14px
 // left and 24px too tall, and the bracket floated off the mirror entirely.
@@ -95,6 +98,20 @@ function rigFrame(r) {
   return r.art + '_' + r.loop[((t / r.rate) | 0) % r.loop.length];
 }
 
+// ------------------------------------------------------------------ the bedroom
+// The master suite, the fourth screen. Same walnut and brass as the lounge: a black
+// lacquer boudoir would have read as a different apartment.
+// measured off the plate: the firebox opening is 1548-1618, hearth at y 168
+const FIREPLACE = { x: 1583, y: 168 };
+const OVERMANTEL = [1548, 35, 79, 75];   // the mirror glass above it
+// One strip like the gym rigs, so the bed cannot shift between frames. 0-2 are the two
+// of them turning over in their sleep; 3 is one propped up on an elbow, which is the
+// pose the room holds while CHAD is standing there.
+export const BED_X = 1845;   // centred in front of the corner glass
+const BED = { x: BED_X, y: WALL_BASE + 2, w: 105, h: 97, rate: 46, loop: [0, 1, 0, 2] };
+const BED_WAKE = 3;
+const NEAR_BED = 120;    // he does not have to be on top of it for them to notice
+
 // Sprites in the wall plane. Sizes mirror LAIR in tools/process_props.py; y is the
 // bottom edge and art is centred on x.
 const LAIR_ART = [
@@ -112,11 +129,18 @@ const LAIR_ART = [
   // are the kit standing between them.
   { art: 'lair_gym_kettles', x: 945, y: WALL_BASE, w: 56, h: 26 },
   { art: 'lair_gym_plates', x: 1250, y: WALL_BASE, w: 34, h: 56 },
+  // the master suite. The rug lies on the floor, so it sits forward of the wall base and
+  // CHAD walks over it; everything else stands against the panelling.
+  { art: 'lair_bed_fire', x: FIREPLACE.x, y: FIREPLACE.y, w: 20, h: 26 },
+  { art: 'lair_bed_rug', x: 1583, y: WALL_BASE + 24, w: 98, h: 14 },
+  { art: 'lair_bed_wardrobe', x: 1700, y: WALL_BASE, w: 69, h: 96 },
+  { art: 'lair_bed_nightstand', x: 1775, y: WALL_BASE, w: 33, h: 40 },
 ];
 // The lounge is a pair: the same sofa empty and with CHAD sitting in it, registered on
 // the sofa's own foot by tools/build_lair_extras.py. His boots hang below the sofa
 // legs, which is why the canvas bottom sits a little in front of the wall base.
 const LOUNGE = { x: 395, y: WALL_BASE + 9, w: 141, h: 63 };
+
 
 // ------------------------------------------------------- fixture art fallback
 // Only ever seen if assets/lair/*.png are missing. Flat but readable, so a failed
@@ -137,6 +161,13 @@ function fallbackArt(name, w, h) {
     panel('#3a2a12', '#c8a038');
     P.rect(6, 6, w - 12, h - 12, '#2a1a12');
     P.disc(w / 2, h * 0.4, 10, '#c89a68');
+  } else if (name.startsWith('lair_bed_') && name !== 'lair_bed_fire') {
+    P.rect(0, h * 0.45, w, h * 0.55, '#3a2214');
+    P.rect(4, h * 0.5, w - 8, h * 0.2, '#d8d0c0');
+    P.rect(0, h * 0.28, w * 0.14, h * 0.3, '#5a2028');
+  } else if (name === 'lair_bed_fire') {
+    P.disc(w / 2, h * 0.6, w * 0.4, '#e06a20');
+    P.disc(w / 2, h * 0.75, w * 0.3, '#ffd06a');
   } else if (name === 'lair_gloves') {
     P.disc(w * 0.3, h * 0.6, w * 0.28, '#8a2028');
     P.disc(w * 0.7, h * 0.6, w * 0.28, '#8a2028');
@@ -358,29 +389,42 @@ function lairCity(ctx, camX) {
 // The plate is a still. Everything that makes the room feel occupied is painted over
 // it here: the light off the water, dust in the sun, and neon that is not quite steady.
 function lairAmbient(ctx, camX) {
-  const wx0 = WINDOW[0] - camX, ww = WINDOW[1] - WINDOW[0];
   const d = dusk();
 
-  // The city plate is bright and very busy. A floor of darkening keeps CHAD reading
-  // against it even on a fresh run, and the rest of the ramp is the tour's progress.
-  ctx.fillStyle = `rgba(24,10,52,${0.20 + d * 0.30})`;
-  ctx.fillRect(wx0, 0, ww, FLOOR_Y);
+  // Every opening gets the same treatment - the bedroom's corner glass looks out on the
+  // same city the gym does, so it needs the same wash and the same glare off the sun.
+  for (const [ox0, ox1] of OPENINGS) {
+    const wx0 = ox0 - camX, ww = ox1 - ox0;
+    if (wx0 > W || wx0 + ww < 0) continue;
 
-  // The sun is behind that wash and comes out beige. This is its glare coming back
-  // through the glass, which also washes over the mullions the way real glare does.
-  if (sunPos.x > wx0 - 90 && sunPos.x < wx0 + ww + 90) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(wx0, 0, ww, FLOOR_Y);
-    ctx.clip();
-    ctx.globalCompositeOperation = 'lighter';
-    const glare = ctx.createRadialGradient(sunPos.x, sunPos.y, 2, sunPos.x, sunPos.y, 78);
-    glare.addColorStop(0, `rgba(255,214,132,${0.50 - d * 0.14})`);
-    glare.addColorStop(0.22, `rgba(226,120,48,${0.20 - d * 0.06})`);
-    glare.addColorStop(1, 'rgba(180,40,90,0)');
-    ctx.fillStyle = glare;
-    ctx.fillRect(sunPos.x - 78, sunPos.y - 78, 156, 156);
-    ctx.restore();
+    // The city plate is bright and very busy. A floor of darkening keeps CHAD reading
+    // against it even on a fresh run, and the rest of the ramp is the tour's progress.
+    ctx.fillStyle = `rgba(24,10,52,${0.20 + d * 0.30})`;
+    ctx.fillRect(wx0, 0, ww, FLOOR_Y);
+
+    // The sun is behind that wash and comes out beige. This is its glare coming back
+    // through the glass, which also washes over the mullions the way real glare does.
+    if (sunPos.x > wx0 - 90 && sunPos.x < wx0 + ww + 90) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(wx0, 0, ww, FLOOR_Y);
+      ctx.clip();
+      ctx.globalCompositeOperation = 'lighter';
+      const glare = ctx.createRadialGradient(sunPos.x, sunPos.y, 2, sunPos.x, sunPos.y, 78);
+      glare.addColorStop(0, `rgba(255,214,132,${0.50 - d * 0.14})`);
+      glare.addColorStop(0.22, `rgba(226,120,48,${0.20 - d * 0.06})`);
+      glare.addColorStop(1, 'rgba(180,40,90,0)');
+      ctx.fillStyle = glare;
+      ctx.fillRect(sunPos.x - 78, sunPos.y - 78, 156, 156);
+      ctx.restore();
+    }
+
+    // sunset coming in flat through the glass, fading as the tour goes on
+    const shaft = ctx.createLinearGradient(0, 50, 0, FLOOR_Y + 30);
+    shaft.addColorStop(0, `rgba(255,150,90,${0.16 * (1 - d * 0.7)})`);
+    shaft.addColorStop(1, 'rgba(255,150,90,0)');
+    ctx.fillStyle = shaft;
+    ctx.fillRect(wx0, 50, ww, FLOOR_Y - 20);
   }
 
   for (const g of (G.stage.glows || [])) {
@@ -394,13 +438,7 @@ function lairAmbient(ctx, camX) {
   }
 
   drawCaustics(ctx, camX);
-
-  // sunset coming in flat through the window only, fading as the tour goes on
-  const sun = ctx.createLinearGradient(0, 50, 0, FLOOR_Y + 30);
-  sun.addColorStop(0, `rgba(255,150,90,${0.16 * (1 - d * 0.7)})`);
-  sun.addColorStop(1, 'rgba(255,150,90,0)');
-  ctx.fillStyle = sun;
-  ctx.fillRect(wx0, 50, ww, FLOOR_Y - 20);
+  drawFirelight(ctx, camX);
 
   // the plate already paints the base neon, so this is only the flicker on top of it
   const flick = 0.06 + Math.sin(G.rawTime * 0.09) * 0.02 + (G.rawTime % 430 < 4 ? -0.05 : 0);
@@ -415,10 +453,36 @@ function lairAmbient(ctx, camX) {
     const sx = m.x - camX;
     if (sx < 0 || sx > W) continue;
     if ((m.tw + G.rawTime >> 4) & 1) continue;
-    const inSun = m.x > WINDOW[0] && m.x < WINDOW[1];
+    const inSun = OPENINGS.some(([a, b]) => m.x > a && m.x < b);
     ctx.fillStyle = inSun ? 'rgba(255,210,170,0.62)' : 'rgba(200,230,255,0.34)';
     ctx.fillRect(Math.round(sx), Math.round(m.y), 1, 1);
   }
+}
+
+// The fire is a sprite, but a fire that does not move the room around it reads as a
+// poster of a fire. This is its light on the granite, breathing on its own rhythm.
+function drawFirelight(ctx, camX) {
+  const fx = FIREPLACE.x - camX;
+  if (fx < -140 || fx > W + 140) return;
+  const t = G.rawTime;
+  const flick = 0.82 + Math.sin(t * 0.21) * 0.10 + Math.sin(t * 0.53) * 0.06
+    + (t % 190 < 3 ? 0.16 : 0);
+  ctx.save();
+  const g = ctx.createRadialGradient(fx, FLOOR_Y - 4, 4, fx, FLOOR_Y - 4, 120);
+  g.addColorStop(0, `rgba(255,150,60,${0.20 * flick})`);
+  g.addColorStop(0.45, `rgba(220,90,40,${0.08 * flick})`);
+  g.addColorStop(1, 'rgba(180,50,30,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(fx - 120, FLOOR_Y - 124, 240, 244);
+
+  // the overmantel mirror is a dead black rectangle otherwise; this is the fire in it
+  const mx = OVERMANTEL[0] - camX;
+  const m = ctx.createLinearGradient(0, OVERMANTEL[1] + OVERMANTEL[3], 0, OVERMANTEL[1]);
+  m.addColorStop(0, `rgba(255,150,60,${0.16 * flick})`);
+  m.addColorStop(1, 'rgba(255,120,50,0)');
+  ctx.fillStyle = m;
+  ctx.fillRect(mx, OVERMANTEL[1], OVERMANTEL[2], OVERMANTEL[3]);
+  ctx.restore();
 }
 
 // What makes a tank read as a light source rather than a picture on the wall.
@@ -452,7 +516,7 @@ export const HUB_STAGE = {
     { key: 'bg_lair_sky_near', par: NEAR_PAR },
   ],
   music: 'lair', bossMusic: null, boss: null,
-  lamps: [60, 395, 1100], lampCol: '255,140,60', lampA: 0.09,
+  lamps: [60, 395, 1100, 1583, 1762], lampCol: '255,140,60', lampA: 0.09,
   rim: null, grade: '150,80,220', gradeA: 0.05,
   moteCount: 34, moteStyle: 'dust',
   // the plate lights the alcove and the tank; these are only their spill on the floor
@@ -464,6 +528,11 @@ export const HUB_STAGE = {
     { x: 688, y: 150, r: 46, col: '255,180,90', a: 0.13 },
     { x: 800, y: 92, r: 44, col: '110,190,255', a: 0.13 },
     { x: 880, y: 150, r: 38, col: '60,220,140', a: 0.10 },
+    // the master suite. The fire has its own breathing light in drawFirelight; these are
+    // the standing lamps, without which the walk from the wardrobe to the bed is unlit.
+    { x: 1472, y: 130, r: 46, col: '255,190,110', a: 0.15 },
+    { x: 1700, y: 140, r: 38, col: '255,200,130', a: 0.12 },
+    { x: 1762, y: 158, r: 40, col: '255,180,120', a: 0.17 },
   ],
   props: [], birds: [], ambience: [], emitters: [], waves: [],
   fg: [{ art: 'fg_table', x: 300, y: 278 }, { art: 'fg_lamp', x: 640, y: 284 },
@@ -624,6 +693,86 @@ function drawTank(ctx, camX) {
   ctx.restore();
 }
 
+// ------------------------------------------------------------------ the bed
+// They are asleep until CHAD walks into the room, then one of them props herself up and
+// says something. IDLE lines go round on their own; WAKE lines only fire on arrival, so
+// walking in always gets a reaction rather than whatever the cycle happened to be on.
+const IDLE_LINES = [
+  'come back to bed, chad',
+  'you work too hard...',
+  'it is four in the morning',
+  'the city can wait',
+  'zzz...',
+  'you already won, big guy',
+];
+const WAKE_LINES = [
+  'there you are',
+  'done training already?',
+  'come back, chad',
+  'we kept it warm',
+];
+
+const bed = { t: 0, awake: 0, line: null, lineT: 0, next: 240, said: -1 };
+
+function resetBed() {
+  bed.t = 0; bed.awake = 0; bed.line = null; bed.lineT = 0; bed.next = 240; bed.said = -1;
+}
+
+function say(list) {
+  let i = irand(0, list.length - 1);
+  if (i === bed.said) i = (i + 1) % list.length;   // never the same line twice running
+  bed.said = i;
+  bed.line = list[i];
+  bed.lineT = 200;
+}
+
+function updateBed() {
+  bed.t++;
+  if (bed.lineT > 0) bed.lineT--;
+  const near = Math.abs(G.player.x - BED.x) < NEAR_BED;
+  if (near && bed.awake === 0) say(WAKE_LINES);          // he just walked in
+  bed.awake = near ? 150 : Math.max(0, bed.awake - 1);
+  if (--bed.next <= 0) {
+    bed.next = irand(320, 560);
+    if (!near) say(IDLE_LINES);
+  }
+}
+
+function bedFrame() {
+  if (bed.awake > 0) return 'lair_bed_' + BED_WAKE;
+  return 'lair_bed_' + BED.loop[((bed.t / BED.rate) | 0) % BED.loop.length];
+}
+
+// A speech bubble in the wall plane, so CHAD passes in front of it like everything else.
+function drawBubble(ctx, cx, bottom, text) {
+  const s = 1, pad = 4;
+  const tw = textWidth(text, s);
+  const w = tw + pad * 2, h = 7 + pad * 2;
+  const x = Math.round(clamp(cx - w / 2, 2, W - w - 2)), y = Math.round(bottom - h - 5);
+  ctx.fillStyle = 'rgba(250,246,238,0.94)';
+  ctx.fillRect(x + 1, y, w - 2, h);
+  ctx.fillRect(x, y + 1, w, h - 2);
+  ctx.beginPath();                       // the tail, pointing down at whoever spoke
+  ctx.moveTo(Math.round(cx) - 3, y + h);
+  ctx.lineTo(Math.round(cx) + 3, y + h);
+  ctx.lineTo(Math.round(cx), y + h + 5);
+  ctx.closePath();
+  ctx.fill();
+  drawText(ctx, text, x + pad, y + pad, '#2a2030', s);
+}
+
+function drawBed(ctx, camX) {
+  const img = artFor({ art: bedFrame(), w: BED.w, h: BED.h });
+  drawFixtureArt(ctx, camX, BED, img);
+  if (bed.lineT <= 0 || !bed.line) return;
+  const x = BED.x - camX;
+  if (x < -80 || x > W + 80) return;
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, bed.lineT / 24);
+  drawBubble(ctx, x + 22, BED.y - BED.h + 6, bed.line);
+  ctx.restore();
+}
+
 // ---------------------------------------------------------------- the pets
 // Neither is a prop (nothing can hit them) and neither is an enemy, so they go on
 // G.actors, which drawWorld y-sorts by calling whatever the entry's own draw() says.
@@ -720,10 +869,14 @@ const petActors = PETS.map((p) => ({
 }));
 
 // --------------------------------------------------------------- update
+// the verify suite needs to see the sleepers' state; nothing else reads this
+export const hubBed = () => bed;
+
 export function resetHub() {
   dog.x = 250; dog.y = 226; dog.state = 'rest'; dog.t = 0; dog.face = 1; dog.alert = 0;
   tiger.x = 1290; tiger.y = 232; tiger.state = 'rest'; tiger.t = 0; tiger.face = -1; tiger.alert = 0;
   resetTank();
+  resetBed();
   G.actors = petActors.slice();
   G.hubSeat = 0;
   G.hubStation = null;
@@ -738,6 +891,7 @@ export function resetHub() {
 export function updateHub() {
   swingBag(G.props[0]);
   updateTank();
+  updateBed();
   for (const p of PETS) updatePet(p);
   if (G.hubRelicT > 0) G.hubRelicT--;
   if (G.hubFeed > 0) G.hubFeed--;
@@ -839,6 +993,7 @@ export function drawHubWall(ctx, camX) {
     w: LOUNGE.w, h: LOUNGE.h,
   }));
   for (const r of RIGS) drawFixtureArt(ctx, camX, r, artFor({ art: rigFrame(r), w: 100, h: 60 }));
+  drawBed(ctx, camX);
 
   drawMirrorGlint(ctx, camX);
   drawArcadeScreen(ctx, camX);

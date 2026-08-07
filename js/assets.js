@@ -26,6 +26,15 @@ const FILES = {
   lair_portrait: 'assets/lair/portrait.png',
   lair_bag_chain: 'assets/lair/bag_chain.png',
   lair_gloves: 'assets/lair/gloves.png',
+  // the master suite: the bed is a strip of the two of them turning over, 3 is awake
+  lair_bed_0: 'assets/lair/bed_0.png',
+  lair_bed_1: 'assets/lair/bed_1.png',
+  lair_bed_2: 'assets/lair/bed_2.png',
+  lair_bed_3: 'assets/lair/bed_3.png',
+  lair_bed_fire: 'assets/lair/bed_fire.png',
+  lair_bed_rug: 'assets/lair/bed_rug.png',
+  lair_bed_wardrobe: 'assets/lair/bed_wardrobe.png',
+  lair_bed_nightstand: 'assets/lair/bed_nightstand.png',
   lair_gym_plates: 'assets/lair/gym_plates.png',
   lair_gym_kettles: 'assets/lair/gym_kettles.png',
   // the two gym stations: the rig alone, then three poses of CHAD working it

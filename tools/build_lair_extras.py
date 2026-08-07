@@ -25,7 +25,10 @@ share a screen position. These two do:
           lounge should have done - the model repeats the equipment instead of
           re-inventing it, so the frames register before any alignment happens.
 
-  ./.venv/bin/python tools/build_lair_extras.py [lounge|dog|tiger|tank|curl|bench]
+  bed     the master suite's king size and the two asleep in it, four poses off one
+          strip. Same reason as the gym rigs: the bed must not move between frames.
+
+  ./.venv/bin/python tools/build_lair_extras.py [lounge|dog|tiger|tank|curl|bench|bed]
 """
 import os
 import sys
@@ -49,6 +52,7 @@ TIGER_SIT_H = 70
 TIGER_LIE_H = 32
 SHARK_H = 26     # nose-to-tail comes out around 4x this
 SHOAL_H = 6
+BED_H = 96       # headboard to floor; CHAD is 96 standing beside it
 CURL_RIG_H = 38  # the dumbbell rack alone; set so CHAD beside it comes out at his 96
 BENCH_RIG_H = 62 # the bench plus its posts and the racked bar
 
@@ -220,6 +224,21 @@ def build_rig(prefix, rig_h, side):
           f"y = WALL_BASE + {round(floor_pad / RS)}")
 
 
+def build_bed():
+    """The bed and its two sleepers, four poses off one strip. Scaled by the WHOLE frame
+    rather than by frame 0 the way the gym rigs are: the bed is identical in every pose,
+    so there is no rig-only frame to measure, and the tallest thing is the headboard."""
+    frames = slice_strip(SRC + "bed.png", 4, blob=False)
+    factor = BED_H * RS / max(f.height for f in frames)
+    frames, floor_pad = register([rescale(f, factor) for f in frames], side="left")
+    os.makedirs(OUT, exist_ok=True)
+    for i, f in enumerate(frames):
+        finish(f, 56).save(f"{OUT}bed_{i}.png")
+    print(f"{OUT}bed_0..3.png  {frames[0].width}x{frames[0].height}  "
+          f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})  "
+          f"y = WALL_BASE + {round(floor_pad / RS)}")
+
+
 def build_curl():
     # the rack sits to CHAD's right in every pose, so it is the right edge that registers
     build_rig("gym_curl", CURL_RIG_H, "right")
@@ -257,7 +276,8 @@ def build_tank():
 
 
 if __name__ == "__main__":
-    jobs = sys.argv[1:] or ["lounge", "dog", "tiger", "tank", "curl", "bench"]
+    jobs = sys.argv[1:] or ["lounge", "dog", "tiger", "tank", "curl", "bench", "bed"]
     for j in jobs:
         {"lounge": build_lounge, "dog": build_dog, "tiger": build_tiger,
-         "tank": build_tank, "curl": build_curl, "bench": build_bench}[j]()
+         "tank": build_tank, "curl": build_curl, "bench": build_bench,
+         "bed": build_bed}[j]()

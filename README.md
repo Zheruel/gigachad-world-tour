@@ -363,10 +363,11 @@ processed files from `assets/` and `assets/frames/`. Image generation goes throu
 | `tools/process_delhi.sh` | run `process_char.py` over the whole Delhi cast, then rebuild the manifest |
 | `tools/build_manifest.py` | rebuild `assets/frames/manifest.json` from whatever frames exist |
 | `tools/build_bgs.py` | crop/stitch the plates into the wall strip + tiling floor (`delhi` job) |
-| `tools/gen_lair_room5.sh` | THE LAIR's wall as three 480-wide panels — lounge, trophies, the view — plus the city as a far and a near layer. Window bands are generated as flat chroma green; every object in the room is a sprite |
-| `tools/build_lair_wide.py` | stitch those panels into the 1440-wide room, key the glass out to transparent, repaint the window as five tall bays, and band-crop the two city layers |
+| `tools/gen_lair_room5.sh` | THE LAIR's wall as four 480-wide panels — lounge, trophies, the view, the master suite — plus the city as a far and a near layer, two panels each so neither repeats across the 1920-wide room. Window bands are generated as flat chroma green; every object in the room is a sprite |
+| `tools/build_lair_wide.py` | stitch those panels into the 1920-wide room, key every glass opening out to transparent, repaint each as tall bays, and band-crop the city layers |
 | `tools/gen_lair_relics.sh` | one relic per boss for the trophy alcove, plus the weights corner |
 | `tools/gen_lair_deco.sh` | the wet bar, humidor, oil portrait, bag chain and the foreground pieces |
+| `tools/gen_lair_bedroom.sh` | the master suite: the king size and its two sleepers as a four-pose strip, plus the wardrobe, nightstand, fire and rug |
 | `tools/gen_lair_gym.sh` | the training area in front of the glass: the dumbbell rack and the bench press as four-pose strips (rig alone, then CHAD on it), plus the plate tree and kettlebells |
 | `tools/gen_lair_pets.sh` | the shark and shoal for the tank, and the tiger's sheets |
 | `tools/gen_lair_props.sh` | the lair's fixtures: world map, arcade cabinet, hi-fi, heavy bag, map panel |
