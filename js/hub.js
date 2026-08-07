@@ -108,7 +108,7 @@ const OVERMANTEL = [1528, 48, 66, 55];   // the mirror glass above it
 // of them turning over in their sleep; 3 is one propped up on an elbow, which is the
 // pose the room holds while CHAD is standing there.
 export const BED_X = 1822;   // centred in front of the corner glass
-const BED = { x: BED_X, y: WALL_BASE + 2, w: 191, h: 141 };
+const BED = { x: BED_X, y: WALL_BASE + 2, w: 191, h: 94 };
 const BED_WAKE = 5;
 const NEAR_BED = 120;    // he does not have to be on top of it for them to notice
 
@@ -698,11 +698,11 @@ function drawTank(ctx, camX) {
 // says something. IDLE lines go round on their own; WAKE lines only fire on arrival, so
 // walking in always gets a reaction rather than whatever the cycle happened to be on.
 const IDLE_LINES = [
-  'come back to bed, chad',
+  'chaaad... we are bored',
   'you work too hard...',
   'it is four in the morning',
   'the city can wait',
-  'zzz...',
+  'are you still hitting that bag',
   'you already won, big guy',
   'the bag will still be there',
   'one more act, you said',

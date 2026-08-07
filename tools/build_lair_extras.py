@@ -25,8 +25,11 @@ share a screen position. These two do:
           lounge should have done - the model repeats the equipment instead of
           re-inventing it, so the frames register before any alignment happens.
 
-  bed     the master suite's king size and the two asleep in it, four poses off one
-          strip. Same reason as the gym rigs: the bed must not move between frames.
+  bed     the master suite's emperor size and the two lounging in it, six poses off TWO
+          strips of three. Same reason as the gym rigs, plus stabilise() - see there.
+          NOTE the outputs are bed_0..5.png and share a prefix with the bedroom props
+          bed_fire/bed_rug/bed_wardrobe/bed_nightstand, which process_props.py owns.
+          `rm assets/lair/bed_*.png` takes all of them.
 
   ./.venv/bin/python tools/build_lair_extras.py [lounge|dog|tiger|tank|curl|bench|bed]
 """
