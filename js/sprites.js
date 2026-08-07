@@ -24,8 +24,7 @@ export const PAL = {
   eye: '#201018',
   mouth: '#7a2830',
   beard: '#4a2e18',
-  sparkY: '#ffd94a', sparkW: '#fff8d0',
-  dustD: '#6e5a48', dust: '#a89078', dustL: '#d0bc9e',
+  dust: '#a89078', dustL: '#d0bc9e',
 };
 
 export function mkCanvas(w, h) {
@@ -601,78 +600,6 @@ function buildShockHi() {
     x.fillRect(48 + Math.cos(a) * 44 - 2, 16 + Math.sin(a) * 8 - 2, 4, 4);
   }
   return c;
-}
-
-function buildSpark() {
-  const map = { o: PAL.outline, Y: PAL.sparkY, W: PAL.sparkW };
-  const s0 = new Pix(11, 11);
-  s0.art([
-    '.....W.....',
-    '....WYW....',
-    '....WYW....',
-    '.W..WYW..W.',
-    'WYWWWWWWWY.',
-    'WYWWWWWWWY.',
-    '.W..WYW..W.',
-    '....WYW....',
-    '....WYW....',
-    '.....W.....',
-    '...........',
-  ], map, 0, 0);
-  const s1 = new Pix(11, 11);
-  s1.art([
-    '...........',
-    '.W.......W.',
-    '..W..W..W..',
-    '...WWWWW...',
-    '....WWWW.W.',
-    '..WWWWWW...',
-    '...WWWWW...',
-    '..W..W..W..',
-    '.W.......W.',
-    '...........',
-    '...........',
-  ], map, 0, 0);
-  return [s0.c, s1.c];
-}
-
-function buildDust() {
-  const map = { d: PAL.dust, D: PAL.dustD, L: PAL.dustL };
-  const d0 = new Pix(9, 6);
-  d0.art([
-    '.........',
-    '..d...d..',
-    '.dLd.dLd.',
-    '.ddd.ddd.',
-    '..dDddd...',
-    '...DDd...',
-  ], map, 0, 0);
-  const d1 = new Pix(9, 6);
-  d1.art([
-    '..d...d..',
-    '.dLd.dLd.',
-    'd.ddddd.d',
-    '.ddD.Ddd.',
-    '..d...d..',
-    '.........',
-  ], map, 0, 0);
-  return [d0.c, d1.c];
-}
-
-function buildShock() {
-  const P = new Pix(24, 8);
-  const map = { L: PAL.dustL, d: PAL.dust };
-  P.art([
-    '........................',
-    '........................',
-    '..LL................LL..',
-    '.LddL..............LddL.',
-    'LddddLL..........LLddddL',
-    'ddddddddd......ddddddddd',
-    '.dddddddddddddddddddddd.',
-    '..ddddddddddddddddddd...',
-  ], map, 0, 0);
-  return P.c;
 }
 
 function buildPickupShake() {

@@ -1,10 +1,11 @@
 #!/bin/bash
-# gen_lair_deco.sh - the furniture the widened lair gains, plus the two gym pieces that
-# came out wrong the first time.
+# gen_lair_deco.sh - the furniture the widened lair gains.
 #
-# gym_squat is retired: a power rack is genuinely ambiguous seen from a pure side view,
-# which is why the old one read as lying on the floor. A bench with two short uprights
-# and a loaded bar is not ambiguous from the side.
+# The gym is not here: tools/gen_lair_gym.sh owns everything in front of the glass,
+# because the two usable stations have to be generated as strips rather than as single
+# objects. The bar counter, the joint columns and the supercar are gone too - the plate
+# paints its own bar, the panel joins turned out to be invisible without covering them,
+# and the car was taking the best stretch of window away from the gym.
 set -uo pipefail
 cd /Users/tinzeljar/Documents/gachi
 G=tools/gen_codex.sh
@@ -20,16 +21,8 @@ S="32-bit arcade beat em up game object sprite in the style of Streets of Rage 4
 L="dark walnut wood, polished brass and oxblood leather, lit by magenta and cyan neon"
 
 echo "=== furniture ==="
-$G $O/bar.png          landscape "A wet bar counter seen from the side, a walnut cabinet front with a polished brass foot rail along the bottom and a thick veined marble top, two low backed bar stools in oxblood leather with brass legs standing at it, one cut crystal decanter and two tumblers on the counter, $L, $S" &
 $G $O/humidor.png      portrait  "A tall narrow glass fronted walnut cigar humidor cabinet standing on the floor, brass hinges and a brass handle, three shelves of cigar boxes and loose cigars visible through the glass, warm amber light glowing from inside the cabinet, $L, $S" &
-$G $O/column.png       portrait  "A single floor to ceiling square structural pier seen from the side, clad in dark walnut panelling with polished brass edge trim running its full height and a thin magenta neon seam down one edge, plain and featureless, $L, $S" &
 $G $O/bag_chain.png    portrait  "A single heavy galvanised steel chain hanging straight down, thick oval links, a flat steel ceiling mounting bracket with bolts at the very top and a heavy steel swivel shackle at the very bottom, the chain perfectly vertical and taut, nothing else in the image, $S" &
-wait
-
-$G $O/supercar.png     landscape "A 1990s wedge shaped Italian supercar parked and seen in exact side profile, low sharp angular body in pearl white with gold five spoke wheels, a huge rear wing, pop up headlights closed, wide rear haunches with air intakes, scissor door slightly ajar, gleaming paint, $S" &
-$G $O/gym_bench.png    landscape "A flat black leather weight bench seen from the side with a two post barbell rack standing at the head of it, a loaded olympic barbell resting across the top of the two posts with three big black iron plates on each end, heavy black steel frame with a wide flat base, $S" &
-$G $O/gym_rack.png     landscape "A low wide two tier dumbbell rack seen from the side, made of heavy black powder coated steel with thick angled end frames, loaded with six black cast iron hex head dumbbells on each tier, each dumbbell a knurled steel handle with a chunky six sided black iron weight at both ends, the dumbbells getting visibly larger from left to right, heavy and industrial, $S" &
-$G $O/gym_plates.png   portrait  "A black steel weight plate tree seen from the side, a vertical post with six horizontal pegs, each peg loaded with a stack of black cast iron olympic weight plates, a heavy cross shaped base, $S" &
 wait
 
 echo "=== the portrait ==="

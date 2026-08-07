@@ -32,10 +32,9 @@ import numpy as np
 from PIL import Image, ImageEnhance, ImageFilter, ImageStat
 
 RS = 2
-# A and B are re-zoned by gen_lair_room5.sh; C is unchanged - it was already THE VIEW.
 PANELS = ("assets/ai/lair_room5/panel_a.png",
           "assets/ai/lair_room5/panel_b.png",
-          "assets/ai/lair_room4/panel_c.png")
+          "assets/ai/lair_room5/panel_c.png")
 SKY_DIR = "assets/ai/lair_sky/"
 
 VIEW_W = 480 * RS            # each panel covers 480 logical px

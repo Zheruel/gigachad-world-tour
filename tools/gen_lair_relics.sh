@@ -1,11 +1,8 @@
 #!/bin/bash
-# gen_lair_relics.sh - the two sets of objects the lair still gets from the plate.
-#
-# relic_*  one trophy per boss, taken off him when CHAD put him down, standing in the
-#          alcove. Named for what that boss actually carries in js/bosses.js, so the
-#          shelf reads as a record of the fights rather than five identical cups.
-# gym_*    the weights corner, which used to be painted into the wall plate. As sprites
-#          they reflect in the granite and CHAD can walk in front of them.
+# gen_lair_relics.sh - one trophy per boss, taken off him when CHAD put him down,
+# standing in the trophy alcove. Named for what that boss actually carries in
+# js/bosses.js, so the shelf reads as a record of the fights rather than five identical
+# cups. The weights corner used to live here too; it is tools/gen_lair_gym.sh now.
 set -uo pipefail
 cd /Users/tinzeljar/Documents/gachi
 G=tools/gen_codex.sh
@@ -26,11 +23,5 @@ $G $O/relic_yadav.png   square "An Indian police officer's peaked khaki cap rest
 $G $O/relic_rana.png    square "A heavy brass championship belt with an ornate roaring lion head as its centre plate, the leather strap thick and cracked, standing upright on a small black display stand, $T" &
 wait
 
-echo "=== gym ==="
-$G $O/gym_rack.png    landscape "A two tier black steel dumbbell rack seen from the side, six chrome dumbbells lying on it in a row on each tier, each dumbbell clearly a knurled steel handle with a round weight head at both ends, the rack low and wide with angled end frames, $S" &
-$G $O/gym_squat.png   portrait  "A tall black steel power squat rack seen from the side, a loaded olympic barbell resting on the J hooks near the top with big black iron plates on each end, the uprights drilled with a row of holes, a heavy flat base, $S" &
-$G $O/gym_bench.png   landscape "A black leather flat weight bench seen from the side, padded top, chrome tubular legs, nothing on it, $S" &
-wait
-
-echo "=== relics and gym done ==="
+echo "=== relics done ==="
 ls -la $O

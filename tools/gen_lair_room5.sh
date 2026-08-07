@@ -36,6 +36,13 @@ $G $O/panel_a.png landscape "The left third of the private penthouse of a gigach
 echo "=== panel B: trophies and media ==="
 $G $O/panel_b.png landscape "The middle third of the private penthouse of a gigachad brawler at the top of a skyscraper, seen flat side on and empty. It continues the room in the reference image exactly: same ceiling beam at the same height, same neon strips, same floor seam at the same height, same walnut and brass. Across the wall, left to right: from 0 to 29 percent of the width plain blank walnut panelling with nothing mounted on it; from 31 to 58 percent a deep recessed trophy alcove with three empty lit glass shelf niches in brass frames, the shelves clearly visible and evenly spaced; from 60 to 80 percent plain blank walnut panelling with nothing mounted on it; from 82 to 100 percent a floor to ceiling window in black steel mullions, and the glass of that window is SOLID FLAT BRIGHT GREEN, pure chroma key green RGB 0 255 0, completely featureless, with only the black steel window frames and mullions drawn on top of it. There is no view, no city, no sky and no reflection in the window: it is flat green. $RULES $EMPTY. $BG" "$O/panel_a.png" "$R"
 
+echo "=== panel C: the view ==="
+# Unchanged from gen_lair_room4.sh - this third was already right, and the generation is
+# reused rather than redrawn. The window glass is still asked for as flat chroma green
+# because build_lair_wide.py keys it out to leave the hole; the MULLIONS over that hole
+# are painted by rebuild_window(), not generated, so nothing here fixes their pitch.
+$G $O/panel_c.png landscape "The right third of the private penthouse of a gigachad brawler at the top of a skyscraper, seen flat side on and empty. $STYLE It continues the room in the reference image exactly: same ceiling beam at the same height, same neon strips, same floor seam at the same height, same wood and brass. Across the wall, left to right: from 0 to 59 percent of the width the floor to ceiling window continues in the same black steel mullions, and the glass is SOLID FLAT BRIGHT GREEN, pure chroma key green RGB 0 255 0, completely featureless, with only the black steel window frames and mullions drawn on top of it, no view and no reflection; from 60 to 100 percent the end wall in walnut and brass with one tall narrow mirrored panel in a heavy gilt frame under its own picture light, and nothing else. $RULES $EMPTY. $BG" "$O/panel_b.png" "$R"
+
 echo "=== the city, as two parallax layers ==="
 # The city is two layers moving at different speeds rather than one flat picture, which
 # is what gives it depth as CHAD walks the room. FAR is the sky and the distant city;

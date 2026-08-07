@@ -1,7 +1,7 @@
 // player.js - CHAD: movement, flowing one-button combo, parry/counter,
 // the full-meter Meteor Lariat, status effects and recovery.
 import {
-  G, W, FLOOR_TOP, FLOOR_BOT, METER_MAX, clamp, addScore, addMeter, bumpCombo, diff,
+  G, FLOOR_TOP, FLOOR_BOT, METER_MAX, clamp, addScore, addMeter, bumpCombo, diff,
   clampToArena, airborne, juggleMul, fall, inAir,
 } from './engine.js';
 import { input } from './input.js';

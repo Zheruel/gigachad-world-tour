@@ -1,12 +1,12 @@
 // lab.js - asset lab: inspect every sprite, stage and effect in isolation.
 // Open lab.html. Nothing here is loaded by the game itself.
 import { G, W, H, RS, FLOOR_TOP, FLOOR_BOT } from './engine.js';
-import { SPR, getFrame, drawText, drawTextShadow, textWidth, mkCanvas, blit, frameW, frameH } from './sprites.js';
+import { SPR, drawTextShadow, mkCanvas, blit, frameW, frameH } from './sprites.js';
 import { getAIFrame, loadAIFrames, anchorOf, setAnchor, allAnchors } from './aiframes.js';
 import { COMBO, COMBO_FLOW, keyFrame, ragnarokPose, WALK_STRIDE, RUN_STRIDE, CHAIN_SKIP } from './player.js';
 import { loadAssets, ASSETS } from './assets.js';
 import { STAGES, initStage, drawStage, updateMotes } from './stages.js';
-import { loadCrowd, updateCrowd, updateBirds, drawCrowd, crowdKey, crowdOverrides, setOverride, KIND_META, expectedHeight, HERO_H, PLANES } from './crowd.js';
+import { drawCrowd, crowdKey, crowdOverrides, setOverride, KIND_META, expectedHeight, HERO_H, PLANES } from './crowd.js';
 import { loadFG, drawFG } from './fg.js';
 import { loadAmbience, updateAmbience, reactStage } from './ambience.js';
 import { updateEffects, drawEffects, spawnSpark, spawnDust, spawnShock, spawnRing, spawnSteam, spawnPop } from './effects.js';

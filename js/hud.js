@@ -1,6 +1,6 @@
 // hud.js - SNES-style HUD: portrait, health, lives, super meter, combo, boss bar
 import { G, W, H, METER_MAX } from './engine.js';
-import { SPR, drawText, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
+import { drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { ASSETS } from './assets.js';
 import { fx } from './fx.js';
 

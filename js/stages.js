@@ -2,7 +2,7 @@
 // props, camera gating and the ambience pass that makes the market feel lived in.
 // Each stage draws AI wall/floor PNGs when present and falls back to a
 // procedural pixel-art build of the same street when they are missing.
-import { G, W, H, FLOOR_TOP, FLOOR_BOT, clamp, rand, irand } from './engine.js';
+import { G, W, H, clamp, rand, irand } from './engine.js';
 import { Pix, artScale } from './sprites.js';
 import { ASSETS } from './assets.js';
 import { createProp } from './props.js';

@@ -20,7 +20,7 @@
 // generates as three panels with those zones in them by name. Regenerating the plate
 // without keeping the zones puts every fixture on the wrong bit of wall.
 import { G, W, H, METER_MAX, addMeter, clamp, rand, irand } from './engine.js';
-import { Pix, frameW, frameH, blit, drawText, drawTextShadow, textWidth } from './sprites.js';
+import { Pix, frameW, frameH, blit, drawTextShadow, textWidth } from './sprites.js';
 import { ASSETS } from './assets.js';
 import { STAGES } from './stages.js';
 import { BOSSES } from './bosses.js';

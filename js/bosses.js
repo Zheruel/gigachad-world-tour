@@ -5,7 +5,7 @@
 //                      Break the cart and he loses the charge for good.
 //   YADAV   (boss)     corrupt inspector: lathi thrust, spinning lathi sweep,
 //                      tear gas, and a whistle that brings two goondas running.
-import { G, W, FLOOR_TOP, FLOOR_BOT, clamp, irand, rand, addScore, diff, clampToArena, fall, inAir } from './engine.js';
+import { G, W, FLOOR_TOP, FLOOR_BOT, clamp, irand, addScore, diff, clampToArena, fall, inAir } from './engine.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
 import { spawnSpark, spawnDust, spawnShock, impact, spawnPop, spawnRing } from './effects.js';
 import { hurtPlayer, grabPlayer, resolveIncomingHit } from './player.js';
