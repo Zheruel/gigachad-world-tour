@@ -172,13 +172,14 @@ const LAIR_ART = [
   // cigar cabinet built flush into the second one's base panel (482.5-591 x 147-165.5)
   // rather than standing in front of the wall. The arcade cabinet is gone: it was the
   // only injection-moulded object in a walnut room, and this bay is worth more as shelf.
-  // Under the world map. It stood beside the sofa for a while, but the tank took that
-  // wall - 141 to 470 leaves nothing between it and the trophy hall. Here it clears the
-  // hall (ends 748.5), the map's frame (art starts 796, bottom at 109 against this
-  // cabinet's top at 113) and the hi-fi (starts 856).
-  { art: 'lair_humidor', x: 790, y: WALL_BASE, w: 56, h: 78 },
-  // grounds the sofa, which was floating on bare granite
-  { art: 'lair_lounge_rug', x: 305, y: WALL_BASE + 34, w: 146, h: 30 },
+  // A suite, not one sofa: an armchair either side of the chesterfield, the whole group
+  // centred on the tank behind it. The humidor comes back to sit beside the right-hand
+  // chair and the cigar table, where you actually reach for a cigar - it costs the bottom
+  // right corner of the glass, which is the trade for having the cigars where you smoke.
+  { art: 'lair_lounge_rug', x: 305, y: WALL_BASE + 50, w: 240, h: 49 },
+  { art: 'lair_lounge_chair', x: 190, y: WALL_BASE + 9, w: 70, h: 50 },
+  { art: 'lair_lounge_chair', x: 402, y: WALL_BASE + 9, w: 70, h: 50, flip: true },
+  { art: 'lair_humidor', x: 452, y: WALL_BASE, w: 56, h: 78 },
   // centred in the panelled bay, whose gold inset measures x 775.75-895.75, y 37-130
   { art: 'lair_worldmap', x: 836, y: 109, w: 80, h: 48 },
   { art: 'lair_hifi', x: 880, y: WALL_BASE, w: 48, h: 60 },
@@ -238,6 +239,9 @@ function fallbackArt(name, w, h) {
     P.disc(w * 0.3, h * 0.6, w * 0.28, '#8a2028');
     P.disc(w * 0.7, h * 0.6, w * 0.28, '#8a2028');
     P.rect(w * 0.45, 0, 2, h * 0.4, '#c8a038');
+  } else if (name === 'lair_lounge_chair') {
+    P.rect(2, h * 0.2, w - 4, h * 0.8, '#1a1620');
+    P.rect(6, h * 0.5, w - 12, h * 0.3, '#241e2a');
   } else if (name === 'lair_lounge_rug') {
     P.rect(0, h * 0.25, w, h * 0.75, '#241a1e');
     P.rect(4, h * 0.4, w - 8, h * 0.45, '#5a1e24');
@@ -1337,6 +1341,14 @@ function drawFixtureArt(ctx, camX, d, img) {
   const x = Math.round(d.x - camX - frameW(img) / 2);
   if (x > W || x + frameW(img) < 0) return;
   const top = Math.round(d.y - frameH(img));
+  // d.flip mirrors the art about its own centre. The pair of armchairs is one generation
+  // used twice, and two identical chairs either side of the sofa read as a copy-paste
+  // rather than as a suite.
+  if (d.flip) {
+    ctx.save();
+    ctx.translate(2 * x + frameW(img), 0);
+    ctx.scale(-1, 1);
+  }
   if (d.y >= WALL_BASE) {
     ctx.save();
     ctx.globalAlpha = 0.34;
@@ -1351,6 +1363,7 @@ function drawFixtureArt(ctx, camX, d, img) {
     ctx.restore();
   }
   blit(ctx, img, x, top);
+  if (d.flip) ctx.restore();
 }
 
 // The alcove is painted into the plate, three lit glass shelves; what changes is what

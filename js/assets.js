@@ -32,6 +32,7 @@ const FILES = {
   lair_tankscape: 'assets/lair/tankscape.png',
   lair_tank_frame: 'assets/lair/tank_frame.png',
   lair_lounge_rug: 'assets/lair/lounge_rug.png',
+  lair_lounge_chair: 'assets/lair/lounge_chair.png',
   lair_overmantel: 'assets/lair/overmantel.png',
   lair_bag_chain: 'assets/lair/bag_chain.png',
   lair_gloves: 'assets/lair/gloves.png',

@@ -54,7 +54,11 @@ LAIR = {
     # reach most of the way up on purpose, and the shark swims in FRONT of the wreck
     # rather than in a strip of empty blue above it.
     "tankscape": (299, 92),
-    "lounge_rug": (170, 30),
+    "lounge_rug": (240, 49),
+    # The matching armchair. Sized by height against the sofa's own back, so the pair
+    # reads as one suite; the generation arrives with a slab of the room's panelling
+    # behind it, which is cropped off in tools/gen_lair_deco.sh's note.
+    "lounge_chair": (70, 50),
     "overmantel": (77, 68),
     # exactly the run from the ceiling bracket to the bag's collar, so it never tiles
     "bag_chain": (10, 100),
