@@ -663,13 +663,21 @@ function swingBag(bag) {
 // about was busy without being alive, and they made the shark furniture. One animal with
 // somewhere to live reads better than a shoal with nowhere.
 //
-// Everything that sells "alive" here is procedural and costs nothing: a bubble column off
-// the scenery, a puff off the cigar every few seconds, and the shark banking into his turns.
-const shark = { x: 0, dir: 1, frame: 0, t: 0, turn: 0, puff: 0 };
+// Everything that sells "alive" here is procedural and costs nothing: light shafts and
+// suspended silt in the open water, a bubble column off the scenery, the cigar actually
+// smoking, and the shark banking into his turns.
+const shark = { x: 0, dir: 1, frame: 0, t: 0, turn: 0, puff: 0, draw: 0 };
 const bubbles = [];
-const SCAPE_H = 61;                       // lair_tankscape, sized in tools/process_props.py
+const smoke = [];
+const silt = [];
+const SCAPE_H = 61;           // lair_tankscape, sized in tools/process_props.py
+const SHARK_W = 46;           // lair_shark_*, from tools/build_lair_extras.py SHARK_H
+// The lit end of the cigar, measured off assets/lair/shark_0.png as an offset from the
+// sprite's own top-left. The smoke has to leave the cigar, not the middle of the shark.
+const CIGAR = { x: 44, y: 22 };
 // where the food lands, and so where he swims to. Exported for ?auto=verify.
-export const TANK_FEED_X = TANK.x + TANK.w / 2 - 20;
+export const TANK_FEED_X = TANK.x + TANK.w / 2 - SHARK_W / 2;
+const SILT_N = 26;
 
 function resetTank() {
   shark.x = TANK.x + 30;
@@ -677,7 +685,18 @@ function resetTank() {
   shark.t = 0;
   shark.turn = 0;
   shark.puff = 0;
+  shark.draw = 0;
   bubbles.length = 0;
+  smoke.length = 0;
+  silt.length = 0;
+  for (let i = 0; i < SILT_N; i++) {
+    silt.push({
+      x: rand(TANK.x + 2, TANK.x + TANK.w - 2),
+      y: rand(TANK.y + 4, TANK.y + TANK.h - 8),
+      // depth doubles as size, drift rate and brightness, so near motes move faster
+      z: rand(0.3, 1), phase: rand(0, 9),
+    });
+  }
 }
 
 // One bubble, off the scenery or off the cigar. Rise rate is per bubble, or the whole
@@ -686,17 +705,38 @@ function bubble(x, y, r) {
   bubbles.push({ x, y, r, vy: rand(-0.5, -0.28), phase: rand(0, 9) });
 }
 
-// One place that says how deep he is swimming, so a cigar puff leaves his mouth and not
-// his tail. He stays above his own furniture.
+// One place that says where he is, so the smoke leaves the cigar and not his tail.
 function sharkY() {
-  return TANK.y + 22 + Math.sin(shark.t * 0.012) * 9;
+  return TANK.y + 14 + Math.sin(shark.t * 0.012) * 7;
+}
+
+// The lit end, in world coords, mirrored with him.
+function cigarTip() {
+  return [shark.x + (shark.dir > 0 ? CIGAR.x : SHARK_W - CIGAR.x), sharkY() + CIGAR.y];
+}
+
+// force 1 is a drag, well under 1 is the trickle off the ember between them: it scales
+// how far the cloud is pushed, how big it gets and how long it lasts, so one call does
+// both without two sets of numbers to keep in step.
+function puffSmoke(n, force) {
+  const [cx, cy] = cigarTip();
+  for (let i = 0; i < n; i++) {
+    smoke.push({
+      x: cx + rand(-1, 1), y: cy + rand(-1, 1),
+      r: rand(1.6, 3.0) * (0.45 + force * 0.55), grow: rand(0.030, 0.060) * force,
+      // it leaves the cigar the way he is pointing, then the water takes it upward
+      vx: shark.dir * rand(0.05, 0.20) * force, vy: rand(-0.26, -0.12),
+      phase: rand(0, 9), life: 1,
+      fade: rand(0.006, 0.010) / force,
+    });
+  }
 }
 
 function updateTank() {
   shark.t++;
   shark.frame = (shark.t / 9 | 0) & 3;
 
-  const lo = TANK.x + 6, hi = TANK.x + TANK.w - 6 - 40;
+  const lo = TANK.x + 6, hi = TANK.x + TANK.w - 6 - SHARK_W;
   if (G.hubFeed > 0) {
     // He comes for it rather than carrying on with his lap. The food is the whole point
     // of the fixture, and a shark ignoring it was the tell that nothing in here was alive.
@@ -709,12 +749,27 @@ function updateTank() {
   if (shark.x > hi) { shark.x = hi; shark.dir = -1; shark.turn = 20; }
   if (shark.turn > 0) shark.turn--;
 
-  // a cigar puff now and then, and a slow column off the scenery at each end
+  // He is always smoking - a thin trickle off the ember - and every few seconds he takes
+  // a proper drag: the ember flares for a moment and then a cloud of it comes back out.
+  // Without the two rates it reads as a smoke machine bolted to his face rather than a
+  // shark enjoying a cigar.
+  if ((shark.t & 15) === 0) puffSmoke(1, 0.45);
   if (--shark.puff <= 0) {
-    shark.puff = irand(90, 200);
-    const nose = shark.dir > 0 ? 34 : 5;
-    for (let i = 0; i < 4; i++) bubble(shark.x + nose + rand(-2, 2), sharkY() + 10, rand(1, 2));
+    shark.puff = irand(260, 460);
+    shark.draw = 46;                  // frames of drag: ember up first, cloud after
   }
+  if (shark.draw > 0) {
+    shark.draw--;
+    // three sub-bursts rather than one. Eighteen particles born at the same instant in
+    // the same place stay a single blob however they are tuned; spread over ten frames
+    // they leave his mouth as a rolling plume.
+    if (shark.draw === 22 || shark.draw === 17 || shark.draw === 12) {
+      puffSmoke(6, 1);
+      const [cx, cy] = cigarTip();
+      bubble(cx + rand(-2, 2), cy - 1, rand(1, 2));
+    }
+  }
+
   if ((shark.t & 31) === 0) bubble(TANK.x + rand(10, 18), TANK.y + TANK.h - 22, rand(1, 2));
   if ((shark.t & 63) === 20) bubble(TANK.x + TANK.w - rand(10, 18), TANK.y + TANK.h - 24, rand(1, 2));
 
@@ -725,11 +780,70 @@ function updateTank() {
     b.x += Math.sin(b.phase) * 0.22;
     if (b.y < TANK.y + 5) bubbles.splice(i, 1);
   }
+  for (let i = smoke.length - 1; i >= 0; i--) {
+    const s = smoke[i];
+    s.phase += 0.06;
+    s.x += s.vx + Math.sin(s.phase) * 0.10;
+    s.y += s.vy;
+    s.vx *= 0.98;
+    s.vy = Math.max(-0.45, s.vy - 0.0026);   // it accelerates up as it thins
+    s.r += s.grow;
+    s.life -= s.fade;
+    if (s.life <= 0 || s.y < TANK.y + 3) smoke.splice(i, 1);
+  }
+  for (const m of silt) {
+    m.phase += 0.004 + m.z * 0.006;
+    m.y -= 0.02 + m.z * 0.05;
+    m.x += Math.sin(m.phase) * 0.10 * m.z;
+    if (m.y < TANK.y + 2) { m.y = TANK.y + TANK.h - 4; m.x = rand(TANK.x + 2, TANK.x + TANK.w - 2); }
+  }
 }
 
-// for ?auto=verify: the feeding rush is the only thing in the room whose behaviour
-// cannot be seen in a still
-export function hubTank() { return shark; }
+// for ?auto=verify: the feeding rush and the drag are the only things in this room whose
+// behaviour cannot be seen in a still
+export function hubTank() { return { shark, smoke, silt }; }
+
+// Light coming down through the surface. Four shafts, each drifting on its own slow sine
+// and fading out with depth - it is what turns a flat blue rectangle into water.
+function lightShafts(ctx, l) {
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 4; i++) {
+    const drift = Math.sin(shark.t * 0.0035 + i * 2.1) * 9;
+    const x = l + 16 + i * 34 + drift;
+    const g = ctx.createLinearGradient(0, TANK.y, 0, TANK.y + TANK.h * 0.78);
+    g.addColorStop(0, `rgba(190,240,255,${0.085 + 0.025 * Math.sin(shark.t * 0.02 + i)})`);
+    g.addColorStop(1, 'rgba(150,220,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(x - 4, TANK.y);
+    ctx.lineTo(x + 8, TANK.y);
+    ctx.lineTo(x + 24, TANK.y + TANK.h * 0.78);
+    ctx.lineTo(x + 4, TANK.y + TANK.h * 0.78);
+    ctx.closePath();
+    ctx.fill();
+  }
+  // and the ripple those shafts come through, banded across the back wall near the top
+  for (let i = 0; i < 5; i++) {
+    const y = TANK.y + 6 + i * 7;
+    const a = 0.05 + 0.035 * Math.sin(shark.t * 0.03 + i * 1.3);
+    ctx.fillStyle = `rgba(210,245,255,${a})`;
+    for (let x = 0; x < TANK.w; x += 2) {
+      const h = 1 + Math.sin(x * 0.14 + shark.t * 0.025 + i) * 1.2;
+      ctx.fillRect(l + x, y + h, 2, 1);
+    }
+  }
+  ctx.restore();
+}
+
+function drawSilt(ctx, camX, near) {
+  for (const m of silt) {
+    if ((m.z > 0.62) !== near) continue;
+    ctx.fillStyle = `rgba(200,235,255,${0.10 + m.z * 0.22})`;
+    const s = m.z > 0.8 ? 2 : 1;
+    ctx.fillRect(Math.round(m.x - camX), Math.round(m.y), s, s);
+  }
+}
 
 function drawTank(ctx, camX) {
   const l = Math.round(TANK.x - camX);
@@ -738,6 +852,9 @@ function drawTank(ctx, camX) {
   ctx.beginPath();
   ctx.rect(l, TANK.y, TANK.w, TANK.h);
   ctx.clip();
+
+  lightShafts(ctx, l);
+  drawSilt(ctx, camX, false);
 
   // his lair, on the tank floor and behind him
   const scape = ASSETS.lair_tankscape || fallbackArt('lair_tankscape', TANK.w, SCAPE_H);
@@ -772,11 +889,32 @@ function drawTank(ctx, camX) {
     ctx.restore();
   }
 
+  // the ember, which the quantized palette flattened out of the sprite. It glows on its
+  // own and flares while he is drawing on it, which is what makes the puff read as his.
+  {
+    const [cx, cy] = cigarTip();
+    const draw = shark.draw > 22 ? (shark.draw - 22) / 24 : 0;
+    ctx.fillStyle = `rgba(255,${120 + draw * 90},${40 + draw * 60},${0.75 + draw * 0.25})`;
+    ctx.fillRect(Math.round(cx - camX), Math.round(cy), 1, 1);
+    if (draw > 0.1) {
+      ctx.fillStyle = `rgba(255,150,60,${0.30 * draw})`;
+      ctx.fillRect(Math.round(cx - camX) - 1, Math.round(cy) - 1, 3, 3);
+    }
+  }
+
+  for (const s of smoke) {
+    ctx.fillStyle = `rgba(232,238,244,${0.70 * s.life})`;
+    const r = Math.max(1, Math.round(s.r));
+    ctx.fillRect(Math.round(s.x - camX - r / 2), Math.round(s.y - r / 2), r, r);
+  }
+
   for (const b of bubbles) {
     ctx.fillStyle = `rgba(210,245,255,${0.30 + 0.26 * Math.sin(b.phase)})`;
     const bw = Math.max(1, Math.round(b.r));
     ctx.fillRect(Math.round(b.x - camX), Math.round(b.y), bw, bw);
   }
+
+  drawSilt(ctx, camX, true);
 
   // the water in front of everything in it
   ctx.fillStyle = 'rgba(40,150,200,0.16)';
@@ -788,6 +926,7 @@ function drawTank(ctx, camX) {
   ctx.fillRect(l, TANK.y, TANK.w, TANK.h);
   ctx.restore();
 }
+
 
 // ------------------------------------------------------------------ the bed
 // They are asleep until CHAD walks into the room, then one of them props herself up and

@@ -173,6 +173,20 @@ switch, and a line every few seconds reads as a chatbot rather than company. The
 pose, held while CHAD is within `NEAR_BED` — the sleepers are proximity-driven, not a
 `FIXTURES` entry, so there is no walk-up prompt.
 
+**Two rates make a habit read.** The shark is *always* smoking - one wisp off the ember
+every sixteen frames - and takes a proper drag every 4-8s: the ember flares, then the
+cloud comes back out over three sub-bursts ten frames apart. One rate reads as a smoke
+machine bolted to his face; one burst of eighteen particles born at the same instant in
+the same place stays a single blob however it is tuned. The cigar's lit end is measured
+off `assets/lair/shark_0.png` (`CIGAR`, mirrored with him) so the smoke leaves his mouth
+and not his tail, and the ember is drawn in code because the sprite's quantized palette
+flattens it away.
+
+**Stepping the hub from the console needs `G.paused = true` first.** The page keeps
+running its rAF loop between tool calls, so `step(n)` then a screenshot shows a state
+several hundred frames later - which is what made the cigar smoke look like it was
+spawning from the wrong end of the shark for three passes.
+
 **One animal with somewhere to live beats a shoal with nowhere.** The tank held a shark
 and twenty piranhas; the piranhas were busy without being alive, and they turned the
 shark into furniture. What actually reads as alive is all procedural and free: a bubble
@@ -181,6 +195,9 @@ turns at each end (a shark that reverses on the spot is a cardboard cutout), and
 for the food when you feed him — `?auto=verify` asserts that last one, because a fixture
 whose animal ignores it is a fixture doing nothing. `lair_tankscape` is his lair, drawn
 behind him inside the same clip rect and sized by WIDTH to span the full 150 of glass.
+The open water above it is four drifting light shafts, a caustic ripple banded across the
+back wall and 26 motes of suspended silt at their own depths - all procedural, because
+what a flat blue rectangle is missing is movement, not texture.
 
 **A station CHAD uses is one sprite set holding the furniture AND him** — `lair_lounge_*`,
 `lair_gym_curl_*`, `lair_gym_bench_*`. `G.hubSeat` counts frames occupying one and

@@ -933,9 +933,11 @@ if (autoMode) {
       // he comes for it. The shoal used to do this; with one animal in the tank, a shark
       // carrying on his lap through a feed is the whole fixture doing nothing.
       {
-        const before = Math.abs(hubTank().x - TANK_FEED_X);
+        const before = Math.abs(hubTank().shark.x - TANK_FEED_X);
         step(60);
-        t('hub-shark-comes-for-it', Math.abs(hubTank().x - TANK_FEED_X) < before);
+        t('hub-shark-comes-for-it', Math.abs(hubTank().shark.x - TANK_FEED_X) < before);
+        // he is always smoking, and the drag is a separate, rarer event
+        t('hub-shark-smokes', hubTank().smoke.length > 0);
       }
       step(180);
       t('hub-tank-settles', G.hubFeed === 0);
