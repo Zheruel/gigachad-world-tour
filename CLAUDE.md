@@ -302,11 +302,16 @@ steel. Every one of those steps was necessary and every one is still in the git 
 
 Two rules came out of drawing them as plain furniture afterwards, and both apply to any prop:
 
-- **Count the objects against the pixels.** The rack is 117 logical px wide. Asked for three
-  tiers "packed end to end" with dumbbells "visibly ENORMOUS from left to right" it came back
-  with a dozen a shelf - 9 px each - and the small end read as a row of rivets while the big
-  end read as boulders. State the count as a count: five a shelf, each as deep as the shelf
-  gap, the largest under twice the smallest.
+- **Count the objects against the pixels, and then say what SEPARATES them.** The rack is 117
+  logical px wide. Asked for three tiers "packed end to end" with dumbbells "visibly ENORMOUS
+  from left to right" it came back with a dozen a shelf - 9 px each - and the small end read
+  as a row of rivets while the big end read as boulders. Five a shelf with "a clear gap of
+  bare shelf between each one" then came back as ONE CONTINUOUS ROD with hexagonal lumps
+  threaded on it: every dumbbell was drawn distinctly and none of them READ as distinct,
+  because the gap got filled by their handles lining up end to end. Say it about the handle -
+  it starts at its own plate, it stops at its own plate, and the background shows through
+  between one dumbbell and the next. Four a shelf leaves room for that gap to be as wide as a
+  dumbbell.
 - **Say the projection out loud.** The shared style block says "seen from the side", and the
   generator still drew the bench PAD in three quarter - its top face visible, with a chalk
   handprint lying on a surface you cannot see from the side - while drawing the frame under it

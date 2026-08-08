@@ -44,8 +44,8 @@ LAIR = {
     # World scale is ~50 logical px per metre, so the bench's posts stand about 1.4 m.
     "gym_plates": (34, 56),
     "gym_kettles": (56, 26),
-    "gym_curl": (117, 54),
-    "gym_bench": (132, 71),
+    "gym_curl": (112, 54),
+    "gym_bench": (120, 71),
     # the widened room: the painting over the sofa, the oil over the fireplace, and the
     # cigar cabinet - which is now a flush front built into the second niche's base panel
     # (logical 482.5-591 x 147-165.5), not a box standing against the wall
