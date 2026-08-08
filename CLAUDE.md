@@ -418,6 +418,19 @@ without keeping those zones puts every fixture on the wrong bit of wall. The pla
 device width must be exactly `2 × HUB_WIDTH` and `floorW` must equal the floor plate's
 logical width, or the wall wraps or the floor gaps.
 
+**A character family is calibrated by a STANDING pose, and if it has none, calibrate it by
+the head.** `process_chad.sh` scales each family so one chosen frame fills `--fill` of the
+192 px canvas, which is right when that frame is standing upright. RAGNAROK has no standing
+frame at all - every pose leans into the spin - so calibrating one of them to a standing
+figure's .94 made the whole family 20% too big, and CHAD visibly grew when he supered. The
+same mistake is already commented on `combo_power_b` above it.
+
+Measure it on the CROWN OF HIS SKULL: the top ten rows of the connected skin/blond component
+that holds the topmost skin pixel. That is the one landmark the same size in every pose, and
+it is stable to a pixel - idle 22.8, parry 23.6, ragnarok_ground 24.1, and meteor_lariat was
+27.5 against those. `.94 x 23.0/27.5 = .786` fixed it. Drawn height cannot be used here for
+the same reason the pose cannot: a leaning man is shorter.
+
 **The tiger ignores the bag.** He used to lift his head every time it was hit, which sounds
 right and is wrong: the bag is the one thing in the room CHAD does over and over, so the one
 animal in the room reacted to almost every input. He still reacts to a big combo, to a fixture

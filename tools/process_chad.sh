@@ -25,7 +25,12 @@ $PY tools/process_char.py ragnarok_ground --height 192 --fill .94 --ref 1 --colo
 $PY tools/process_char.py ragnarok_air --height 256 --fill .70 --ref 1 --colors 48 \
   --src-prefix ragnarok_air --out-prefix chad_ragnarok_air \
   --src-dir assets/ai/chad_v4/ --no-outline
-$PY tools/process_char.py super_express --height 192 --fill .94 --ref 8 --colors 48 \
+# RAGNAROK has no standing pose at all - every frame leans into the spin - so calibrating
+# any of them to a standing figure's .94 inflated the whole family and CHAD visibly grew
+# when he supered. Measured on the one landmark that is the same size in every pose, the
+# crown of his skull: 27.5 px across here against 23.0 in the idle frames, so .94 x 23/27.5.
+# Same mistake as combo_power_b above, and the same tell.
+$PY tools/process_char.py super_express --height 192 --fill .786 --ref 8 --colors 48 \
   --src-prefix super_express --out-prefix chad_meteor_lariat \
   --src-dir assets/ai/chad_v3/ --no-outline
 
