@@ -4,6 +4,7 @@ import { RS } from './engine.js';
 
 const FILES = {
   title_art: 'assets/title_art.png',
+  logo: 'assets/logo.png',
   ending_art: 'assets/ending_art.png',
   go_sign: 'assets/go_sign.png',
   portrait_chad: 'assets/portrait_chad.png',

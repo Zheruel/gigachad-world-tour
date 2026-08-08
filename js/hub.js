@@ -1830,6 +1830,15 @@ export function drawHubUI(ctx) {
     drawTextShadow(ctx, hint, x - textWidth(hint, 1) / 2, y + bob, '#f8f0e0', 1);
   }
 
-  const foot = 'ARROWS MOVE   F USE   Z PUNCH   X JUMP   HOLD C PARRY   ESC TITLE';
-  drawTextShadow(ctx, foot, (W - textWidth(foot, 1)) / 2, 262, '#686098', 1);
+  // The title screen used to carry the full control list. It belongs here instead: this is
+  // the room you stand in before you go anywhere, and everything in the list can be tried
+  // on the spot - there is a bag to hit and a mirror to flex at.
+  const foot = [
+    'ARROWS MOVE   F USE   Z PUNCH   X JUMP   HOLD C PARRY   SPACE METEOR LARIAT',
+    'DOUBLE TAP TO DASH, HOLD TO RUN   GREEN CUE: PARRY   RED CUE: EVADE',
+    'TAP Z OR X WHILE DOWN TO GET UP FAST   ESC TITLE',
+  ];
+  for (let i = 0; i < foot.length; i++) {
+    drawTextShadow(ctx, foot[i], (W - textWidth(foot[i], 1)) / 2, 246 + i * 9, '#686098', 1);
+  }
 }

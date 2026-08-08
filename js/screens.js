@@ -10,9 +10,20 @@ function center(str, scale) { return (W - textWidth(str, scale)) / 2; }
 const STAGE_NAMES = STAGES.map((s) => s.name);
 const STAGE_COUNT = STAGES.length;
 
+// Logical. The art is 260x82, so this height is 82 * LOGO_W / 260 - sized so the wordmark
+// finishes above y 86, where the bottom scrim starts, and the key art keeps its top third.
+const LOGO_W = 208;
+
 function drawLogo(ctx, y0) {
   const t = G.rawTime;
   const bob = Math.round(Math.sin(t * 0.05) * 2);
+  // drawn lettering is the fallback, like every other asset in this game
+  const art = ASSETS.logo;
+  if (art) {
+    const lh = Math.round(art.height / art.width * LOGO_W);
+    ctx.drawImage(art, Math.round((W - LOGO_W) / 2), y0 + bob, LOGO_W, lh);
+    return;
+  }
   drawText(ctx, 'GIGACHAD', center('GIGACHAD', 4) + 2, y0 + bob + 2, '#100a0c', 4);
   drawText(ctx, 'GIGACHAD', center('GIGACHAD', 4), y0 + bob, '#ffd94a', 4);
   drawText(ctx, 'WORLD TOUR', center('WORLD TOUR', 2) + 2, y0 + 30 + bob + 2, '#100a0c', 2);
@@ -23,7 +34,8 @@ function drawLogo(ctx, y0) {
   ctx.fillRect(center('WORLD TOUR', 2) + lw + 4, y0 + 34 + bob, 10, 1);
 }
 
-function drawControls(ctx, y0) {
+// Exported for THE LAIR, which is the only screen that lists them now.
+export function drawControls(ctx, y0) {
   const lines = [
     'ARROWS/WASD MOVE   DOUBLE TAP DASH, HOLD TO RUN',
     'Z PUNCH   X JUMP   HOLD C PARRY   SPACE METEOR LARIAT',
@@ -44,12 +56,15 @@ export function drawTitle(ctx) {
     ctx.fillStyle = 'rgba(0,0,0,0.14)';
     for (let y = 1; y < 186; y += 3) ctx.fillRect(0, y, W, 1);
     if (((t * 7) % 300) < 3) { ctx.fillStyle = 'rgba(0,0,0,0.16)'; ctx.fillRect(0, 0, W, 186); }
-    const grad = ctx.createLinearGradient(0, 86, 0, H);
+    // The bottom scrim used to start at 86 and reach 0.85 by mid-screen, because four lines
+    // of controls sat on it. They live in THE LAIR now, so it only has to carry PRESS Z -
+    // it starts lower and stays lighter, and the room's floor is visible again.
+    const grad = ctx.createLinearGradient(0, 108, 0, H);
     grad.addColorStop(0, 'rgba(8,4,8,0)');
-    grad.addColorStop(0.45, 'rgba(8,4,8,0.85)');
+    grad.addColorStop(0.5, 'rgba(8,4,8,0.55)');
     grad.addColorStop(1, 'rgba(8,4,8,0.96)');
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 86, W, H - 86);
+    ctx.fillRect(0, 108, W, H - 108);
     // top scrim so the logo reads over the key art
     const top = ctx.createLinearGradient(0, 0, 0, 62);
     top.addColorStop(0, 'rgba(8,4,8,0.85)');
@@ -58,9 +73,8 @@ export function drawTitle(ctx) {
     ctx.fillRect(0, 0, W, 62);
     drawLogo(ctx, 14);
     ctx.fillStyle = 'rgba(8,4,8,0.55)';
-    ctx.fillRect(center('PRESS Z', 2) - 8, 124, textWidth('PRESS Z', 2) + 16, 14);
-    if ((t >> 4) & 1) drawTextShadow(ctx, 'PRESS Z', center('PRESS Z', 2), 128, '#f8f0e0', 2);
-    drawControls(ctx, 158);
+    ctx.fillRect(center('PRESS Z', 2) - 8, 164, textWidth('PRESS Z', 2) + 16, 14);
+    if ((t >> 4) & 1) drawTextShadow(ctx, 'PRESS Z', center('PRESS Z', 2), 168, '#f8f0e0', 2);
   } else {
     drawStage(ctx, (t * 0.4) % 1400);
     ctx.fillStyle = 'rgba(10,6,10,0.55)';
@@ -71,13 +85,12 @@ export function drawTitle(ctx) {
     blit(ctx, grunt, 66, 142);
     drawLogo(ctx, 18);
     if ((t >> 4) & 1) drawTextShadow(ctx, 'PRESS Z', center('PRESS Z', 2), 128, '#f8f0e0', 2);
-    drawControls(ctx, 158);
   }
-  // high score + tagline. Level select lives in the dojo now (js/hub.js).
+  // The controls used to be listed here too. They belong where you can try them: the
+  // title is key art, and THE LAIR is the room you stand in before you go anywhere.
   const hs = 'HI ' + String(G.hiscore).padStart(6, '0');
-  drawTextShadow(ctx, 'ENTER THE LAIR', center('ENTER THE LAIR', 1), 214, '#f0b848', 1);
-  drawTextShadow(ctx, hs, center(hs, 1), 226, '#ffd94a', 1);
-  drawTextShadow(ctx, 'FOR THE LOVE OF THE GAME', center('FOR THE LOVE OF THE GAME', 1), 246, '#686098', 1);
+  drawTextShadow(ctx, 'ENTER THE LAIR', center('ENTER THE LAIR', 1), 202, '#f0b848', 1);
+  drawTextShadow(ctx, hs, center(hs, 1), 214, '#ffd94a', 1);
 }
 
 export function drawIntro(ctx) {
