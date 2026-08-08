@@ -40,6 +40,22 @@ $G $O/tankscape.png landscape "The whole floor of an enormous aquarium seen from
 
 wait
 
+echo "=== the other tenants ==="
+# Three residents in three different zones of the tank - the wreck, the sand and the open
+# water - so it reads as somewhere that is lived in rather than three animals in a box.
+# The eel comes WITH its porthole: it is drawn over the wreck's hull, and a sprite that
+# ended in a cut-off body would show its own root sitting on the timbers. The generator
+# draws that porthole a different size in every frame, which build_lair_extras.py's
+# fix_porthole scales back into agreement - compositing frame 0's rim over the others
+# does not work here because the eel passes THROUGH the thing that must not move.
+$G $O/eel.png landscape "One horizontal row containing four frames of the same moray eel, evenly spaced, identical scale, all on the same horizontal line, with a clear band of empty flat green between each pose so they never touch. Each frame shows the head and the front third of a big green moray eel leaning out of a DARK ROUND HOLE in a ship's hull, seen in exact side profile facing right. The hole is a black circle rimmed with rusted iron and it is drawn in every frame at exactly the same size in exactly the same place. The eel is mottled olive and yellow-green with a pale throat, small mean eyes and a long jaw of needle teeth, and it is identical in every pose: same body, same colour, same markings. Left to right the four poses are: 1 leaning far out of the hole with its jaws wide open showing the teeth, 2 leaning far out with its jaws closed, 3 half withdrawn into the hole with its jaws open, 4 almost entirely inside the hole with just the snout and eyes showing in the dark. $SHEET" &
+
+$G $O/baitfish.png landscape "One horizontal row containing a four frame swim cycle of the same small fish, evenly spaced, identical scale, all on the same horizontal line, with a clear band of empty flat green between each pose so they never touch. The fish is a small bright silver sardine seen in exact side profile facing right, mirror-silver flank with a dark blue back and a forked tail, identical in every pose. Left to right the four poses are: 1 tail swung left, 2 tail centred, 3 tail swung right, 4 tail centred. Only the tail and fins change. $SHEET" &
+wait
+
+$G $O/crab.png landscape "One horizontal row containing a four frame walk cycle of the same crab, evenly spaced, identical scale, all standing on the same ground line, with a clear band of empty flat green between each pose so they never touch. The crab is a big deep red armoured crab seen from the side facing right, with a heavy knobbled shell, black bead eyes on stalks and two large claws, and it holds a single GOLD COIN pinched in its raised right claw in every frame. It is identical in every pose: same shell, same colour, same coin. Left to right the four poses are: 1 legs gathered under it, 2 mid stride with the legs spread forward, 3 legs gathered again, 4 mid stride with the legs spread back. Its body and its claws stay at exactly the same height and never rotate; only the legs change. $SHEET" &
+wait
+
 echo "=== the tiger ==="
 $G $O/tiger_walk.png landscape "One horizontal row containing a six frame walk cycle of the same tiger, evenly spaced, identical scale, all standing on the same ground line, with a clear band of empty flat green between each pose so they never touch. The tiger is $TIGER, and it is identical in every pose: same body, same stripes, same colour, same harness, same sunglasses. Left to right the six poses are: 1 front left paw reaching forward and rear right leg pushing back, 2 legs passing under the body, 3 front right paw reaching forward and rear left leg pushing back, 4 legs gathered under the body, 5 front left paw planted and the body at its lowest, 6 mid stride with all four legs spread. The tiger faces to the right in every pose. Its head and body stay at exactly the same height and never rotate; only the legs and the tail change. $SHEET" &
 wait

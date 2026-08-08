@@ -191,6 +191,20 @@ The tank is **decor, not a fixture** - there is nothing to walk up to. It had a 
 action, which existed to make the shoal ball up under the food; with the shoal gone and the
 shark living his own life, the prompt was offering an interaction the room did not need.
 
+**Three tenants, three zones.** The tank holds the shark, a moray in one of the wreck's
+gun ports, a coin-carrying crab on the sand and a baitball in the open water — deliberately
+one per layer, so it reads as somewhere lived in rather than as animals sharing a box. All
+three react to the shark, which is the whole point: the eel pulls its head in, the crab
+plays dead, and the baitball SPLITS around him and re-forms. That last one is what the
+twenty drifting piranhas never did and the reason they went.
+
+The eel's sprite carries its own porthole, or its cut-off body would sit on the timbers.
+The generator drew that porthole a different size in every frame; `fix_porthole()` scales
+each frame until its rim matches frame 0's. Compositing frame 0's rim over the others — the
+fix the fire's log stack uses — does NOT work here, because the eel passes *through* the
+thing that must not move and no colour test separates them cleanly. A few percent of scale
+on an eel nobody is measuring is invisible; the same on the hull it lives in is not.
+
 **Two rates make a habit read.** The shark is *always* smoking - one wisp off the ember
 every sixteen frames - and takes a proper drag every 4-8s: the ember flares, then the
 cloud comes back out over three sub-bursts ten frames apart. One rate reads as a smoke

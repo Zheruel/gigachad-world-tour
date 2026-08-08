@@ -716,6 +716,15 @@ const SHARK_W = 56;           // lair_shark_*, from tools/build_lair_extras.py S
 // sprite's own top-left. The smoke has to leave the cigar, not the middle of the shark.
 const CIGAR = { x: 54, y: 27 };
 const SILT_N = 26;
+// The other tenants. Placed as fractions of the glass so they follow the art rather than
+// a number that has to be re-derived every time the tank changes size: the eel's porthole
+// is a real gun port in lair_tankscape, the crab walks its sand.
+const EEL_AT = [0.227, 0.705];    // a real gun port in the hull, measured off the screen
+const EEL_NEAR = 72;              // how close the shark gets before it pulls its head in
+const BAIT_N = 15;
+const eel = { out: 1, t: 0, jaw: 0 };
+const crab = { x: 0, dir: 1, t: 0, freeze: 0 };
+const bait = { cx: 0, cy: 0, vx: 0.25, vy: 0, fish: [] };
 
 function resetTank() {
   shark.x = TANK.x + 30;
@@ -727,6 +736,15 @@ function resetTank() {
   bubbles.length = 0;
   smoke.length = 0;
   silt.length = 0;
+  eel.out = 1; eel.t = 0; eel.jaw = 0;
+  crab.x = TANK.x + 40; crab.dir = 1; crab.t = 0; crab.freeze = 0;
+  bait.cx = TANK.x + TANK.w * 0.72; bait.cy = TANK.y + TANK.h * 0.22;
+  bait.vx = 0.25; bait.vy = 0;
+  bait.fish.length = 0;
+  for (let i = 0; i < BAIT_N; i++) {
+    bait.fish.push({ x: bait.cx, y: bait.cy, ox: rand(-16, 16), oy: rand(-9, 9),
+      phase: rand(0, 9), rate: rand(0.03, 0.07), frame: irand(0, 3), push: 0 });
+  }
   for (let i = 0; i < SILT_N; i++) {
     silt.push({
       x: rand(TANK.x + 2, TANK.x + TANK.w - 2),
@@ -825,6 +843,10 @@ function updateTank() {
     s.life -= s.fade;
     if (s.life <= 0 || s.y < TANK.y + 3) smoke.splice(i, 1);
   }
+  updateEel();
+  updateCrab();
+  updateBait();
+
   for (const m of silt) {
     m.phase += 0.004 + m.z * 0.006;
     m.y -= 0.02 + m.z * 0.05;
@@ -833,9 +855,75 @@ function updateTank() {
   }
 }
 
+// The eel lives in the wreck's gun port. It works its jaws and leans out, and pulls its
+// head in when the shark comes past - the whole character is that it barely moves, so the
+// one time it does is the beat.
+export function eelX() { return TANK.x + TANK.w * EEL_AT[0]; }
+
+function updateEel() {
+  eel.t++;
+  const scared = Math.abs((shark.x + SHARK_W / 2) - eelX()) < EEL_NEAR;
+  eel.out = clamp(eel.out + (scared ? -0.06 : 0.012), 0, 1);
+  // jaws work on their own, but only while it is actually out
+  if (eel.out > 0.8 && --eel.jaw <= 0) eel.jaw = irand(30, 90);
+}
+
+function eelFrame() {
+  if (eel.out < 0.35) return 3;
+  if (eel.out < 0.75) return 2;
+  return eel.jaw > 24 ? 0 : 1;
+}
+
+// The crab walks the sand with a gold coin held up in one claw, and plays dead when the
+// shark is overhead. It is the only thing down there that moves, which is where your eye
+// goes whenever the shark is up among the masts.
+function updateCrab() {
+  const lo = TANK.x + 10, hi = TANK.x + TANK.w - 26;
+  if (Math.abs((shark.x + SHARK_W / 2) - (crab.x + 8)) < 46 && sharkY() > TANK.y + TANK.h * 0.4) {
+    crab.freeze = 70;
+  }
+  if (crab.freeze > 0) { crab.freeze--; return; }
+  crab.t++;
+  crab.x += crab.dir * 0.16;
+  if (crab.x < lo) { crab.x = lo; crab.dir = 1; }
+  if (crab.x > hi) { crab.x = hi; crab.dir = -1; }
+}
+
+// A baitball, not a shoal: it moves as ONE shape and splits around the shark, which is the
+// thing the twenty drifting piranhas never did and the reason they went.
+function updateBait() {
+  bait.cx += bait.vx;
+  bait.cy += bait.vy;
+  bait.vy += Math.sin(shark.t * 0.011) * 0.006;
+  const lo = TANK.x + 26, hi = TANK.x + TANK.w - 26;
+  if (bait.cx < lo) { bait.cx = lo; bait.vx = Math.abs(bait.vx); }
+  if (bait.cx > hi) { bait.cx = hi; bait.vx = -Math.abs(bait.vx); }
+  bait.cy = clamp(bait.cy, TANK.y + 12, TANK.y + TANK.h * 0.5);
+  bait.vy = clamp(bait.vy, -0.2, 0.2);
+
+  const sx = shark.x + SHARK_W / 2, sy = sharkY() + 20;
+  for (const f of bait.fish) {
+    f.phase += f.rate;
+    const tx = bait.cx + f.ox + Math.cos(f.phase) * 4;
+    const ty = bait.cy + f.oy + Math.sin(f.phase * 1.3) * 3;
+    f.x += (tx - f.x) * 0.06;
+    f.y += (ty - f.y) * 0.06;
+    // the split: pushed straight out from him, hardest when he is closest
+    const dx = f.x - sx, dy = f.y - sy;
+    const d = Math.hypot(dx, dy);
+    if (d < 52) {
+      const k = (1 - d / 52) * 2.4;
+      f.x += (dx / (d || 1)) * k;
+      f.y += (dy / (d || 1)) * k * 0.6;
+      f.push = 12;
+    } else if (f.push > 0) f.push--;
+    f.frame = ((f.phase * 3) | 0) & 3;
+  }
+}
+
 // for ?auto=verify: the drag is the only thing in this room whose behaviour cannot be
 // seen in a still
-export function hubTank() { return { shark, smoke, silt }; }
+export function hubTank() { return { shark, smoke, silt, eel, crab, bait }; }
 
 // Light coming down through the surface. Four shafts, each drifting on its own slow sine
 // and fading out with depth - it is what turns a flat blue rectangle into water.
@@ -871,6 +959,10 @@ function lightShafts(ctx, l) {
 }
 
 function drawSilt(ctx, camX, near) {
+  updateEel();
+  updateCrab();
+  updateBait();
+
   for (const m of silt) {
     if ((m.z > 0.62) !== near) continue;
     ctx.fillStyle = `rgba(200,235,255,${0.10 + m.z * 0.22})`;
@@ -936,6 +1028,39 @@ function drawTank(ctx, camX) {
   const scape = ASSETS.lair_tankscape || fallbackArt('lair_tankscape', TANK.w, SCAPE_H);
   blit(ctx, scape, l + Math.round((TANK.w - frameW(scape)) / 2),
        TANK.y + TANK.h - frameH(scape));
+
+  // the eel leans out of the hull, so it goes over the wreck
+  const eimg = ASSETS['lair_eel_' + eelFrame()];
+  if (eimg) {
+    // the sprite carries its own rim; sit that on the painted port, not the eel's head
+    blit(ctx, eimg, Math.round(eelX() - camX - frameW(eimg) * 0.22),
+         Math.round(TANK.y + TANK.h * EEL_AT[1] - frameH(eimg) / 2));
+  }
+  const cimg = ASSETS['lair_crab_' + ((crab.t / 10 | 0) & 3)];
+  if (cimg) {
+    const cx = Math.round(crab.x - camX);
+    if (crab.dir < 0) {
+      ctx.save();
+      ctx.scale(-1, 1);
+      blit(ctx, cimg, -cx - frameW(cimg), TANK.y + TANK.h - frameH(cimg) - 2);
+      ctx.restore();
+    } else {
+      blit(ctx, cimg, cx, TANK.y + TANK.h - frameH(cimg) - 2);
+    }
+  }
+  for (const f of bait.fish) {
+    const img = ASSETS['lair_baitfish_' + f.frame];
+    if (!img) break;
+    const fx = Math.round(f.x - camX), fy = Math.round(f.y);
+    if (f.x < bait.cx) {
+      ctx.save();
+      ctx.scale(-1, 1);
+      blit(ctx, img, -fx - frameW(img), fy);
+      ctx.restore();
+    } else {
+      blit(ctx, img, fx, fy);
+    }
+  }
 
   const simg = ASSETS['lair_shark_' + shark.frame];
   if (simg) {
