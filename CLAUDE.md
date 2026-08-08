@@ -300,6 +300,19 @@ after all of that the rig still has to be stamped from one frame onto the others
 mask of CHAD that a colour test cannot give you because his vest and boots are as black as the
 steel. Every one of those steps was necessary and every one is still in the git history.
 
+Two rules came out of drawing them as plain furniture afterwards, and both apply to any prop:
+
+- **Count the objects against the pixels.** The rack is 117 logical px wide. Asked for three
+  tiers "packed end to end" with dumbbells "visibly ENORMOUS from left to right" it came back
+  with a dozen a shelf - 9 px each - and the small end read as a row of rivets while the big
+  end read as boulders. State the count as a count: five a shelf, each as deep as the shelf
+  gap, the largest under twice the smallest.
+- **Say the projection out loud.** The shared style block says "seen from the side", and the
+  generator still drew the bench PAD in three quarter - its top face visible, with a chalk
+  handprint lying on a surface you cannot see from the side - while drawing the frame under it
+  in flat elevation. One object, two projections. It has to be told that nothing shows its top
+  and nothing shows its far side.
+
 They are furniture now. The bag is the gym's action and always was; the rack and the bench were
 a second and third way to do the same thing, and the whole apparatus above existed to serve
 them. `keyed_full`, `man_span`, `below_the_bar`, `stamp_rig`, `drop_specks` and `build_rig` all
