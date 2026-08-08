@@ -398,7 +398,11 @@ function update() {
   }
 
   // state === 'play'
-  if (input.pressed('pause')) { G.paused = !G.paused; audio.sfx('blip'); }
+  if (input.pressed('pause')) {
+    G.paused = !G.paused;
+    audio.setPaused(G.paused);
+    if (!G.paused) audio.sfx('blip');   // on the way IN the suspend would cut it anyway
+  }
   if (G.paused) return;
 
   if (G.hitstop > 0) { G.hitstop--; return false; } // input persists through hitstop (buffering)
@@ -1034,6 +1038,17 @@ if (autoMode) {
       t('stage1-name', G.stage.name === 'BAZAAR HEAT');
       t('five-act-chapter', STAGES.length === 5 &&
         STAGES.map((s) => s.boss).join(',') === 'raja,mirchi,refund,yadav,rana');
+      // ESC is a real pause: the sim stops dead and the audio context is suspended with it.
+      // It is bound to `pause` AND `back`, so this also proves the two never collide - play
+      // reads pause and ignores back, and hub-escape-leaves proves the other half.
+      {
+        debugPress('pause'); step(1); debugRelease('pause');
+        const frozen = G.time;
+        step(40);
+        const held = G.paused && G.time === frozen;
+        debugPress('pause'); step(1); debugRelease('pause'); step(4);
+        t('esc-pauses-everything', held && !G.paused && G.time > frozen);
+      }
       // movement
       const x0 = G.player.x;
       debugPress('right'); step(30); debugRelease('right');

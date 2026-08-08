@@ -440,6 +440,18 @@ being used, and to being walked up to.
 up before its wav exists - the mirror flex calls `duke_look_good` and simply plays no line
 until `audio/voice/duke_look_good.wav` is dropped in.
 
+**Key art is chosen against the SCRIMS, not on its own.** The title band is 2.645:1 and the
+logo sits over its top third, so a generation is judged by `tools/preview_title.py`, which
+composites the crop under the same boxes `screens.js` draws. Two things only that view tells
+you: the sunset variant was the better picture and the worse title, because a yellow logo over
+an orange sun is unreadable where it is instantly legible over a night sky; and `TOP` is worth
+sweeping in steps of a few percent, because the difference between his head clearing the logo
+and his eyes being under it is about 0.06.
+
+The old title was an Old Delhi basement gym, which was right when Delhi was the whole game.
+The home base is a neon penthouse now and the game is a WORLD TOUR, so the title is the room
+the player actually lives in between acts.
+
 **Everything degrades to a fallback.** Missing PNG → code-drawn sprite (`js/sprites.js`
 `SPR`, `js/props.js`); missing frames → `getAIFrame` returns null and the code sprite
 plays; missing wav → synthesized SFX; missing background plates → a complete procedural
@@ -521,7 +533,7 @@ Generations run in parallel with `&` / `wait` in the gen scripts; keep that patt
 | props / foreground | `tools/process_props.py`, `tools/process_fg.py` (fg is graded *down*, ~half the backdrop's exposure — "closer" reads as darker) |
 | stage plates → strips | `tools/build_bgs.py delhi` — colour-matches panels to a shared target and cross-fades the overlap |
 | HUD portrait | `tools/make_portrait.py REF.png OUT.png --size 48` |
-| title key art | `tools/gen_lair.sh` generates lair variants, `tools/build_title.sh SRC.png [TOP]` crops one to the 984x372 title band and pixelates it into `assets/title_art.png`; `tools/preview_title.py` composites it under the real scrims for checking |
+| title key art | `tools/gen_title.sh` generates variants, `tools/build_title.sh SRC.png [TOP]` crops one to the 984x372 title band and pixelates it into `assets/title_art.png`; `tools/preview_title.py` composites it under the real scrims for checking |
 | SFX | `tools/build_sfx.sh` — rebuilds `audio/sfx/*.wav` from `audio/sfx/raw/` via the slot map in `audio/sfx/manifest.json` (needs `ffmpeg`) |
 
 Character heights passed to `process_char.py` are **logical × RS** and must match `HEIGHTS`

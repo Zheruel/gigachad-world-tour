@@ -28,7 +28,7 @@ function drawControls(ctx, y0) {
     'ARROWS/WASD MOVE   DOUBLE TAP DASH, HOLD TO RUN',
     'Z PUNCH   X JUMP   HOLD C PARRY   SPACE METEOR LARIAT',
     'GREEN CUE: PARRY   RED CUE: EVADE   REFLECT PROJECTILES',
-    'TAP Z OR X WHILE DOWN TO GET UP FAST   P PAUSE',
+    'TAP Z OR X WHILE DOWN TO GET UP FAST   ESC PAUSE',
   ];
   for (let i = 0; i < lines.length; i++) {
     drawTextShadow(ctx, lines[i], center(lines[i], 1), y0 + i * 10, '#c8c0e0', 1);

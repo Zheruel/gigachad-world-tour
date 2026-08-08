@@ -178,7 +178,7 @@ export function drawPause(ctx) {
     'TAP Z AGAIN DURING EACH HIT TO CHAIN',
     'GREEN = PARRY   RED = DODGE',
     'TAP Z OR X WHILE DOWN TO GET UP FAST',
-    'P RESUME',
+    'ESC OR P TO RESUME',
   ];
   let y = 130;
   for (const l of lines) {

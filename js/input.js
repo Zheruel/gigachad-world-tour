@@ -20,7 +20,9 @@ const KEYMAP = {
   // as pouring a drink.
   KeyF: 'use', KeyE: 'use',
   KeyP: 'pause', Enter: 'pause',
-  Escape: 'back',
+  // ESC is BOTH. They are handled in different states and never collide: play reads
+  // `pause` and ignores `back`, the hub and its panels read `back` and ignore `pause`.
+  Escape: ['pause', 'back'],
 };
 
 // gamepad button index -> action (standard mapping)
@@ -48,12 +50,17 @@ export function initInput() {
     const a = KEYMAP[e.code];
     if (!a) return;
     e.preventDefault();
-    if (!keyHeld[a] && !padHeld[a]) press(a);
-    keyHeld[a] = true;
+    for (const act of (Array.isArray(a) ? a : [a])) {
+      if (!keyHeld[act] && !padHeld[act]) press(act);
+      keyHeld[act] = true;
+    }
   });
   window.addEventListener('keyup', (e) => {
     const a = KEYMAP[e.code];
-    if (a) { keyHeld[a] = false; releasedThisFrame[a] = true; }
+    if (!a) return;
+    for (const act of (Array.isArray(a) ? a : [a])) {
+      keyHeld[act] = false; releasedThisFrame[act] = true;
+    }
   });
   window.addEventListener('blur', () => {
     for (const k in keyHeld) keyHeld[k] = false;

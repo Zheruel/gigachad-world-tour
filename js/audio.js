@@ -451,6 +451,23 @@ export const audio = {
   },
   startEntranceBike,
   stopEntranceBike,
+  // A real pause. Suspending the context stops the chiptune's scheduled notes and every
+  // synthesised effect dead in the same instant; the HTML track is paused separately
+  // because it is an <audio> element and the context does not own it.
+  setPaused(on) {
+    if (!unlocked || !ac) return;
+    if (on) {
+      if (currentTrack) { try { currentTrack.pause(); } catch (e) { /* not loaded */ } }
+      stopChiptune();
+      if (ac.state === 'running') ac.suspend();
+      return;
+    }
+    if (ac.state === 'suspended') ac.resume();
+    // the chiptune's scheduler was torn down, so it has to be started again; a real
+    // track kept its position and only needs playing
+    if (currentTrack) currentTrack.play().catch(() => {});
+    else if (currentSlot) this.music(currentSlot, true);
+  },
   // Asking for the slot that is already playing is a no-op, so re-entering a
   // stage or clearing a wave never restarts the track from the top.
   music(slot, force) {
