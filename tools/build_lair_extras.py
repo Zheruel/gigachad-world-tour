@@ -10,10 +10,10 @@ share a screen position. These two do:
           - the bottom band, which is the sofa and the side table in both pictures and
           therefore is not dragged sideways by CHAD's arm.
 
-  tiger   a six frame walk cycle plus sit and lying poses. One factor for all of the
-          walk, measured off the tallest frame, then every frame bottom-anchored and
-          centred on its own lower body so he does not bob or slide. White on purpose:
-          the room is walnut and black granite and a dark animal sinks into it.
+  tiger   a six frame prowl plus a five pose rest strip (lie, wake, sit, stretch,
+          snarl), all eleven on one canvas and one palette so he neither hops nor
+          changes colour when he lies down. White on purpose: the room is walnut and
+          black granite and a dark animal sinks into it.
 
   tank    the shark's swim cycle. Centred rather than
           bottom-anchored - nothing in water stands on anything.
@@ -47,8 +47,6 @@ OUT = "assets/lair/"
 SMOKE_POSES = 4  # lounge_chad is pose 0 of the smoke; smoke_1..3 are the draw
 SOFA_H = 46      # logical height of the empty sofa + side table
 TIGER_H = 58     # shoulder-to-ground on a big cat, against CHAD's 96
-TIGER_SIT_H = 70
-TIGER_LIE_H = 32
 SHARK_H = 42     # sized against the widened tank; ~57 logical nose to tail
 FIRE_W = 32      # the firebox interior is 59x35 logical; the flames clip at the lintel
 FENDER = (1530, 148, 68, 20)   # must match FENDER in js/hub.js
@@ -300,26 +298,6 @@ def slice_strip(path, n, blob=True):
     return [biggest_blob(c) if blob else subject(c) for c in cells]
 
 
-def build_walker(prefix, walk_h, extras):
-    """A walk strip plus standalone poses. The cycle shares one scale so the animal
-    does not pulse; each extra pose is its own generation and so gets its own factor,
-    targeted at the height that pose should be."""
-    frames = slice_strip(SRC + prefix + "_walk.png", 6)
-    frames = place([rescale(f, walk_h * RS / max(f.height for f in frames))
-                    for f in frames])
-    os.makedirs(OUT, exist_ok=True)
-    for i, f in enumerate(frames):
-        finish(f).save(f"{OUT}{prefix}_{i}.png")
-    print(f"{OUT}{prefix}_0..5.png  {frames[0].width}x{frames[0].height}  "
-          f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})")
-    for pose, h in extras.items():
-        img = keyed(f"{SRC}{prefix}_{pose}.png")
-        img = place([rescale(img, h * RS / img.height)])[0]
-        finish(img).save(f"{OUT}{prefix}_{pose}.png")
-        print(f"{OUT}{prefix}_{pose}.png  {img.width}x{img.height}  "
-              f"(logical {round(img.width / RS)}x{round(img.height / RS)})")
-
-
 def build_rig(prefix, rig_h, side):
     """A gym station: one strip holding the rig alone and then three poses of CHAD on it.
 
@@ -498,7 +476,34 @@ def build_bench():
 
 
 def build_tiger():
-    build_walker("tiger", TIGER_H, {"sit": TIGER_SIT_H, "lie": TIGER_LIE_H})
+    """The six frame prowl and the five rest poses, on ONE canvas and ONE palette.
+
+    The old set was three separate generations and came out as three different animals:
+    the walk frames' fur measured (238,234,234), neutral white, and the sit was
+    (249,235,214) - cream - with 16.2% of its pixels brown against the walk's 5%, because
+    it had been drawn a different harness. So the rest poses are one strip generated
+    against a frame of the finished walk, and everything is quantized together here.
+
+    Scaled by a STANDING pose, never by each pose's own target height. The last rest pose
+    is the tiger standing square and snarling, so matching its height to the walk's makes
+    the sit, the lie and the stretch come out at whatever they should be RELATIVE to that.
+    Told their heights instead, a lying tiger and a sitting one end up the same size - the
+    same mistake that made a police cap the size of a payphone on the trophy shelf.
+
+    place() puts all eleven on one canvas with one ground line, so the room can swap poses
+    without any y bookkeeping and he cannot hop when he sits down.
+    """
+    walk = slice_strip(SRC + "tiger_walk.png", 6)
+    walk = [rescale(f, TIGER_H * RS / max(g.height for g in walk)) for f in walk]
+    rest = slice_strip(SRC + "tiger_rest.png", 5)
+    rest = [rescale(f, max(g.height for g in walk) / rest[4].height) for f in rest]
+    frames = finish_set(place(walk + rest), 48)
+    names = [str(i) for i in range(6)] + ["lie", "wake", "sit", "stretch", "snarl"]
+    os.makedirs(OUT, exist_ok=True)
+    for name, f in zip(names, frames):
+        f.save(f"{OUT}tiger_{name}.png")
+    print(f"{OUT}tiger_*.png  {frames[0].width}x{frames[0].height}  "
+          f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})")
 
 
 def build_tank():

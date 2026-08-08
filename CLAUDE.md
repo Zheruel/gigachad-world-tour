@@ -260,6 +260,40 @@ like an accident). Point the tail with a measurement, not a guess: her head is a
 +33 from `BED.x`, found by diffing each pose against the median of all eight - the bed does
 not move, so whatever changed is her.
 
+**Everything in this room needs somewhere to live, and the tiger was the last thing without
+it.** He walked toward CHAD and lay down wherever CHAD stopped, which is a follower, not a
+resident. He sleeps on the hearth rug now - which is the PELT of the cat in the painting
+above it, so the three big-cat items finally tell one story instead of being three cats. The
+den x is 1592, not the rug's centre: the pelt's head and fangs are its left 40 logical px and
+a tiger lying across them is a muddle of two heads.
+
+Three things about him are worth keeping in mind for anything else that lives in a room:
+
+- **Nothing snaps between poses.** Asleep he breathes (one pixel on a slow sine, and it is
+  the whole difference between a sleeping animal and a rug); woken his head comes up and the
+  rest of him does not; to get up he sits, then stretches, then walks. `?auto=verify` asserts
+  the ORDER rather than the timings, because the order is what makes it read.
+- **A wander timer cannot share a clock with a pose timer.** His go-and-find-CHAD roll hung
+  off the same `t` as his look-around, and every look-around reset it: measured, he never once
+  left the hearth in 24,000 frames. Its own countdown fixed it - and then the first value was
+  far too short, because the room is 1920 px wide and he covers 0.42 of them a frame, so a
+  round trip is 6,600 frames and setting off every 2,500 had him walking 82% of the time. He
+  stays where CHAD is and goes home when CHAD leaves; sending him back on a timer is what made
+  a pacing animal.
+- **Proximity is right for a look and wrong for anything more.** Walking up to him lifts his
+  head - the same rule the sleepers in the suite use - but it cannot get him up. That is the
+  line between "he noticed you" and "you tripped a switch".
+
+Meaner at 58 logical px is the LINE OF THE BACK, not detail: shoulder blades standing above it
+with the head carried below it is a stalking animal, and a level back with the head up is a
+house cat however many scars it has drawn on. The old set was three separate generations and
+came back three different animals - walk fur (238,234,234), sit fur (249,235,214), 16.2% brown
+pixels against 5% because the sit had been drawn a different harness. `tools/gen_lair_tiger.sh`
+generates the rest poses as ONE strip against a frame cut out of the finished walk strip, and
+`build_tiger` quantizes all eleven together; the spread is 5 points now. It scales the rest
+strip by the SNARL - a standing pose - so the sit, the lie and the stretch come out at whatever
+they should be relative to the walk rather than being told a height each.
+
 **One animal with somewhere to live beats a shoal with nowhere.** The tank held a shark
 and twenty piranhas; the piranhas were busy without being alive, and they turned the
 shark into furniture. What actually reads as alive is all procedural and free: a bubble

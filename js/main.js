@@ -3,7 +3,7 @@ import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, clamp, addSco
 import { initInput, input, endFrameInput, pollGamepad, debugPress, debugRelease } from './input.js';
 import { SPR, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { initStage, initStageObj, drawStage, updateMotes, STAGES, stageDef } from './stages.js';
-import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, hubSay, hubTank, eelX, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
+import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, hubSay, hubTiger, petsWatch, hubTank, eelX, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
 import { createProp } from './props.js';
 import { loadAmbience, updateAmbience, reactStage } from './ambience.js';
 import { loadFX, fx } from './fx.js';
@@ -964,9 +964,30 @@ if (autoMode) {
         }
         t('hub-baitfish-face-forwards', moving > 500 && wrong === 0);
       }
-      // both pets, drawing themselves, and facing the way they are walking
+      // the tiger, drawing himself and living at the hearth
       t('hub-tiger-present', G.actors.length === 1
         && G.actors.every((a) => typeof a.draw === 'function'));
+      {
+        const tg = hubTiger();
+        const den = tg.x;
+        t('hub-tiger-sleeps-at-the-hearth', tg.state === 'sleep' && den > 1500 && den < 1650);
+        // he gets up in STAGES. A cat that goes from flat out to walking on one frame is a
+        // switch, so the order matters more than the timing: head up, sit, stretch, walk.
+        const order = [];
+        G.player.x = den - 40;
+        petsWatch(den, 260);
+        for (let i = 0; i < 400 && tg.state !== 'walk'; i++) {
+          step(1);
+          if (order[order.length - 1] !== tg.state) order.push(tg.state);
+        }
+        t('hub-tiger-gets-up-in-stages',
+          order.join(',') === 'sleep,wake,sit,stretch,walk' || order.join(',') === 'wake,sit,stretch,walk');
+        // and he comes looking for CHAD rather than waiting to be walked up to
+        G.player.x = 220;
+        let closest = 9999;
+        for (let i = 0; i < 30000; i++) { step(1); closest = Math.min(closest, Math.abs(tg.x - 220)); }
+        t('hub-tiger-comes-to-find-him', closest < 200);
+      }
       // the master suite: she shifts about on her own and speaks now and then. She does
       // NOT react to him, so walking up must change nothing.
       {

@@ -1353,64 +1353,159 @@ function drawBed(ctx, camX) {
 // the room is walnut and black granite and a dark animal sinks into it - which is also
 // why the doberman that used to share the room with him is gone. One animal padding
 // about reads as a pet; two reads as a kennel.
-function makePet(prefix, x, speed, rest, frames) {
-  return { prefix, x, y: 226, face: 1, state: 'rest', t: 0, target: x, frame: 0,
-    phase: 0, speed, rest, frames, alert: 0 };
-}
-const tiger = makePet('tiger', 1290, 0.42, 'lie', 6);
-const PETS = [tiger];
+//
+// He has a DEN, and that is most of what makes him read as living here rather than
+// following CHAD around: he sleeps on the hearth rug in front of the fire and he goes
+// back to it. Lying down wherever the man happened to stop walking is what a dog does.
+//
+// He never CUTS between poses either. Asleep he breathes; woken his head comes up and
+// the rest of him does not; to get up he sits, then stretches, then walks. Same rule as
+// the bed poses: two unrelated drawings swapped on a timer read as a cut however long
+// each one is held.
+// The hearth rug, which is the pelt of the cat in the painting above it - so he sleeps on
+// his predecessor. Not the rug's centre: the pelt's head and fangs are its left 40 logical
+// px (measured off assets/lair/bed_rug.png) and a tiger lying across them is just a muddle
+// of two heads. He lies on its back.
+const DEN = 1592;
+const tiger = {
+  x: DEN, y: 226, face: -1, state: 'sleep', t: 0, target: DEN,
+  frame: 0, phase: 0, alert: 0, snarl: 0, roam: 2000,
+};
+const SPEED = 0.42;
+const SIT_HOLD = 90;                  // frames of sitting before he commits to getting up
+const STRETCH_HOLD = 64;
+const SETTLE = 900;                   // sat still this long and he goes home
+const NEAR = 96;                      // a body length: close enough that he notices you
+// How often he gets up and goes to find CHAD. Its OWN countdown, not a roll against the
+// pose timer: sharing `t` with the look-around meant every look-around reset the clock
+// and he never once left the hearth in 24,000 frames of measuring.
+// Long, because the room is 1920 px wide and he covers 0.42 of them a frame: a round trip
+// is 6600 frames, so setting off every 2500 had him walking 82% of the time. He is a cat by
+// a fire that occasionally comes to find you, not a sentry on a route.
+const ROAM = [7000, 14000];
 
-// Something happened over there: he looks, and comes to watch if he is close enough.
+// Something happened over there. His head comes up wherever he is - that part is not
+// gated on distance, because an animal that ignores a noise across the room is furniture -
+// but he only walks over if he was near enough to care.
 export function petsWatch(x, urgency) {
-  for (const p of PETS) {
-    p.alert = Math.max(p.alert, urgency === undefined ? 150 : urgency);
-    if (Math.abs(p.x - x) > 190) continue;
-    p.target = clamp(x + (p.x < x ? -56 : 56), 90, HUB_WIDTH - 90);
-    p.state = 'walk';
-    p.t = 0;
-  }
+  tiger.alert = Math.max(tiger.alert, urgency === undefined ? 150 : urgency);
+  if (Math.abs(tiger.x - x) > 190) return;
+  tiger.target = clamp(x + (tiger.x < x ? -56 : 56), 90, HUB_WIDTH - 90);
+  if (tiger.state === 'sleep') { tiger.state = 'wake'; tiger.t = 0; }
 }
 
-// he clears out when the room goes up
+// he clears out when the room goes up, and shows his teeth about it on the way
 function petsScatter() {
-  for (const p of PETS) {
-    p.target = HUB_WIDTH - 140;
-    p.state = 'walk';
-    p.t = 0;
-    p.alert = 0;
+  tiger.target = HUB_WIDTH - 140;
+  tiger.state = 'walk';
+  tiger.t = 0;
+  tiger.alert = 0;
+  tiger.snarl = 40;
+}
+
+// He comes home between acts. Coming back from Delhi to find him mid-prowl three screens
+// away, on whatever timer he happened to be on, is the one moment the room reads as a
+// simulation that was left running.
+function resetTiger() {
+  tiger.x = DEN; tiger.y = 226; tiger.face = -1;
+  tiger.state = 'sleep'; tiger.t = 0; tiger.target = DEN;
+  tiger.frame = 0; tiger.phase = 0; tiger.alert = 0; tiger.snarl = 0;
+  tiger.roam = irand(...ROAM);
+}
+
+// The one place that says which drawing to use, so nothing else has to know the poses.
+function tigerPose() {
+  if (tiger.snarl > 0) return 'snarl';
+  switch (tiger.state) {
+    case 'walk': return String(tiger.frame);
+    case 'sleep': return 'lie';
+    case 'wake': return 'wake';
+    case 'stretch': return 'stretch';
+    default: return 'sit';
   }
 }
 
-function updatePet(p) {
-  p.t++;
-  if (p.alert > 0) p.alert--;
+// Time to go and find him. Nothing else in the room ever seeks CHAD out - everything
+// else waits to be walked up to - and it is what stops the hearth reading as a parking
+// space. Only worth doing if he is actually somewhere else.
+function seek(player) {
+  if (tiger.roam > 0 || Math.abs(player.x - tiger.x) < 300) return false;
+  tiger.target = clamp(player.x + rand(-160, 160), 90, HUB_WIDTH - 90);
+  tiger.alert = 150;
+  tiger.roam = irand(...ROAM);
+  return true;
+}
+
+function updatePet() {
+  tiger.t++;
+  if (tiger.alert > 0) tiger.alert--;
+  if (tiger.snarl > 0) tiger.snarl--;
+  if (tiger.roam > 0) tiger.roam--;
   const player = G.player;
-  if (p.state === 'rest') {
-    p.face = player.x < p.x ? -1 : 1;
-    if (p.t > 300 && Math.random() < 0.008) {
-      p.target = clamp(player.x + rand(-200, 200), 90, HUB_WIDTH - 90);
-      p.state = 'walk';
-      p.t = 0;
-    }
-    return;
+
+  switch (tiger.state) {
+    case 'sleep':
+      // asleep on the den, facing the room. The only thing moving is his ribs.
+      tiger.face = -1;
+      // He lifts his head when you walk up to him. This is the one place a proximity
+      // trigger is right rather than lazy: it is all a sleeping cat does, and the room
+      // already uses it for the sleepers in the suite. What it must NOT do is get him up.
+      if (tiger.alert > 0 || Math.abs(player.x - tiger.x) < NEAR
+          || (tiger.t > 1200 && Math.random() < 0.002)) {
+        tiger.state = 'wake'; tiger.t = 0;
+      } else if (seek(player)) {
+        tiger.state = 'wake'; tiger.t = 0;
+      }
+      return;
+
+    case 'wake':
+      // head up and watching, everything below the neck still on the floor
+      tiger.face = player.x < tiger.x ? -1 : 1;
+      if (tiger.t > 40 && tiger.alert > 90) { tiger.state = 'sit'; tiger.t = 0; }
+      else if (tiger.t > 150 && tiger.alert <= 0 && Math.abs(player.x - tiger.x) > NEAR) {
+        tiger.state = 'sleep'; tiger.t = 0;
+      }
+      return;
+
+    case 'sit':
+      tiger.face = player.x < tiger.x ? -1 : 1;
+      if (tiger.t > SIT_HOLD && Math.abs(tiger.target - tiger.x) > 3) {
+        tiger.state = 'stretch'; tiger.t = 0;
+      } else if (tiger.t > SETTLE) {
+        if (Math.abs(tiger.x - DEN) < 12) { tiger.state = 'sleep'; tiger.t = 0; }
+        // he stays as long as the man does, and goes home when the man has gone. Sending
+        // him back to the hearth on a timer is what turned him into a pacing animal.
+        else if (Math.abs(player.x - tiger.x) > 300) tiger.target = DEN;
+        else tiger.t = SETTLE - 240;
+      } else if (tiger.t > 300 && tiger.alert <= 0) {
+        seek(player);
+      }
+      return;
+
+    case 'stretch':
+      // chest down, hindquarters up, and it HOLDS. A stretch you can miss is not one.
+      if (tiger.t > STRETCH_HOLD) { tiger.state = 'walk'; tiger.t = 0; }
+      return;
   }
-  const dx = p.target - p.x;
-  if (Math.abs(dx) < 3) { p.state = 'rest'; p.t = 0; return; }
-  p.face = dx < 0 ? -1 : 1;
-  p.x += Math.sign(dx) * p.speed;
-  p.y += (clamp(player.y + 14, 214, 238) - p.y) * 0.02;
-  p.phase += p.speed;
-  p.frame = (p.phase / 5 | 0) % p.frames;
+
+  const dx = tiger.target - tiger.x;
+  if (Math.abs(dx) < 3) { tiger.state = 'sit'; tiger.t = 0; return; }
+  tiger.face = dx < 0 ? -1 : 1;
+  tiger.x += Math.sign(dx) * SPEED;
+  tiger.y += (clamp(player.y + 14, 214, 238) - tiger.y) * 0.02;
+  tiger.phase += SPEED;
+  tiger.frame = (tiger.phase / 5 | 0) % 6;
 }
 
-function drawPet(ctx, camX, p) {
-  // resting is the lying pose unless something has its attention, then it sits up
-  const pose = p.state === 'rest' ? (p.alert > 0 ? 'sit' : p.rest) : String(p.frame);
-  const img = ASSETS[`lair_${p.prefix}_${pose}`] || ASSETS[`lair_${p.prefix}_${p.rest}`];
+function drawPet(ctx, camX) {
+  const img = ASSETS['lair_tiger_' + tigerPose()] || ASSETS.lair_tiger_lie;
   if (!img) return;
   const w = frameW(img), h = frameH(img);
-  const x = Math.round(p.x - camX), y = Math.round(p.y);
+  const x = Math.round(tiger.x - camX), y = Math.round(tiger.y);
   if (x + w < -20 || x - w > W + 20) return;
+  // he breathes in his sleep. One pixel on a slow sine, and it is the whole difference
+  // between a sleeping animal and a rug.
+  const breath = tiger.state === 'sleep' ? Math.round(Math.sin(tiger.t * 0.022)) : 0;
   ctx.save();
   ctx.globalAlpha = 0.28;
   ctx.fillStyle = '#000';
@@ -1419,22 +1514,24 @@ function drawPet(ctx, camX, p) {
   ctx.fill();
   ctx.restore();
   // the art faces right, so -1 is the one that needs flipping
-  if (p.face === -1) {
+  if (tiger.face === -1) {
     ctx.save();
     ctx.scale(-1, 1);
-    blit(ctx, img, -x - w / 2, y - h);
+    blit(ctx, img, -x - w / 2, y - h + breath);
     ctx.restore();
   } else {
-    blit(ctx, img, x - w / 2, y - h);
+    blit(ctx, img, x - w / 2, y - h + breath);
   }
 }
 
+export const hubTiger = () => tiger;
+
 // G.actors entries draw themselves; y is what drawWorld sorts on.
-const petActors = PETS.map((p) => ({
-  get y() { return p.y; },
+const petActors = [{
+  get y() { return tiger.y; },
   reflect: true,
-  draw: (ctx, camX) => drawPet(ctx, camX, p),
-}));
+  draw: drawPet,
+}];
 
 // --------------------------------------------------------------- update
 // the verify suite needs to see the sleepers' state; nothing else reads this
@@ -1448,7 +1545,7 @@ export function hubSay(text) {
 }
 
 export function resetHub() {
-  tiger.x = 1290; tiger.y = 232; tiger.state = 'rest'; tiger.t = 0; tiger.face = -1; tiger.alert = 0;
+  resetTiger();
   resetTank();
   resetBed();
   G.actors = petActors.slice();
@@ -1465,7 +1562,7 @@ export function updateHub() {
   swingBag(G.props[0]);
   updateTank();
   updateBed();
-  for (const p of PETS) updatePet(p);
+  updatePet();
   if (G.hubRelicT > 0) G.hubRelicT--;
   if (G.hubFlex > 0 && --G.hubFlex === 0) G.player.state = 'idle';
   // the combo pulls them in, and RAGNAROK sends them to opposite ends of the room
