@@ -916,20 +916,9 @@ if (autoMode) {
       t('hub-sits', G.hubSeat > 0 && G.hubStation === 'lounge');
       tap('attack'); step(2);
       t('hub-stands', G.hubSeat === 0 && G.hubStation === null && G.state === 'hub');
-      // the two gym stations: he gets on, reps land and pay meter, any key racks it
-      for (const id of ['curl', 'bench']) {
-        G.meter = 0;
-        at(id); tap('use'); step(30);
-        t('hub-' + id + '-lifts', G.hubSeat > 0 && G.hubStation === id);
-        step(180);
-        t('hub-' + id + '-reps', G.hubReps > 0 && G.meter > 0);
-        tap('attack'); step(2);
-        t('hub-' + id + '-racks', G.hubSeat === 0 && G.hubStation === null);
-      }
-      G.meter = 0;
       at('bar'); tap('use');
       t('hub-bar-pours', G.hubSeat > 0 && G.hubStation === 'bar');
-      // it plays once and stands him back up on its own, unlike the gym stations
+      // it plays once and stands him back up on its own, unlike the sofa
       step(140);
       t('hub-bar-ends', G.hubSeat === 0 && G.hubStation === null);
       // the tank is decor, not a fixture: nothing to walk up to, but he is always smoking

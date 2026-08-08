@@ -85,8 +85,6 @@ export const FIXTURES = [
   { id: 'map', x: 800, hint: 'WORLD TOUR' },
   { id: 'hifi', x: 880, hint: 'SOUND TEST' },
   { id: 'bag', x: BAG_X, hint: 'WORK THE BAG', key: 'Z' },
-  { id: 'curl', x: 1075, hint: 'PUMP IRON' },
-  { id: 'bench', x: 1235, hint: 'BENCH PRESS' },
   { id: 'mirror', x: 1372, hint: 'FLEX' },
 ];
 const fixtureAt = (id) => FIXTURES.find((f) => f.id === id);
@@ -102,20 +100,6 @@ const fixtureAt = (id) => FIXTURES.find((f) => f.id === id);
 // x is where the ART is centred, which is not where you stand: the sprite holds the rig
 // AND the man, so it is offset until the drawn CHAD lands on the fixture's x. y is
 // WALL_BASE plus the overhang build_lair_extras.py prints - his boots are in front of
-// the equipment and hang below its floor line. ring hugs the rig, not the man, because
-// that is all there is to point at when nobody is on it.
-// x is the sprite's centre and y its bottom, which is CHAD's boots - the rig itself stands
-// further back, 24 logical px upstage of him at the rack and level with him at the bench,
-// because that is where the generation put it. `ring` is the equipment's own box measured
-// off the _empty frame, not the canvas: the curl sprite is 143 wide because it reserves
-// room for the man, and ringing all of that would put a bracket round empty floor.
-const RIGS = [
-  { id: 'curl', art: 'lair_gym_curl', x: 1075, y: WALL_BASE + 24, rate: 11, loop: [1, 2, 1, 0],
-    ring: [-49, -80, 121, 58] },
-  { id: 'bench', art: 'lair_gym_bench', x: 1235, y: WALL_BASE + 2, rate: 16, loop: [1, 2],
-    ring: [-68, -76, 136, 76] },
-];
-const rigAt = (id) => RIGS.find((r) => r.id === id);
 
 // The sit is four poses on a loop of holds, not one still frame with particles over it:
 // he rests, lifts the cigar, draws on it, then tips his head back and blows it out. The
@@ -154,13 +138,6 @@ function barDrinkFrame() {
   return 'lair_bar_drink_4';
 }
 
-// _empty unless he is on it; then _0 while he sets up and the loop after that.
-function rigFrame(r) {
-  if (G.hubStation !== r.id) return r.art + '_empty';
-  const t = G.hubSeat - r.rate * 2;
-  if (t < 0) return r.art + '_0';
-  return r.art + '_' + r.loop[((t / r.rate) | 0) % r.loop.length];
-}
 
 // ------------------------------------------------------------------ the bedroom
 // The master suite, the fourth screen. Same walnut and brass as the lounge: a black
@@ -207,10 +184,15 @@ const LAIR_ART = [
   // centred in the panelled bay, whose gold inset measures x 775.75-895.75, y 37-130
   { art: 'lair_worldmap', x: 836, y: 109, w: 80, h: 48 },
   { art: 'lair_hifi', x: 880, y: WALL_BASE, w: 48, h: 60 },
-  // the view: the whole run of glass is the gym. The two stations are in RIGS; these
-  // are the kit standing between them.
+  // The view: the whole run of glass is the gym, and all of it is furniture. The rack and
+  // the bench used to be walk-up stations with CHAD lifting on them, which meant keeping
+  // two drawings of the same equipment in agreement frame by frame - a lot of machinery
+  // for a second and third way to do what the bag already does. They are what they look
+  // like now: somebody's gear, loaded past what anyone else could move.
   { art: 'lair_gym_kettles', x: 945, y: WALL_BASE, w: 56, h: 26 },
-  { art: 'lair_gym_plates', x: 1250, y: WALL_BASE, w: 34, h: 56 },
+  { art: 'lair_gym_curl', x: 1075, y: WALL_BASE, w: 117, h: 54 },
+  { art: 'lair_gym_bench', x: 1235, y: WALL_BASE, w: 132, h: 71 },
+  { art: 'lair_gym_plates', x: 1330, y: WALL_BASE, w: 34, h: 56 },
   // The gym is all glass, so the only wall it has is the fluted pilaster closing its
   // right-hand end - logical 1303-1323.5 off the plate, which the gloves just span.
   { art: 'lair_gloves', x: 1313, y: 128, w: 20, h: 30 },
@@ -1496,7 +1478,6 @@ export function resetHub() {
   G.actors = petActors.slice();
   G.hubSeat = 0;
   G.hubStation = null;
-  G.hubReps = 0;
   G.hubFlex = 0;
   G.hubSel = null;
   G.hubPanel = null;
@@ -1518,9 +1499,7 @@ export function updateHub() {
   // the furniture is drawing him. main.js already gates all of that on hubSeat.
   if (G.hubSeat > 0) {
     G.hubSeat++;
-    const rig = rigAt(G.hubStation);
-    if (rig) countRep(rig);
-    else if (G.hubStation === 'bar') {
+    if (G.hubStation === 'bar') {
       // the AAAH lands when he finishes it, not when he picks it up
       if (G.hubSeat === DRINK_AAAH) spawnPop(barAt, G.player.y - 104, 'AAAH');
       if (G.hubSeat > DRINK_END) { G.hubSeat = 0; G.hubStation = null; return -1; }
@@ -1551,11 +1530,10 @@ export function updateHub() {
     if (sel === 'mirror') {
       pose(96);
       G.hubFlex = 96;
-    } else if (sel === 'bar' || sel === 'lounge' || rigAt(sel)) {
+    } else if (sel === 'bar' || sel === 'lounge') {
       G.hubSeat = 1;
       G.hubStation = sel;
-      G.hubReps = 0;
-      G.audio.sfx('blip');
+          G.audio.sfx('blip');
       petsWatch(fixtureAt(sel).x - 40);
       // he drinks where he is standing, not at the fixture's x, or he snaps sideways
       if (sel === 'bar') barAt = p.x;
@@ -1569,19 +1547,6 @@ export function updateHub() {
 const anyKey = () => ['back', 'attack', 'jump', 'parry', 'use', 'up', 'down', 'left', 'right']
   .some((a) => input.pressed(a));
 
-// A rep lands when the pose loop wraps. Meter is the point of the gym: it is the only
-// way besides the bag to walk into the next act with RAGNAROK already loaded.
-function countRep(rig) {
-  const t = G.hubSeat - rig.rate * 2;
-  if (t < 0 || t % (rig.rate * rig.loop.length) !== 0) return;
-  G.hubReps++;
-  addMeter(2);
-  G.audio.sfx('armor');
-  if (G.hubReps === 1) petsWatch(rig.x, 200);
-  if (G.hubReps % 5 === 0) spawnPop(rig.x, 150, repCount(G.hubReps));
-}
-
-const repCount = (n) => n + (n === 1 ? ' REP' : ' REPS');
 
 // The only pose CHAD has that holds still and ignores input. Both the mirror flex and
 // the drink at the bar borrow it; hub.js owns when it ends.
@@ -1606,7 +1571,6 @@ export function drawHubWall(ctx, camX) {
     art: G.hubStation === 'lounge' ? loungeFrame() : 'lair_lounge_empty',
     w: LOUNGE.w, h: LOUNGE.h,
   }));
-  for (const r of RIGS) drawFixtureArt(ctx, camX, r, artFor({ art: rigFrame(r), w: 100, h: 60 }));
   if (G.hubStation === 'bar') {
     // +2 because the set carries the same 3-device foot padding his standing sprite has
     drawFixtureArt(ctx, camX, { x: barAt, y: G.player.y + 2, w: 36, h: 94 },
@@ -1796,7 +1760,6 @@ function drawSelectRing(ctx, camX) {
     bag: [BAG_X - 15, 114, 30, 88],
     mirror: MIRROR_FRAME,
   };
-  for (const r of RIGS) boxes[r.id] = [r.x + r.ring[0], r.y + r.ring[1], r.ring[2], r.ring[3]];
   const b = boxes[G.hubSel];
   if (!b) return;
   const x = Math.round(b[0] - camX), y = Math.round(b[1]), w = Math.round(b[2]), h = Math.round(b[3]);
@@ -1848,11 +1811,7 @@ export function drawHubUI(ctx) {
   }
 
   if (G.hubSeat > 0) {
-    if (G.hubReps > 0) {
-      const reps = repCount(G.hubReps);
-      drawTextShadow(ctx, reps, (W - textWidth(reps, 2)) / 2, 60, '#ffd94a', 2);
-    }
-    const hint = 'ANY KEY: ' + ({ lounge: 'GET UP', bar: 'PUT IT DOWN' }[G.hubStation] || 'RACK IT');
+    const hint = 'ANY KEY: ' + (G.hubStation === 'bar' ? 'PUT IT DOWN' : 'GET UP');
     drawTextShadow(ctx, hint, (W - textWidth(hint, 1)) / 2, 246, '#686098', 1);
     return;
   }

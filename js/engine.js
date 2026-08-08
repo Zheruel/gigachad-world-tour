@@ -62,8 +62,7 @@ export const G = {
   hubChapter: 0,     // chapter focused on the world map panel
   hubFlex: 0,        // frames left of the mirror pose
   hubSeat: 0,        // frames CHAD has been occupying a station, 0 when he is on his feet
-  hubStation: null,  // which one: 'lounge', or a RIGS id in js/hub.js
-  hubReps: 0,        // reps done at the current gym station
+  hubStation: null,  // which one: 'lounge' or 'bar'
   hubRelicT: 0,      // frames left of the "you came home with this" beat
   hubRelicKey: null, // which boss that relic came off
   actors: [],        // scenery that draws itself and y-sorts with the fighters (the tiger)

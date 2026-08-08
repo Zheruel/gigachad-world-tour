@@ -21,7 +21,7 @@ There is no test runner, linter or package manager. Verification is in-browser, 
 - `index.html?auto=bot&stage=0` — naive bot plays a whole stage; reports pacing/damage/KOs.
 - `?auto=play|walk|jab|combo|parry|combat|super|super-hammer|super-express|boss|bossfight|miniboss|clear|over|ending` — steps the game into a state for screenshots.
 - `?auto=hub[-<fixture>]` — THE LAIR. Fixtures are triggered with **F** (`use`), not up — up is movement into the depth lanes, so it double-booked walking with activating.
-- `?auto=hub[-<fixture>]` — THE LAIR. Bare, or a fixture id from `FIXTURES` in `js/hub.js` (`hub-bar`, `hub-trophies`, `hub-lounge`, `hub-map`, `hub-hifi`, `hub-curl`, `hub-bench`, `hub-mirror`) to park CHAD there and trigger it, plus `hub-bag` (mid-punch), `hub-window` (the bag against the sunset) and `hub-bed` (close enough to the master suite that they wake up and speak). `&unlocked=N` sets how far the tour has got, which drives the relics on the shelves, the locked acts and how dark the window is.
+- `?auto=hub[-<fixture>]` — THE LAIR. Bare, or a fixture id from `FIXTURES` in `js/hub.js` (`hub-bar`, `hub-trophies`, `hub-lounge`, `hub-map`, `hub-hifi`, `hub-mirror`) to park CHAD there and trigger it, plus `hub-bag` (mid-punch), `hub-window` (the bag against the sunset) and `hub-bed` (close enough to the master suite that they wake up and speak). `&unlocked=N` sets how far the tour has got, which drives the relics on the shelves, the locked acts and how dark the window is.
 - `lab.html` — asset lab (CAST / ANIM / CROWD / SCALE / STAGE / CONTRAST / EFFECTS). ANIM exposes the selected sequence as a frame-by-frame contact sheet; comma/period step authored drawings. `sfxlab.html` — SFX slot audition.
 
 To run a single check, read the `autoMode === 'verify'` block in `js/main.js` and drive
@@ -289,34 +289,22 @@ Three things about him are worth keeping in mind for anything else that lives in
   line between "he noticed you" and "you tripped a switch".
 
 **Two sprites that swap in place have to be built as one set, and a strip is not enough to
-make them one.** The gym stations were four poses in a horizontal strip - the rig alone, then
-CHAD using it - on the theory that a model asked for a row repeats the equipment rather than
-re-inventing it. It does not. Measured in the columns where CHAD is NOT standing, the strip's
-bench and posts differed from its own rig-alone frame by 137-270% of their silhouette, and the
-dumbbell rack by 3-5%; at 16 frames a pose that is a bench that morphs and a rack that
-breathes. Three things fixed it, and all three were needed:
+make them one — and the cheapest fix is often not to have two.** The gym's rack and bench were
+walk-up stations: four poses each, the rig alone then CHAD lifting on it, swapped in place. The
+equipment would not hold still. A strip does not fix it (measured in the columns where CHAD is
+not standing, the bench differed from its own rig-alone frame by 137-270% of its silhouette);
+one generation per pose against the rig as a reference gets most of the way; the poses then
+have to chain off pose 0 rather than the rig, or the barbell in his hands changes diameter; the
+rig-alone frame has to be generated LAST against a pose or it comes back a different shape; and
+after all of that the rig still has to be stamped from one frame onto the others, which needs a
+mask of CHAD that a colour test cannot give you because his vest and boots are as black as the
+steel. Every one of those steps was necessary and every one is still in the git history.
 
-- **One generation per pose against the rig as a reference image**, which is what the bed set
-  had to do for the same reason. Say `do not move it, do not resize it, do not redraw it`; "the
-  same equipment" gets you a redrawn one of the same description.
-- **Chain the moving poses off pose 0, not off the rig.** The rig reference holds the
-  equipment still and says nothing about the man or the bar in his hands - so the first pass
-  drew a barbell with plates twice the diameter in one pose as the other, and pose 1 put the
-  bar across his face.
-- **Generate the rig-alone frame LAST, against a pose.** Generated first it came back the odd
-  one out: its rack was the same width as the poses' but 20% taller, a different SHAPE, which
-  no uniform scale reconciles. The first one is only a jig.
-
-Then `build_rig` stamps the canonical rig back over every pose below the barbell, so the half
-that touches the floor is not merely close but identical. What it must not paint over is CHAD,
-and a colour test alone will not do it - his vest and boots are as black as the steel. The mask
-is skin, blond and denim, then everything between the topmost and lowest of those IN EACH
-COLUMN, which picks up the vest and the boots between his shoulders and his soles.
-
-**Scale the station by CHAD, not by the equipment.** `CURL_RIG_H` was 38 because that is what
-the old generation's rack measured; the new one drew a chunkier rack, and 38 put CHAD at 56
-against his standing 96. He is the fixed quantity in this game - the rack is whatever size the
-picture drew it RELATIVE to him, which came out 54.
+They are furniture now. The bag is the gym's action and always was; the rack and the bench were
+a second and third way to do the same thing, and the whole apparatus above existed to serve
+them. `keyed_full`, `man_span`, `below_the_bar`, `stamp_rig`, `drop_specks` and `build_rig` all
+went with them, and the two rigs are ordinary entries in `process_props.py`. When a feature
+needs its own machinery in the asset pipeline, price the feature before building the machinery.
 
 **A sprite this small cannot afford a real animation cycle, and both halves of that bit the
 baitfish.** They flickered, and it took two passes because there were two faults:

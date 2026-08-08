@@ -316,6 +316,32 @@
       "pehlwan_idle.png"
     ]
   },
+  "rickshaw": {
+    "idle": [
+      "rickshaw_idle.png"
+    ],
+    "walk": [
+      "rickshaw_walk1.png",
+      "rickshaw_walk2.png",
+      "rickshaw_walk3.png",
+      "rickshaw_walk4.png"
+    ],
+    "atk": [
+      "rickshaw_atk.png",
+      "rickshaw_atk2.png",
+      "rickshaw_atk3.png"
+    ],
+    "hurt": [
+      "rickshaw_hurt.png",
+      "rickshaw_hurt2.png"
+    ],
+    "down": [
+      "rickshaw_down.png"
+    ],
+    "getup": [
+      "rickshaw_idle.png"
+    ]
+  },
   "constable": {
     "idle": [
       "constable_idle.png"

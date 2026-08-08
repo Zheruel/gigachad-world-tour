@@ -18,18 +18,13 @@ share a screen position. These two do:
   tank    the shark's swim cycle. Centred rather than
           bottom-anchored - nothing in water stands on anything.
 
-  curl    the dumbbell rack and the bench press, each one strip: the rig alone followed
-  bench   by three poses of CHAD working it. Generating them as a strip is what the
-          lounge should have done - the model repeats the equipment instead of
-          re-inventing it, so the frames register before any alignment happens.
-
   bed     the master suite's emperor size and the two lounging in it, six poses off TWO
           strips of three. Same reason as the gym rigs, plus stabilise() - see there.
           NOTE the outputs are bed_0..5.png and share a prefix with the bedroom props
           bed_fire/bed_rug/bed_wardrobe/bed_nightstand, which process_props.py owns.
           `rm assets/lair/bed_*.png` takes all of them.
 
-  ./.venv/bin/python tools/build_lair_extras.py [lounge|tiger|tank|curl|bench|bed]
+  ./.venv/bin/python tools/build_lair_extras.py [lounge|tiger|tank|bed]
 """
 import os
 import sys
@@ -52,12 +47,6 @@ FIRE_W = 32      # the firebox interior is 59x35 logical; the flames clip at the
 FENDER = (1530, 148, 68, 20)   # must match FENDER in js/hub.js
 BED_W = 140      # bed length. The art is 2:1, so this puts the headboard near 70 -
                  # a solid shape beside CHAD's 96 rather than a long thin slab
-# Both set so CHAD comes out at his standing 96, which is the number that matters - the
-# rack and the bench are whatever size the generation drew them RELATIVE to him. Measured
-# off the poses: CHAD is 991 px tall beside a 560 px rack, so a 38-logical rack (the old
-# value, carried over from a generation that drew him leaner) put him at 56.
-CURL_RIG_H = 54
-BENCH_RIG_H = 70 # the bench plus its posts and the racked bar
 
 
 def keyed(path):
@@ -302,137 +291,6 @@ def slice_strip(path, n, blob=True):
     return [biggest_blob(c) if blob else subject(c) for c in cells]
 
 
-def keyed_full(path):
-    """Chroma-keyed but NOT cropped to its subject.
-
-    The whole point of generating one pose at a time against a reference is that the rig
-    lands in the same place in every frame; cropping each to its own bbox throws that away
-    the moment CHAD's arm reaches further in one pose than another. Same rule as the bed
-    set: one shared box, never each to its own.
-    """
-    return hard_alpha(key_green(Image.open(path), tol=40), 128)
-
-
-def man_span(img):
-    """Every row of every column that CHAD occupies - skin, hair or denim, and everything
-    between the topmost and lowest of them in that column, which is how his black vest and
-    boots get included without a colour test that would also catch the equipment.
-
-    Conservative on purpose. It is used to decide where the canonical rig may NOT be
-    stamped, so over-protecting only leaves the pose's own pixels alone.
-    """
-    a = np.asarray(img).astype(int)
-    op = a[..., 3] > 128
-    r, g, b = a[..., 0], a[..., 1], a[..., 2]
-    mask = op & (((r - b > 38) & (r > 110) & (r >= g) & (g >= b))     # skin
-                 | ((r > 150) & (g > 140) & (r - b > 30))             # blond
-                 | ((b - r > 18) & (b > 60)))                         # denim
-    span = np.zeros_like(mask)
-    for x in range(mask.shape[1]):
-        ys = np.nonzero(mask[:, x])[0]
-        if len(ys):
-            span[ys.min():ys.max() + 1, x] = True
-    return span
-
-
-def below_the_bar(rig):
-    """The first row under the loaded barbell, where the sprite narrows to just its posts.
-
-    The bench's rig-alone frame carries a bar racked across its posts, and poses 1 and 2
-    have lifted that bar off - stamp the whole rig onto them and the station grows a second
-    barbell. Below this row is bench, bases and post, which is every part that touches the
-    floor and every part that was morphing.
-    """
-    rows = (np.asarray(rig.getchannel("A")) > 128).sum(1)
-    top = rows[:len(rows) // 2]
-    if not top.any():
-        return 0
-    peak = int(np.argmax(top))
-    for y in range(peak, len(rows)):
-        if rows[y] < 0.35 * top[peak]:
-            return y
-    return 0
-
-
-def stamp_rig(frames, drop_bar):
-    """Make the equipment pixel-identical in every pose by stamping frame 0's back on.
-
-    Even one-pose-at-a-time against a reference leaves a few percent of drift, and a few
-    percent of a dumbbell rack at 18 frames a pose is a rack that breathes. The rig is the
-    one thing here that is definitionally the same in all four frames, so it is drawn once
-    and copied - the fireplace's log stack, again.
-    """
-    rig = np.asarray(frames[0]).copy()
-    stamp = rig[..., 3] > 128
-    if drop_bar:
-        stamp[:below_the_bar(frames[0])] = False
-    out = [frames[0]]
-    for f in frames[1:]:
-        a = np.asarray(f).copy()
-        put = stamp & ~man_span(f)
-        a[put] = rig[put]
-        out.append(Image.fromarray(a, "RGBA"))
-    return out
-
-
-def drop_specks(img, frac=0.03):
-    """Bin any disconnected shape smaller than `frac` of the biggest one.
-
-    The lockout pose came back with two loose fragments of a barbell it had half drawn on
-    the posts and then changed its mind about. biggest_blob is too blunt here - the man and
-    his equipment are legitimately one shape in some poses and two in others - so this
-    keeps everything of a sensible size and drops the crumbs.
-    """
-    a = np.asarray(img.getchannel("A")) > 16
-    comps = components(a, min_pixels=8)
-    if not comps:
-        return img
-    biggest = max(c["area"] for c in comps)
-    keep = np.zeros_like(a)
-    for c in comps:
-        if c["area"] >= biggest * frac:
-            keep[c["ys"], c["xs"]] = True
-    out = np.asarray(img).copy()
-    out[~keep, 3] = 0
-    return Image.fromarray(out, "RGBA")
-
-
-def build_rig(prefix, rig_h, drop_bar=False):
-    """A gym station: the rig alone, then three poses of CHAD on it - FOUR separate
-    generations, each drawn against the rig.
-
-    They used to be one strip, on the theory that a model asked for four poses in a row
-    repeats the equipment rather than re-inventing it. It does not. Measured in the columns
-    where CHAD is not standing, the strip's bench and posts differed from the rig-alone
-    frame by 137-270% of their own silhouette and the dumbbell rack by 3-5%. One pose per
-    generation against a reference is what the bed set had to do for the same reason.
-
-    Scaled by the RIG, not by the tallest frame - the equipment has to stay the size the
-    room was laid out for, and CHAD's raised arms would otherwise shrink the whole station
-    every time he lifts.
-    """
-    names = [prefix + "_rig"] + [f"{prefix}_{i}" for i in range(3)]
-    frames = [keyed_full(SRC + n + ".png") for n in names]
-    box = [f.getbbox() for f in frames]
-    rig_box = box[0]
-    factor = rig_h * RS / (rig_box[3] - rig_box[1])
-    frames = [rescale(f, factor) for f in frames]
-    # ONE shared box, big enough for every pose, measured after the scale
-    box = [f.getbbox() for f in frames]
-    shared = (min(b[0] for b in box) - 1, min(b[1] for b in box) - 1,
-              max(b[2] for b in box) + 1, max(b[3] for b in box) + 1)
-    frames = [f.crop(shared) for f in frames]
-    frames = finish_set([drop_specks(f) for f in stamp_rig(frames, drop_bar)], 48)
-    os.makedirs(OUT, exist_ok=True)
-    out_names = [prefix + "_empty"] + [f"{prefix}_{i}" for i in range(3)]
-    for name, f in zip(out_names, frames):
-        f.save(f"{OUT}{name}.png")
-    floor = np.nonzero(np.asarray(frames[0].getchannel("A")) > 128)[0].max()
-    print(f"{OUT}{prefix}_*.png  {frames[0].width}x{frames[0].height}  "
-          f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})  "
-          f"y = WALL_BASE + {round((frames[0].height - 1 - floor) / RS)}")
-
-
 def best_shift(base, other, band, limit=6):
     """Translation that best lines `other` up with `base`, judged on `band` only.
 
@@ -579,15 +437,6 @@ def build_fire():
         f.save(f"{OUT}fire_{i}.png")
     print(f"{OUT}fire_0..{len(frames) - 1}.png  {frames[0].width}x{frames[0].height}  "
           f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})")
-
-
-def build_curl():
-    build_rig("gym_curl", CURL_RIG_H)
-
-
-def build_bench():
-    # its rig-alone frame carries a racked barbell that poses 1 and 2 have lifted off
-    build_rig("gym_bench", BENCH_RIG_H, drop_bar=True)
 
 
 def build_tiger():
@@ -852,11 +701,11 @@ def churn(frames):
 
 
 if __name__ == "__main__":
-    jobs = sys.argv[1:] or ["lounge", "tiger", "tank", "curl", "bench", "bed", "fire", "fender",
+    jobs = sys.argv[1:] or ["lounge", "tiger", "tank", "bed", "fire", "fender",
                             "bar", "bardrink", "tankframe", "tenants"]
     for j in jobs:
         {"lounge": build_lounge, "tiger": build_tiger,
          "bar": build_bar, "bardrink": build_bardrink,
          "tankframe": build_tankframe, "tenants": build_tenants,
-         "tank": build_tank, "curl": build_curl, "bench": build_bench,
+         "tank": build_tank,
          "bed": build_bed, "fire": build_fire, "fender": build_fender}[j]()

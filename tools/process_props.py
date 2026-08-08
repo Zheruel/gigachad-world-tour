@@ -37,11 +37,15 @@ LAIR = {
     "worldmap": (80, 48),
     "arcade": (34, 68),
     "hifi": (28, 60),
-    # The gym in front of the glass. The two usable stations are not here - they are
-    # sprite SETS and tools/build_lair_extras.py builds them. These are the kit standing
-    # between them. World scale is ~50 logical px per metre.
+    # The gym in front of the glass, all of it furniture. The rack and the bench were
+    # walk-up stations with CHAD lifting on them for a while, which meant keeping two
+    # drawings of the same equipment in agreement frame by frame - a whole apparatus in
+    # build_lair_extras.py - for a second and third way to do what the bag already does.
+    # World scale is ~50 logical px per metre, so the bench's posts stand about 1.4 m.
     "gym_plates": (34, 56),
     "gym_kettles": (56, 26),
+    "gym_curl": (117, 54),
+    "gym_bench": (132, 71),
     # the widened room: the painting over the sofa, the oil over the fireplace, and the
     # cigar cabinet - which is now a flush front built into the second niche's base panel
     # (logical 482.5-591 x 147-165.5), not a box standing against the wall
