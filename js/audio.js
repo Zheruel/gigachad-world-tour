@@ -11,7 +11,7 @@ const SFX_FILES = [
   'punch', 'heavy', 'kick', 'whiff', 'land', 'slam', 'ko', 'throw', 'grab',
   'dash', 'jump', 'pickup', 'blip', 'armor', 'enrage', 'super', 'phurt',
   'weapon', 'go', 'duke_quote', 'duke_come_get_some', 'duke_gotta_hurt',
-  'duke_back_to_work', 'duke_book_em', 'duke_hail', 'parry',
+  'duke_back_to_work', 'duke_book_em', 'duke_hail', 'duke_look_good', 'parry',
   'entrance_engine', 'entrance_skid', 'entrance_boot', 'entrance_stand',
   'entrance_birds', 'entrance_crack',
 ];
@@ -22,6 +22,9 @@ const SFX_PATHS = {
   duke_back_to_work: 'audio/voice/duke_back_to_work.wav',
   duke_book_em: 'audio/voice/duke_book_em.wav',
   duke_hail: 'audio/voice/duke_hail.wav',
+  // the mirror. Missing files are skipped silently by loadSFX, so the flex just plays no
+  // line until this one is dropped in - nothing else has to change.
+  duke_look_good: 'audio/voice/duke_look_good.wav',
   parry: 'audio/sfx/parry.wav',
   entrance_engine: 'audio/sfx/entrance_engine.wav',
   entrance_skid: 'audio/sfx/entrance_skid.wav',

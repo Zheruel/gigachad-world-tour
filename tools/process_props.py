@@ -42,7 +42,7 @@ LAIR = {
     # drawings of the same equipment in agreement frame by frame - a whole apparatus in
     # build_lair_extras.py - for a second and third way to do what the bag already does.
     # World scale is ~50 logical px per metre, so the bench's posts stand about 1.4 m.
-    "gym_plates": (34, 56),
+    "gym_plates": (28, 62),
     "gym_kettles": (56, 26),
     "gym_curl": (112, 54),
     "gym_bench": (122, 82),

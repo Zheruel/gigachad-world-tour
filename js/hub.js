@@ -195,7 +195,7 @@ const LAIR_ART = [
   // against the wall like everything else on this run. At WALL_BASE its feet were 10 px below
   // the wall seam and the whole loaded bar sat up in the glass, which read as hung, not stood.
   { art: 'lair_gym_bench', x: 1240, y: WALL_BASE + 26, w: 122, h: 82 },
-  { art: 'lair_gym_plates', x: 1330, y: WALL_BASE, w: 34, h: 56 },
+  { art: 'lair_gym_plates', x: 1152, y: WALL_BASE, w: 28, h: 62 },
   // The gym is all glass, so the only wall it has is the fluted pilaster closing its
   // right-hand end - logical 1303-1323.5 off the plate, which the gloves just span.
   { art: 'lair_gloves', x: 1313, y: 128, w: 20, h: 30 },
@@ -688,7 +688,6 @@ export function createBag() {
       bag.swingV = clamp(bag.swingV + (dir || 1) * (0.0016 + dmg * 0.00012), -0.007, 0.007);
       spawnPop(bag.x, bag.y - 90, String(dmg));
       G.audio.sfx('armor');
-      petsWatch(bag.x);
     },
     thrown() {},
   };
@@ -1533,6 +1532,7 @@ export function updateHub() {
     if (sel === 'mirror') {
       pose(96);
       G.hubFlex = 96;
+      G.audio.voice('duke_look_good', 2200);
     } else if (sel === 'bar' || sel === 'lounge') {
       G.hubSeat = 1;
       G.hubStation = sel;

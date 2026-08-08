@@ -418,6 +418,15 @@ without keeping those zones puts every fixture on the wrong bit of wall. The pla
 device width must be exactly `2 × HUB_WIDTH` and `floorW` must equal the floor plate's
 logical width, or the wall wraps or the floor gaps.
 
+**The tiger ignores the bag.** He used to lift his head every time it was hit, which sounds
+right and is wrong: the bag is the one thing in the room CHAD does over and over, so the one
+animal in the room reacted to almost every input. He still reacts to a big combo, to a fixture
+being used, and to being walked up to.
+
+**A missing voice line costs nothing.** `loadSFX` skips files that 404, so a slot can be wired
+up before its wav exists - the mirror flex calls `duke_look_good` and simply plays no line
+until `audio/voice/duke_look_good.wav` is dropped in.
+
 **Everything degrades to a fallback.** Missing PNG → code-drawn sprite (`js/sprites.js`
 `SPR`, `js/props.js`); missing frames → `getAIFrame` returns null and the code sprite
 plays; missing wav → synthesized SFX; missing background plates → a complete procedural
