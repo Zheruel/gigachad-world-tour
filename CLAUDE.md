@@ -470,6 +470,24 @@ The old title was an Old Delhi basement gym, which was right when Delhi was the 
 The home base is a neon penthouse now and the game is a WORLD TOUR, so the title is the room
 the player actually lives in between acts.
 
+**The jukebox SETS the room's music; it does not audition it.** It used to call
+`audio.preview()`, which played the track with `currentSlot` left null precisely so that
+closing the panel put the room's own slot back - so the thing you picked stopped the moment
+you walked away from the hi-fi. `G.hubTrack` is the pick, `main.js` asks for
+`G.hubTrack || HUB_STAGE.music` wherever it sets the hub's music, and it is in the save.
+`audio.music()` grew an `audible` flag for it: the manifest's "silent" is there so the game
+is quiet until real tracks land, not so a track the player chose refuses to play.
+
+Two things it must not do. It cannot import `HUB_STAGE` from `hub.js` to know the default -
+`hub.js` imports the panels, so that is a cycle; `G.stage` IS the lair while the panel is up.
+And it cannot call `persist()` from `hubpanels.js` for the same reason: `main.js` watches
+`G.hubTrack` for a change instead.
+
+**ESC closes a panel before it pauses anything.** It is the pause key everywhere else in the
+room, so the panel's own cancel takes it and `main.js` skips the pause toggle while a panel
+is open - otherwise opening the world map and pressing escape would pause behind it, with no
+way to get out.
+
 **Everything degrades to a fallback — and that has to include a pose nothing drew.** The
 code-drawn set had no `combo_power_a/b/finish`, `parry_counter` or `meteor_lariat`, because
 those five only ever existed as authored art, and `getFrame` indexed `set[name]` with no

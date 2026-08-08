@@ -49,7 +49,10 @@ const chapterLocked = (c) => actLocked(c.acts[0]);
 const unlockedCount = (c) => c.acts.filter((i) => !actLocked(i)).length;
 
 // ---------------------------------------------------------------- open/close
-const cancel = () => input.pressed('back') || input.pressed('parry') || input.pressed('jump');
+// ESC closes a panel. It is the pause key everywhere else in the room, and main.js skips
+// the pause toggle while a panel is up, so the two can never both fire on one press.
+const cancel = () => input.pressed('back') || input.pressed('pause')
+  || input.pressed('parry') || input.pressed('jump');
 
 export function openPanel(id) {
   G.hubPanel = id;
@@ -64,8 +67,9 @@ export function openPanel(id) {
 }
 
 export function closePanel() {
-  // back to whatever the room you are standing in plays, not a hardcoded slot
-  if (G.hubPanel === 'hifi') audio.music(G.stage.music);
+  // Nothing to restore. The jukebox does not preview any more - picking a track SETS what
+  // the room plays, so it keeps playing when the panel closes and after you leave and come
+  // back. G.hubTrack is what main.js asks for instead of the stage's own slot.
   G.hubPanel = null;
   G.audio.sfx('blip');
 }
@@ -124,7 +128,10 @@ function updateJukebox() {
     const next = clamp(G.hubAct + d, 0, list.length - 1);
     if (next !== G.hubAct) { G.hubAct = next; G.audio.sfx('blip'); }
   }
-  if (input.pressed('attack') && list.length) audio.preview(list[G.hubAct]);
+  if (input.pressed('attack') && list.length) {
+    G.hubTrack = list[G.hubAct];
+    audio.play(G.hubTrack);
+  }
 }
 
 function updateGallery() {
@@ -279,7 +286,7 @@ const TRACK_NAMES = {
 const JB_ROWS = 7;
 
 function drawJukebox(ctx) {
-  panelFrame(ctx, 'SOUND TEST', 'CHAD PICKS THE TRACK', 'Z  PLAY     ESC  BACK');
+  panelFrame(ctx, 'SOUND TEST', 'CHAD PICKS THE TRACK', 'Z  SET     ESC  BACK');
   const list = audio.tracks();
   list.forEach((slot, i) => {
     const on = i === G.hubAct;
@@ -291,7 +298,14 @@ function drawJukebox(ctx) {
       drawText(ctx, '>', cx - 2, y, '#ffd94a', 1);
     }
     drawText(ctx, String(i + 1).padStart(2, '0'), cx + 10, y, '#8ad8ff', 1);
-    drawText(ctx, TRACK_NAMES[slot] || slot.toUpperCase(), cx + 32, y, on ? '#f8f0e0' : '#a89ec0', 1);
+    // the one the room is set to, so the panel says what is playing rather than only what
+    // the cursor is over - the two are different as soon as you move the cursor off it
+    // G.stage IS the lair while this panel is up, so its own slot is the default. Importing
+    // it from hub.js would be a cycle - hub.js imports this file.
+    const playing = slot === (G.hubTrack || (G.stage && G.stage.music));
+    if (playing) drawText(ctx, '*', cx + 25, y, '#3adc8a', 1);
+    drawText(ctx, TRACK_NAMES[slot] || slot.toUpperCase(), cx + 32, y,
+      playing ? '#3adc8a' : (on ? '#f8f0e0' : '#a89ec0'), 1);
   });
 
   // a bank of VU bars, so the panel does something while a track plays

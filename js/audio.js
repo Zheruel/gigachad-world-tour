@@ -470,7 +470,9 @@ export const audio = {
   },
   // Asking for the slot that is already playing is a no-op, so re-entering a
   // stage or clearing a wave never restarts the track from the top.
-  music(slot, force) {
+  // `audible` overrides the manifest's "silent" flag. That flag exists so the game is quiet
+  // until real tracks land, not so a track the player CHOSE refuses to play.
+  music(slot, force, audible) {
     if (slot === currentSlot && !force) {
       if (currentTrack && currentTrack.paused) currentTrack.play().catch(() => {});
       return;
@@ -481,7 +483,7 @@ export const audio = {
     stopHtmlTracks();
     if (!slot) return;
     const a = htmlTracks[slot];
-    if (!a) { if (!musicSilent) startChiptune(slot); return; }
+    if (!a) { if (audible || !musicSilent) startChiptune(slot); return; }
     const token = playToken;
     currentTrack = a;
     a.play().then(() => {
@@ -494,18 +496,10 @@ export const audio = {
   // The lair jukebox. Only slots that will actually make a sound are listed: most
   // have no mp3 yet and only three have a chiptune behind them.
   tracks() { return SLOTS.filter((s) => htmlTracks[s] || SONGS[s]); },
-  // Auditioning deliberately ignores the manifest's "silent" flag - that flag is
-  // there so the game is quiet until real tracks land, not so you can't listen.
-  preview(slot) {
-    if (!unlocked || !ac) return;
-    stopChiptune();
-    stopHtmlTracks();
-    currentSlot = null;   // so music() re-applies when the panel closes
-    const a = htmlTracks[slot];
-    if (!a) { startChiptune(slot); return; }
-    currentTrack = a;
-    a.play().catch(() => startChiptune(slot));
-  },
+  // What the jukebox does now. It used to AUDITION - play the track with currentSlot left
+  // null so closing the panel put the room's own slot back - which meant the thing you
+  // picked stopped the moment you walked away from the hi-fi.
+  play(slot) { this.music(slot, true, true); },
   sfx(name) {
     if (!unlocked || !ac) return;
     if (playSample(name, undefined, name.startsWith('entrance_'))) return true;

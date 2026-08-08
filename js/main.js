@@ -49,6 +49,7 @@ function loadSave() {
     if (typeof s.unlockedStage === 'number') G.unlockedStage = clamp(s.unlockedStage, 0, STAGES.length - 1);
     if (typeof s.bestComboAll === 'number') G.bestComboAll = s.bestComboAll;
     if (s.actBest && typeof s.actBest === 'object') G.actBest = s.actBest;
+    if (typeof s.hubTrack === 'string') G.hubTrack = savedTrack = s.hubTrack;
     G.selectedStage = G.unlockedStage;
   } catch (e) { /* first run */ }
 }
@@ -56,7 +57,7 @@ function persist() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       hiscore: G.hiscore, unlockedStage: G.unlockedStage,
-      bestComboAll: G.bestComboAll, actBest: G.actBest,
+      bestComboAll: G.bestComboAll, actBest: G.actBest, hubTrack: G.hubTrack,
     }));
   } catch (e) { /* private mode */ }
 }
@@ -112,6 +113,7 @@ function startGame(index = G.selectedStage || 0) {
 let hubMeter = 0;
 let hubGate = false;   // panel-dismiss keys are held; hold the player until released
 let clearSaved = false;  // the STAGE CLEAR tally writes the save once, on arrival
+let savedTrack = null;   // last G.hubTrack written to the save
 
 function enterHub(fresh) {
   if (fresh) resetRun();
@@ -141,7 +143,7 @@ function enterHub(fresh) {
   G.fade = 1;
   G.camX = clamp(G.player.x - W / 2, 0, G.camMax);
   setState('hub');
-  audio.music(HUB_STAGE.music);
+  audio.music(G.hubTrack || HUB_STAGE.music);
 }
 
 function spawnFromQueue() {
@@ -293,7 +295,7 @@ function checkBossClear() {
     setState('clear');
     // the lair's track, started here so it carries through the tally and into the hub
     // without restarting - audio.music() is a no-op when the slot is already playing
-    audio.music(G.stageIndex >= STAGES.length - 1 ? null : HUB_STAGE.music);
+    audio.music(G.stageIndex >= STAGES.length - 1 ? null : (G.hubTrack || HUB_STAGE.music));
     persist();
   }
 }
@@ -337,6 +339,9 @@ function update() {
     // BACKSPACE backs out of a panel or leaves the room for the title; ESC pauses
     if (!panelOpen && !G.hubSeat && input.pressed('back')) { setState('title'); G.fade = 1; return; }
     const pick = updateHub();
+    // The jukebox is a setting, so it belongs in the save. Watching G.hubTrack here keeps
+    // hubpanels.js from having to reach into main.js for persist(), which would be a cycle.
+    if (G.hubTrack !== savedTrack) { savedTrack = G.hubTrack; persist(); }
     // A panel owns the buttons while it is up, and keeps them until they are let go.
     // Without the latch, C to back out also throws a parry whose recovery eats the
     // next punch.
@@ -948,8 +953,19 @@ if (autoMode) {
       for (const id of ['map', 'hifi', 'trophies']) {
         at(id); tap('use');
         t('hub-panel-' + id, G.hubPanel === id);
-        tap('back');
-        t('hub-panel-' + id + '-escapes', !G.hubPanel);
+        // ESC is the pause key everywhere else in the room, so a panel has to take it first
+        tap('pause');
+        t('hub-panel-' + id + '-escapes', !G.hubPanel && !G.paused);
+      }
+      // The jukebox SETS the room's music rather than auditioning it: the pick has to
+      // outlive the panel, which is what closing it used to undo.
+      {
+        at('hifi'); tap('use');
+        tap('down'); tap('attack');
+        const picked = G.hubTrack;
+        tap('pause'); step(4);
+        t('hub-jukebox-sets-the-room', !!picked && picked !== HUB_STAGE.music
+          && !G.hubPanel && G.hubTrack === picked);
       }
       at('mirror'); tap('use');
       t('hub-mirror-flex', G.player.state === 'victory' && G.hubFlex > 0);
