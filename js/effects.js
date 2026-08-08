@@ -26,10 +26,6 @@ export function spawnShock(x, y) {
   spawnDust(x + 8, y, 3);
 }
 
-export function spawnAfterimage(name, idx, x, y, z, face) {
-  G.effects.push({ type: 'afterimage', name, idx, x, y, z: z || 0, face, t: 0, life: 13 });
-}
-
 export function spawnRagnarokImpact(x, y) {
   G.effects.push({ type: 'ragnarok', x, y, t: 0, life: 34 });
 }
@@ -117,14 +113,6 @@ export function drawEffects(ctx, camX) {
       const h = w * (frameH(SPR.shock) / frameW(SPR.shock));
       ctx.drawImage(SPR.shock, sx - w / 2, sy - h * 0.6, w, h);
       ctx.globalAlpha = 1;
-    } else if (e.type === 'afterimage') {
-      const f = getFrame(SPR.player, e.name, e.idx, e.face);
-      const k = e.t / e.life;
-      ctx.save();
-      ctx.globalAlpha = (1 - k) * 0.34;
-      ctx.filter = 'sepia(1) saturate(7) hue-rotate(320deg) brightness(1.5)';
-      blit(ctx, f, sx - frameW(f) / 2, Math.round(e.y - e.z) - frameH(f) + 4);
-      ctx.restore();
     } else if (e.type === 'ring') {
       const k = e.t / e.life;
       ctx.globalAlpha = (1 - k) * 0.9;

@@ -31,4 +31,3 @@ export function fx(name, idx) {
   return set[((idx | 0) % set.length + set.length) % set.length] || null;
 }
 
-export function fxCount(name) { return (FX[name] || []).length; }

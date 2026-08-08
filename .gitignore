@@ -14,3 +14,6 @@ assets/qa/
 audio/_archive/
 
 .DS_Store
+
+# Python bytecode.
+__pycache__/

@@ -669,36 +669,6 @@ export function frameH(img) { return img.height / (img._as || 1); }
 // readable against the background. G.stage.rim controls the strength.
 // Silhouettes are baked once per frame+hue; running a canvas filter on every
 // sprite every frame was the single most expensive thing in the renderer.
-const rimCache = new WeakMap();
-function rimSilhouette(f, hue) {
-  let byHue = rimCache.get(f);
-  if (!byHue) { byHue = new Map(); rimCache.set(f, byHue); }
-  let c = byHue.get(hue);
-  if (!c) {
-    c = mkCanvas(f.width, f.height);
-    const x = c.getContext('2d');
-    x.imageSmoothingEnabled = false;
-    x.filter = `brightness(0) invert(1) sepia(1) saturate(6) hue-rotate(${hue}deg)`;
-    x.drawImage(f, 0, 0);
-    c._as = f._as;
-    byHue.set(hue, c);
-  }
-  return c;
-}
-
-export function drawRim(ctx, f, dx, dy, rim) {
-  if (!rim || G.reflecting) return;
-  const o = 1 / (f._as || 1);
-  const sil = rimSilhouette(f, rim.hue);
-  ctx.save();
-  ctx.globalAlpha = rim.a;
-  blit(ctx, sil, dx - o, dy);
-  blit(ctx, sil, dx + o, dy);
-  blit(ctx, sil, dx, dy - o);
-  blit(ctx, sil, dx, dy + o);
-  ctx.restore();
-}
-
 export function getFrame(set, name, idx, facing) {
   // AI-generated frames win when the manifest provides them for this character+state
   const ai = set._aiKey && getAIFrame(set._aiKey, name);
@@ -707,6 +677,13 @@ export function getFrame(set, name, idx, facing) {
     return arr[idx % arr.length];
   }
   const arr = facing === 1 ? set[name] : set[name + '_f'];
+  // Every asset in this game degrades to a code sprite, and that has to include a pose the
+  // code set has no drawing for. Without this, deleting one combat sheet turns the first
+  // punch into a TypeError inside render() and takes the HUD down with it.
+  if (!arr || !arr.length) {
+    const alt = facing === 1 ? FALLBACK.idle : FALLBACK.idle_f;
+    return alt[idx % alt.length];
+  }
   return arr[idx % arr.length];
 }
 
@@ -720,6 +697,10 @@ function buildFallback() {
   F.wallsplat = F.hurt; F.taunt = F.victory;
   F.idle_cigar = F.idle; F.idle_shades = F.idle;
   F.idle_flex = F.victory; F.idle_knuckles = F.idle;
+  // the authored-only combat states, which have no code drawing of their own
+  F.combo_power_a = F.jab; F.combo_power_b = F.upper; F.combo_power_finish = F.upper;
+  F.parry_counter = F.jab; F.meteor_lariat = F.throw;
+  F.ragnarok_ground = F.throw; F.ragnarok_air = F.jump;
   return F;
 }
 const FALLBACK = addFlips(buildFallback());

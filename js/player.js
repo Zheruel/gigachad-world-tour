@@ -7,7 +7,7 @@ import {
 import { input } from './input.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
 import { spawnSpark, spawnDust, spawnRing, spawnSmoke, spawnShock,
-  impact, spawnPop } from './effects.js';
+  spawnRagnarokImpact, impact, spawnPop } from './effects.js';
 import { reactStage } from './ambience.js';
 
 // keys: the frame advances each time p.t crosses one of these, so a punch reads as
@@ -33,7 +33,6 @@ export const COMBO_FLOW = [
   { name: 'combo_power_b', frames: [0, 1, 2, 3], keys: [4, 7, 11], dur: 15, hitAt: 6, cancelAt: 11, dmg: 9, range: 50, impactHeavy: true, advance: 5.0 },
   { name: 'combo_power_finish', frames: [0, 1, 2, 3, 4], keys: [2, 4, 6, 8], dur: 24, hitAt: 8, cancelAt: 16, dmg: 15, range: 55, heavy: true, launch: true, advance: 6.8 },
 ];
-export const COMBO_ROUTES = { flow: COMBO_FLOW };
 
 export const SUPER_MOVES = [
   { id: 'meteor_lariat', name: 'METEOR LARIAT', color: '#ff9b35', dur: 70 },
@@ -129,8 +128,13 @@ function playerHit(p, spec) {
       if (spec.knock && !e.dead && e.state !== 'down' && e.state !== 'thrown') {
         e.vx = p.face * spec.knock;
       }
-      addScore(10);
-      if (G.stats) G.stats.hits++;
+      // A prop scores when it BREAKS (props.js), not per hit - otherwise the heavy bag in
+      // THE LAIR, which is unbreakable and there to be mashed, walks the persisted hi-score
+      // and the next act's HIT BONUS up forever.
+      if (e.kind !== 'prop') {
+        addScore(10);
+        if (G.stats) G.stats.hits++;
+      }
       addMeter(spec.heavy || spec.impactHeavy ? 6 : 4);
       comboPop(bumpCombo(), e.x, e.y);
       heaviest = Math.max(heaviest, dealt * (airborne(e) ? juggleMul(e) : 1));
@@ -473,6 +477,7 @@ export function updatePlayer(p) {
           spawnRing(p.x + p.face * 20, p.y - 42, at === 48 ? '#ffd56a' : '#ff8a35');
           if (at === 48) {
             spawnShock(p.x, p.y); spawnDust(p.x, p.y, 7);
+            spawnRagnarokImpact(p.x, p.y);   // the crater, drawn under everything by main.js
             reactStage(p.x, 1.5); G.shake = 10; G.hitstop = Math.max(G.hitstop, 14);
             G.audio.sfx('slam');
           }

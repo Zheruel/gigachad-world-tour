@@ -34,19 +34,6 @@ function drawLogo(ctx, y0) {
   ctx.fillRect(center('WORLD TOUR', 2) + lw + 4, y0 + 34 + bob, 10, 1);
 }
 
-// Exported for THE LAIR, which is the only screen that lists them now.
-export function drawControls(ctx, y0) {
-  const lines = [
-    'ARROWS/WASD MOVE   DOUBLE TAP DASH, HOLD TO RUN',
-    'Z PUNCH   X JUMP   HOLD C PARRY   SPACE METEOR LARIAT',
-    'GREEN CUE: PARRY   RED CUE: EVADE   REFLECT PROJECTILES',
-    'TAP Z OR X WHILE DOWN TO GET UP FAST   ESC PAUSE',
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    drawTextShadow(ctx, lines[i], center(lines[i], 1), y0 + i * 10, '#c8c0e0', 1);
-  }
-}
-
 export function drawTitle(ctx) {
   const t = G.rawTime;
   if (ASSETS.title_art) {

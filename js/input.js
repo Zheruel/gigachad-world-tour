@@ -65,7 +65,10 @@ export function initInput() {
     }
   });
   window.addEventListener('blur', () => {
+    // a gamepad direction held through an alt-tab stayed held; clear every input, not
+    // just the keyboard half
     for (const k in keyHeld) keyHeld[k] = false;
+    for (const k in padHeld) padHeld[k] = false;
   });
 }
 

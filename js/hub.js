@@ -19,7 +19,7 @@
 // Every x below is measured off assets/bg_lair_wall.png, which tools/gen_lair_room5.sh
 // generates as three panels with those zones in them by name. Regenerating the plate
 // without keeping the zones puts every fixture on the wrong bit of wall.
-import { G, W, H, METER_MAX, addMeter, clamp, rand, irand } from './engine.js';
+import { G, W, H, METER_MAX, clamp, rand, irand } from './engine.js';
 import { Pix, frameW, frameH, blit, drawText, drawTextShadow, textWidth } from './sprites.js';
 import { ASSETS } from './assets.js';
 import { STAGES } from './stages.js';
@@ -957,9 +957,6 @@ function lightShafts(ctx, l) {
 }
 
 function drawSilt(ctx, camX, near) {
-  updateCrab();
-  updateBait();
-
   for (const m of silt) {
     if ((m.z > 0.62) !== near) continue;
     ctx.fillStyle = `rgba(200,235,255,${0.10 + m.z * 0.22})`;

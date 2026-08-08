@@ -81,13 +81,11 @@ export const METER_MAX = 100;
 export function diff() { return DIFF; }
 
 export function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
-export function lerp(a, b, t) { return a + (b - a) * t; }
 export function rand(a, b) { return a + Math.random() * (b - a); }
 export function irand(a, b) { return Math.floor(rand(a, b + 1)); }
 export function sign(v) { return v < 0 ? -1 : 1; }
 
 // Entity depth overlap test for beat-em-up hits
-export function depthHit(a, b, tol) { return Math.abs(a.y - b.y) <= (tol || 10); }
 
 // ---- ballistics ----
 export const GRAVITY = 0.28;

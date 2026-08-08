@@ -372,8 +372,11 @@ function drawGallery(ctx) {
     drawTextShadow(ctx, yours, left + textWidth(bounty, 1) + gap, 190, best ? '#f8f0e0' : '#4a4658', 1);
   }
 
-  // the totals the records screen carried, on one line
-  const cleared = Math.max(0, CHAPTERS.reduce((n, c) => n + unlockedCount(c), 0) - 1);
+  // the totals the records screen carried, on one line.
+  // Counted off actBest, which only gets an entry when an act is CLEARED. Deriving it from
+  // the unlock count could never reach the last act, because unlockedStage is capped at
+  // STAGES.length - 1 - a finished game read CLEARED 4/5.
+  const cleared = STAGES.filter((_, i) => (G.actBest[i] || 0) > 0).length;
   ctx.fillStyle = 'rgba(138,130,160,0.22)';
   ctx.fillRect(60, 204, W - 120, 1);
   const totals = [['HI-SCORE', String(G.hiscore).padStart(8, '0'), '#ffd94a'],

@@ -62,7 +62,10 @@ function persist() {
 }
 
 // ---- state transitions ----
-function setState(s) { G.state = s; G.stateT = G.rawTime; }
+function setState(s) {
+  if (s === 'clear') clearSaved = false;   // one save per arrival at the tally
+  G.state = s; G.stateT = G.rawTime;
+}
 
 function resetRun() {
   G.score = 0;
@@ -108,6 +111,7 @@ function startGame(index = G.selectedStage || 0) {
 // meter so you can try the super in there, but you leave with what you arrived with.
 let hubMeter = 0;
 let hubGate = false;   // panel-dismiss keys are held; hold the player until released
+let clearSaved = false;  // the STAGE CLEAR tally writes the save once, on arrival
 
 function enterHub(fresh) {
   if (fresh) resetRun();
@@ -184,6 +188,9 @@ function updateWaves() {
         G.spawnCd = 0;
         if (next.miniboss) {
           const b = createBoss(next.miniboss, G.camX + W - 40, 211);
+          // BOSSES has no `mini` flag on any entry, so checkBossClear would have taken the
+          // full-boss branch and ended the act the moment a wave miniboss died
+          b.mini = true;
           if (next.miniboss === 'mirchi') {
             // his cart is a real breakable prop - smash it and he loses the charge
             // slightly nearer the camera than he is, so he reads as standing behind it
@@ -315,7 +322,11 @@ function update() {
     // `return` and not `return false`: the loop skips endFrameInput() on false, which is
     // right for hitstop and fatal here - the keypress edge would never clear and ESC would
     // toggle the pause on every single frame it was held.
-    if (G.paused) return;
+    // BACKSPACE from the pause screen, which is the only place the overlay offers it
+    if (G.paused) {
+      if (input.pressed('back')) { G.paused = false; audio.setPaused(false); setState('title'); G.fade = 1; }
+      return;
+    }
     G.time++;
     if (G.comboT > 0 && --G.comboT === 0) G.combo = 0;
     // The play camera only ever scrolls forward; in a room you have to walk back.
@@ -343,10 +354,19 @@ function update() {
     const introT = G.rawTime - G.stateT;
     if (G.stageIndex === 0) updateMotorcycleArrival(introT);
     const introLife = G.stageIndex === 0 ? ENTRANCE_LAST_FRAME : 130;
-    if (G.rawTime - G.stateT > introLife || input.pressed('attack')) { setState('play'); G.fade = 1; }
+    if (G.rawTime - G.stateT > introLife || input.pressed('attack')) {
+      // Skipping the arrival has to stop the motorcycle, which loops. updateMotorcycleArrival
+      // only cut it at frame 214 and is never called again once the state leaves `intro`, so
+      // pressing Z early left the engine running under the stage, the tally and THE LAIR.
+      audio.stopEntranceBike();
+      setState('play'); G.fade = 1;
+    }
     return;
   }
   if (G.state === 'bossintro') {
+    // updateEffects is the only thing that decays shake and this branch returns before it,
+    // so the 6 set on entry used to jitter the whole intro from end to end.
+    if (G.shake > 0) { G.shake *= 0.85; if (G.shake < 0.3) G.shake = 0; }
     const t = G.rawTime - G.stateT;
     const b = G.boss;
     if (b) {
@@ -363,12 +383,17 @@ function update() {
     return;
   }
   if (G.state === 'clear') {
-    G.unlockedStage = Math.max(G.unlockedStage, Math.min(STAGES.length - 1, G.stageIndex + 1));
-    G.selectedStage = G.unlockedStage;
-    // the lair's records panel reads these; a run only ever raises them
-    G.bestComboAll = Math.max(G.bestComboAll, G.bestCombo);
-    G.actBest[G.stageIndex] = Math.max(G.actBest[G.stageIndex] || 0, G.score);
-    persist();
+    // Once, on arrival. This ran every frame the tally was on screen, so walking away from
+    // a cleared act wrote localStorage 60 times a second until you came back.
+    if (!clearSaved) {
+      clearSaved = true;
+      G.unlockedStage = Math.max(G.unlockedStage, Math.min(STAGES.length - 1, G.stageIndex + 1));
+      G.selectedStage = G.unlockedStage;
+      // the lair's records panel reads these; a run only ever raises them
+      G.bestComboAll = Math.max(G.bestComboAll, G.bestCombo);
+      G.actBest[G.stageIndex] = Math.max(G.actBest[G.stageIndex] || 0, G.score);
+      persist();
+    }
     if (G.rawTime - G.stateT > 160 && input.pressed('attack')) {
       if (G.stageIndex < STAGES.length - 1) {
         enterHub(false);   // back to the lair with the next act unlocked
@@ -412,7 +437,11 @@ function update() {
     audio.setPaused(G.paused);
     if (!G.paused) audio.sfx('blip');   // on the way IN the suspend would cut it anyway
   }
-  if (G.paused) return;
+    // BACKSPACE from the pause screen, which is the only place the overlay offers it
+    if (G.paused) {
+      if (input.pressed('back')) { G.paused = false; audio.setPaused(false); setState('title'); G.fade = 1; }
+      return;
+    }
 
   if (G.hitstop > 0) { G.hitstop--; return false; } // input persists through hitstop (buffering)
   if (G.parrySlow > 0) {

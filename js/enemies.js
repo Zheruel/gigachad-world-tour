@@ -140,7 +140,7 @@ function wallSplat(e, side) {
   G.shake = Math.max(G.shake, 7);
   G.audio.sfx('slam');
   addScore(25);
-  if (e.hp <= 0) { e.hp = 1; hurtEnemy(e, 1, -side, true, false); }
+  if (e.hp <= 0) { e.hp = 1; e.state = 'down'; hurtEnemy(e, 1, -side, true, false); }
 }
 
 // Attacker slots: two at a time normally, three once the crowd is big, so a
@@ -373,8 +373,11 @@ export function updateEnemies() {
           e.hp -= 6; e.flash = 5;
           spawnDust(e.x, e.y, 3); G.shake = Math.max(G.shake, 3);
           G.audio.sfx('land');
+          // hurtEnemy refuses anything still in `thrown`, so the state has to come off
+          // BEFORE the lethal blow or the kill is swallowed, the body lands again next
+          // frame, and it spams dust, shake and the land SFX at 60 Hz until the watchdog.
+          e.state = 'down'; e.t = 20;
           if (e.hp <= 0) { e.hp = 1; hurtEnemy(e, 1, Math.sign(e.vx) || 1, true, false); }
-          else { e.state = 'down'; e.t = 20; }
         }
         break;
       }
