@@ -741,14 +741,10 @@ const SHARK_W = 56;           // lair_shark_*, from tools/build_lair_extras.py S
 // sprite's own top-left. The smoke has to leave the cigar, not the middle of the shark.
 const CIGAR = { x: 54, y: 27 };
 const SILT_N = 26;
-// The other tenants. Placed as fractions of the glass so they follow the art rather than
-// a number that has to be re-derived every time the tank changes size: the eel's porthole
-// is a real gun port in lair_tankscape, the crab walks its sand.
-const EEL_AT = [0.227, 0.705];    // a real gun port in the hull, measured off the screen
-const EEL_NEAR = 54;              // how close the shark gets before it pulls its head in
-const EEL_HOLD = 110;             // frames it stays in after being startled
+// The other tenants. The moray that used to live in the wreck's gun port is gone - one
+// animal reacting to the shark from a hole it never leaves is a lot of machinery for a
+// sprite you have to go looking for.
 const BAIT_N = 26;
-const eel = { out: 1, t: 0, jaw: 0, hold: 0, near: false };
 const crab = { x: 0, dir: 1, t: 0, freeze: 0, rest: 0 };
 const bait = { cx: 0, cy: 0, vx: 0.25, vy: 0, fish: [] };
 
@@ -762,7 +758,6 @@ function resetTank() {
   bubbles.length = 0;
   smoke.length = 0;
   silt.length = 0;
-  eel.out = 1; eel.t = 0; eel.jaw = 0; eel.hold = 0; eel.near = false;
   crab.x = TANK.x + 40; crab.dir = 1; crab.t = 0; crab.freeze = 0; crab.rest = 90;
   bait.cx = TANK.x + TANK.w * 0.72; bait.cy = TANK.y + TANK.h * 0.22;
   bait.vx = 0.10; bait.vy = 0;
@@ -870,7 +865,6 @@ function updateTank() {
     s.life -= s.fade;
     if (s.life <= 0 || s.y < TANK.y + 3) smoke.splice(i, 1);
   }
-  updateEel();
   updateCrab();
   updateBait();
 
@@ -880,35 +874,6 @@ function updateTank() {
     m.x += Math.sin(m.phase) * 0.10 * m.z;
     if (m.y < TANK.y + 2) { m.y = TANK.y + TANK.h - 4; m.x = rand(TANK.x + 2, TANK.x + TANK.w - 2); }
   }
-}
-
-// The eel lives in the wreck's gun port. It works its jaws and leans out, and pulls its
-// head in when the shark comes past - the whole character is that it barely moves, so the
-// one time it does is the beat.
-export function eelX() { return TANK.x + TANK.w * EEL_AT[0]; }
-
-function updateEel() {
-  eel.t++;
-  // It startles when he ARRIVES, and only then. Withdrawing for as long as he was merely
-  // nearby left it hidden almost permanently: he crosses at 0.24 px a frame, so a 72-wide
-  // zone kept him "near" for 600 frames a pass, which is longer than the eel needs to come
-  // back out - so it never did, and it read as stuck in its hole.
-  const near = Math.abs((shark.x + SHARK_W / 2) - eelX()) < EEL_NEAR;
-  if (near && !eel.near) eel.hold = EEL_HOLD;
-  else if (eel.hold > 0) eel.hold--;
-  eel.near = near;
-  // In fast, out slow, and a long wait before it risks it - it goes in because something
-  // frightened it and comes out because nothing has for a while. Symmetric rates read as
-  // a machine, and the old 0.012 out was still four times too quick.
-  eel.out = clamp(eel.out + (eel.hold > 0 ? -0.05 : 0.006), 0, 1);
-  // jaws work on their own, but only while it is actually out
-  if (eel.out > 0.8 && --eel.jaw <= 0) eel.jaw = irand(90, 260);
-}
-
-function eelFrame() {
-  if (eel.out < 0.35) return 3;
-  if (eel.out < 0.75) return 2;
-  return eel.jaw > 70 ? 0 : 1;
 }
 
 // The crab walks the sand with a gold coin held up in one claw, and plays dead when the
@@ -972,7 +937,7 @@ function updateBait() {
 
 // for ?auto=verify: the drag is the only thing in this room whose behaviour cannot be
 // seen in a still
-export function hubTank() { return { shark, smoke, silt, eel, crab, bait }; }
+export function hubTank() { return { shark, smoke, silt, crab, bait }; }
 
 // Light coming down through the surface. Four shafts, each drifting on its own slow sine
 // and fading out with depth - it is what turns a flat blue rectangle into water.
@@ -1008,7 +973,6 @@ function lightShafts(ctx, l) {
 }
 
 function drawSilt(ctx, camX, near) {
-  updateEel();
   updateCrab();
   updateBait();
 
@@ -1078,13 +1042,6 @@ function drawTank(ctx, camX) {
   blit(ctx, scape, l + Math.round((TANK.w - frameW(scape)) / 2),
        TANK.y + TANK.h - frameH(scape));
 
-  // the eel leans out of the hull, so it goes over the wreck
-  const eimg = ASSETS['lair_eel_' + eelFrame()];
-  if (eimg) {
-    // the sprite carries its own rim; sit that on the painted port, not the eel's head
-    blit(ctx, eimg, Math.round(eelX() - camX - frameW(eimg) * 0.22),
-         Math.round(TANK.y + TANK.h * EEL_AT[1] - frameH(eimg) / 2));
-  }
   const cimg = ASSETS['lair_crab_' + ((crab.t / 16 | 0) & 3)];
   if (cimg) {
     const cx = Math.round(crab.x - camX);

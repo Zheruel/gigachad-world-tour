@@ -199,19 +199,26 @@ sickly. Raising the colour count did not help and could not: the colours being a
 more black leather. Measure a character's skin against `assets/frames/`'s idle frame after
 any set change; the number is the bug report.
 
-**Ambient behaviour startles on ARRIVAL, never on proximity.** The eel withdrew for as long
-as the shark was anywhere inside a 72px zone. He crosses at 0.24 px a frame, so that zone
-kept him "near" for ~600 frames a pass — longer than the eel took to come back out — and it
-sat in its hole permanently, which reads as a stuck sprite. Trigger on the false→true edge
+**Ambient behaviour startles on ARRIVAL, never on proximity.** The tank's moray withdrew for
+as long as the shark was anywhere inside a 72px zone. He crosses at 0.24 px a frame, so that
+zone kept him "near" for ~600 frames a pass — longer than the eel took to come back out — and
+it sat in its hole permanently, which reads as a stuck sprite. Trigger on the false→true edge
 and hold for a fixed count. Verify it by sampling the state over thousands of frames rather
 than looking: fully out 86%, hidden 6%, in transition 8% is what "startles occasionally"
-actually looks like as a distribution.
+actually looks like as a distribution. (The eel itself is gone — see below — but that rule is
+the one thing worth keeping out of it.)
 
 **A check sitting exactly on its threshold is a broken check.** `hub-bed-shifts-about`
 asserted 3 distinct poses, and over its 400-sample window the random walk's minimum across
 25 runs was exactly 3 — so it failed at random. The fix is to widen the window until there
 is margin (650 samples gives a minimum of 4), not to lower the bar. Measure the minimum over
 many runs before believing a threshold.
+
+The same bug wearing a different hat: a check must not RACE the thing it is watching.
+`hub-bed-ignores-him` walked CHAD up, stepped 6 frames and asserted her pose had not changed
+— but her own timer runs 200-520 frames, so it lands inside any 6-frame window about 1.7% of
+the time, and the check failed at random for months on a pose she changed for her own
+reasons. Pin the ambient timer (`hold = 600`) before asserting that something did NOT react.
 
 **A sprite faces where it is GOING, never where it happens to sit.** The baitfish were
 flipped by which side of the ball's centre they were on, which had half of them swimming
@@ -220,19 +227,20 @@ left. Face off the actual per-frame delta, smoothed, with a dead zone so they do
 every frame while hovering. Verified by counting disagreements between facing and travel
 over 33,432 moving samples: zero, with 0.14 turns per fish per second.
 
-**Three tenants, three zones.** The tank holds the shark, a moray in one of the wreck's
-gun ports, a coin-carrying crab on the sand and a baitball in the open water — deliberately
-one per layer, so it reads as somewhere lived in rather than as animals sharing a box. All
-three react to the shark, which is the whole point: the eel pulls its head in, the crab
-plays dead, and the baitball SPLITS around him and re-forms. That last one is what the
-twenty drifting piranhas never did and the reason they went.
+**Tenants in their own zones.** The tank holds the shark, a coin-carrying crab on the sand
+and a baitball in the open water — one per layer, so it reads as somewhere lived in rather
+than as animals sharing a box. Both react to the shark, which is the whole point: the crab
+plays dead and the baitball SPLITS around him and re-forms. That last one is what the twenty
+drifting piranhas never did and the reason they went.
 
-The eel's sprite carries its own porthole, or its cut-off body would sit on the timbers.
-The generator drew that porthole a different size in every frame; `fix_porthole()` scales
-each frame until its rim matches frame 0's. Compositing frame 0's rim over the others — the
-fix the fire's log stack uses — does NOT work here, because the eel passes *through* the
-thing that must not move and no colour test separates them cleanly. A few percent of scale
-on an eel nobody is measuring is invisible; the same on the hull it lives in is not.
+A moray in one of the wreck's gun ports was a third, and it went. It was the most machinery
+of anything in the tank for the least return: its sprite had to carry its own porthole (a
+cut-off body would sit on the timbers), the generator drew that porthole a different size in
+every frame so `fix_porthole()` had to scale each one back into agreement — compositing frame
+0's rim over the others, the fire's log-stack fix, does NOT work when the animal passes
+*through* the thing that must not move — and it needed its own startle-on-arrival rule on top.
+All of that for a sprite in a hole you have to go looking for. Count the machinery per
+animal, not the animals.
 
 **Two rates make a habit read.** The shark is *always* smoking - one wisp off the ember
 every sixteen frames - and takes a proper drag every 4-8s: the ember flares, then the

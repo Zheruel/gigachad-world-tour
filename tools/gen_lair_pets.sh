@@ -41,15 +41,12 @@ $G $O/tankscape.png landscape "The whole floor of an enormous aquarium seen from
 wait
 
 echo "=== the other tenants ==="
-# Three residents in three different zones of the tank - the wreck, the sand and the open
-# water - so it reads as somewhere that is lived in rather than three animals in a box.
-# The eel comes WITH its porthole: it is drawn over the wreck's hull, and a sprite that
-# ended in a cut-off body would show its own root sitting on the timbers. The generator
-# draws that porthole a different size in every frame, which build_lair_extras.py's
-# fix_porthole scales back into agreement - compositing frame 0's rim over the others
-# does not work here because the eel passes THROUGH the thing that must not move.
-$G $O/eel.png landscape "One horizontal row containing four frames of the same moray eel, evenly spaced, identical scale, all on the same horizontal line, with a clear band of empty flat green between each pose so they never touch. Each frame shows the head and the front third of a big green moray eel leaning out of a DARK ROUND HOLE in a ship's hull, seen in exact side profile facing right. The hole is a black circle rimmed with rusted iron and it is drawn in every frame at exactly the same size in exactly the same place. The eel is mottled olive and yellow-green with a pale throat, small mean eyes and a long jaw of needle teeth, and it is identical in every pose: same body, same colour, same markings. Left to right the four poses are: 1 leaning far out of the hole with its jaws wide open showing the teeth, 2 leaning far out with its jaws closed, 3 half withdrawn into the hole with its jaws open, 4 almost entirely inside the hole with just the snout and eyes showing in the dark. $SHEET" &
-
+# Two residents in two different zones of the tank - the sand and the open water - so it
+# reads as somewhere that is lived in rather than animals in a box. A moray in a gun port in
+# the wreck was a third, and it went: a lot of machinery (its own porthole scaled into
+# agreement frame by frame, its own startle-on-arrival rule) for a sprite you have to go
+# looking for.
+#
 # A four frame swim cycle on a 7 logical px fish is nearly all downside. The first one swung
 # the tail through a full sweep and came back with the body 20 px long in two poses and 22 in
 # the other two - 31-41% of the silhouette changing between consecutive frames, which at that

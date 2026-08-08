@@ -13,9 +13,10 @@
 # Same rule as the bed set, arrived at the same way.
 #
 # "Meaner" at 58 logical px is silhouette and one loud accessory, not detail - the lesson
-# the shark taught. What actually reads is the LINE OF THE BACK: shoulder blades standing
-# above it and the head carried below it is a stalking animal, and a level back with the
-# head up is a house cat however many scars it has.
+# the shark taught. But ask for the stalking silhouette without pinning the PROPORTION and
+# you get a squashed one: shoulder blades humped above the back and the head carried below
+# them came back at 1.30 length-to-height against the old tiger's 1.57 and a real tiger's
+# 1.9, which reads as a bulldog. State the ratio as a rule, in every prompt.
 set -uo pipefail
 cd /Users/tinzeljar/Documents/gachi
 G=tools/gen_codex.sh
@@ -26,10 +27,11 @@ SHEET="32-bit arcade beat em up game pixel art sprite in the style of Streets of
 
 # White on purpose, and that has not changed: the room is walnut, black glass and black
 # granite, and a dark animal sinks into it.
-TIGER="a huge white Bengal tiger built like a fighting animal rather than a zoo cat: a massive deep chest and heavy forequarters, the shoulder blades standing up in a hump ABOVE the line of its back, a thick short neck, and a big square head carried LOW, level with or below its shoulders. Bold black stripes over white fur with a cream belly. A heavy scowling brow ridge sits over large wraparound black sunglasses with a bright white glint running along their top edge. Its ears are laid flat back against its skull and a notch is torn out of the near ear. Long pale scars rake across its muzzle and its shoulder. It wears a thick oxblood leather harness across its chest studded with heavy brass domes, with a big brass ring at the throat"
+TIGER="a huge white Bengal tiger. PROPORTION MATTERS MOST: it is a LONG, low, powerful animal - the distance from the tip of its nose to the root of its tail is about TWICE its height at the shoulder - with a long level back and long straight legs. It is NOT crouched, hunched, squashed or compressed and its back is NOT arched. It is heavily built through the chest and shoulders, with a thick neck and a big square head carried level with its shoulders. Bold black stripes over white fur with a cream belly. A heavy scowling brow ridge sits over large wraparound black sunglasses with a bright white glint running along their top edge. Its ears are laid flat back against its skull and a notch is torn out of the near ear. Long pale scars rake across its muzzle and its shoulder. It wears a thick oxblood leather harness across its chest studded with heavy brass domes, with a big brass ring at the throat"
+
 
 echo "=== the prowl ==="
-$G $O/tiger_walk.png landscape "One horizontal row containing a six frame walk cycle of the same tiger, evenly spaced, identical scale, all standing on the same ground line, with a clear band of empty flat green between each pose so they never touch. The tiger is $TIGER, and it is identical in every pose: same body, same stripes, same colour, same scars, same torn ear, same harness, same sunglasses. It is PROWLING, stalking forward slowly and heavily with its head low and its weight forward, not trotting. Left to right the six poses are: 1 front left paw reaching forward and rear right leg pushing back, 2 legs passing under the body, 3 front right paw reaching forward and rear left leg pushing back, 4 legs gathered under the body, 5 front left paw planted and the body at its lowest, 6 mid stride with all four legs spread. The tiger faces to the right in every pose. Its head and body stay at exactly the same height and never rotate and the head stays low in all six; only the legs and the tail change. $SHEET" &
+$G $O/tiger_walk.png landscape "One horizontal row containing a six frame walk cycle of the same tiger, evenly spaced, identical scale, all standing on the same ground line, with a clear band of empty flat green between each pose so they never touch. The tiger is $TIGER, and it is identical in every pose: same body, same stripes, same colour, same scars, same torn ear, same harness, same sunglasses. It is PROWLING, stalking forward slowly and heavily, not trotting, but its body stays LONG and LEVEL in every pose - about twice as long from nose to tail root as it is tall at the shoulder - and it never crouches, hunches or bunches up. Left to right the six poses are: 1 front left paw reaching forward and rear right leg pushing back, 2 legs passing under the body, 3 front right paw reaching forward and rear left leg pushing back, 4 legs gathered under the body, 5 front left paw planted and the body at its lowest, 6 mid stride with all four legs spread. The tiger faces to the right in every pose. Its head and body stay at exactly the same height and never rotate, and it is exactly the same LENGTH in all six; only the legs and the tail change. $SHEET" &
 wait
 
 # One pose cut out of the walk, at full generated resolution, to hand to the rest strip.

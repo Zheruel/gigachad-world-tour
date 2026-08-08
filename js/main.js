@@ -3,7 +3,7 @@ import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, clamp, addSco
 import { initInput, input, endFrameInput, pollGamepad, debugPress, debugRelease } from './input.js';
 import { SPR, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { initStage, initStageObj, drawStage, updateMotes, STAGES, stageDef } from './stages.js';
-import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, hubSay, hubTiger, petsWatch, hubTank, eelX, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
+import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, hubSay, hubTiger, petsWatch, hubTank, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
 import { createProp } from './props.js';
 import { loadAmbience, updateAmbience, reactStage } from './ambience.js';
 import { loadFX, fx } from './fx.js';
@@ -935,23 +935,10 @@ if (autoMode) {
       // the tank is decor, not a fixture: nothing to walk up to, but he is always smoking
       step(60);
       t('hub-shark-smokes', hubTank().smoke.length > 0);
-      // The eel is the only tenant whose whole character is a reaction, so it is the one
-      // worth asserting: park the shark on top of its porthole and it should pull in.
+      // A fish must face where it is GOING. Facing by which side of the ball it sat on -
+      // the first attempt - had half of them swimming backwards at any moment.
       {
         const tank = hubTank();
-        const keep = tank.shark.x;
-        tank.eel.out = 1;
-        tank.shark.x = eelX() - 28;            // half a shark short of the porthole
-        step(30);
-        t('hub-eel-hides-from-him', tank.eel.out < 0.9);
-        // and it comes back out. It withdrew for as long as he was ANYWHERE nearby once,
-        // which at his cruising speed meant it was in its hole almost permanently and read
-        // as stuck; the startle has to be an arrival, not a state.
-        tank.shark.x = keep;
-        step(420);
-        t('hub-eel-comes-back-out', tank.eel.out > 0.9);
-        // A fish must face where it is GOING. Facing by which side of the ball it sat on -
-        // the first attempt - had half of them swimming backwards at any moment.
         let wrong = 0, moving = 0;
         const was = tank.bait.fish.map((f) => f.x);
         for (let i = 0; i < 200; i++) {
@@ -1010,7 +997,11 @@ if (autoMode) {
         // window the bubble is up for 110-170 of the 650 samples, so 34% leaves real margin
         // over the 26% worst case - a bound sitting on the measured maximum is a coin flip.
         t('hub-bed-speaks-with-pauses', lineFrames > 0 && lineFrames < 650 * 0.34);
+        // Her own pose timer has to be taken out of the way first. POSE_HOLD is 200-520
+        // frames, so it lands inside any 6-frame window about 1.7% of the time - this
+        // failed at random for months on a pose she changed for her own reasons.
         const before = hubBed().pose;
+        hubBed().hold = 600;
         G.player.x = BED_X - 60; step(6);
         t('hub-bed-ignores-him', hubBed().pose === before);
       }

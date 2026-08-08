@@ -780,42 +780,7 @@ def build_tankframe():
           f"glass {(dw - 2 * inner) // RS}x{(dh - 2 * inner) // RS}")
 
 
-EEL_H, FISH_H, CRAB_H = 20, 7, 12   # a mackerel at 5 was a grey smudge; its bars need 7
-
-
-def fix_porthole(frames):
-    """Give every eel frame the SAME hole.
-
-    The generator drew the porthole a different size in each frame - wide in the first,
-    narrow in the last - and at 30 logical px that reads as the hull breathing rather than
-    as an eel withdrawing.
-
-    Compositing frame 0's rim over the others (the fix the fire's log stack uses) does not
-    work here, because the eel passes THROUGH the thing that must not move and no colour
-    test separates them cleanly enough. Scaling each frame until its rim matches frame 0's
-    does: the eel scales with it, but a few percent on an eel nobody is measuring is
-    invisible, where a few percent on the hull it lives in is not.
-    """
-    def rim_box(img):
-        a = np.asarray(img).astype(int)
-        r, g, b, al = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
-        m = (al > 128) & (r > b + 22) & (r > g + 6)
-        ys, xs = np.where(m)
-        return (xs.min(), ys.min(), xs.max(), ys.max())
-
-    x0, y0, x1, y1 = rim_box(frames[0])
-    ref_w, ref_h = x1 - x0 + 1, y1 - y0 + 1
-    out = [frames[0]]
-    for f in frames[1:]:
-        a0, b0, a1, b1 = rim_box(f)
-        sx, sy = ref_w / (a1 - a0 + 1), ref_h / (b1 - b0 + 1)
-        scaled = f.resize((max(1, round(f.width * sx)), max(1, round(f.height * sy))),
-                          Image.Resampling.LANCZOS)
-        canvas = Image.new("RGBA", frames[0].size, (0, 0, 0, 0))
-        # line the scaled rim's top-left up with the reference rim's
-        canvas.paste(scaled, (round(x0 - a0 * sx), round(y0 - b0 * sy)), scaled)
-        out.append(canvas)
-    return out
+FISH_H, CRAB_H = 7, 12   # a mackerel at 5 was a grey smudge; its bars need 7
 
 
 def head_row(img, frac=0.34):
@@ -840,39 +805,31 @@ def build_tenants():
 
     Each is registered differently because each is doing a different thing:
 
-      eel   on its LEFT edge, which is the rusted porthole it leans out of. The eel moves
-            between frames and the hole must not - centre these and the hole would slide
-            around the hull while he withdraws into it.
       fish  on its HEAD. It swims, so nothing about it stands on anything, but its head is
             the one part the swim cycle was drawn to hold still.
       crab  bottom-anchored and centred, like a walker: it walks the sand, and a body that
             rises and falls as its legs gather is a crab walking rather than a fault.
     """
     os.makedirs(OUT, exist_ok=True)
-    for name, target, mode in (("eel", EEL_H, "left"), ("baitfish", FISH_H, "head"),
-                               ("crab", CRAB_H, "bottom")):
+    for name, target, mode in (("baitfish", FISH_H, "head"), ("crab", CRAB_H, "bottom")):
         frames = slice_strip(SRC + name + ".png", 4)
         factor = target * RS / max(f.height for f in frames)
         frames = [rescale(f, factor) for f in frames]
-        if mode == "left":
-            frames, _ = register(frames, side="left")
-            frames = fix_porthole(frames)
-        else:
-            w = max(f.width for f in frames) + 2
-            h = max(f.height for f in frames) + 4
-            heads = [head_row(f) for f in frames] if mode == "head" else None
-            out = []
-            for i, f in enumerate(frames):
-                canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-                if mode == "bottom":
-                    y = h - f.height - 1
-                elif mode == "head":
-                    y = int(round(h / 2 - heads[i]))
-                else:
-                    y = (h - f.height) // 2
-                canvas.paste(f, ((w - f.width) // 2, max(0, min(y, h - f.height))), f)
-                out.append(canvas)
-            frames = out
+        w = max(f.width for f in frames) + 2
+        h = max(f.height for f in frames) + 4
+        heads = [head_row(f) for f in frames] if mode == "head" else None
+        out = []
+        for i, f in enumerate(frames):
+            canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+            if mode == "bottom":
+                y = h - f.height - 1
+            elif mode == "head":
+                y = int(round(h / 2 - heads[i]))
+            else:
+                y = (h - f.height) // 2
+            canvas.paste(f, ((w - f.width) // 2, max(0, min(y, h - f.height))), f)
+            out.append(canvas)
+        frames = out
         for i, f in enumerate(finish_set(frames, 40)):
             f.save(f"{OUT}{name}_{i}.png")
         print(f"{OUT}{name}_0..3.png  {frames[0].width}x{frames[0].height}  "
