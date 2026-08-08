@@ -125,7 +125,6 @@ const LAIR_ART = [
   // trophies and media. The arcade cabinet is decor now - its attract loop still runs,
   // but HALL OF PAIN is gone and its records live on the trophy wall.
   { art: 'lair_arcade', x: 555, y: WALL_BASE, w: 34, h: 68 },
-  { art: 'lair_gloves', x: 604, y: 128, w: 20, h: 30 },
   // centred in the panelled bay, whose gold inset measures x 775.75-895.75, y 37-130
   { art: 'lair_worldmap', x: 836, y: 109, w: 80, h: 48 },
   { art: 'lair_hifi', x: 880, y: WALL_BASE, w: 48, h: 60 },
@@ -133,6 +132,9 @@ const LAIR_ART = [
   // are the kit standing between them.
   { art: 'lair_gym_kettles', x: 945, y: WALL_BASE, w: 56, h: 26 },
   { art: 'lair_gym_plates', x: 1250, y: WALL_BASE, w: 34, h: 56 },
+  // The gym is all glass, so the only wall it has is the fluted pilaster closing its
+  // right-hand end - logical 1303-1323.5 off the plate, which the gloves just span.
+  { art: 'lair_gloves', x: 1313, y: 128, w: 20, h: 30 },
   // the master suite. The rug lies on the floor, so it sits forward of the wall base and
   // CHAD walks over it; everything else stands against the panelling.
   // A sabretooth pelt, head mounted and snarling at the LEFT. Russet with a black mane
