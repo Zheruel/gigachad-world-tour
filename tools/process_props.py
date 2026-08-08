@@ -59,7 +59,7 @@ LAIR = {
     # reads as one suite; the generation arrives with a slab of the room's panelling
     # behind it, which is cropped off in tools/gen_lair_deco.sh's note.
     "lounge_chair": (70, 50),
-    "overmantel": (77, 68),
+    "overmantel": (76, 70),
     # exactly the run from the ceiling bracket to the bag's collar, so it never tiles
     "bag_chain": (10, 100),
     # One relic per boss, standing in a niche. Every bay is ~32 logical of headroom
@@ -85,7 +85,11 @@ LAIR = {
 # opening that was measured off the plate. Sizing by height alone let the overmantel oil come
 # out 92 logical wide into the 87-wide bay between the fireplace's fluted pilasters, covering
 # the fluting either side. A few percent of horizontal squash is invisible on a painting.
-EXACT_W = {"overmantel": 87}
+# Nothing needs this at the moment. The overmantel oil did while it was a wide trophy pose
+# forced into an 87-wide bay; the battle canvas that replaced it is nearly square (1.08) and
+# forcing it to 87 stretched the figures 18% wide, so it is sized by height and simply comes
+# out narrower than the bay - which a painting is allowed to be.
+EXACT_W = {}
 
 
 def scaled(img, h):

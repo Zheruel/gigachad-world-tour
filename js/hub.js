@@ -220,7 +220,7 @@ const LAIR_ART = [
   // FIREPLACE's centre, not the mirror's - the plate has them 1.5px apart, and the eye
   // lines a picture up with the mantel under it. It is the fight that produced the pelt
   // lying on the floor directly below it.
-  { art: 'lair_overmantel', x: 1562, y: 105, w: 87, h: 68 },
+  { art: 'lair_overmantel', x: 1562, y: 106, w: 76, h: 70 },
   { art: 'lair_bed_rug', x: 1570, y: WALL_BASE + 55, w: 138, h: 54 },
   // closer to the hearth than to the bed: the fireplace's mantel ends at 1600 and
   // this leaves a walking lane between them
