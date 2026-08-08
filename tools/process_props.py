@@ -34,7 +34,7 @@ SIZES = {
 LAIR_SRC = "assets/ai/lair/"
 LAIR_OUT = "assets/lair/"
 LAIR = {
-    "worldmap": (85, 48),
+    "worldmap": (80, 48),
     "arcade": (34, 68),
     "hifi": (28, 60),
     # The gym in front of the glass. The two usable stations are not here - they are

@@ -127,7 +127,7 @@ const LAIR_ART = [
   { art: 'lair_arcade', x: 555, y: WALL_BASE, w: 34, h: 68 },
   { art: 'lair_gloves', x: 604, y: 128, w: 20, h: 30 },
   // centred in the panelled bay, whose gold inset measures x 775.75-895.75, y 37-130
-  { art: 'lair_worldmap', x: 836, y: 109, w: 86, h: 48 },
+  { art: 'lair_worldmap', x: 836, y: 109, w: 80, h: 48 },
   { art: 'lair_hifi', x: 880, y: WALL_BASE, w: 48, h: 60 },
   // the view: the whole run of glass is the gym. The two stations are in RIGS; these
   // are the kit standing between them.
@@ -1244,6 +1244,8 @@ function drawHifiMeters(ctx, camX) {
   }
 }
 
+const MAP_BEZEL = 5;   // the gilt frame's width in lair_worldmap.png
+
 // One pin per unlocked chapter, so the map on the wall says how far the tour got.
 function drawMapPins(ctx, camX) {
   const d = artAt('lair_worldmap');
@@ -1251,9 +1253,10 @@ function drawMapPins(ctx, camX) {
   if (left > W || left + d.w < 0) return;
   CHAPTERS.forEach((c, i) => {
     if (c.acts[0] > G.unlockedStage) return;
-    // the wall map is the same projection as the panel, just small
-    const px = Math.round(left + 4 + (c.pin[0] / W) * (d.w - 8));
-    const py = Math.round(top + 4 + (c.pin[1] / H) * (d.h - 8));
+    // the wall map is the same projection as the panel, just small. MAP_BEZEL is the
+    // gilt frame measured off the sprite - a pin outside it lands on the gold.
+    const px = Math.round(left + MAP_BEZEL + (c.pin[0] / W) * (d.w - MAP_BEZEL * 2));
+    const py = Math.round(top + MAP_BEZEL + (c.pin[1] / H) * (d.h - MAP_BEZEL * 2));
     ctx.fillStyle = (G.rawTime + i * 37) % 60 < 34 ? '#ff4a6a' : '#8a2a3a';
     ctx.fillRect(px, py, 2, 2);
   });
