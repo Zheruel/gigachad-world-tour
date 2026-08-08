@@ -470,6 +470,20 @@ The old title was an Old Delhi basement gym, which was right when Delhi was the 
 The home base is a neon penthouse now and the game is a WORLD TOUR, so the title is the room
 the player actually lives in between acts.
 
+**Everything degrades to a fallback — and that has to include a pose nothing drew.** The
+code-drawn set had no `combo_power_a/b/finish`, `parry_counter` or `meteor_lariat`, because
+those five only ever existed as authored art, and `getFrame` indexed `set[name]` with no
+guard. Delete one combat sheet, or serve the game with a 404 manifest, and the first punch
+threw inside `render()` and took the HUD down with it. Both halves are needed: alias the
+authored-only poses onto drawn ones in `buildFallback`, and have `getFrame` fall through to
+the idle for a name nothing has at all. Test it by asking for a pose that does not exist.
+
+**Simulation belongs in update(), and a draw function that steps the world is invisible until
+you pause.** `drawSilt()` called `updateCrab()` and `updateBait()`, and `drawTank` calls it
+twice - so the tank's tenants ran at 3x and kept swimming through a paused room, because
+`render()` has no pause guard and never will. `?auto=verify` cannot catch this class: the
+harness only calls `update()`.
+
 **Everything degrades to a fallback.** Missing PNG → code-drawn sprite (`js/sprites.js`
 `SPR`, `js/props.js`); missing frames → `getAIFrame` returns null and the code sprite
 plays; missing wav → synthesized SFX; missing background plates → a complete procedural
