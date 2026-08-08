@@ -126,7 +126,8 @@ const LAIR_ART = [
   // but HALL OF PAIN is gone and its records live on the trophy wall.
   { art: 'lair_arcade', x: 555, y: WALL_BASE, w: 34, h: 68 },
   { art: 'lair_gloves', x: 604, y: 128, w: 20, h: 30 },
-  { art: 'lair_worldmap', x: 800, y: 112, w: 86, h: 48 },
+  // centred in the panelled bay, whose gold inset measures x 775.75-895.75, y 37-130
+  { art: 'lair_worldmap', x: 836, y: 109, w: 86, h: 48 },
   { art: 'lair_hifi', x: 880, y: WALL_BASE, w: 48, h: 60 },
   // the view: the whole run of glass is the gym. The two stations are in RIGS; these
   // are the kit standing between them.
@@ -212,6 +213,12 @@ function fallbackArt(name, w, h) {
 
 const artFor = (d) => ASSETS[d.art] || fallbackArt(d.art, d.w, d.h);
 const artAt = (name) => LAIR_ART.find((d) => d.art === name);
+// A select box measured off the art itself. Copying a fixture's x into the box is what
+// left the mirror's bracket 14px off the frame.
+const artRing = (name, pad) => {
+  const d = artAt(name);
+  return [d.x - d.w / 2 - pad, d.y - d.h - pad, d.w + pad * 2, d.h + pad * 2];
+};
 
 // ------------------------------------------------------------ procedural room
 // Only ever seen if assets/bg_lair_*.png are missing. A plain version of the same room
@@ -1282,7 +1289,7 @@ function drawSelectRing(ctx, camX) {
     tank: [TANK.x - 6, TANK.y - 6, TANK.w + 12, TANK.h + 12],
     trophies: [ALCOVE[0] - 6, 33, ALCOVE[1] - ALCOVE[0] + 12, 110],
     lounge: [LOUNGE.x - LOUNGE.w / 2 - 2, LOUNGE.y - LOUNGE.h, LOUNGE.w + 4, LOUNGE.h],
-    map: [800 - 46, 62, 92, 54],
+    map: artRing('lair_worldmap', 3),
     hifi: [880 - 26, WALL_BASE - 62, 52, 62],
     bag: [BAG_X - 15, 114, 30, 88],
     mirror: MIRROR_FRAME,
