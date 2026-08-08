@@ -191,7 +191,7 @@ const LAIR_ART = [
   // like now: somebody's gear, loaded past what anyone else could move.
   { art: 'lair_gym_kettles', x: 945, y: WALL_BASE, w: 56, h: 26 },
   { art: 'lair_gym_curl', x: 1075, y: WALL_BASE, w: 112, h: 54 },
-  { art: 'lair_gym_bench', x: 1235, y: WALL_BASE, w: 120, h: 71 },
+  { art: 'lair_gym_bench', x: 1240, y: WALL_BASE, w: 122, h: 82 },
   { art: 'lair_gym_plates', x: 1330, y: WALL_BASE, w: 34, h: 56 },
   // The gym is all glass, so the only wall it has is the fluted pilaster closing its
   // right-hand end - logical 1303-1323.5 off the plate, which the gloves just span.

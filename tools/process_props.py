@@ -45,7 +45,7 @@ LAIR = {
     "gym_plates": (34, 56),
     "gym_kettles": (56, 26),
     "gym_curl": (112, 54),
-    "gym_bench": (120, 71),
+    "gym_bench": (122, 82),
     # the widened room: the painting over the sofa, the oil over the fireplace, and the
     # cigar cabinet - which is now a flush front built into the second niche's base panel
     # (logical 482.5-591 x 147-165.5), not a box standing against the wall

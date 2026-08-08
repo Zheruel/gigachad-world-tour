@@ -312,11 +312,18 @@ Two rules came out of drawing them as plain furniture afterwards, and both apply
   it starts at its own plate, it stops at its own plate, and the background shows through
   between one dumbbell and the next. Four a shelf leaves room for that gap to be as wide as a
   dumbbell.
-- **Say the projection out loud.** The shared style block says "seen from the side", and the
-  generator still drew the bench PAD in three quarter - its top face visible, with a chalk
-  handprint lying on a surface you cannot see from the side - while drawing the frame under it
-  in flat elevation. One object, two projections. It has to be told that nothing shows its top
-  and nothing shows its far side.
+- **Say the projection out loud, and then follow it through the whole object.** The shared
+  style block says "seen from the side", and the generator still drew the bench PAD in three
+  quarter - its top face visible, with a chalk handprint lying on a surface you cannot see
+  from the side - while drawing the frame under it in flat elevation. One object, two
+  projections.
+  The bench is the one thing in this room drawn in perspective, and the geometry is why: a
+  barbell lies ACROSS a bench, so a true side view shows the bar END ON, one stack of plates
+  as a disc, which at 82 logical px is a small bullseye that says nothing about the load. Both
+  were generated and compared at final size against the real window. The loaded bar is the
+  whole point of the piece, so the camera goes to the HEAD of the bench - and then the pad
+  CANNOT be horizontal, it has to recede. Pick the projection from what the object needs to
+  show, then make every part of it obey.
 
 They are furniture now. The bag is the gym's action and always was; the rack and the bench were
 a second and third way to do the same thing, and the whole apparatus above existed to serve
