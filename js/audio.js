@@ -120,10 +120,10 @@ let currentSlot = null;
 let seqTimer = null, nextStepTime = 0, stepIdx = 0, song = null;
 // 'lair' is its own slot rather than sharing the title's: the hub has a real track and
 // the title screen still wants the chiptune under it.
-const SLOTS = [
-  'lair', 'title', 'stage1', 'stage2', 'stage3', 'stage4', 'stage5',
-  'boss', 'boss2', 'boss3', 'boss4', 'boss5', 'ending',
-];
+// One slot per thing the game can actually play. The tour was cut back to a single act to
+// be rebuilt one at a time, and its music will be written for the acts that survive rather
+// than carried over - so stage2-5 and boss2-5 went with them.
+const SLOTS = ['lair', 'title', 'stage1', 'boss', 'ending'];
 const htmlTracks = Object.fromEntries(SLOTS.map((s) => [s, null]));
 
 function mf(m) { return 440 * Math.pow(2, (m - 69) / 12); } // midi -> freq
@@ -216,102 +216,6 @@ const beat4 = [1, 3, 3, 3, 2, 3, 3, 3, 1, 3, 3, 3, 2, 3, 3, 3];
 const beat4f = [1, 3, 2, 3, 1, 3, 2, 3, 1, 3, 2, 3, 2, 3, 2, 2];
 const beatSlow = [1, 0, 3, 0, 2, 0, 3, 0, 1, 0, 3, 0, 2, 0, 3, 3];
 
-SONGS.stage2 = { // THE DUNGEON: deep dark disco
-  bpm: 140, loop: 64,
-  bass: cat(four(33), four(29), four(31), four(28)),
-  lead: cat(arp(69, 72, 76, 79), arp(65, 69, 72, 76), arp(67, 71, 74, 79), arp(64, 68, 71, 76)),
-  lead2: cat(arp(57, 60, 64, 67), arp(53, 57, 60, 64), arp(55, 59, 62, 67), arp(52, 56, 59, 64)),
-  drum: cat(beat4, beat4, beat4, beat4f),
-};
-SONGS.boss2 = { // VAN DARKHOLME
-  bpm: 158, loop: 64,
-  bass: cat(pump(26), pump(26), pump(29), pump(25)),
-  lead: cat(
-    [74, 0, 77, 0, 74, 0, 0, 73, 0, 74, 0, 77, 0, 81, 0, 0],
-    [74, 0, 77, 0, 74, 0, 0, 72, 0, 70, 0, 69, 0, 68, 0, 0],
-    [74, 0, 77, 0, 81, 0, 0, 82, 0, 81, 0, 77, 0, 74, 0, 0],
-    [73, 0, 74, 0, 75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0]),
-  lead2: cat(
-    [62, 0, 65, 0, 62, 0, 0, 61, 0, 62, 0, 65, 0, 69, 0, 0],
-    [62, 0, 65, 0, 62, 0, 0, 60, 0, 58, 0, 57, 0, 56, 0, 0],
-    [62, 0, 65, 0, 69, 0, 0, 70, 0, 69, 0, 65, 0, 62, 0, 0],
-    [61, 0, 62, 0, 63, 0, 64, 0, 65, 0, 66, 0, 67, 0, 68, 0]),
-  drum: cat(beat4f, beat4f, beat4f, [1, 3, 2, 3, 1, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2]),
-};
-SONGS.stage3 = { // THE LOCKER ROOM: steam funk
-  bpm: 128, loop: 64,
-  bass: cat(funk(28), funk(31), funk(33), funk(30)),
-  lead: cat(arp(64, 67, 71, 74), arp(67, 71, 74, 79), arp(69, 72, 76, 79), arp(66, 69, 74, 78)),
-  lead2: cat(arp(52, 55, 59, 62), arp(55, 59, 62, 67), arp(57, 60, 64, 67), arp(54, 57, 62, 66)),
-  drum: cat(beat4, beat4f, beat4, beat4f),
-};
-SONGS.boss3 = { // MARK WOLFF
-  bpm: 168, loop: 64,
-  bass: cat(pump(28), pump(28), pump(31), pump(33)),
-  lead: cat(
-    [76, 0, 79, 0, 76, 0, 75, 0, 76, 0, 79, 0, 83, 0, 81, 0],
-    [76, 0, 79, 0, 76, 0, 74, 0, 72, 0, 71, 0, 69, 0, 67, 0],
-    [79, 0, 83, 0, 86, 0, 83, 0, 79, 0, 76, 0, 74, 0, 72, 0],
-    [71, 0, 72, 0, 74, 0, 76, 0, 79, 0, 81, 0, 83, 0, 86, 0]),
-  lead2: cat(
-    [64, 0, 67, 0, 64, 0, 63, 0, 64, 0, 67, 0, 71, 0, 69, 0],
-    [64, 0, 67, 0, 64, 0, 62, 0, 60, 0, 59, 0, 57, 0, 55, 0],
-    [67, 0, 71, 0, 74, 0, 71, 0, 67, 0, 64, 0, 62, 0, 60, 0],
-    [59, 0, 60, 0, 62, 0, 64, 0, 67, 0, 69, 0, 71, 0, 74, 0]),
-  drum: cat(beat4f, beat4f, beat4f, [1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 2, 2, 2, 2]),
-};
-SONGS.stage4 = { // THE OIL PIT: sleazy slow funk
-  bpm: 118, loop: 64,
-  bass: cat(funk(26), funk(26), funk(29), funk(24)),
-  lead: cat(arp(62, 65, 69, 72), arp(62, 65, 69, 74), arp(65, 69, 72, 77), arp(60, 63, 67, 72)),
-  lead2: cat(arp(50, 53, 57, 60), arp(50, 53, 57, 62), arp(53, 57, 60, 65), arp(48, 51, 55, 60)),
-  drum: cat(beat4, beat4, beat4, beat4f),
-};
-SONGS.boss4 = { // JIRKA KALVODA
-  bpm: 160, loop: 64,
-  bass: cat(pump(31), pump(31), pump(29), pump(26)),
-  lead: cat(
-    [67, 0, 70, 0, 67, 0, 0, 66, 0, 67, 0, 70, 0, 74, 0, 0],
-    [67, 0, 70, 0, 74, 0, 0, 75, 0, 74, 0, 70, 0, 67, 0, 0],
-    [65, 0, 68, 0, 72, 0, 0, 73, 0, 72, 0, 68, 0, 65, 0, 0],
-    [62, 0, 65, 0, 67, 0, 70, 0, 74, 0, 77, 0, 79, 0, 82, 0]),
-  lead2: cat(
-    [55, 0, 58, 0, 55, 0, 0, 54, 0, 55, 0, 58, 0, 62, 0, 0],
-    [55, 0, 58, 0, 62, 0, 0, 63, 0, 62, 0, 58, 0, 55, 0, 0],
-    [53, 0, 56, 0, 60, 0, 0, 61, 0, 60, 0, 56, 0, 53, 0, 0],
-    [50, 0, 53, 0, 55, 0, 58, 0, 62, 0, 65, 0, 67, 0, 70, 0]),
-  drum: cat(beat4f, beat4f, beat4f, [1, 3, 2, 3, 1, 3, 2, 3, 2, 2, 2, 3, 2, 2, 2, 2]),
-};
-SONGS.stage5 = { // THE ARENA: gladiator march
-  bpm: 124, loop: 64,
-  bass: cat(four(28), four(28), four(31), four(33)),
-  lead: cat(
-    [64, 0, 64, 0, 67, 0, 71, 0, 72, 0, 71, 0, 67, 0, 0, 0],
-    [64, 0, 64, 0, 67, 0, 71, 0, 74, 0, 72, 0, 71, 0, 0, 0],
-    [67, 0, 67, 0, 71, 0, 74, 0, 76, 0, 74, 0, 71, 0, 0, 0],
-    [69, 0, 67, 0, 65, 0, 64, 0, 62, 0, 64, 0, 0, 0, 0, 0]),
-  lead2: cat(
-    [52, 0, 52, 0, 55, 0, 59, 0, 60, 0, 59, 0, 55, 0, 0, 0],
-    [52, 0, 52, 0, 55, 0, 59, 0, 62, 0, 60, 0, 59, 0, 0, 0],
-    [55, 0, 55, 0, 59, 0, 62, 0, 64, 0, 62, 0, 59, 0, 0, 0],
-    [57, 0, 55, 0, 53, 0, 52, 0, 50, 0, 52, 0, 0, 0, 0, 0]),
-  drum: cat(beat4, beat4f, beat4, [1, 1, 3, 3, 2, 2, 3, 3, 1, 1, 3, 3, 2, 2, 2, 2]),
-};
-SONGS.boss5 = { // NINO BACCI: final boss
-  bpm: 172, loop: 64,
-  bass: cat(pump(33), pump(33), pump(31), pump(29)),
-  lead: cat(
-    [69, 0, 72, 0, 76, 0, 72, 0, 69, 0, 76, 0, 79, 0, 76, 0],
-    [69, 0, 72, 0, 76, 0, 77, 0, 76, 0, 72, 0, 69, 0, 67, 0],
-    [71, 0, 74, 0, 78, 0, 74, 0, 71, 0, 78, 0, 81, 0, 78, 0],
-    [81, 0, 79, 0, 76, 0, 74, 0, 72, 0, 71, 0, 69, 0, 72, 0]),
-  lead2: cat(
-    [57, 0, 60, 0, 64, 0, 60, 0, 57, 0, 64, 0, 67, 0, 64, 0],
-    [57, 0, 60, 0, 64, 0, 65, 0, 64, 0, 60, 0, 57, 0, 55, 0],
-    [59, 0, 62, 0, 66, 0, 62, 0, 59, 0, 66, 0, 69, 0, 66, 0],
-    [69, 0, 67, 0, 64, 0, 62, 0, 60, 0, 59, 0, 57, 0, 60, 0]),
-  drum: cat(beat4f, beat4f, beat4f, [1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]),
-};
 SONGS.ending = { // victory theme
   bpm: 96, loop: 64,
   bass: cat(four(36), four(31), four(33), four(28)),

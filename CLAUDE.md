@@ -507,6 +507,17 @@ harness only calls `update()`.
 plays; missing wav → synthesized SFX; missing background plates → a complete procedural
 street builds in `js/stages.js`. Never make an asset load-bearing.
 
+**The tour is ONE act.** Acts II-V were cut to be rebuilt one at a time to a higher standard,
+so `STAGES` has a single entry and `SLOTS`/`SONGS` in `js/audio.js` carry only what it can
+reach: `lair`, `title`, `stage1`, `boss`, `ending`. `CHAPTERS`, the trophy gallery and the
+relic shelf are all DERIVED from `STAGES` - each filters bosses by whether a stage names them
+- so cutting the array was enough and `BOSSES` still holds all five for the acts to come.
+Their plates are in `assets/_archive/cut_acts/`.
+
+The `ending` belongs to the act flagged `final: true`, not to whichever act is last in the
+array. Without that, one act meant clearing it ended the game and the lair's whole relic loop
+became unreachable, because you never came home. No act carries the flag yet.
+
 **Adding a stage** means one entry in `STAGES` (`js/stages.js`): art keys, width, lamps,
 glows, `props`, `birds`, `fg`, `crowd`, `waves` (each `{x, spawns, miniboss?, boss?}`) and
 a procedural `build()`. Bosses go in `BOSSES` (`js/bosses.js`) as a `patterns` list driven

@@ -67,7 +67,7 @@ flexes, and settles into guard while the real 4.736 s voice clip plays. The line
 audio-only; it is not printed on screen. The clip lives at
 `audio/voice/duke_out_of_gum.wav` and is sourced from the WavSource Duke Nukem archive.
 
-This is a five-act chapter rather than a single concept arena. Each act has
+Act I only. Acts II-V were cut to be rebuilt one at a time to a higher standard - the chapter is meant to end up around three. Each act has
 its own long scrolling route, wave composition, palette, environmental motion and a
 level-specific boss reveal. Cleared acts unlock on the title screen and health is partly
 restored between them while meter carries forward.
@@ -298,7 +298,7 @@ and it plays, no code change; remove the flag to get the chiptunes everywhere el
 - `index.html?auto=verify` runs the scripted suite (movement, the five-hit combo,
   juggle scaling, wall splat, prop destruction, poison, blind, quick-getup, run,
   idle animations, parry/counter, poise, Meteor Lariat, bear-hug escape,
-  wave gating, death/respawn, all five acts and bosses, ending,
+  wave gating, death/respawn, the act and its boss, ending,
   game over) and writes `PASS:name` / `FAIL:name` into the page `<title>`.
 - `index.html?auto=soak` hammers every knockdown and enemy-hold path across 50k
   frames and reports any body that ends up frozen (`SOAK-CLEAN` when nothing sticks).

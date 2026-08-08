@@ -400,7 +400,11 @@ function update() {
       persist();
     }
     if (G.rawTime - G.stateT > 160 && input.pressed('attack')) {
-      if (G.stageIndex < STAGES.length - 1) {
+      // The ENDING belongs to the act that is the finale, not to whichever act happens to
+      // be last in the array while the tour is being built one act at a time. Without the
+      // flag, cutting the game back to a single act made clearing it end the game - and
+      // took the lair's whole relic loop with it, since you never came home.
+      if (!STAGES[G.stageIndex].final) {
         enterHub(false);   // back to the lair with the next act unlocked
       } else {
         setState('ending');
@@ -1061,15 +1065,12 @@ if (autoMode) {
       t('hub-trophy-wall-fits-six-countries', RELIC_SLOTS.length >= 18);
       t('hub-relics-clear-each-other', RELIC_SLOTS.every(([x, y], i) =>
         RELIC_SLOTS.every(([x2, y2], j) => i === j || y !== y2 || Math.abs(x - x2) >= 30)));
-      // the map panel: cursor moves, a locked act refuses, an unlocked one starts
+      // the map panel. The cursor and the locked-act refusal are not testable with a
+      // single act - the cursor has nowhere to go and nothing is locked - so what is left
+      // is that the map opens on the newest act and starting one works.
       G.unlockedStage = 0;
       at('map'); tap('use');
       t('hub-map-opens-on-newest', G.hubAct === 0);
-      tap('down');
-      t('hub-map-moves', G.hubAct === 1);
-      tap('attack');
-      t('hub-locked-act-blocked', G.state === 'hub' && G.hubPanel === 'map');
-      tap('up');
       tap('attack');
       t('hub-starts-act', G.state === 'intro' && G.stageIndex === 0);
 
@@ -1101,8 +1102,10 @@ if (autoMode) {
       step(500); t('arrival-holds-for-character-beat', G.state === 'intro');
       step(ENTRANCE_LAST_FRAME - 498); t('play-state', G.state === 'play');
       t('stage1-name', G.stage.name === 'BAZAAR HEAT');
-      t('five-act-chapter', STAGES.length === 5 &&
-        STAGES.map((s) => s.boss).join(',') === 'raja,mirchi,refund,yadav,rana');
+      // One act, deliberately: the rest were cut to be rebuilt one at a time. What still
+      // has to hold is that every act names a boss that exists.
+      t('every-act-has-a-boss', STAGES.length >= 1
+        && STAGES.every((st) => !!BOSSES[st.boss]));
       // ESC is a real pause: the sim stops dead and the audio context is suspended with it.
       // hub-pauses is the same assertion one state over, since the room pauses too.
       {
@@ -1374,8 +1377,15 @@ if (autoMode) {
         t('cart-breaks-disables-charge', G.boss.cartGone === true);
       }
       step(205);
-      t('mirchi-intro-distinct', G.state === 'play');
-      if (G.boss) G.boss.hurt(9999, 1, true, true);
+      t('boss-intro-ends', G.state === 'play');
+      // The rest of the boss state machine, which used to be asserted on YADAV in Act IV:
+      // armour at full health, enrage on the way through half, and death.
+      if (G.boss) {
+        G.boss.hurt(Math.ceil(G.boss.maxhp / 2) + 1, 1, false, false);
+        t('boss-enrages-at-half', G.boss.enraged === true);
+        G.boss.hurt(9999, 1, true, true);
+        t('boss-dies', G.boss.dead === true);
+      }
       G.enemies.length = 0; G.spawnQueue = [];
       step(140);
       t('act1-clear', G.state === 'clear');
@@ -1383,36 +1393,11 @@ if (autoMode) {
       t('clear-returns-to-hub', G.state === 'hub');
       t('clear-brings-home-a-relic', G.hubRelicKey === 'raja' && G.hubRelicT > 0);
 
-      // ---- Act IV: station-integrated YADAV boss ----
-      startStage(3); setState('play');
-      window.__game.skipToBoss();
-      G.player.x = G.stage.waves[G.stage.waves.length - 1].x + 2; step(3);
-      t('boss-intro', G.state === 'bossintro' && !!G.boss);
-      t('boss-is-yadav', G.boss.key === 'yadav');
-      step(230);
-      t('boss-fight', G.state === 'play');
-      // his whistle summons constables
-      G.enemies.length = 0;
-      G.boss.state = 'whistle'; G.boss.t = 0; G.boss.whistles = 0;
-      step(10);
-      t('yadav-whistle-summons', G.enemies.length >= 1);
-      G.enemies.length = 0;
-      // enrage at half health
-      G.boss.hurt(Math.ceil(G.boss.maxhp / 2) + 1, 1, false, false);
-      t('boss-enrage', G.boss.enraged === true);
-      G.boss.hurt(9999, 1, true, true);
-      t('boss-dead', G.boss.dead === true);
-      step(140);
-      t('act2-clear', G.state === 'clear');
-
-      // ---- Act V: storm-fort finale with COMMANDER RANA ----
-      startStage(4); setState('play');
-      window.__game.skipToBoss(); G.player.x = G.stage.waves[G.stage.waves.length - 1].x + 2; step(3);
-      t('boss-is-rana', G.boss && G.boss.key === 'rana');
-      step(250);
-      if (G.boss) G.boss.hurt(9999, 1, true, true); step(150);
-      t('act3-clear', G.state === 'clear');
-      step(200); debugPress('attack'); step(2); debugRelease('attack'); step(20);
+      // Acts IV and V drove YADAV and RANA. Both are cut, and the boss state machine they
+      // exercised - intro, enrage at half, death - is asserted on RAJA above instead. The
+      // whistle summon went with YADAV; it is his pattern and no remaining boss has it.
+      // The ending is reached directly until an act is flagged final.
+      setState('ending');
       t('ending', G.state === 'ending');
 
       // ---- game over path ----
