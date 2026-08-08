@@ -876,7 +876,21 @@ def build_tenants():
         for i, f in enumerate(finish_set(frames, 40)):
             f.save(f"{OUT}{name}_{i}.png")
         print(f"{OUT}{name}_0..3.png  {frames[0].width}x{frames[0].height}  "
-              f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})")
+              f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})  "
+              f"churn {churn(frames)}")
+
+
+def churn(frames):
+    """How much of the silhouette changes between consecutive frames of a cycle.
+
+    The number you cannot get by looking, and the one that says whether a small sprite is
+    swimming or flickering. CHAD's jab reads well at 15%; the first baitfish cycle ran
+    31-41% on an 11x9 sprite - the two frames with the body curved were 20 px long and the
+    two with it straight were 22, so the whole fish pulsed rather than its tail moving.
+    """
+    a = [np.asarray(f.getchannel("A")) > 128 for f in frames]
+    steps = [(a[i] ^ a[(i + 1) % len(a)]).sum() / max(a[i].sum(), 1) for i in range(len(a))]
+    return " ".join("%.0f%%" % (100 * s) for s in steps)
 
 
 

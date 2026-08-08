@@ -310,13 +310,25 @@ the old generation's rack measured; the new one drew a chunkier rack, and 38 put
 against his standing 96. He is the fixed quantity in this game - the rack is whatever size the
 picture drew it RELATIVE to him, which came out 54.
 
-**Four frames of a swimmer register on the HEAD, never on the bounding box.** The baitfish
-flickered vertically because a fish's box is not its centreline: the two frames with the body
-curved measure 15 device px tall and the two with it straight measure 11, so centring each on
-its own box put the eye at row 5.9 in two frames and 7.97 in the other two - a full logical
-pixel of bob at half the swim rate, on 26 fish at once. `head_row()` takes the mean row of the
-leading third and aligns on that: spread 2.04 px to 0.04. The crab still bobs 0.9 px and that
-one is correct, because it is bottom-anchored and walking.
+**A sprite this small cannot afford a real animation cycle, and both halves of that bit the
+baitfish.** They flickered, and it took two passes because there were two faults:
+
+- **Registration.** A fish's bounding box is not its centreline - the two frames with the body
+  curved measured 15 device px tall and the two with it straight 11 - so centring each frame on
+  its own box put the eye at row 5.9 in two of them and 7.97 in the other two. A full logical
+  pixel of bob at half the swim rate, on 26 fish at once. `head_row()` aligns on the mean row of
+  the leading third instead: spread 2.04 px to 0.04.
+- **The frames themselves.** Even aligned, 31-41% of the silhouette changed between consecutive
+  frames on an 11x9 sprite, because the generator swung the tail through a full sweep AND drew
+  the body 20 px long in two poses and 22 in the other two. The whole fish pulsed. Asking for
+  the body to be *identical and perfectly straight in all four* with only the tail FAN tilting
+  slightly took it to 4-5%. For scale: CHAD's jab reads well at 15%, and that is a 96 px sprite.
+
+`build_tenants` prints `churn` for every set now, which is the number you cannot get by looking.
+Read it as: single digits is a fin moving, 15% is a limb moving, 30%+ on a small sprite is the
+thing redrawing itself. The eel (13-46%) and the crab (32-48%) are both high and both fine -
+neither is played as a fast loop; the eel's frame is picked by how far out it is and the crab
+takes a step every few seconds.
 
 Meaner at 58 logical px is the LINE OF THE BACK, not detail: shoulder blades standing above it
 with the head carried below it is a stalking animal, and a level back with the head up is a
