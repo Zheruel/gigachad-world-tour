@@ -49,7 +49,6 @@ function loadSave() {
     if (typeof s.unlockedStage === 'number') G.unlockedStage = clamp(s.unlockedStage, 0, STAGES.length - 1);
     if (typeof s.bestComboAll === 'number') G.bestComboAll = s.bestComboAll;
     if (s.actBest && typeof s.actBest === 'object') G.actBest = s.actBest;
-    if (typeof s.hubTrack === 'string') G.hubTrack = savedTrack = s.hubTrack;
     G.selectedStage = G.unlockedStage;
   } catch (e) { /* first run */ }
 }
@@ -57,7 +56,7 @@ function persist() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       hiscore: G.hiscore, unlockedStage: G.unlockedStage,
-      bestComboAll: G.bestComboAll, actBest: G.actBest, hubTrack: G.hubTrack,
+      bestComboAll: G.bestComboAll, actBest: G.actBest,
     }));
   } catch (e) { /* private mode */ }
 }
@@ -113,7 +112,6 @@ function startGame(index = G.selectedStage || 0) {
 let hubMeter = 0;
 let hubGate = false;   // panel-dismiss keys are held; hold the player until released
 let clearSaved = false;  // the STAGE CLEAR tally writes the save once, on arrival
-let savedTrack = null;   // last G.hubTrack written to the save
 
 function enterHub(fresh) {
   if (fresh) resetRun();
@@ -339,9 +337,6 @@ function update() {
     // BACKSPACE backs out of a panel or leaves the room for the title; ESC pauses
     if (!panelOpen && !G.hubSeat && input.pressed('back')) { setState('title'); G.fade = 1; return; }
     const pick = updateHub();
-    // The jukebox is a setting, so it belongs in the save. Watching G.hubTrack here keeps
-    // hubpanels.js from having to reach into main.js for persist(), which would be a cycle.
-    if (G.hubTrack !== savedTrack) { savedTrack = G.hubTrack; persist(); }
     // A panel owns the buttons while it is up, and keeps them until they are let go.
     // Without the latch, C to back out also throws a parry whose recovery eats the
     // next punch.
@@ -970,6 +965,7 @@ if (autoMode) {
         tap('pause'); step(4);
         t('hub-jukebox-sets-the-room', !!picked && picked !== HUB_STAGE.music
           && !G.hubPanel && G.hubTrack === picked);
+        G.hubTrack = null;
       }
       at('mirror'); tap('use');
       t('hub-mirror-flex', G.player.state === 'victory' && G.hubFlex > 0);
@@ -1392,6 +1388,13 @@ if (autoMode) {
       step(200); debugPress('attack'); step(4); debugRelease('attack');
       t('clear-returns-to-hub', G.state === 'hub');
       t('clear-brings-home-a-relic', G.hubRelicKey === 'raja' && G.hubRelicT > 0);
+      // Clearing an act is the one thing that writes the save, so this is the point at
+      // which "the jukebox is not persisted" is testable against a save THIS build wrote.
+      // A fresh start has to come up on the room's own track.
+      {
+        const save = JSON.parse(localStorage.getItem('gigachadworldtour.save') || '{}');
+        t('hub-jukebox-is-session-only', !('hubTrack' in save));
+      }
 
       // Acts IV and V drove YADAV and RANA. Both are cut, and the boss state machine they
       // exercised - intro, enrage at half, death - is asserted on RAJA above instead. The

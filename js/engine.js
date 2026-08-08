@@ -60,7 +60,9 @@ export const G = {
   hubPanel: null,    // id of the fixture whose panel is open, null for none
   hubAct: 0,         // cursor within the open panel's list
   hubChapter: 0,     // chapter focused on the world map panel
-  hubTrack: null,    // the slot the jukebox is set to; null means the room's own
+  // The jukebox's pick. Deliberately NOT saved: a fresh start always comes up on the
+  // room's own track, and the pick only lasts the session it was made in.
+  hubTrack: null,
   hubFlex: 0,        // frames left of the mirror pose
   hubSeat: 0,        // frames CHAD has been occupying a station, 0 when he is on his feet
   hubStation: null,  // which one: 'lounge' or 'bar'

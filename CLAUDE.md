@@ -473,15 +473,17 @@ the player actually lives in between acts.
 **The jukebox SETS the room's music; it does not audition it.** It used to call
 `audio.preview()`, which played the track with `currentSlot` left null precisely so that
 closing the panel put the room's own slot back - so the thing you picked stopped the moment
-you walked away from the hi-fi. `G.hubTrack` is the pick, `main.js` asks for
-`G.hubTrack || HUB_STAGE.music` wherever it sets the hub's music, and it is in the save.
+you walked away from the hi-fi. `G.hubTrack` is the pick and `main.js` asks for
+`G.hubTrack || HUB_STAGE.music` wherever it sets the hub's music. It is deliberately NOT
+saved: the pick lasts the session it was made in, and a fresh start always comes up on the
+room's own track.
 `audio.music()` grew an `audible` flag for it: the manifest's "silent" is there so the game
 is quiet until real tracks land, not so a track the player chose refuses to play.
 
 Two things it must not do. It cannot import `HUB_STAGE` from `hub.js` to know the default -
 `hub.js` imports the panels, so that is a cycle; `G.stage` IS the lair while the panel is up.
-And it cannot call `persist()` from `hubpanels.js` for the same reason: `main.js` watches
-`G.hubTrack` for a change instead.
+And it must not reach for `persist()` either - which is moot now that the pick is session
+only, but was a cycle when it was not.
 
 **ESC closes a panel before it pauses anything.** It is the pause key everywhere else in the
 room, so the panel's own cancel takes it and `main.js` skips the pause toggle while a panel
