@@ -1170,21 +1170,33 @@ function drawTank(ctx, camX) {
 
 
 // ------------------------------------------------------------------ the bed
-// They are asleep until CHAD walks into the room, then one of them props herself up and
-// says something. IDLE lines go round on their own; WAKE lines only fire on arrival, so
-// walking in always gets a reaction rather than whatever the cycle happened to be on.
 // She is not waiting for him and does not react to him - she is just someone living in
 // the room. Poses drift on their own and a line goes off now and then with a long gap
 // either side of it; a line every few seconds reads as a chatbot, not as company.
+//
+// The register is the whole job here. Every line is said by someone who is already
+// impressed and would rather he came to bed than went back out - fond, unhurried,
+// teasing him for winning too much. Nothing that nags, nothing that asks him for
+// anything, nothing that needs to know where he has been.
 const IDLE_LINES = [
+  'you already won, big guy',
   'you work too hard...',
   'it is four in the morning',
   'the city can wait',
   'still hitting that bag?',
-  'you already won, big guy',
   'the bag will still be there',
   'one more act, you said',
   'come back to bed, chad',
+  'nothing left to prove tonight',
+  'your side is getting cold',
+  'the bag never loved you back',
+  'i can hear you flexing',
+  'even gods sleep, you know',
+  'leave some for tomorrow',
+  'the shelf is full, champ',
+  'put the cigar out...',
+  'that shark is up late too',
+  'you are the trophy, chad',
   'mm...',
 ];
 
@@ -1193,16 +1205,20 @@ const IDLE_LINES = [
 // her front. The room steps between NEIGHBOURS only, so the size of one step is the
 // whole quality of it; a fixed loop over all eight reads as an animation flicking over.
 const BED_POSES = 8;
-const LINE_HOLD = 260;             // ~4.3s on screen
-const LINE_GAP = [1400, 3000];     // ~23-50s between lines
+const LINE_HOLD = 280;             // ~4.7s on screen
+// ~13-28s between lines. Measured over 400 runs of the verify window, that puts a bubble
+// on screen 21% of the time against the 10% it used to be - twice as talkative and still
+// quiet four fifths of the evening.
+const LINE_GAP = [800, 1700];
 const POSE_HOLD = [200, 520];      // ~3.3-8.7s per pose
 
-const bed = { pose: 0, hold: 300, line: null, lineT: 0, next: 900, said: -1 };
+const bed = { pose: 0, hold: 300, line: null, lines: null, lineT: 0, next: 900, said: -1 };
 
 function resetBed() {
   bed.pose = irand(0, BED_POSES - 1);
   bed.hold = irand(...POSE_HOLD);
   bed.line = null;
+  bed.lines = null;
   bed.lineT = 0;
   bed.next = irand(...LINE_GAP);
   bed.said = -1;
@@ -1213,6 +1229,7 @@ function say() {
   if (i === bed.said) i = (i + 1) % IDLE_LINES.length;  // never the same line twice running
   bed.said = i;
   bed.line = IDLE_LINES[i];
+  bed.lines = wrapText(bed.line);
   bed.lineT = LINE_HOLD;
 }
 
@@ -1232,18 +1249,58 @@ function updateBed() {
 const bedFrame = () => 'lair_bed_' + bed.pose;
 
 // A speech bubble in the wall plane, so CHAD passes in front of it like everything else.
-// Chamfered corners, a dark rule and a dropped shadow: a plain white rectangle reads as
-// debug text sitting on top of the game rather than something in the room.
-function drawBubble(ctx, cx, bottom, text, a) {
-  const pad = 5, tail = 5;
-  const w = textWidth(text, 1) + pad * 2, h = 7 + pad * 2;
+// Rounded corners, a dark rule, a dropped shadow and shaded paper: a plain white rectangle
+// reads as debug text sitting on top of the game rather than something in the room.
+//
+// Wrapped, and that is the load-bearing part. 'it is four in the morning' on one line is
+// 109 logical px of a 480 px screen, so the keep-it-on-screen clamp shoved the whole box
+// into the middle of the room with the tail stretching back to her head. Two short lines
+// sit over the pillow where they belong.
+const BUBBLE_W = 62;               // max text width per line
+const LINE_LEAD = 8;
+const POP = 5;                     // frames it takes to grow out of the tail
+
+function wrapText(text) {
+  const words = text.split(' ');
+  const lines = [''];
+  for (const word of words) {
+    const line = lines[lines.length - 1];
+    if (line && textWidth(line + ' ' + word, 1) > BUBBLE_W) lines.push(word);
+    else lines[lines.length - 1] = line ? line + ' ' + word : word;
+  }
+  // then balance the two-line case: greedy gives 'the city can / wait', which fills the
+  // same box as 'the city / can wait' and reads as the line having run out rather than
+  // as a break someone chose.
+  if (lines.length === 2) {
+    let best = null;
+    for (let k = 1; k < words.length; k++) {
+      const pair = [words.slice(0, k).join(' '), words.slice(k).join(' ')];
+      const wide = Math.max(textWidth(pair[0], 1), textWidth(pair[1], 1));
+      if (wide <= BUBBLE_W && (!best || wide < best.wide)) best = { wide, pair };
+    }
+    if (best) return best.pair;
+  }
+  return lines;
+}
+
+// grow is 0..1: the balloon swells out of the tail, and the words only appear once it has
+// finished. A box that fades up at full size reads as a caption; one that pops reads as
+// someone speaking.
+function drawBubble(ctx, cx, bottom, lines, a, grow) {
+  const pad = 5;
+  const fullW = Math.max(...lines.map((l) => textWidth(l, 1))) + pad * 2;
+  const fullH = (lines.length - 1) * LINE_LEAD + 7 + pad * 2;
+  const w = Math.round(fullW * (0.4 + 0.6 * grow));
+  const h = Math.round(fullH * (0.45 + 0.55 * grow));
+  const tail = Math.round(2 + 3 * grow);
   const x = Math.round(clamp(cx - w / 2, 3, W - w - 3)), y = Math.round(bottom - h - tail);
   const tx = Math.round(clamp(cx, x + 6, x + w - 6));
 
   const body = (dx, dy, col) => {
     ctx.fillStyle = col;
-    ctx.fillRect(x + dx + 1, y + dy, w - 2, h);          // chamfer: 1px off each corner
-    ctx.fillRect(x + dx, y + dy + 1, w, h - 2);
+    ctx.fillRect(x + dx + 2, y + dy, w - 4, h);           // 2px round on each corner
+    ctx.fillRect(x + dx + 1, y + dy + 1, w - 2, h - 2);
+    ctx.fillRect(x + dx, y + dy + 2, w, h - 4);
     ctx.beginPath();
     ctx.moveTo(tx + dx - 3, y + dy + h - 1);
     ctx.lineTo(tx + dx + 4, y + dy + h - 1);
@@ -1256,30 +1313,38 @@ function drawBubble(ctx, cx, bottom, text, a) {
   ctx.globalAlpha = a * 0.35;
   body(1, 2, '#0c0812');                                  // dropped shadow
   ctx.globalAlpha = a;
-  body(0, 0, '#241c2e');                                  // dark rule...
-  ctx.fillStyle = '#f6efdd';                              // ...with the paper inside it
-  ctx.fillRect(x + 2, y + 1, w - 4, h - 2);
-  ctx.fillRect(x + 1, y + 2, w - 2, h - 4);
-  ctx.beginPath();
+  body(0, 0, '#241c2e');                                  // the dark rule...
+  ctx.fillStyle = '#f8f2e2';                              // ...with the paper inside it
+  ctx.fillRect(x + 3, y + 1, w - 6, h - 2);
+  ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+  ctx.fillRect(x + 1, y + 3, w - 2, h - 6);
+  ctx.fillStyle = '#e7dbc1';                              // lit from above, like everything else
+  ctx.fillRect(x + 3, y + h - 3, w - 6, 2);
+  ctx.beginPath();                                        // the tail's paper, one px inside the rule
   ctx.moveTo(tx - 2, y + h - 1);
   ctx.lineTo(tx + 3, y + h - 1);
   ctx.lineTo(tx, y + h + tail - 2);
   ctx.closePath();
   ctx.fill();
-  drawText(ctx, text, x + pad, y + pad, '#2a2030', 1);
+  if (grow >= 1) {
+    const ty = y + Math.round((h - (fullH - pad * 2)) / 2);
+    lines.forEach((l, i) => drawText(ctx, l, x + Math.round((w - textWidth(l, 1)) / 2),
+      ty + i * LINE_LEAD, '#2a2030', 1));
+  }
   ctx.restore();
 }
 
 function drawBed(ctx, camX) {
   drawFixtureArt(ctx, camX, BED, artFor({ art: bedFrame(), w: BED.w, h: BED.h }));
-  if (bed.lineT <= 0 || !bed.line) return;
+  if (bed.lineT <= 0 || !bed.lines) return;
   const x = BED.x - camX;
   if (x < -90 || x > W + 90) return;
-  // fades in fast and out slow, and rises a couple of pixels as it goes
-  const inA = Math.min(1, (LINE_HOLD - bed.lineT) / 6);
-  const a = Math.min(inA, Math.min(1, bed.lineT / 30));
-  const rise = Math.round((1 - Math.min(1, (LINE_HOLD - bed.lineT) / 10)) * 3);
-  drawBubble(ctx, x + 40, BED.y - BED.h + 4 + rise, bed.line, a);   // over her, not the bed's centre
+  const age = LINE_HOLD - bed.lineT;
+  // pops out over POP frames, holds, then fades slowly
+  const a = Math.min(1, age / 3, bed.lineT / 30);
+  const grow = Math.min(1, (age + 1) / POP);
+  // her head, not the bed's centre: measured at logical +33 from BED.x across the poses
+  drawBubble(ctx, x + 33, BED.y - BED.h + 6, bed.lines, a, grow);
 }
 
 // ----------------------------------------------------------------- the tiger
@@ -1374,6 +1439,13 @@ const petActors = PETS.map((p) => ({
 // --------------------------------------------------------------- update
 // the verify suite needs to see the sleepers' state; nothing else reads this
 export const hubBed = () => bed;
+// for the ?auto=hub-bed screenshot: one way in, or setting bed.line by hand skips the wrap
+// and the bubble draws empty
+export function hubSay(text) {
+  bed.line = text;
+  bed.lines = wrapText(text);
+  bed.lineT = LINE_HOLD;
+}
 
 export function resetHub() {
   tiger.x = 1290; tiger.y = 232; tiger.state = 'rest'; tiger.t = 0; tiger.face = -1; tiger.alert = 0;

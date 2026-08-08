@@ -3,7 +3,7 @@ import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, clamp, addSco
 import { initInput, input, endFrameInput, pollGamepad, debugPress, debugRelease } from './input.js';
 import { SPR, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { initStage, initStageObj, drawStage, updateMotes, STAGES, stageDef } from './stages.js';
-import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, hubTank, eelX, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
+import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, hubSay, hubTank, eelX, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
 import { createProp } from './props.js';
 import { loadAmbience, updateAmbience, reactStage } from './ambience.js';
 import { loadFX, fx } from './fx.js';
@@ -304,6 +304,9 @@ function update() {
   }
   if (G.state === 'hub') {
     if (G.hitstop > 0) { G.hitstop--; return false; }
+    // the room has no pause button of its own; this is the console's, and without it
+    // step(n) from a tool call lands hundreds of frames past wherever it was aimed
+    if (G.paused) return false;
     G.time++;
     if (G.comboT > 0 && --G.comboT === 0) G.combo = 0;
     // The play camera only ever scrolls forward; in a room you have to walk back.
@@ -982,8 +985,10 @@ if (autoMode) {
         }
         t('hub-bed-shifts-about', poses.size >= 3 && changes >= 3);
         t('hub-bed-poses-are-adjacent-steps', [...poses].every((p) => p >= 0 && p < 8));
-        // a line now and then, not a running commentary: well under half the time
-        t('hub-bed-speaks-with-pauses', lineFrames > 0 && lineFrames < 400 * 0.45);
+        // a line now and then, not a running commentary. Simulated over 400 runs of this
+        // window the bubble is up for 110-170 of the 650 samples, so 34% leaves real margin
+        // over the 26% worst case - a bound sitting on the measured maximum is a coin flip.
+        t('hub-bed-speaks-with-pauses', lineFrames > 0 && lineFrames < 650 * 0.34);
         const before = hubBed().pose;
         G.player.x = BED_X - 60; step(6);
         t('hub-bed-ignores-him', hubBed().pose === before);
@@ -1374,7 +1379,7 @@ if (autoMode) {
     } else if (autoMode === 'hub-bed') {
       // not a fixture and not a reaction - just park him there and let her talk
       G.player.x = BED_X - 110; G.player.y = 236;
-      hubBed().line = 'you work too hard...'; hubBed().lineT = 200;
+      hubSay('you already won, big guy');
       step(20);
     } else if (f) {
       G.player.x = f.x; step(3);

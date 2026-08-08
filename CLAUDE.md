@@ -246,7 +246,19 @@ flattens it away.
 **Stepping the hub from the console needs `G.paused = true` first.** The page keeps
 running its rAF loop between tool calls, so `step(n)` then a screenshot shows a state
 several hundred frames later - which is what made the cigar smoke look like it was
-spawning from the wrong end of the shark for three passes.
+spawning from the wrong end of the shark for three passes. `G.paused` was checked only in
+the `play` branch of `update()` and did nothing in the room, so that workflow silently did
+not work; the hub branch honours it now.
+
+**A line of dialogue is sized by the SCREEN, not by the sentence.** Her bubble drew one
+long line, and `it is four in the morning` is 109 of the 480 logical px across - so the
+keep-it-on-screen clamp shoved the whole box into the middle of the room with the tail
+stretching back to her head, which is what made it read as a subtitle rather than as
+speech. `wrapText` breaks at 62 px and then rebalances the two lines (greedy gives
+`the city can / wait`, which fills exactly the same box as `the city / can wait` and looks
+like an accident). Point the tail with a measurement, not a guess: her head is at logical
++33 from `BED.x`, found by diffing each pose against the median of all eight - the bed does
+not move, so whatever changed is her.
 
 **One animal with somewhere to live beats a shoal with nowhere.** The tank held a shark
 and twenty piranhas; the piranhas were busy without being alive, and they turned the
