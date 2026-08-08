@@ -78,7 +78,6 @@ const MIRROR_FRAME = [1344, 50, 57, 103];
 export const BAG_X = 990;
 export const FIXTURES = [
   { id: 'bar', x: 60, hint: 'POUR ONE' },
-  { id: 'tank', x: 225, hint: 'FEED THEM' },
   { id: 'lounge', x: 395, hint: 'SIT AND SMOKE' },
   { id: 'trophies', x: 616, hint: 'TROPHY WALL' },   // the pier between the two niches
   { id: 'map', x: 800, hint: 'WORLD TOUR' },
@@ -675,8 +674,6 @@ const SHARK_W = 46;           // lair_shark_*, from tools/build_lair_extras.py S
 // The lit end of the cigar, measured off assets/lair/shark_0.png as an offset from the
 // sprite's own top-left. The smoke has to leave the cigar, not the middle of the shark.
 const CIGAR = { x: 44, y: 22 };
-// where the food lands, and so where he swims to. Exported for ?auto=verify.
-export const TANK_FEED_X = TANK.x + TANK.w / 2 - SHARK_W / 2;
 const SILT_N = 26;
 
 function resetTank() {
@@ -737,14 +734,7 @@ function updateTank() {
   shark.frame = (shark.t / 9 | 0) & 3;
 
   const lo = TANK.x + 6, hi = TANK.x + TANK.w - 6 - SHARK_W;
-  if (G.hubFeed > 0) {
-    // He comes for it rather than carrying on with his lap. The food is the whole point
-    // of the fixture, and a shark ignoring it was the tell that nothing in here was alive.
-    shark.dir = TANK_FEED_X > shark.x ? 1 : -1;
-    shark.x += clamp((TANK_FEED_X - shark.x) * 0.05, -1.6, 1.6);
-  } else {
-    shark.x += shark.dir * 0.24;
-  }
+  shark.x += shark.dir * 0.24;
   if (shark.x < lo) { shark.x = lo; shark.dir = 1; shark.turn = 20; }
   if (shark.x > hi) { shark.x = hi; shark.dir = -1; shark.turn = 20; }
   if (shark.turn > 0) shark.turn--;
@@ -799,8 +789,8 @@ function updateTank() {
   }
 }
 
-// for ?auto=verify: the feeding rush and the drag are the only things in this room whose
-// behaviour cannot be seen in a still
+// for ?auto=verify: the drag is the only thing in this room whose behaviour cannot be
+// seen in a still
 export function hubTank() { return { shark, smoke, silt }; }
 
 // Light coming down through the surface. Four shafts, each drifting on its own slow sine
@@ -859,14 +849,6 @@ function drawTank(ctx, camX) {
   // his lair, on the tank floor and behind him
   const scape = ASSETS.lair_tankscape || fallbackArt('lair_tankscape', TANK.w, SCAPE_H);
   blit(ctx, scape, l, TANK.y + TANK.h - frameH(scape));
-
-  if (G.hubFeed > 100) {
-    ctx.fillStyle = '#c8a060';
-    for (let i = 0; i < 6; i++) {
-      const t = (150 - G.hubFeed) * 0.9 + i * 4;
-      ctx.fillRect(Math.round(l + TANK.w / 2 - 8 + i * 3), Math.round(TANK.y + 2 + t), 1, 1);
-    }
-  }
 
   const simg = ASSETS['lair_shark_' + shark.frame];
   if (simg) {
@@ -1143,7 +1125,6 @@ export function resetHub() {
   G.hubStation = null;
   G.hubReps = 0;
   G.hubFlex = 0;
-  G.hubFeed = 0;
   G.hubSel = null;
   G.hubPanel = null;
 }
@@ -1155,7 +1136,6 @@ export function updateHub() {
   updateBed();
   for (const p of PETS) updatePet(p);
   if (G.hubRelicT > 0) G.hubRelicT--;
-  if (G.hubFeed > 0) G.hubFeed--;
   if (G.hubFlex > 0 && --G.hubFlex === 0) G.player.state = 'idle';
   if (G.hubDrink > 0 && --G.hubDrink === 0) G.player.state = 'idle';
   // the combo pulls them in, and RAGNAROK sends them to opposite ends of the room
@@ -1203,10 +1183,6 @@ export function updateHub() {
       G.hubReps = 0;
       G.audio.sfx('blip');
       petsWatch(fixtureAt(sel).x - 40);
-    } else if (sel === 'tank') {
-      G.hubFeed = 150;
-      G.audio.sfx('blip');
-      spawnPop(TANK.x + TANK.w / 2, TANK.y - 6, 'CHOW');
     } else {
       openPanel(sel);
     }
@@ -1423,7 +1399,6 @@ function drawSelectRing(ctx, camX) {
   if (!G.hubSel || G.hubPanel || G.hubSeat > 0) return;
   const boxes = {
     bar: [4, 34, 130, 140],
-    tank: [TANK.x - 6, TANK.y - 6, TANK.w + 12, TANK.h + 12],
     trophies: [TROPHY_WALL[0] - 6, 33, TROPHY_WALL[1] - TROPHY_WALL[0] + 12, 110],
     lounge: [LOUNGE.x - LOUNGE.w / 2 - 2, LOUNGE.y - LOUNGE.h, LOUNGE.w + 4, LOUNGE.h],
     map: artRing('lair_worldmap', 3),
@@ -1496,7 +1471,7 @@ export function drawHubUI(ctx) {
   if (f) {
     const x = Math.round(f.x - G.camX);
     const bob = Math.round(Math.sin(G.rawTime * 0.12) * 2);
-    const LOW = { bag: 100, lounge: 118, curl: 84, bench: 112, tank: 30 };
+    const LOW = { bag: 100, lounge: 118, curl: 84, bench: 112 };
     const y = LOW[f.id] === undefined ? 26 : LOW[f.id];
     if (!f.key) upArrow(ctx, x, y + 10 + bob, '#ffd94a');
     const hint = (f.key || 'UP') + ': ' + f.hint;

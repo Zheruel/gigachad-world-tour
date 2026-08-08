@@ -65,7 +65,6 @@ export const G = {
   hubStation: null,  // which one: 'lounge', or a RIGS id in js/hub.js
   hubReps: 0,        // reps done at the current gym station
   hubDrink: 0,       // frames left of the drink at the bar
-  hubFeed: 0,        // frames left of feeding the tank
   hubRelicT: 0,      // frames left of the "you came home with this" beat
   hubRelicKey: null, // which boss that relic came off
   actors: [],        // scenery that draws itself and y-sorts with the fighters (the tiger)

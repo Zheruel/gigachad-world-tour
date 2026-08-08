@@ -20,7 +20,7 @@ There is no test runner, linter or package manager. Verification is in-browser, 
 - `index.html?auto=soak` — 50k-frame stuck-entity hunt over knockdowns and enemy holds. Clean run prints `SOAK-CLEAN`.
 - `index.html?auto=bot&stage=0` — naive bot plays a whole stage; reports pacing/damage/KOs.
 - `?auto=play|walk|jab|combo|parry|combat|super|super-hammer|super-express|boss|bossfight|miniboss|clear|over|ending` — steps the game into a state for screenshots.
-- `?auto=hub[-<fixture>]` — THE LAIR. Bare, or a fixture id from `FIXTURES` in `js/hub.js` (`hub-bar`, `hub-tank`, `hub-trophies`, `hub-lounge`, `hub-map`, `hub-hifi`, `hub-curl`, `hub-bench`, `hub-mirror`) to park CHAD there and trigger it, plus `hub-bag` (mid-punch), `hub-window` (the bag against the sunset) and `hub-bed` (close enough to the master suite that they wake up and speak). `&unlocked=N` sets how far the tour has got, which drives the relics on the shelves, the locked acts and how dark the window is.
+- `?auto=hub[-<fixture>]` — THE LAIR. Bare, or a fixture id from `FIXTURES` in `js/hub.js` (`hub-bar`, `hub-trophies`, `hub-lounge`, `hub-map`, `hub-hifi`, `hub-curl`, `hub-bench`, `hub-mirror`) to park CHAD there and trigger it, plus `hub-bag` (mid-punch), `hub-window` (the bag against the sunset) and `hub-bed` (close enough to the master suite that they wake up and speak). `&unlocked=N` sets how far the tour has got, which drives the relics on the shelves, the locked acts and how dark the window is.
 - `lab.html` — asset lab (CAST / ANIM / CROWD / SCALE / STAGE / CONTRAST / EFFECTS). ANIM exposes the selected sequence as a frame-by-frame contact sheet; comma/period step authored drawings. `sfxlab.html` — SFX slot audition.
 
 To run a single check, read the `autoMode === 'verify'` block in `js/main.js` and drive
@@ -172,6 +172,10 @@ off where CHAD is standing. A proximity trigger made walking past feel like trip
 switch, and a line every few seconds reads as a chatbot rather than company. The bed's frame 3 is the "awake"
 pose, held while CHAD is within `NEAR_BED` — the sleepers are proximity-driven, not a
 `FIXTURES` entry, so there is no walk-up prompt.
+
+The tank is **decor, not a fixture** - there is nothing to walk up to. It had a FEED THEM
+action, which existed to make the shoal ball up under the food; with the shoal gone and the
+shark living his own life, the prompt was offering an interaction the room did not need.
 
 **Two rates make a habit read.** The shark is *always* smoking - one wisp off the ember
 every sixteen frames - and takes a proper drag every 4-8s: the ember flares, then the
