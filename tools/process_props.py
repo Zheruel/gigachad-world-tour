@@ -45,19 +45,26 @@ LAIR = {
     # the widened room: the painting over the sofa, the oil over the fireplace, and the
     # cigar cabinet - which is now a flush front built into the second niche's base panel
     # (logical 482.5-591 x 147-165.5), not a box standing against the wall
-    "humidor_built": (98, 19),
+    # Freestanding again: built flush into the panelling it read as joinery rather than
+    # as a thing CHAD owns. 56 wide is the clear window between the trophy wall's last
+    # relic (ends 740) and the world map's frame (starts 796).
+    "humidor": (56, 78),
+    # the tank floor, sized by WIDTH: it must span the full 150 of glass
+    "tankscape": (150, 61),
     "overmantel": (77, 68),
     "portrait": (106, 84),
     # exactly the run from the ceiling bracket to the bag's collar, so it never tiles
     "bag_chain": (10, 100),
-    # One relic per boss, standing in the alcove. Every bay is ~32 logical of headroom
-    # (SHELF_Y in js/hub.js is measured off the plate's glass shelf lines), so these
-    # clear it with a little air above.
-    "relic_raja": (22, 26),
-    "relic_mirchi": (22, 26),
-    "relic_refund": (20, 26),
-    "relic_yadav": (22, 26),
-    "relic_rana": (26, 26),
+    # One relic per boss, standing in a niche. Every bay is ~32 logical of headroom
+    # (SHELF_Y in js/hub.js is measured off the plate's glass shelf lines), so 26 is the
+    # ceiling. They are NOT all 26: drawn to one height a police cap came out the same
+    # size as a payphone, which is what made the shelf read wrong. Height is roughly the
+    # real object at the room's ~50 logical px per metre, capped at the bay.
+    "relic_raja": (22, 20),      # a taxi meter, about 40cm on its bracket
+    "relic_mirchi": (22, 21),    # a chutney bowl and ladle
+    "relic_refund": (20, 26),    # a payphone handset unit - the biggest thing here
+    "relic_yadav": (22, 23),     # a police cap on its stand
+    "relic_rana": (26, 25),      # a mounted head on a plinth
     "bar_stools": (44, 40),
     "gloves": (20, 30),
     # the master suite. The bed itself is a strip and comes from build_lair_extras.py.

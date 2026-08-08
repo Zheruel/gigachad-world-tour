@@ -370,7 +370,7 @@ processed files from `assets/` and `assets/frames/`. Image generation goes throu
 | `tools/gen_lair_bedroom.sh` | the master suite's wardrobe, nightstand, fire and rug |
 | `tools/gen_lair_bed_poses.sh` | the bed and its two occupants, one generation per pose against a fixed reference; `check_bed_poses.py` then measures whether each pose held the furniture still, and `check_bed_anim.py` checks the built frames for movement and flow |
 | `tools/gen_lair_gym.sh` | the training area in front of the glass: the dumbbell rack and the bench press as four-pose strips (rig alone, then CHAD on it), plus the plate tree and kettlebells |
-| `tools/gen_lair_pets.sh` | the shark and shoal for the tank, and the tiger's sheets |
+| `tools/gen_lair_pets.sh` | the tank's shark and the lair he lives in, and the tiger's sheets |
 | `tools/gen_lair_props.sh` | the lair's fixtures: world map, hi-fi, built-in humidor, the oil over the hearth, heavy bag, map panel |
 | `tools/gen_lair_lounge.sh` | the sofa pair (empty / CHAD sitting smoking) and the dog's walk sheet |
 | `tools/build_lair_extras.py` | the lair sprite sets whose frames must register with each other: the lounge pair, the two gym stations, the bed, the fire, the tiger and the tank |

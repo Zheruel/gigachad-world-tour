@@ -46,7 +46,10 @@ const TANK = { x: 150, y: 41, w: 150, h: 114 };     // the lit water, not the fr
 // four fits arithmetically (the widest relic is 26) but leaves 3, which reads as a
 // jumble sale rather than a trophy wall.
 const NICHES = [[485, 595], [629, 747]];
-const SHELF_Y = [70, 103, 135];
+// The row a relic's feet sit ON, measured off the plate: the brass shelf rails light up
+// at device rows 137, 201 and 264, which is logical 68.5, 100.5 and 132. These were 70,
+// 103 and 135 with a +1 in the blit, so every relic stood 2.5-4px INSIDE its own shelf.
+const SHELF_Y = [69, 101, 133];
 const ACROSS = 3;
 
 // One shelf is one country: ACROSS is the acts per country, so a shelf fills up exactly
@@ -144,7 +147,10 @@ const LAIR_ART = [
   // cigar cabinet built flush into the second one's base panel (482.5-591 x 147-165.5)
   // rather than standing in front of the wall. The arcade cabinet is gone: it was the
   // only injection-moulded object in a walnut room, and this bay is worth more as shelf.
-  { art: 'lair_humidor_built', x: 537, y: 166, w: 98, h: 19 },
+  // Freestanding again - built into the panelling it read as joinery rather than as a
+  // thing CHAD owns. This is the only clear stretch of wall left: 740 (where the trophy
+  // wall's last relic ends) to 796 (where the world map's frame starts).
+  { art: 'lair_humidor', x: 770, y: WALL_BASE, w: 56, h: 78 },
   // centred in the panelled bay, whose gold inset measures x 775.75-895.75, y 37-130
   { art: 'lair_worldmap', x: 836, y: 109, w: 80, h: 48 },
   { art: 'lair_hifi', x: 880, y: WALL_BASE, w: 48, h: 60 },
@@ -218,9 +224,12 @@ function fallbackArt(name, w, h) {
     P.rect(0, h - 5, w, 4, '#2a2a34');
     P.rect(0, h * 0.4, w, 3, '#2a2a34');
     for (let i = 0; i < 5; i++) P.disc(8 + i * (w - 16) / 4, h * 0.34, 4, '#3a3a46');
-  } else if (name === 'lair_humidor_built') {
-    panel('#2a1a10', '#8a5a2a');
-    for (let i = 0; i < 4; i++) P.rect(4 + i * (w - 8) / 4, 3, (w - 8) / 4 - 3, h - 9, '#5a3a1e');
+  } else if (name === 'lair_humidor') {
+    panel('#3a2214', '#8a5a2a');
+    for (let i = 0; i < 4; i++) P.rect(4, 6 + i * (h - 12) / 4, w - 8, (h - 12) / 4 - 3, '#5a3a1e');
+  } else if (name === 'lair_tankscape') {
+    P.rect(0, h * 0.6, w, h * 0.4, '#c8b088');
+    P.rect(w * 0.3, h * 0.2, w * 0.2, h * 0.45, '#8a6a3a');
   } else if (name === 'lair_overmantel') {
     panel('#3a2a12', '#c8a038');
     P.rect(6, 6, w - 12, h - 12, '#221a12');
@@ -649,62 +658,78 @@ function swingBag(bag) {
 }
 
 // ---------------------------------------------------------------- the tank
-// The water is a clip rect, so nothing ever swims out through the glass. The shark
-// laps; the shoal drifts and gets out of his way, which is free animation.
-const SHOAL_N = 20;
-const shark = { x: 0, dir: 1, frame: 0, t: 0 };
-const shoal = [];
+// The water is a clip rect, so nothing ever swims out through the glass. What is IN the
+// water is one shark and his lair: the piranhas are gone, because twenty fish drifting
+// about was busy without being alive, and they made the shark furniture. One animal with
+// somewhere to live reads better than a shoal with nowhere.
+//
+// Everything that sells "alive" here is procedural and costs nothing: a bubble column off
+// the scenery, a puff off the cigar every few seconds, and the shark banking into his turns.
+const shark = { x: 0, dir: 1, frame: 0, t: 0, turn: 0, puff: 0 };
+const bubbles = [];
+const SCAPE_H = 61;                       // lair_tankscape, sized in tools/process_props.py
+// where the food lands, and so where he swims to. Exported for ?auto=verify.
+export const TANK_FEED_X = TANK.x + TANK.w / 2 - 20;
 
 function resetTank() {
   shark.x = TANK.x + 30;
   shark.dir = 1;
   shark.t = 0;
-  shoal.length = 0;
-  for (let i = 0; i < SHOAL_N; i++) {
-    shoal.push({
-      x: rand(TANK.x + 8, TANK.x + TANK.w - 18),
-      y: rand(TANK.y + 20, TANK.y + TANK.h - 12),
-      vx: rand(-0.18, 0.18), vy: rand(-0.05, 0.05),
-      // its own drift rate, or twenty fish on one sine move as one animal
-      phase: rand(0, 9), rate: rand(0.03, 0.09), frame: irand(0, 3),
-    });
-  }
+  shark.turn = 0;
+  shark.puff = 0;
+  bubbles.length = 0;
+}
+
+// One bubble, off the scenery or off the cigar. Rise rate is per bubble, or the whole
+// column moves as one sheet.
+function bubble(x, y, r) {
+  bubbles.push({ x, y, r, vy: rand(-0.5, -0.28), phase: rand(0, 9) });
+}
+
+// One place that says how deep he is swimming, so a cigar puff leaves his mouth and not
+// his tail. He stays above his own furniture.
+function sharkY() {
+  return TANK.y + 22 + Math.sin(shark.t * 0.012) * 9;
 }
 
 function updateTank() {
   shark.t++;
   shark.frame = (shark.t / 9 | 0) & 3;
-  shark.x += shark.dir * 0.24;
-  const lo = TANK.x + 6, hi = TANK.x + TANK.w - 6 - 46;
-  if (shark.x < lo) { shark.x = lo; shark.dir = 1; }
-  if (shark.x > hi) { shark.x = hi; shark.dir = -1; }
 
-  const feeding = G.hubFeed > 0;
-  const fx = TANK.x + TANK.w / 2, fy = TANK.y + 26;
-  for (const f of shoal) {
-    f.phase += f.rate;
-    if (feeding) {
-      // ball up under the food
-      f.vx += (fx + Math.cos(f.phase) * 9 - f.x) * 0.004;
-      f.vy += (fy + Math.sin(f.phase) * 7 - f.y) * 0.004;
-    } else {
-      f.vy += Math.sin(f.phase) * 0.008;
-      f.vx += Math.cos(f.phase * 0.7) * 0.006;
-      // and get out of the shark's way
-      const d = f.x - (shark.x + 23);
-      if (Math.abs(d) < 22) f.vx += Math.sign(d || 1) * 0.024;
-    }
-    f.vx = clamp(f.vx * 0.97, -0.5, 0.5);
-    f.vy = clamp(f.vy * 0.97, -0.35, 0.35);
-    f.x += f.vx;
-    f.y += f.vy;
-    if (f.x < TANK.x + 6) { f.x = TANK.x + 6; f.vx = Math.abs(f.vx); }
-    if (f.x > TANK.x + TANK.w - 14) { f.x = TANK.x + TANK.w - 14; f.vx = -Math.abs(f.vx); }
-    if (f.y < TANK.y + 8) { f.y = TANK.y + 8; f.vy = Math.abs(f.vy); }
-    if (f.y > TANK.y + TANK.h - 10) { f.y = TANK.y + TANK.h - 10; f.vy = -Math.abs(f.vy); }
-    if (Math.abs(f.vx) > 0.02) f.frame = ((f.phase * 3) | 0) & 3;
+  const lo = TANK.x + 6, hi = TANK.x + TANK.w - 6 - 40;
+  if (G.hubFeed > 0) {
+    // He comes for it rather than carrying on with his lap. The food is the whole point
+    // of the fixture, and a shark ignoring it was the tell that nothing in here was alive.
+    shark.dir = TANK_FEED_X > shark.x ? 1 : -1;
+    shark.x += clamp((TANK_FEED_X - shark.x) * 0.05, -1.6, 1.6);
+  } else {
+    shark.x += shark.dir * 0.24;
+  }
+  if (shark.x < lo) { shark.x = lo; shark.dir = 1; shark.turn = 20; }
+  if (shark.x > hi) { shark.x = hi; shark.dir = -1; shark.turn = 20; }
+  if (shark.turn > 0) shark.turn--;
+
+  // a cigar puff now and then, and a slow column off the scenery at each end
+  if (--shark.puff <= 0) {
+    shark.puff = irand(90, 200);
+    const nose = shark.dir > 0 ? 34 : 5;
+    for (let i = 0; i < 4; i++) bubble(shark.x + nose + rand(-2, 2), sharkY() + 10, rand(1, 2));
+  }
+  if ((shark.t & 31) === 0) bubble(TANK.x + rand(10, 18), TANK.y + TANK.h - 22, rand(1, 2));
+  if ((shark.t & 63) === 20) bubble(TANK.x + TANK.w - rand(10, 18), TANK.y + TANK.h - 24, rand(1, 2));
+
+  for (let i = bubbles.length - 1; i >= 0; i--) {
+    const b = bubbles[i];
+    b.phase += 0.09;
+    b.y += b.vy;
+    b.x += Math.sin(b.phase) * 0.22;
+    if (b.y < TANK.y + 5) bubbles.splice(i, 1);
   }
 }
+
+// for ?auto=verify: the feeding rush is the only thing in the room whose behaviour
+// cannot be seen in a still
+export function hubTank() { return shark; }
 
 function drawTank(ctx, camX) {
   const l = Math.round(TANK.x - camX);
@@ -714,7 +739,11 @@ function drawTank(ctx, camX) {
   ctx.rect(l, TANK.y, TANK.w, TANK.h);
   ctx.clip();
 
-  if (G.hubFeed > 0 && G.hubFeed > 100) {
+  // his lair, on the tank floor and behind him
+  const scape = ASSETS.lair_tankscape || fallbackArt('lair_tankscape', TANK.w, SCAPE_H);
+  blit(ctx, scape, l, TANK.y + TANK.h - frameH(scape));
+
+  if (G.hubFeed > 100) {
     ctx.fillStyle = '#c8a060';
     for (let i = 0; i < 6; i++) {
       const t = (150 - G.hubFeed) * 0.9 + i * 4;
@@ -722,33 +751,31 @@ function drawTank(ctx, camX) {
     }
   }
 
-  for (const f of shoal) {
-    const img = ASSETS['lair_shoal_' + f.frame];
-    if (!img) break;
-    const flip = f.vx < 0;
-    const fx = Math.round(f.x - camX), fy = Math.round(f.y);
-    if (flip) {
-      ctx.save();
-      ctx.scale(-1, 1);
-      blit(ctx, img, -fx - frameW(img), fy);
-      ctx.restore();
-    } else {
-      blit(ctx, img, fx, fy);
-    }
-  }
-
   const simg = ASSETS['lair_shark_' + shark.frame];
   if (simg) {
     const sx = Math.round(shark.x - camX);
-    const sy = Math.round(TANK.y + 24 + Math.sin(shark.t * 0.012) * 5);
+    const sy = Math.round(sharkY());
+    ctx.save();
+    // banking into the turn - a shark that reverses on the spot reads as a cardboard cutout
+    if (shark.turn > 0) {
+      const cx = sx + frameW(simg) / 2, cy = sy + frameH(simg) / 2;
+      ctx.translate(cx, cy);
+      ctx.rotate(Math.sin((shark.turn / 20) * Math.PI) * 0.22 * -shark.dir);
+      ctx.translate(-cx, -cy);
+    }
     if (shark.dir < 0) {
-      ctx.save();
       ctx.scale(-1, 1);
       blit(ctx, simg, -sx - frameW(simg), sy);
-      ctx.restore();
     } else {
       blit(ctx, simg, sx, sy);
     }
+    ctx.restore();
+  }
+
+  for (const b of bubbles) {
+    ctx.fillStyle = `rgba(210,245,255,${0.30 + 0.26 * Math.sin(b.phase)})`;
+    const bw = Math.max(1, Math.round(b.r));
+    ctx.fillRect(Math.round(b.x - camX), Math.round(b.y), bw, bw);
   }
 
   // the water in front of everything in it
@@ -1147,8 +1174,18 @@ function drawAlcove(ctx, camX) {
     const drop = arriving ? Math.max(0, (G.hubRelicT - 108) / 42) * -22 : 0;
     const x = Math.round(sx - camX - frameW(img) / 2);
     ctx.save();
+    // A contact shadow on the glass. Without it a relic reads as pasted onto the back of
+    // the niche however exactly its feet land, because nothing else in the bay touches.
+    if (!drop) {
+      ctx.globalAlpha = 0.34;
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.ellipse(x + frameW(img) / 2, sy, frameW(img) * 0.42, 1.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
     if (arriving && G.hubRelicT > 100 && (G.rawTime & 2)) ctx.filter = 'brightness(2.2)';
-    blit(ctx, img, x, Math.round(sy - frameH(img) + 1 + drop));
+    blit(ctx, img, x, Math.round(sy - frameH(img) + drop));
     ctx.restore();
     if (arriving && G.hubRelicT > 96 && G.hubRelicT < 132 && (G.rawTime & 3) === 0) {
       spawnSpark(sx + rand(-8, 8), sy - rand(2, 16));

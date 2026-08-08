@@ -3,7 +3,7 @@ import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, clamp, addSco
 import { initInput, input, endFrameInput, pollGamepad, debugPress, debugRelease } from './input.js';
 import { SPR, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { initStage, initStageObj, drawStage, updateMotes, STAGES, stageDef } from './stages.js';
-import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
+import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, TANK_FEED_X, hubBed, hubTank, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
 import { createProp } from './props.js';
 import { loadAmbience, updateAmbience, reactStage } from './ambience.js';
 import { loadFX, fx } from './fx.js';
@@ -930,6 +930,13 @@ if (autoMode) {
       t('hub-bar-ends', G.player.state !== 'victory');
       at('tank'); tap('up');
       t('hub-tank-feeds', G.hubFeed > 0);
+      // he comes for it. The shoal used to do this; with one animal in the tank, a shark
+      // carrying on his lap through a feed is the whole fixture doing nothing.
+      {
+        const before = Math.abs(hubTank().x - TANK_FEED_X);
+        step(60);
+        t('hub-shark-comes-for-it', Math.abs(hubTank().x - TANK_FEED_X) < before);
+      }
       step(180);
       t('hub-tank-settles', G.hubFeed === 0);
       // both pets, drawing themselves, and facing the way they are walking

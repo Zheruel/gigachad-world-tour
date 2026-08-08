@@ -20,6 +20,11 @@ S="32-bit arcade beat em up game object sprite in the style of Streets of Rage 4
 # all chrome disappears into the wall behind it.
 L="dark walnut wood, polished brass and oxblood leather, lit by magenta and cyan neon"
 
+# The humidor stands free again: built flush into the panelling it read as joinery
+# rather than as something CHAD owns. Much wider than the narrow case it replaces.
+$G $O/humidor.png portrait "A grand glass fronted walnut cigar humidor cabinet standing on the floor, seen from the side at a very slight three quarter angle so one side panel shows. It is WIDE and IMPOSING, roughly twice as wide as a narrow display case: a heavy burled walnut carcass on a moulded plinth with a deep cornice at the top, DOUBLE bevelled glass doors with slim brass frames and two long brass handles meeting in the middle, brass hinges, and four full width shelves behind the glass absolutely packed with open cedar cigar boxes and neat rows of cigars in tan and chestnut browns. A warm amber light glows from inside the cabinet and spills through the glass. A crystal ashtray and a heavy brass cigar cutter stand on top of the cornice. It stands in a 1990s penthouse panelled in dark walnut with gold mouldings and lit by warm lamps. $S" &
+wait
+
 echo "=== furniture ==="
 $G $O/bag_chain.png    portrait  "A single heavy galvanised steel chain hanging straight down, thick oval links, a flat steel ceiling mounting bracket with bolts at the very top and a heavy steel swivel shackle at the very bottom, the chain perfectly vertical and taut, nothing else in the image, $S" &
 wait

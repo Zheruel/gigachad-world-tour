@@ -122,6 +122,16 @@ row must not run across the pier between the niches. `?auto=verify` checks the w
 six countries and that no two slots on a shelf are within 30 logical of each other —
 `drawAlcove` silently drops any relic past the last slot.
 
+**Anything standing on a measured surface needs the surface measured, not guessed.** The
+relics stood 2.5–4 px inside their own shelves for months and read only as vaguely "off":
+`SHELF_Y` was 70/103/135 with a `+1` in the blit, while the brass rails actually light up
+at device rows 137/201/264 — logical 68.5/100.5/132. Two more things were wrong with them
+and both are the same mistake in a different place: every relic was sized to exactly 26
+logical tall, so a police cap came out the same size as a payphone (heights in
+`process_props.py` are per-object now, roughly the real thing at ~50 px/m); and nothing
+had a contact shadow, without which a sprite reads as pasted onto the back of the niche
+however exactly its feet land.
+
 **Anything animated in the room is one strip**, never separate generations: the gym rigs,
 the lounge sofa and the bedroom's bed all hold their furniture and their occupants in the
 same sprite. **The bed is the exception, and the reason is worth reading before you
@@ -162,6 +172,15 @@ off where CHAD is standing. A proximity trigger made walking past feel like trip
 switch, and a line every few seconds reads as a chatbot rather than company. The bed's frame 3 is the "awake"
 pose, held while CHAD is within `NEAR_BED` — the sleepers are proximity-driven, not a
 `FIXTURES` entry, so there is no walk-up prompt.
+
+**One animal with somewhere to live beats a shoal with nowhere.** The tank held a shark
+and twenty piranhas; the piranhas were busy without being alive, and they turned the
+shark into furniture. What actually reads as alive is all procedural and free: a bubble
+column off the scenery, a puff off the shark's cigar every few seconds, banking into the
+turns at each end (a shark that reverses on the spot is a cardboard cutout), and going
+for the food when you feed him — `?auto=verify` asserts that last one, because a fixture
+whose animal ignores it is a fixture doing nothing. `lair_tankscape` is his lair, drawn
+behind him inside the same clip rect and sized by WIDTH to span the full 150 of glass.
 
 **A station CHAD uses is one sprite set holding the furniture AND him** — `lair_lounge_*`,
 `lair_gym_curl_*`, `lair_gym_bench_*`. `G.hubSeat` counts frames occupying one and

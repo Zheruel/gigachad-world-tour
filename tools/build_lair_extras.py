@@ -15,7 +15,7 @@ share a screen position. These two do:
           centred on its own lower body so he does not bob or slide. White on purpose:
           the room is walnut and black granite and a dark animal sinks into it.
 
-  tank    the shark and one piranha, both swim cycles. Centred rather than
+  tank    the shark's swim cycle. Centred rather than
           bottom-anchored - nothing in water stands on anything.
 
   curl    the dumbbell rack and the bench press, each one strip: the rig alone followed
@@ -49,7 +49,6 @@ TIGER_H = 58     # shoulder-to-ground on a big cat, against CHAD's 96
 TIGER_SIT_H = 70
 TIGER_LIE_H = 32
 SHARK_H = 26     # nose-to-tail comes out around 4x this
-SHOAL_H = 6
 FIRE_W = 32      # the firebox interior is 59x35 logical; the flames clip at the lintel
 FENDER = (1530, 148, 68, 20)   # must match FENDER in js/hub.js
 BED_W = 140      # bed length. The art is 2:1, so this puts the headboard near 70 -
@@ -459,7 +458,7 @@ def build_tank():
     stands on anything, and the shark's tail sweep must not shunt the body up and down.
     """
     os.makedirs(OUT, exist_ok=True)
-    for name, target in (("shark", SHARK_H), ("shoal", SHOAL_H)):
+    for name, target in (("shark", SHARK_H),):
         frames = slice_strip(SRC + name + ".png", 4)
         factor = target * RS / max(f.height for f in frames)
         frames = [rescale(f, factor) for f in frames]
