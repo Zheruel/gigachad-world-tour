@@ -44,6 +44,7 @@ RS = 2
 SRC = "assets/ai/lair/"
 OUT = "assets/lair/"
 
+SMOKE_POSES = 4  # lounge_chad is pose 0 of the smoke; smoke_1..3 are the draw
 SOFA_H = 46      # logical height of the empty sofa + side table
 TIGER_H = 58     # shoulder-to-ground on a big cat, against CHAD's 96
 TIGER_SIT_H = 70
@@ -126,8 +127,13 @@ def finish_set(frames, colors=56):
     Quantising each frame on its own gives each its own palette, and then every pixel of
     the bed shifts a little from pose to pose - measured at 22-32% of the furniture
     differing, which on screen is the whole bed shimmering as they move. Same rule as
-    process_char.py's one-palette-per-character: the palette comes from frame 0 and
-    everything else is mapped onto it.
+    process_char.py's one-palette-per-character.
+
+    The palette is taken from ALL the frames together, not from frame 0. Frame 0 of the
+    lounge set is the EMPTY sofa, so a frame-0 palette had no skin tones in it at all and
+    CHAD came out at (163,97,64) against his standing sprite's (204,130,67) - grey and
+    sickly, and no amount of extra colours fixed it because the colours being added were
+    more leather.
     """
     prepped = [outline(hard_alpha(f, 110)) for f in frames]
     alphas = [f.getchannel("A") for f in prepped]
@@ -136,7 +142,11 @@ def finish_set(frames, colors=56):
         rgb = Image.new("RGB", f.size, (0, 0, 0))
         rgb.paste(f.convert("RGB"), (0, 0), a)
         rgbs.append(rgb)
-    ref = rgbs[0].quantize(colors=colors, method=Image.MEDIANCUT, dither=Image.NONE)
+    montage = Image.new("RGB", (sum(r.width for r in rgbs), max(r.height for r in rgbs)))
+    x = 0
+    for r in rgbs:
+        montage.paste(r, (x, 0)); x += r.width
+    ref = montage.quantize(colors=colors, method=Image.MEDIANCUT, dither=Image.NONE)
     out = []
     for rgb, a in zip(rgbs, alphas):
         q = rgb.quantize(palette=ref, dither=Image.NONE).convert("RGBA")
@@ -224,17 +234,55 @@ def register(frames, side="left", pad=2):
 
 
 def build_lounge():
-    empty = keyed(SRC + "lounge_empty.png")
-    chad = keyed(SRC + "lounge_chad.png")
-    factor = SOFA_H * RS / empty.height
-    empty, chad = rescale(empty, factor), rescale(chad, factor)
+    """The empty sofa, and CHAD smoking on it in four poses.
 
-    (empty, chad), _ = register([empty, chad])
+    The sit used to be ONE still frame with particles over it, which is not an animation.
+    One generation per pose against pose 0 - a strip cannot hold a 141-logical sofa steady
+    across four cells, and the sofa moving is the one thing that would be unforgivable.
+
+    Two alignments, and they are different on purpose:
+      * empty and pose 0 are separate generations, so they only agree via rig_anchor
+        (register), the same as the gym rigs.
+      * poses 1-3 were generated FROM pose 0, so they are aligned on the sofa's own lower
+        band by best_shift - never on the bbox. Pose 3 tips his head back and blows a plume
+        which grows the bbox upward by 160px, and cropping to the bbox would slide the whole
+        sofa down by that much. Pasting bottom-left onto pose 0's canvas first drops that
+        plume off the top for free, which is what we want: the plume is procedural, so it
+        carries on across the frame changes rather than popping in and out with one of them.
+
+    ONE factor for all of them, off the EMPTY sofa's height - taking it off pose 0 makes the
+    whole suite 26% small, because his head sticks up out of it.
+    """
+    empty = keyed(SRC + "lounge_empty.png")
+    ref = keyed(SRC + "lounge_chad.png")
+    factor = SOFA_H * RS / empty.height
+    band = int(ref.height * 0.55)
+
+    poses = [ref]
+    for i in (1, 2, 3):
+        p = keyed(SRC + f"smoke_{i}.png")
+        canvas = Image.new("RGBA", ref.size, (0, 0, 0, 0))
+        canvas.paste(p, (0, ref.height - p.height), p)
+        dx, dy = best_shift(ref, canvas, band, limit=10)
+        shifted = Image.new("RGBA", ref.size, (0, 0, 0, 0))
+        shifted.paste(canvas, (dx, dy), canvas)
+        poses.append(shifted)
+
+    scaled = [rescale(empty, factor)] + [rescale(p, factor) for p in poses]
+    scaled, _ = register(scaled)
     os.makedirs(OUT, exist_ok=True)
-    for name, img in (("lounge_empty", empty), ("lounge_chad", chad)):
-        finish(img, 48).save(f"{OUT}{name}.png")
-        print(f"{OUT}{name}.png  {img.width}x{img.height}  "
-              f"(logical {round(img.width / RS)}x{round(img.height / RS)})")
+    done = finish_set(scaled, 72)   # 96 allocated MORE to the leather and came out worse
+    names = ["lounge_empty"] + [f"lounge_smoke_{i}" for i in range(SMOKE_POSES)]
+    for name, img in zip(names, done):
+        img.save(f"{OUT}{name}.png")
+    print(f"{OUT}lounge_empty + lounge_smoke_0..3  {done[0].width}x{done[0].height}  "
+          f"(logical {round(done[0].width / RS)}x{round(done[0].height / RS)})")
+    a = np.asarray(done[1].getchannel("A")) > 128
+    b2 = int(done[1].height * 0.55)
+    for i, f in enumerate(done[2:], 1):
+        b = np.asarray(f.getchannel("A")) > 128
+        d = (a[b2:] ^ b[b2:]).sum() / max(1, a[b2:].sum()) * 100
+        print(f"  pose {i}: sofa differs {d:.2f}%  {'ok' if d < 3 else 'SOFA IS MOVING'}")
 
 
 def slice_strip(path, n, blob=True):
@@ -684,6 +732,8 @@ def build_tenants():
             f.save(f"{OUT}{name}_{i}.png")
         print(f"{OUT}{name}_0..3.png  {frames[0].width}x{frames[0].height}  "
               f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})")
+
+
 
 if __name__ == "__main__":
     jobs = sys.argv[1:] or ["lounge", "tiger", "tank", "curl", "bench", "bed", "fire", "fender",

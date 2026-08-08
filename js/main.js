@@ -941,7 +941,12 @@ if (autoMode) {
         tank.shark.x = eelX() - 28;            // half a shark short of the porthole
         step(30);
         t('hub-eel-hides-from-him', tank.eel.out < 0.9);
+        // and it comes back out. It withdrew for as long as he was ANYWHERE nearby once,
+        // which at his cruising speed meant it was in its hole almost permanently and read
+        // as stuck; the startle has to be an arrival, not a state.
         tank.shark.x = keep;
+        step(420);
+        t('hub-eel-comes-back-out', tank.eel.out > 0.9);
       }
       // both pets, drawing themselves, and facing the way they are walking
       t('hub-tiger-present', G.actors.length === 1
@@ -952,7 +957,11 @@ if (autoMode) {
         const poses = new Set();
         let lineFrames = 0, changes = 0, last = hubBed().pose;
         G.player.x = 900;
-        for (let i = 0; i < 400; i++) {
+        // 650 samples, not 400: her pose is a random walk over NEIGHBOURS, and over 400 the
+        // distinct-pose count bottomed out at exactly the 3 this asserts - measured over 25
+        // runs. The window was on the boundary, so the check failed now and then for no
+        // reason. At 650 the minimum is 4.
+        for (let i = 0; i < 650; i++) {
           step(15);
           poses.add(hubBed().pose);
           if (hubBed().lineT > 0) lineFrames++;

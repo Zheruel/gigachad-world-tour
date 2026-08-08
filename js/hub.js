@@ -80,7 +80,7 @@ const MIRROR_FRAME = [1344, 50, 57, 103];
 export const BAG_X = 990;
 export const FIXTURES = [
   { id: 'bar', x: 60, hint: 'POUR ONE' },
-  { id: 'lounge', x: 305, hint: 'SIT AND SMOKE' },
+  { id: 'lounge', x: 290, hint: 'SIT AND SMOKE' },
   { id: 'trophies', x: 613, hint: 'TROPHY WALL' },   // the middle of the hall
   { id: 'map', x: 800, hint: 'WORLD TOUR' },
   { id: 'hifi', x: 880, hint: 'SOUND TEST' },
@@ -111,6 +111,24 @@ const RIGS = [
     ring: [-48, -68, 80, 70] },
 ];
 const rigAt = (id) => RIGS.find((r) => r.id === id);
+
+// The sit is four poses on a loop of holds, not one still frame with particles over it:
+// he rests, lifts the cigar, draws on it, then tips his head back and blows it out. The
+// rest is by far the longest hold - a man with a cigar spends most of his time not smoking
+// it, and an even cycle reads as a machine.
+const SMOKE_HOLDS = [200, 26, 54, 96];
+const SMOKE_CYCLE = SMOKE_HOLDS.reduce((a, b) => a + b, 0);
+// the frame the plume leaves his mouth on, so the procedural smoke agrees with the drawing
+const SMOKE_EXHALE = SMOKE_HOLDS[0] + SMOKE_HOLDS[1] + SMOKE_HOLDS[2];
+
+function loungeFrame() {
+  let t = G.hubSeat % SMOKE_CYCLE;
+  for (let i = 0; i < SMOKE_HOLDS.length; i++) {
+    if (t < SMOKE_HOLDS[i]) return 'lair_lounge_smoke_' + i;
+    t -= SMOKE_HOLDS[i];
+  }
+  return 'lair_lounge_smoke_0';
+}
 
 // The bar is a station too, but it PLAYS ONCE and stands him back up rather than looping:
 // glass at the hip, raised, at the lips, head back draining it, then lowered with a grin.
@@ -176,10 +194,11 @@ const LAIR_ART = [
   // centred on the tank behind it. The humidor comes back to sit beside the right-hand
   // chair and the cigar table, where you actually reach for a cigar - it costs the bottom
   // right corner of the glass, which is the trade for having the cigars where you smoke.
-  { art: 'lair_lounge_rug', x: 305, y: WALL_BASE + 50, w: 240, h: 49 },
-  { art: 'lair_lounge_chair', x: 190, y: WALL_BASE + 9, w: 70, h: 50 },
-  { art: 'lair_lounge_chair', x: 402, y: WALL_BASE + 9, w: 70, h: 50, flip: true },
-  { art: 'lair_humidor', x: 452, y: WALL_BASE, w: 56, h: 78 },
+  { art: 'lair_lounge_rug', x: 300, y: WALL_BASE + 50, w: 240, h: 49 },
+  { art: 'lair_lounge_chair', x: 175, y: WALL_BASE + 9, w: 70, h: 50 },
+  { art: 'lair_lounge_chair', x: 395, y: WALL_BASE + 9, w: 70, h: 50, flip: true },
+  // clear of the right-hand chair (which ends at 430), against the trophy hall's frame
+  { art: 'lair_humidor', x: 460, y: WALL_BASE, w: 56, h: 78 },
   // centred in the panelled bay, whose gold inset measures x 775.75-895.75, y 37-130
   { art: 'lair_worldmap', x: 836, y: 109, w: 80, h: 48 },
   { art: 'lair_hifi', x: 880, y: WALL_BASE, w: 48, h: 60 },
@@ -210,7 +229,7 @@ const LAIR_ART = [
 // The lounge is a pair: the same sofa empty and with CHAD sitting in it, registered on
 // the sofa's own foot by tools/build_lair_extras.py. His boots hang below the sofa
 // legs, which is why the canvas bottom sits a little in front of the wall base.
-const LOUNGE = { x: 305, y: WALL_BASE + 9, w: 141, h: 63 };   // centred on the tank
+const LOUNGE = { x: 290, y: WALL_BASE + 9, w: 141, h: 63 };
 
 
 // ------------------------------------------------------- fixture art fallback
@@ -275,10 +294,10 @@ function fallbackArt(name, w, h) {
   } else if (name.startsWith('lair_bar_drink_')) {
     P.rect(w * 0.3, 0, w * 0.4, h, '#c89a68');
     P.rect(w * 0.34, h * 0.2, w * 0.32, h * 0.3, '#1a1620');
-  } else if (name === 'lair_lounge_empty' || name === 'lair_lounge_chad') {
+  } else if (name === 'lair_lounge_empty' || name.startsWith('lair_lounge_smoke_')) {
     P.rect(0, h * 0.28, w * 0.78, h * 0.6, '#1a1620');
     P.rect(w * 0.86, h * 0.28, w * 0.1, h * 0.12, '#5a3420');
-    if (name === 'lair_lounge_chad') P.rect(w * 0.3, 0, 20, h * 0.5, '#c89a68');
+    if (name !== 'lair_lounge_empty') P.rect(w * 0.3, 0, 20, h * 0.5, '#c89a68');
   } else {
     panel('#16161e', '#3a3a4a');
   }
@@ -640,7 +659,7 @@ export const HUB_STAGE = {
   glows: [
     { x: 60, y: 130, r: 48, col: '255,180,90', a: 0.14 },
     { x: 225, y: 150, r: 58, col: '90,200,230', a: 0.15 },
-    { x: 305, y: 60, r: 44, col: '255,190,110', a: 0.13 },
+    { x: 290, y: 60, r: 44, col: '255,190,110', a: 0.13 },
     { x: 530, y: 150, r: 52, col: '255,180,90', a: 0.13 },
     { x: 613, y: 150, r: 52, col: '255,180,90', a: 0.13 },
     { x: 700, y: 150, r: 52, col: '255,180,90', a: 0.13 },
@@ -720,10 +739,11 @@ const SILT_N = 26;
 // a number that has to be re-derived every time the tank changes size: the eel's porthole
 // is a real gun port in lair_tankscape, the crab walks its sand.
 const EEL_AT = [0.227, 0.705];    // a real gun port in the hull, measured off the screen
-const EEL_NEAR = 72;              // how close the shark gets before it pulls its head in
+const EEL_NEAR = 54;              // how close the shark gets before it pulls its head in
+const EEL_HOLD = 110;             // frames it stays in after being startled
 const BAIT_N = 15;
-const eel = { out: 1, t: 0, jaw: 0 };
-const crab = { x: 0, dir: 1, t: 0, freeze: 0 };
+const eel = { out: 1, t: 0, jaw: 0, hold: 0, near: false };
+const crab = { x: 0, dir: 1, t: 0, freeze: 0, rest: 0 };
 const bait = { cx: 0, cy: 0, vx: 0.25, vy: 0, fish: [] };
 
 function resetTank() {
@@ -736,14 +756,14 @@ function resetTank() {
   bubbles.length = 0;
   smoke.length = 0;
   silt.length = 0;
-  eel.out = 1; eel.t = 0; eel.jaw = 0;
-  crab.x = TANK.x + 40; crab.dir = 1; crab.t = 0; crab.freeze = 0;
+  eel.out = 1; eel.t = 0; eel.jaw = 0; eel.hold = 0; eel.near = false;
+  crab.x = TANK.x + 40; crab.dir = 1; crab.t = 0; crab.freeze = 0; crab.rest = 90;
   bait.cx = TANK.x + TANK.w * 0.72; bait.cy = TANK.y + TANK.h * 0.22;
-  bait.vx = 0.25; bait.vy = 0;
+  bait.vx = 0.10; bait.vy = 0;
   bait.fish.length = 0;
   for (let i = 0; i < BAIT_N; i++) {
     bait.fish.push({ x: bait.cx, y: bait.cy, ox: rand(-16, 16), oy: rand(-9, 9),
-      phase: rand(0, 9), rate: rand(0.03, 0.07), frame: irand(0, 3), push: 0 });
+      phase: rand(0, 9), rate: rand(0.008, 0.018), frame: irand(0, 3), push: 0 });
   }
   for (let i = 0; i < SILT_N; i++) {
     silt.push({
@@ -862,16 +882,26 @@ export function eelX() { return TANK.x + TANK.w * EEL_AT[0]; }
 
 function updateEel() {
   eel.t++;
-  const scared = Math.abs((shark.x + SHARK_W / 2) - eelX()) < EEL_NEAR;
-  eel.out = clamp(eel.out + (scared ? -0.06 : 0.012), 0, 1);
+  // It startles when he ARRIVES, and only then. Withdrawing for as long as he was merely
+  // nearby left it hidden almost permanently: he crosses at 0.24 px a frame, so a 72-wide
+  // zone kept him "near" for 600 frames a pass, which is longer than the eel needs to come
+  // back out - so it never did, and it read as stuck in its hole.
+  const near = Math.abs((shark.x + SHARK_W / 2) - eelX()) < EEL_NEAR;
+  if (near && !eel.near) eel.hold = EEL_HOLD;
+  else if (eel.hold > 0) eel.hold--;
+  eel.near = near;
+  // In fast, out slow, and a long wait before it risks it - it goes in because something
+  // frightened it and comes out because nothing has for a while. Symmetric rates read as
+  // a machine, and the old 0.012 out was still four times too quick.
+  eel.out = clamp(eel.out + (eel.hold > 0 ? -0.05 : 0.006), 0, 1);
   // jaws work on their own, but only while it is actually out
-  if (eel.out > 0.8 && --eel.jaw <= 0) eel.jaw = irand(30, 90);
+  if (eel.out > 0.8 && --eel.jaw <= 0) eel.jaw = irand(90, 260);
 }
 
 function eelFrame() {
   if (eel.out < 0.35) return 3;
   if (eel.out < 0.75) return 2;
-  return eel.jaw > 24 ? 0 : 1;
+  return eel.jaw > 70 ? 0 : 1;
 }
 
 // The crab walks the sand with a gold coin held up in one claw, and plays dead when the
@@ -883,8 +913,12 @@ function updateCrab() {
     crab.freeze = 70;
   }
   if (crab.freeze > 0) { crab.freeze--; return; }
+  // It picks its way and then stops for a while, rather than pacing the tank end to end at
+  // a constant speed. The stopping is most of what makes it read as an animal.
+  if (crab.rest > 0) { crab.rest--; return; }
   crab.t++;
-  crab.x += crab.dir * 0.16;
+  crab.x += crab.dir * 0.07;
+  if (crab.t % 150 === 0) { crab.rest = irand(90, 260); if (irand(0, 2) === 0) crab.dir *= -1; }
   if (crab.x < lo) { crab.x = lo; crab.dir = 1; }
   if (crab.x > hi) { crab.x = hi; crab.dir = -1; }
 }
@@ -894,30 +928,30 @@ function updateCrab() {
 function updateBait() {
   bait.cx += bait.vx;
   bait.cy += bait.vy;
-  bait.vy += Math.sin(shark.t * 0.011) * 0.006;
+  bait.vy += Math.sin(shark.t * 0.004) * 0.0018;
   const lo = TANK.x + 26, hi = TANK.x + TANK.w - 26;
   if (bait.cx < lo) { bait.cx = lo; bait.vx = Math.abs(bait.vx); }
   if (bait.cx > hi) { bait.cx = hi; bait.vx = -Math.abs(bait.vx); }
   bait.cy = clamp(bait.cy, TANK.y + 12, TANK.y + TANK.h * 0.5);
-  bait.vy = clamp(bait.vy, -0.2, 0.2);
+  bait.vy = clamp(bait.vy, -0.08, 0.08);
 
   const sx = shark.x + SHARK_W / 2, sy = sharkY() + 20;
   for (const f of bait.fish) {
     f.phase += f.rate;
-    const tx = bait.cx + f.ox + Math.cos(f.phase) * 4;
-    const ty = bait.cy + f.oy + Math.sin(f.phase * 1.3) * 3;
-    f.x += (tx - f.x) * 0.06;
-    f.y += (ty - f.y) * 0.06;
+    const tx = bait.cx + f.ox + Math.cos(f.phase) * 3;
+    const ty = bait.cy + f.oy + Math.sin(f.phase * 1.3) * 2;
+    f.x += (tx - f.x) * 0.018;
+    f.y += (ty - f.y) * 0.018;
     // the split: pushed straight out from him, hardest when he is closest
     const dx = f.x - sx, dy = f.y - sy;
     const d = Math.hypot(dx, dy);
     if (d < 52) {
-      const k = (1 - d / 52) * 2.4;
+      const k = (1 - d / 52) * 0.9;
       f.x += (dx / (d || 1)) * k;
       f.y += (dy / (d || 1)) * k * 0.6;
       f.push = 12;
     } else if (f.push > 0) f.push--;
-    f.frame = ((f.phase * 3) | 0) & 3;
+    f.frame = ((f.phase * 6) | 0) & 3;
   }
 }
 
@@ -1036,7 +1070,7 @@ function drawTank(ctx, camX) {
     blit(ctx, eimg, Math.round(eelX() - camX - frameW(eimg) * 0.22),
          Math.round(TANK.y + TANK.h * EEL_AT[1] - frameH(eimg) / 2));
   }
-  const cimg = ASSETS['lair_crab_' + ((crab.t / 10 | 0) & 3)];
+  const cimg = ASSETS['lair_crab_' + ((crab.t / 16 | 0) & 3)];
   if (cimg) {
     const cx = Math.round(crab.x - camX);
     if (crab.dir < 0) {
@@ -1366,7 +1400,10 @@ export function updateHub() {
       // the AAAH lands when he finishes it, not when he picks it up
       if (G.hubSeat === DRINK_AAAH) spawnPop(barAt, G.player.y - 104, 'AAAH');
       if (G.hubSeat > DRINK_END) { G.hubSeat = 0; G.hubStation = null; return -1; }
-    } else if (G.hubSeat % 22 === 0) spawnSmoke(LOUNGE.x + 6, LOUNGE.y - 58, 1);
+    } else if (G.hubSeat % SMOKE_CYCLE === SMOKE_EXHALE) {
+      // one plume per drag, from his mouth, timed to the pose that blows it
+      for (let i = 0; i < 3; i++) spawnSmoke(LOUNGE.x + 4 + rand(-2, 2), LOUNGE.y - 56, 1);
+    }
     if (G.hubSeat > 24 && anyKey()) {
       G.hubSeat = 0;
       G.hubStation = null;
@@ -1442,7 +1479,7 @@ export function drawHubWall(ctx, camX) {
   for (const d of LAIR_ART) drawFixtureArt(ctx, camX, d, artFor(d));
   drawFire(ctx, camX);
   drawFixtureArt(ctx, camX, LOUNGE, artFor({
-    art: G.hubStation === 'lounge' ? 'lair_lounge_chad' : 'lair_lounge_empty',
+    art: G.hubStation === 'lounge' ? loungeFrame() : 'lair_lounge_empty',
     w: LOUNGE.w, h: LOUNGE.h,
   }));
   for (const r of RIGS) drawFixtureArt(ctx, camX, r, artFor({ art: rigFrame(r), w: 100, h: 60 }));

@@ -46,11 +46,12 @@ $G $O/bar_drink.png landscape "One horizontal row containing five poses of the s
 wait
 
 # The armchair that makes the sofa a suite. Two of them flank the chesterfield, the second
-# drawn mirrored (d.flip in js/hub.js) so the pair does not read as copy-paste. It arrives
-# with a slab of the room's own panelling behind it however firmly the prompt says no
-# background, so tools/process_props.py takes it off the top - measure where the warm wood
-# ends rather than guessing, the chair's back starts right underneath it.
-$G $O/lounge_chair.png portrait "A single black leather chesterfield ARMCHAIR standing on the floor, seen from the side at a very slight three quarter angle so one arm is nearer than the other. It is the matching armchair to a long chesterfield sofa: the same deeply buttoned black leather, the same low rolled arms of the same height as the back, the same line of brass studs along the front of the arms, the same polished chrome ball legs. Nobody is sitting in it and there is nothing on it. It stands in a 1990s penthouse panelled in dark walnut with gold mouldings, lit warmly from above. $S" &
+# drawn mirrored (d.flip in js/hub.js) so the pair does not read as copy-paste.
+#
+# Pass the SOFA as a reference image. Described in words alone it came back as a subtly
+# different suite - a different black, chunkier arms, a different buttoning scale - which is
+# exactly the thing you notice when the two are side by side and cannot name.
+$G $O/lounge_chair.png square "The matching ARMCHAIR to the black leather chesterfield sofa in the attached reference image. It is the same suite: exactly the same black leather, exactly the same deep diamond buttoning at the same scale, exactly the same line of brass studs, exactly the same rolled arm profile and arm height, exactly the same polished chrome ball feet, exactly the same viewing angle and the same key light from the top left. It is simply one seat wide instead of three. Nobody is sitting in it and there is nothing on it. No wall, no floor, no room behind it - only the armchair against flat green. $S" $O/lounge_empty.png &
 
 # Under the whole seating group, not just the sofa.
 $G $O/lounge_rug.png landscape "A large deep pile rug lying flat on a polished black granite floor, seen from the side at a low angle so it reads as a long shallow lozenge lying away from the viewer, about five times wider than it is tall. It is black and charcoal with a bold geometric art deco border in antique gold and a deep oxblood red centre panel, thick and soft with a visible pile edge and tasselled fringes at the two short ends. It lies in a 1990s penthouse panelled in dark walnut with gold mouldings and lit by warm lamps. $S" &

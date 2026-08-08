@@ -191,6 +191,27 @@ The tank is **decor, not a fixture** - there is nothing to walk up to. It had a 
 action, which existed to make the shoal ball up under the food; with the shoal gone and the
 shark living his own life, the prompt was offering an interaction the room did not need.
 
+**`finish_set()` takes its palette from ALL the frames, not from frame 0.** Frame 0 of the
+lounge set is the EMPTY sofa, so a frame-0 palette contained no skin tones at all and the
+seated CHAD came out at (163,97,64) against his standing sprite's (204,130,67) — grey and
+sickly. Raising the colour count did not help and could not: the colours being added were
+more black leather. Measure a character's skin against `assets/frames/`'s idle frame after
+any set change; the number is the bug report.
+
+**Ambient behaviour startles on ARRIVAL, never on proximity.** The eel withdrew for as long
+as the shark was anywhere inside a 72px zone. He crosses at 0.24 px a frame, so that zone
+kept him "near" for ~600 frames a pass — longer than the eel took to come back out — and it
+sat in its hole permanently, which reads as a stuck sprite. Trigger on the false→true edge
+and hold for a fixed count. Verify it by sampling the state over thousands of frames rather
+than looking: fully out 86%, hidden 6%, in transition 8% is what "startles occasionally"
+actually looks like as a distribution.
+
+**A check sitting exactly on its threshold is a broken check.** `hub-bed-shifts-about`
+asserted 3 distinct poses, and over its 400-sample window the random walk's minimum across
+25 runs was exactly 3 — so it failed at random. The fix is to widen the window until there
+is margin (650 samples gives a minimum of 4), not to lower the bar. Measure the minimum over
+many runs before believing a threshold.
+
 **Three tenants, three zones.** The tank holds the shark, a moray in one of the wreck's
 gun ports, a coin-carrying crab on the sand and a baitball in the open water — deliberately
 one per layer, so it reads as somewhere lived in rather than as animals sharing a box. All
