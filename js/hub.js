@@ -43,8 +43,8 @@ const BAR = [0, 132];
 // The lit water, not the frame. The brass surround is lair_tank_frame, a nine-slice
 // rebuilt by tools/build_lair_extras.py and blitted OVER the plate's original tank, so
 // the wall behind never had to be repaired - see build_tankframe.
-const TANK = { x: 156, y: 42, w: 250, h: 112 };
-const TANK_FRAME = { x: 141, y: 27, w: 280, h: 142 };
+const TANK = { x: 156, y: 42, w: 299, h: 112 };
+const TANK_FRAME = { x: 141, y: 27, w: 329, h: 142 };
 // ONE long trophy hall - widen_alcove in tools/build_lair_wide.py rebuilds the niche and
 // the dead bay next to it as a single unit, logical 477.5-748.5 with a 13-wide frame
 // moulding at each end. Six relics across 244 leaves ~15 of air between them.
@@ -80,7 +80,7 @@ const MIRROR_FRAME = [1344, 50, 57, 103];
 export const BAG_X = 990;
 export const FIXTURES = [
   { id: 'bar', x: 60, hint: 'POUR ONE' },
-  { id: 'lounge', x: 350, hint: 'SIT AND SMOKE' },
+  { id: 'lounge', x: 305, hint: 'SIT AND SMOKE' },
   { id: 'trophies', x: 613, hint: 'TROPHY WALL' },   // the middle of the hall
   { id: 'map', x: 800, hint: 'WORLD TOUR' },
   { id: 'hifi', x: 880, hint: 'SOUND TEST' },
@@ -172,10 +172,13 @@ const LAIR_ART = [
   // cigar cabinet built flush into the second one's base panel (482.5-591 x 147-165.5)
   // rather than standing in front of the wall. The arcade cabinet is gone: it was the
   // only injection-moulded object in a walnut room, and this bay is worth more as shelf.
-  // Between the sofa and the trophy hall, which is where you would keep the cigars in a
-  // room where you smoke them on that sofa. 422-478: the sofa ends at 420.5 and the hall's
-  // frame starts at 477.5, so it fits the gap exactly.
-  { art: 'lair_humidor', x: 450, y: WALL_BASE, w: 56, h: 78 },
+  // Under the world map. It stood beside the sofa for a while, but the tank took that
+  // wall - 141 to 470 leaves nothing between it and the trophy hall. Here it clears the
+  // hall (ends 748.5), the map's frame (art starts 796, bottom at 109 against this
+  // cabinet's top at 113) and the hi-fi (starts 856).
+  { art: 'lair_humidor', x: 790, y: WALL_BASE, w: 56, h: 78 },
+  // grounds the sofa, which was floating on bare granite
+  { art: 'lair_lounge_rug', x: 305, y: WALL_BASE + 34, w: 146, h: 30 },
   // centred in the panelled bay, whose gold inset measures x 775.75-895.75, y 37-130
   { art: 'lair_worldmap', x: 836, y: 109, w: 80, h: 48 },
   { art: 'lair_hifi', x: 880, y: WALL_BASE, w: 48, h: 60 },
@@ -206,7 +209,7 @@ const LAIR_ART = [
 // The lounge is a pair: the same sofa empty and with CHAD sitting in it, registered on
 // the sofa's own foot by tools/build_lair_extras.py. His boots hang below the sofa
 // legs, which is why the canvas bottom sits a little in front of the wall base.
-const LOUNGE = { x: 350, y: WALL_BASE + 9, w: 141, h: 63 };
+const LOUNGE = { x: 305, y: WALL_BASE + 9, w: 141, h: 63 };   // centred on the tank
 
 
 // ------------------------------------------------------- fixture art fallback
@@ -235,6 +238,9 @@ function fallbackArt(name, w, h) {
     P.disc(w * 0.3, h * 0.6, w * 0.28, '#8a2028');
     P.disc(w * 0.7, h * 0.6, w * 0.28, '#8a2028');
     P.rect(w * 0.45, 0, 2, h * 0.4, '#c8a038');
+  } else if (name === 'lair_lounge_rug') {
+    P.rect(0, h * 0.25, w, h * 0.75, '#241a1e');
+    P.rect(4, h * 0.4, w - 8, h * 0.45, '#5a1e24');
   } else if (name.startsWith('lair_bar_bottles_')) {
     for (let i = 0; i < 12; i++) {
       const bh = h - 4 - ((i * 5) % 7);
@@ -630,7 +636,7 @@ export const HUB_STAGE = {
   glows: [
     { x: 60, y: 130, r: 48, col: '255,180,90', a: 0.14 },
     { x: 225, y: 150, r: 58, col: '90,200,230', a: 0.15 },
-    { x: 350, y: 60, r: 44, col: '255,190,110', a: 0.13 },
+    { x: 305, y: 60, r: 44, col: '255,190,110', a: 0.13 },
     { x: 530, y: 150, r: 52, col: '255,180,90', a: 0.13 },
     { x: 613, y: 150, r: 52, col: '255,180,90', a: 0.13 },
     { x: 700, y: 150, r: 52, col: '255,180,90', a: 0.13 },
@@ -700,7 +706,7 @@ const shark = { x: 0, dir: 1, frame: 0, t: 0, turn: 0, puff: 0, draw: 0 };
 const bubbles = [];
 const smoke = [];
 const silt = [];
-const SCAPE_H = 61;           // lair_tankscape, sized in tools/process_props.py
+const SCAPE_H = 92;           // lair_tankscape, sized in tools/process_props.py
 const SHARK_W = 56;           // lair_shark_*, from tools/build_lair_extras.py SHARK_H
 // The lit end of the cigar, measured off assets/lair/shark_0.png as an offset from the
 // sprite's own top-left. The smoke has to leave the cigar, not the middle of the shark.
@@ -735,7 +741,10 @@ function bubble(x, y, r) {
 
 // One place that says where he is, so the smoke leaves the cigar and not his tail.
 function sharkY() {
-  return TANK.y + 8 + Math.sin(shark.t * 0.012) * 12;
+  // He ranges over most of the glass, so he passes in FRONT of the masts and the hull as
+  // often as he is against open water - which is the difference between a tank with a
+  // shark in it and a shark on a blue background.
+  return TANK.y + 12 + Math.sin(shark.t * 0.0085) * 22;
 }
 
 // The lit end, in world coords, mirrored with him.
@@ -906,15 +915,23 @@ function drawTank(ctx, camX) {
 
   lightShafts(ctx, l);
   drawSilt(ctx, camX, false);
+  // The neon sign inside the hull is a real light source in the scene, so it spills into
+  // the water around it. Measured off lair_tankscape as a fraction of the glass, so it
+  // follows the art if the tank is ever resized again.
+  {
+    const nx = l + TANK.w * 0.44, ny = TANK.y + TANK.h * 0.60;
+    const pulse = 0.16 + 0.05 * Math.sin(shark.t * 0.05) + 0.03 * Math.sin(shark.t * 0.31);
+    const g = ctx.createRadialGradient(nx, ny, 3, nx, ny, 62);
+    g.addColorStop(0, `rgba(255,80,190,${pulse})`);
+    g.addColorStop(1, 'rgba(255,60,170,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(nx - 62, ny - 62, 124, 124);
+  }
 
-  // his lair, on the tank floor and behind him. Two pieces: the second one goes down
-  // first and the original overlaps its left end, so the join is one object in front of
-  // another rather than a seam.
-  const floorY = TANK.y + TANK.h;
-  const scapeB = ASSETS.lair_tankscape_b;
-  if (scapeB) blit(ctx, scapeB, l + TANK.w - frameW(scapeB), floorY - frameH(scapeB));
+  // his lair, on the tank floor and behind him - ONE generation across the full width
   const scape = ASSETS.lair_tankscape || fallbackArt('lair_tankscape', TANK.w, SCAPE_H);
-  blit(ctx, scape, l, floorY - frameH(scape));
+  blit(ctx, scape, l + Math.round((TANK.w - frameW(scape)) / 2),
+       TANK.y + TANK.h - frameH(scape));
 
   const simg = ASSETS['lair_shark_' + shark.frame];
   if (simg) {

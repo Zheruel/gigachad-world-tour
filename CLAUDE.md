@@ -211,8 +211,14 @@ shark into furniture. What actually reads as alive is all procedural and free: a
 column off the scenery, a puff off the shark's cigar every few seconds, banking into the
 turns at each end (a shark that reverses on the spot is a cardboard cutout), and going
 for the food when you feed him — `?auto=verify` asserts that last one, because a fixture
-whose animal ignores it is a fixture doing nothing. `lair_tankscape` is his lair, drawn
-behind him inside the same clip rect and sized by WIDTH to span the full 150 of glass.
+whose animal ignores it is a fixture doing nothing. `lair_tankscape` is his lair, ONE generation spanning the full 299 of glass: two halves
+butted together showed their join however well they matched. Two things must be stated in
+the prompt or it comes back unusable — the ASPECT as an explicit rule ("about three times
+wider than it is tall"), because "the lower half of the image" gets ignored and it fills
+the square frame at 1.5; and that things RISE out of the wreck, because a low strip of
+scenery under a tall column of flat blue is exactly what was wrong with the first one. The
+scenery is 92 of the 112 of glass and **the shark swims in front of it**, which is what a
+shark in a tank does and what stops the water being empty.
 The open water above it is four drifting light shafts, a caustic ripple banded across the
 back wall and 26 motes of suspended silt at their own depths - all procedural, because
 what a flat blue rectangle is missing is movement, not texture.

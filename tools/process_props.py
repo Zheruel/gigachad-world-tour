@@ -49,11 +49,12 @@ LAIR = {
     # as a thing CHAD owns. 56 wide is the clear window between the trophy wall's last
     # relic (ends 740) and the world map's frame (starts 796).
     "humidor": (56, 78),
-    # The tank floor, in two pieces since the tank grew to 250 of glass: the original
-    # lounge on the left and the safe-and-jukebox half behind it on the right. Sized by
-    # HEIGHT so their sand lines agree; they overlap in the middle on purpose.
-    "tankscape": (150, 61),
-    "tankscape_b": (146, 61),
+    # The tank floor: ONE generation spanning the full 299 of glass. Two pieces butted
+    # together showed their join however well they matched. Tall - the masts and the kelp
+    # reach most of the way up on purpose, and the shark swims in FRONT of the wreck
+    # rather than in a strip of empty blue above it.
+    "tankscape": (299, 92),
+    "lounge_rug": (170, 30),
     "overmantel": (77, 68),
     # exactly the run from the ceiling bracket to the bag's collar, so it never tiles
     "bag_chain": (10, 100),

@@ -570,7 +570,7 @@ def build_bardrink():
 # The tank's brass surround, lifted out of the plate and rebuilt bigger. Source bounds are
 # the frame's outer edge in assets/bg_lair_wall.png; TANK_OUT is where it goes now.
 TANK_SRC = (282, 60, 623, 328)          # device, in the plate
-TANK_OUT = (282, 54, 842, 338)          # device: logical 141-421 x 27-169
+TANK_OUT = (282, 54, 940, 338)          # device: logical 141-470 x 27-169
 TANK_CORNER = 26                        # the corner plates, which must NOT be scaled
 
 
