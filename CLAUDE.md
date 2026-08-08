@@ -203,6 +203,27 @@ The open water above it is four drifting light shafts, a caustic ripple banded a
 back wall and 26 motes of suspended silt at their own depths - all procedural, because
 what a flat blue rectangle is missing is movement, not texture.
 
+**A row of objects cannot be generated at a width.** The back bar's shelves are 120x23
+logical (aspect 5.0) and the two generated bottle rows came back at 3.8 and 4.3 - so
+either they stop short of the end of the shelf or they get stretched, and a stretched
+bottle is a fat bottle. `build_bar()` cuts the bottles apart on their own empty columns
+(ask for the gap in the prompt or the cut is impossible) and deals them out to hit the
+width exactly, alternating between the two generations so neighbours never match. ONE
+scale for all of them off the tallest, because the generated heights differ on purpose
+and normalising each to the bay gives back the uniform row being fixed.
+
+**The bar is a station that plays ONCE.** `G.hubStation === 'bar'` runs a five-pose drink
+on a table of holds (`DRINK_HOLDS`) and then stands him up itself, where the gym stations
+loop until you press something. Three things have to agree on that table - the frame
+picker, the AAAH, and the auto-stand - so it lives in one place. The AAAH fires when he
+finishes the glass, not when he picks it up.
+
+That set is only CHAD (the bar counter is painted into the plate), so it has to agree with
+his STANDING sprite or he hops when the swap happens: scale off pose 0 only, `CHAD_BODY`
+and `CHAD_FOOT` measured off `assets/frames/` rather than `HEIGHTS.player`. Scaling by
+the set's own tallest pose made him 6.7% too tall, because pose 3 holds the glass above
+his head. Check it by cropping his boots before and after pressing UP.
+
 **A station CHAD uses is one sprite set holding the furniture AND him** — `lair_lounge_*`,
 `lair_gym_curl_*`, `lair_gym_bench_*`. `G.hubSeat` counts frames occupying one and
 `G.hubStation` says which; `main.js` hides the player and freezes input off `hubSeat` alone,

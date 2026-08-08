@@ -925,9 +925,10 @@ if (autoMode) {
       }
       G.meter = 0;
       at('bar'); tap('up');
-      t('hub-bar-pours', G.hubDrink > 0 && G.player.state === 'victory');
-      step(90);
-      t('hub-bar-ends', G.player.state !== 'victory');
+      t('hub-bar-pours', G.hubSeat > 0 && G.hubStation === 'bar');
+      // it plays once and stands him back up on its own, unlike the gym stations
+      step(140);
+      t('hub-bar-ends', G.hubSeat === 0 && G.hubStation === null);
       // the tank is decor, not a fixture: nothing to walk up to, but he is always smoking
       step(60);
       t('hub-shark-smokes', hubTank().smoke.length > 0);

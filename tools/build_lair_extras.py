@@ -472,9 +472,105 @@ def build_tank():
               f"(logical {round(w / RS)}x{round(h / RS)})")
 
 
+
+BOTTLE_H = 23        # the plate's shelf bay is logical 45-68.5; nothing may touch the shelf above
+BAR_ROW_W = 120      # BAR in js/hub.js is [0, 132]; the lit shelves run to 120
+# His standing sprite, measured off assets/frames/ via the manifest: a 192-device canvas
+# with the body 178 of it and the feet 4 up from the bottom. The drink is drawn where the
+# player would be, so it has to agree with these, not with HEIGHTS.player - scaling the
+# set by its own tallest pose made him 6.7% too tall, because pose 3 holds the glass up
+# over his head and that is not part of a man's height.
+CHAD_BODY = 178
+CHAD_FOOT = 4
+
+
+def _bottles(name):
+    """Every bottle in one generated row, cut on its own empty columns.
+
+    slice_strip is no use here: it wants a known pose count at a known pitch, and these
+    are a dozen objects of a dozen widths. They were asked for with a gap between them
+    precisely so the gaps could do the cutting."""
+    sheet = hard_alpha(key_green(Image.open(SRC + name + ".png"), tol=40), 128)
+    mask = np.asarray(sheet.getchannel("A")) > 16
+    cols, runs, start = mask.any(0), [], None
+    for i, v in enumerate(cols):
+        if v and start is None:
+            start = i
+        elif not v and start is not None:
+            runs.append((start, i)); start = None
+    if start is not None:
+        runs.append((start, len(cols)))
+    return [subject(sheet.crop((a, 0, b, sheet.height))) for a, b in runs if b - a > 8]
+
+
+def build_bar():
+    """Two rows of varied bottles, laid out here rather than generated at width.
+
+    The plate paints three shelves of near-identical amber bottles. Replacing them means
+    covering the shelf exactly: a row generated as one image comes back at whatever aspect
+    it likes (3.8 and 4.3 here, against the shelf's 5.0), so it either fails to reach the
+    end of the shelf or has to be stretched, and a stretched bottle is a fat bottle.
+    Cutting the bottles apart and dealing them out is the only way to hit a width.
+
+    ONE scale for all of them, taken from the tallest: the generated bottles differ in
+    height on purpose, and normalising each to the bay would give a row of identical
+    heights, which is the thing being fixed.
+    """
+    pool = _bottles("bar_top") + _bottles("bar_low")
+    factor = BOTTLE_H * RS / max(b.height for b in pool)
+    pool = [rescale(b, factor) for b in pool]
+    # deal alternately, so two bottles from the same generation never sit side by side
+    rows = [pool[0::2], pool[1::2]]
+    os.makedirs(OUT, exist_ok=True)
+    for name, row in zip(("bar_bottles_top", "bar_bottles_low"), rows):
+        w, h = BAR_ROW_W * RS, BOTTLE_H * RS
+        used = sum(b.width for b in row)
+        gap = (w - used) / (len(row) + 1)
+        canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        x = gap
+        for b in row:
+            canvas.paste(b, (round(x), h - b.height), b)   # they stand on the shelf
+            x += b.width + gap
+        finish(canvas, 48).save(f"{OUT}{name}.png")
+        print(f"{OUT}{name}.png  {w}x{h} (logical {BAR_ROW_W}x{BOTTLE_H})  "
+              f"{len(row)} bottles, {gap / RS:.1f} logical apart")
+
+
+def build_bardrink():
+    """CHAD's five-pose drink. Not a station in the gym sense - the bar counter is painted
+    into the plate, so there is no rig in the set and this is only him. He is drawn at the
+    player's own x with the player hidden, so the set has to agree with his standing sprite
+    on scale and on where his middle is: one factor off the TALLEST pose (pose 4 tips his
+    head back, so taking it off any other pose would shrink him), then register on the
+    torso so the raised arm cannot swing his body sideways.
+    """
+    frames = slice_strip(SRC + "bar_drink.png", 5)
+    # ONE factor, off pose 0 - the only pose that is just him standing
+    factor = CHAD_BODY / frames[0].height
+    frames = [rescale(f, factor) for f in frames]
+    w = max(f.width for f in frames) + 4
+    h = max(f.height for f in frames) + CHAD_FOOT + 2
+    out = []
+    # ONE x offset for all five, taken from pose 0. His back is the leftmost point of
+    # every pose because his feet and hips never move, so the crops already share an
+    # origin; re-centring each pose on its own torso would slide his boots across the
+    # floor as the glass goes up.
+    band = np.asarray(frames[0].getchannel("A"))[: int(frames[0].height * 0.55)] > 16
+    dx = round(w / 2 - np.where(band.any(0))[0].mean())
+    for f in frames:
+        canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        canvas.paste(f, (dx, h - CHAD_FOOT - f.height), f)
+        out.append(canvas)
+    os.makedirs(OUT, exist_ok=True)
+    for i, f in enumerate(finish_set(out, 48)):
+        f.save(f"{OUT}bar_drink_{i}.png")
+    print(f"{OUT}bar_drink_0..4.png  {w}x{h}  (logical {round(w / RS)}x{round(h / RS)})")
+
 if __name__ == "__main__":
-    jobs = sys.argv[1:] or ["lounge", "tiger", "tank", "curl", "bench", "bed", "fire", "fender"]
+    jobs = sys.argv[1:] or ["lounge", "tiger", "tank", "curl", "bench", "bed", "fire", "fender",
+                            "bar", "bardrink"]
     for j in jobs:
         {"lounge": build_lounge, "tiger": build_tiger,
+         "bar": build_bar, "bardrink": build_bardrink,
          "tank": build_tank, "curl": build_curl, "bench": build_bench,
          "bed": build_bed, "fire": build_fire, "fender": build_fender}[j]()

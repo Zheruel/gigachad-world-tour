@@ -110,6 +110,25 @@ const RIGS = [
 ];
 const rigAt = (id) => RIGS.find((r) => r.id === id);
 
+// The bar is a station too, but it PLAYS ONCE and stands him back up rather than looping:
+// glass at the hip, raised, at the lips, head back draining it, then lowered with a grin.
+// Holds, not a fixed rate - the drink itself is the beat worth dwelling on and the two
+// lifting poses are just travel. Timing lives here because barDrinkFrame, the AAAH and
+// the auto-stand all have to agree on it.
+const DRINK_HOLDS = [18, 12, 12, 42, 40];
+const DRINK_END = DRINK_HOLDS.reduce((a, b) => a + b, 0);
+const DRINK_AAAH = DRINK_END - DRINK_HOLDS[4] + 6;
+let barAt = 0;              // where he was standing when he picked the glass up
+
+function barDrinkFrame() {
+  let t = G.hubSeat;
+  for (let i = 0; i < DRINK_HOLDS.length; i++) {
+    if (t <= DRINK_HOLDS[i]) return 'lair_bar_drink_' + i;
+    t -= DRINK_HOLDS[i];
+  }
+  return 'lair_bar_drink_4';
+}
+
 // _empty unless he is on it; then _0 while he sets up and the loop after that.
 function rigFrame(r) {
   if (G.hubStation !== r.id) return r.art + '_empty';
@@ -139,6 +158,12 @@ const BED = { x: BED_X, y: WALL_BASE + 2, w: 140, h: 72 };
 // bottom edge and art is centred on x.
 const LAIR_ART = [
   // the lounge: stools at the painted bar, the portrait under its picture light
+  // The plate paints three shelves of near-identical amber bottles. These two rows go
+  // over the lit ones - x 0-120, standing on the shelf surfaces at logical 68.5 and 98.5
+  // measured off the plate's brass rails. The plate's own bottles still show in the gaps,
+  // which reads as a second row behind rather than as ghosting.
+  { art: 'lair_bar_bottles_top', x: 60, y: 69, w: 120, h: 23 },
+  { art: 'lair_bar_bottles_low', x: 60, y: 99, w: 120, h: 23 },
   { art: 'lair_bar_stools', x: 92, y: WALL_BASE, w: 46, h: 40 },
   // centred in its bay, whose gold inset measures x 330-477.5
   { art: 'lair_portrait', x: 404, y: 140, w: 106, h: 84 },
@@ -213,6 +238,11 @@ function fallbackArt(name, w, h) {
     P.disc(w * 0.3, h * 0.6, w * 0.28, '#8a2028');
     P.disc(w * 0.7, h * 0.6, w * 0.28, '#8a2028');
     P.rect(w * 0.45, 0, 2, h * 0.4, '#c8a038');
+  } else if (name.startsWith('lair_bar_bottles_')) {
+    for (let i = 0; i < 12; i++) {
+      const bh = h - 4 - ((i * 5) % 7);
+      P.rect(3 + i * (w - 6) / 12, h - bh, 5, bh, i & 1 ? '#8a5a1e' : '#3a4a28');
+    }
   } else if (name === 'lair_bar_stools') {
     panel('#3a2214', '#8a5a2a');
     P.rect(0, 2, w, 4, '#c8bca8');
@@ -235,6 +265,9 @@ function fallbackArt(name, w, h) {
     P.disc(w * 0.4, h * 0.42, 9, '#c89a68');
   } else if (name === 'lair_bag_chain') {
     for (let y = 0; y < h; y += 3) P.rect(w / 2 - 1, y, 2, 2, (y / 3) & 1 ? '#7a7488' : '#3e3a4c');
+  } else if (name.startsWith('lair_bar_drink_')) {
+    P.rect(w * 0.3, 0, w * 0.4, h, '#c89a68');
+    P.rect(w * 0.34, h * 0.2, w * 0.32, h * 0.3, '#1a1620');
   } else if (name === 'lair_lounge_empty' || name === 'lair_lounge_chad') {
     P.rect(0, h * 0.28, w * 0.78, h * 0.6, '#1a1620');
     P.rect(w * 0.86, h * 0.28, w * 0.1, h * 0.12, '#5a3420');
@@ -1137,7 +1170,6 @@ export function updateHub() {
   for (const p of PETS) updatePet(p);
   if (G.hubRelicT > 0) G.hubRelicT--;
   if (G.hubFlex > 0 && --G.hubFlex === 0) G.player.state = 'idle';
-  if (G.hubDrink > 0 && --G.hubDrink === 0) G.player.state = 'idle';
   // the combo pulls them in, and RAGNAROK sends them to opposite ends of the room
   if (G.combo >= 6 && G.combo % 6 === 0) petsWatch(G.player.x, 220);
   if (G.player.state === 'special' && G.player.t === 1) petsScatter();
@@ -1148,8 +1180,11 @@ export function updateHub() {
     G.hubSeat++;
     const rig = rigAt(G.hubStation);
     if (rig) countRep(rig);
-    // cigar smoke, from where his hand is in the seated art
-    else if (G.hubSeat % 22 === 0) spawnSmoke(LOUNGE.x + 6, LOUNGE.y - 58, 1);
+    else if (G.hubStation === 'bar') {
+      // the AAAH lands when he finishes it, not when he picks it up
+      if (G.hubSeat === DRINK_AAAH) spawnPop(barAt, G.player.y - 104, 'AAAH');
+      if (G.hubSeat > DRINK_END) { G.hubSeat = 0; G.hubStation = null; return -1; }
+    } else if (G.hubSeat % 22 === 0) spawnSmoke(LOUNGE.x + 6, LOUNGE.y - 58, 1);
     if (G.hubSeat > 24 && anyKey()) {
       G.hubSeat = 0;
       G.hubStation = null;
@@ -1169,20 +1204,18 @@ export function updateHub() {
   G.hubSel = sel;
 
   // the bag is punched, not opened; everything else is a panel or a short action
-  if (sel && sel !== 'bag' && input.pressed('up') && !G.hubFlex && !G.hubDrink) {
+  if (sel && sel !== 'bag' && input.pressed('up') && !G.hubFlex) {
     if (sel === 'mirror') {
       pose(96);
       G.hubFlex = 96;
-    } else if (sel === 'bar') {
-      pose(72);
-      G.hubDrink = 72;
-      spawnPop(p.x, p.y - 100, 'AAAH');
-    } else if (sel === 'lounge' || rigAt(sel)) {
+    } else if (sel === 'bar' || sel === 'lounge' || rigAt(sel)) {
       G.hubSeat = 1;
       G.hubStation = sel;
       G.hubReps = 0;
       G.audio.sfx('blip');
       petsWatch(fixtureAt(sel).x - 40);
+      // he drinks where he is standing, not at the fixture's x, or he snaps sideways
+      if (sel === 'bar') barAt = p.x;
     } else {
       openPanel(sel);
     }
@@ -1231,6 +1264,11 @@ export function drawHubWall(ctx, camX) {
     w: LOUNGE.w, h: LOUNGE.h,
   }));
   for (const r of RIGS) drawFixtureArt(ctx, camX, r, artFor({ art: rigFrame(r), w: 100, h: 60 }));
+  if (G.hubStation === 'bar') {
+    // +2 because the set carries the same 3-device foot padding his standing sprite has
+    drawFixtureArt(ctx, camX, { x: barAt, y: G.player.y + 2, w: 36, h: 94 },
+      artFor({ art: barDrinkFrame(), w: 36, h: 94 }));
+  }
   drawBed(ctx, camX);
 
   drawMirrorGlint(ctx, camX);
@@ -1462,7 +1500,7 @@ export function drawHubUI(ctx) {
       const reps = repCount(G.hubReps);
       drawTextShadow(ctx, reps, (W - textWidth(reps, 2)) / 2, 60, '#ffd94a', 2);
     }
-    const hint = 'ANY KEY: ' + (G.hubStation === 'lounge' ? 'GET UP' : 'RACK IT');
+    const hint = 'ANY KEY: ' + ({ lounge: 'GET UP', bar: 'PUT IT DOWN' }[G.hubStation] || 'RACK IT');
     drawTextShadow(ctx, hint, (W - textWidth(hint, 1)) / 2, 246, '#686098', 1);
     return;
   }
