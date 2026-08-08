@@ -1836,7 +1836,7 @@ export function drawHubUI(ctx) {
   const foot = [
     'ARROWS MOVE   F USE   Z PUNCH   X JUMP   HOLD C PARRY   SPACE METEOR LARIAT',
     'DOUBLE TAP TO DASH, HOLD TO RUN   GREEN CUE: PARRY   RED CUE: EVADE',
-    'TAP Z OR X WHILE DOWN TO GET UP FAST   ESC TITLE',
+    'TAP Z OR X WHILE DOWN TO GET UP FAST   ESC PAUSE   BACKSPACE TITLE',
   ];
   for (let i = 0; i < foot.length; i++) {
     drawTextShadow(ctx, foot[i], (W - textWidth(foot[i], 1)) / 2, 246 + i * 9, '#686098', 1);

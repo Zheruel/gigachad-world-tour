@@ -304,9 +304,18 @@ function update() {
   }
   if (G.state === 'hub') {
     if (G.hitstop > 0) { G.hitstop--; return false; }
-    // the room has no pause button of its own; this is the console's, and without it
-    // step(n) from a tool call lands hundreds of frames past wherever it was aimed
-    if (G.paused) return false;
+    // The room pauses like a stage does: the tiger stops mid-stride, the shark stops
+    // swimming, the fire stops and the music stops with them. A panel takes ESC first,
+    // or opening the world map and pressing escape would pause behind it.
+    if (!G.hubPanel && input.pressed('pause')) {
+      G.paused = !G.paused;
+      audio.setPaused(G.paused);
+      if (!G.paused) audio.sfx('blip');
+    }
+    // `return` and not `return false`: the loop skips endFrameInput() on false, which is
+    // right for hitstop and fatal here - the keypress edge would never clear and ESC would
+    // toggle the pause on every single frame it was held.
+    if (G.paused) return;
     G.time++;
     if (G.comboT > 0 && --G.comboT === 0) G.combo = 0;
     // The play camera only ever scrolls forward; in a room you have to walk back.
@@ -314,7 +323,7 @@ function update() {
     // it, and a camera that lags the body by a frame pins him against a stale wall.
     G.camX = clamp(G.player.x - W / 2, 0, G.camMax);
     const panelOpen = !!G.hubPanel;
-    // ESC backs out of a panel or gets him off the sofa before it leaves the room
+    // BACKSPACE backs out of a panel or leaves the room for the title; ESC pauses
     if (!panelOpen && !G.hubSeat && input.pressed('back')) { setState('title'); G.fade = 1; return; }
     const pick = updateHub();
     // A panel owns the buttons while it is up, and keeps them until they are let go.
@@ -460,6 +469,7 @@ function render() {
       drawWorld(ctx);
       drawFG(ctx, G.camX);
       drawHubUI(ctx);
+      if (G.paused) drawPause(ctx);
       break;
     case 'intro':
       if (G.stageIndex === 0) drawMotorcycleArrival(ctx);
@@ -1027,9 +1037,19 @@ if (autoMode) {
         t('hub-bag-swings', Math.abs(bag.swing) > 0.001 && G.combo >= 1);
         t('hub-bag-reflects', bag.reflect === true);
       }
+      // the room pauses like a stage does, and a paused room is frozen solid
+      {
+        const tg = hubTiger();
+        tap('pause');
+        const frozenT = G.time, frozenX = tg.x;
+        step(60);
+        t('hub-pauses', G.paused && G.time === frozenT && tg.x === frozenX);
+        tap('pause'); step(4);
+        t('hub-unpauses', !G.paused && G.time > frozenT);
+      }
       G.hubSel = null; step(2);
       tap('back');
-      t('hub-escape-leaves', G.state === 'title');
+      t('hub-leaves-on-back', G.state === 'title');
 
       setState('title');
       startGame(0); t('intro-state', G.state === 'intro');
@@ -1039,8 +1059,7 @@ if (autoMode) {
       t('five-act-chapter', STAGES.length === 5 &&
         STAGES.map((s) => s.boss).join(',') === 'raja,mirchi,refund,yadav,rana');
       // ESC is a real pause: the sim stops dead and the audio context is suspended with it.
-      // It is bound to `pause` AND `back`, so this also proves the two never collide - play
-      // reads pause and ignores back, and hub-escape-leaves proves the other half.
+      // hub-pauses is the same assertion one state over, since the room pauses too.
       {
         debugPress('pause'); step(1); debugRelease('pause');
         const frozen = G.time;

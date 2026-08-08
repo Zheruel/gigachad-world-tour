@@ -20,9 +20,11 @@ const KEYMAP = {
   // as pouring a drink.
   KeyF: 'use', KeyE: 'use',
   KeyP: 'pause', Enter: 'pause',
-  // ESC is BOTH. They are handled in different states and never collide: play reads
-  // `pause` and ignores `back`, the hub and its panels read `back` and ignore `pause`.
-  Escape: ['pause', 'back'],
+  // ESC pauses, everywhere there is something to pause. Backing out - closing a panel,
+  // leaving the room for the title - is its own key, because a key cannot mean both
+  // "stop" and "leave" in the same room.
+  Escape: 'pause',
+  Backspace: 'back',
 };
 
 // gamepad button index -> action (standard mapping)

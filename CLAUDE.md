@@ -440,6 +440,11 @@ being used, and to being walked up to.
 up before its wav exists - the mirror flex calls `duke_look_good` and simply plays no line
 until `audio/voice/duke_look_good.wav` is dropped in.
 
+**`return false` from update() means "this frame did not happen", and the loop skips
+`endFrameInput()` on it.** That is right for hitstop and fatal for a pause: the keypress edge
+never clears, so ESC toggles the pause again on every frame it is held and the room strobes.
+The hub pauses with a bare `return`.
+
 **A generation cannot be cropped to a shape it was not composed for, and the way to say so
 is a FRACTION.** The title band is 2.645:1, which is 57% of a 1536x1024 generation's height.
 Three attempts drew CHAD around 715 rows tall, so no crop existed that kept his head and his
