@@ -49,10 +49,12 @@ LAIR = {
     # as a thing CHAD owns. 56 wide is the clear window between the trophy wall's last
     # relic (ends 740) and the world map's frame (starts 796).
     "humidor": (56, 78),
-    # the tank floor, sized by WIDTH: it must span the full 150 of glass
+    # The tank floor, in two pieces since the tank grew to 250 of glass: the original
+    # lounge on the left and the safe-and-jukebox half behind it on the right. Sized by
+    # HEIGHT so their sand lines agree; they overlap in the middle on purpose.
     "tankscape": (150, 61),
+    "tankscape_b": (146, 61),
     "overmantel": (77, 68),
-    "portrait": (106, 84),
     # exactly the run from the ceiling bracket to the bag's collar, so it never tiles
     "bag_chain": (10, 100),
     # One relic per boss, standing in a niche. Every bay is ~32 logical of headroom

@@ -48,7 +48,7 @@ SOFA_H = 46      # logical height of the empty sofa + side table
 TIGER_H = 58     # shoulder-to-ground on a big cat, against CHAD's 96
 TIGER_SIT_H = 70
 TIGER_LIE_H = 32
-SHARK_H = 34     # a heavier, meaner shark than the first one; ~41 logical nose to tail
+SHARK_H = 42     # sized against the widened tank; ~57 logical nose to tail
 FIRE_W = 32      # the firebox interior is 59x35 logical; the flames clip at the lintel
 FENDER = (1530, 148, 68, 20)   # must match FENDER in js/hub.js
 BED_W = 140      # bed length. The art is 2:1, so this puts the headboard near 70 -
@@ -566,11 +566,57 @@ def build_bardrink():
         f.save(f"{OUT}bar_drink_{i}.png")
     print(f"{OUT}bar_drink_0..4.png  {w}x{h}  (logical {round(w / RS)}x{round(h / RS)})")
 
+
+# The tank's brass surround, lifted out of the plate and rebuilt bigger. Source bounds are
+# the frame's outer edge in assets/bg_lair_wall.png; TANK_OUT is where it goes now.
+TANK_SRC = (282, 60, 623, 328)          # device, in the plate
+TANK_OUT = (282, 54, 842, 338)          # device: logical 141-421 x 27-169
+TANK_CORNER = 26                        # the corner plates, which must NOT be scaled
+
+
+def build_tankframe():
+    """Rebuild the aquarium's frame at the new size as a nine-slice.
+
+    The tank is now most of the lounge wall, and a frame cannot simply be scaled: the
+    corner plates and their bolts would stretch into ovals. Nine-slice instead - corners
+    verbatim, the four edges stretched along their own axis only, and the middle dropped
+    entirely so drawTank can paint the water at whatever size the frame ended up.
+
+    It is a SPRITE, not a plate edit. The old frame stays painted in the wall underneath
+    and is simply covered, which means the wall behind never has to be repaired.
+    """
+    src = Image.open("assets/bg_lair_wall.png").convert("RGBA").crop(TANK_SRC)
+    sw, sh = src.size
+    dw, dh = TANK_OUT[2] - TANK_OUT[0], TANK_OUT[3] - TANK_OUT[1]
+    c = TANK_CORNER
+    out = Image.new("RGBA", (dw, dh), (0, 0, 0, 0))
+    # corners, verbatim
+    out.paste(src.crop((0, 0, c, c)), (0, 0))
+    out.paste(src.crop((sw - c, 0, sw, c)), (dw - c, 0))
+    out.paste(src.crop((0, sh - c, c, sh)), (0, dh - c))
+    out.paste(src.crop((sw - c, sh - c, sw, sh)), (dw - c, dh - c))
+    # edges, stretched along their own axis
+    top = src.crop((c, 0, sw - c, c)).resize((dw - 2 * c, c), Image.Resampling.LANCZOS)
+    bot = src.crop((c, sh - c, sw - c, sh)).resize((dw - 2 * c, c), Image.Resampling.LANCZOS)
+    lef = src.crop((0, c, c, sh - c)).resize((c, dh - 2 * c), Image.Resampling.LANCZOS)
+    rig = src.crop((sw - c, c, sw, sh - c)).resize((c, dh - 2 * c), Image.Resampling.LANCZOS)
+    out.paste(top, (c, 0)); out.paste(bot, (c, dh - c))
+    out.paste(lef, (0, c)); out.paste(rig, (dw - c, c))
+    # the glass, punched out: everything inside the brass. The frame's inner edge is the
+    # last column of each edge slice, so the hole is the frame thickness in from each side.
+    inner = 30
+    hole = Image.new("RGBA", (dw - 2 * inner, dh - 2 * inner), (0, 0, 0, 0))
+    out.paste(hole, (inner, inner))
+    finish(out, 48).save(f"{OUT}tank_frame.png")
+    print(f"{OUT}tank_frame.png  {dw}x{dh}  (logical {dw // RS}x{dh // RS}), "
+          f"glass {(dw - 2 * inner) // RS}x{(dh - 2 * inner) // RS}")
+
 if __name__ == "__main__":
     jobs = sys.argv[1:] or ["lounge", "tiger", "tank", "curl", "bench", "bed", "fire", "fender",
-                            "bar", "bardrink"]
+                            "bar", "bardrink", "tankframe"]
     for j in jobs:
         {"lounge": build_lounge, "tiger": build_tiger,
          "bar": build_bar, "bardrink": build_bardrink,
+         "tankframe": build_tankframe,
          "tank": build_tank, "curl": build_curl, "bench": build_bench,
          "bed": build_bed, "fire": build_fire, "fender": build_fender}[j]()

@@ -105,22 +105,36 @@ a 9x4 cage of 5px bars and panel B's grid did not line up with panel C's; a grid
 rectangles is geometry, and geometry is cheaper to paint than to ask for. It repaints the
 floor's reflection of those bars too, or the granite goes on reflecting the old window.
 
-**When the plate already contains what you need, copy it — do not ask for a second one.**
-The trophy wall needed a second niche (one held five relics; the tour wants three per
-country). A niche is lit wood, brass rails and glass, so *generating* a matching one is
-the panel-B-does-not-line-up-with-panel-C problem again. `clone_alcove()` copies the
-pixels of the one the plate has into the dead bay next door, which is exact by
-construction — both bays are bounded by the same panelling, so the two frame verticals
-are the only alignment to get right (source 1248-1498, dest 955-1196, one resize). The
-copy is **mirrored**: the wood grain and the baked lamp pools are the tell, and a flipped
-niche reads as a matching pair rather than the same object twice. Verify the builder is
-byte-reproducible (`md5` before and after a no-op run) before adding a step like this, or
-you cannot tell your change from a drifting rebuild.
+**When the plate already contains what you need, rebuild it rather than asking for more.**
+The trophy wall needed to be one long hall, not the single niche the plate paints. A niche
+is lit wood, brass rails and glass, so *generating* a matching one is the
+panel-B-does-not-line-up-with-panel-C problem again - and it cannot simply be stretched,
+because the frame mouldings would stretch with it. `widen_alcove()` takes the frame slices
+off the real niche unscaled and tiles the interior from HALF of the real interior with
+every other copy mirrored, then squashes the half by a few percent so a whole number fills
+the run exactly. Mirroring is what makes the seams free: a mirrored copy's left edge is the
+same column of pixels as its neighbour's right edge, by construction.
 
-`RELIC_SLOTS` is then **niche-major, not shelf-major**: one shelf is one country, so a
-row must not run across the pier between the niches. `?auto=verify` checks the wall holds
-six countries and that no two slots on a shelf are within 30 logical of each other —
-`drawAlcove` silently drops any relic past the last slot.
+Two traps, both found by looking: the frame slice must reach past BOTH mouldings (the outer
+frame line and the inner one) or the inner moulding rides along on every tile and reappears
+as a post standing in the middle of the hall; and a few percent of horizontal squash is
+invisible on wood and soft lamp pools, where a partial tile at one end would not be.
+
+`blank_bay()` is the same idea for removal. With the portrait gone and the tank covering
+most of its bay, the bay's gold inset would have been left as a frame with half of it
+missing, which reads as damage. It is filled by **iterated dilation from the wood at the
+edges of each line** - not by sampling a fixed direction, because the inset has horizontal
+lines and vertical ones, and sampling up and down (the obvious first try) finds nothing but
+more gold when the line is vertical. Restrict the region to what will actually still be
+visible: run it over the brass picture light and it melts it.
+
+**A frame is a nine-slice, never a scale.** The aquarium is most of the lounge wall now -
+280x142 logical against the 170x134 the plate paints. `build_tankframe()` lifts the brass
+surround out of the plate and rebuilds it at the new size with the corner plates verbatim,
+the four edges stretched along their own axis only, and the middle dropped so `drawTank`
+can paint water at whatever size it ended up. Scale it instead and the corner bolts stretch
+into ovals. It is a SPRITE blitted over the plate's original tank, so the wall behind never
+has to be repaired - the same reason the map and the overmantel oil are sprites.
 
 **Anything standing on a measured surface needs the surface measured, not guessed.** The
 relics stood 2.5–4 px inside their own shelves for months and read only as vaguely "off":

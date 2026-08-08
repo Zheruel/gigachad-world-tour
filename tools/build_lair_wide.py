@@ -215,28 +215,91 @@ def rebuild_window(wall, floor):
     return Image.fromarray(a, "RGBA"), Image.fromarray(f, floor.mode)
 
 
-def clone_alcove(wall):
-    """Give the trophy wall a second niche, by copying the one the plate already has.
+def blank_bay(wall):
+    """Erase the picture bay's inset moulding, because the tank now covers most of it.
 
-    One niche of three shelves holds five relics. At three per country that is not even
-    two countries, and the bay next door - between the lounge and the alcove - is dead
-    panelling that the arcade and the humidor were only standing in front of.
+    The cherub portrait that hung here is gone and the aquarium takes the wall. It does
+    not take ALL of it - the humidor stands in the last 60 logical px - so the bay's gold
+    inset would otherwise be left as a frame with its left half missing, which reads as
+    damage rather than as panelling.
 
-    The niche is NOT regenerated. It is lit wood, brass rails and glass, and asking the
-    generator for a second one that matches is the panel-B-does-not-line-up-with-panel-C
-    problem again; copying the pixels is exact by construction. Both bays are bounded by
-    the same panelling, so the two frame verticals are all the alignment there is to get
-    right. The copy is MIRRORED: the wood grain and the lamp pools are the tell, and a
-    flipped niche reads as a matching pair rather than as the same object twice.
+    Filled by iterated dilation from the wood at the edges of each line, NOT by sampling a
+    fixed direction: the inset has horizontal lines and vertical ones, and sampling up and
+    down (the obvious first try) finds nothing but more gold when the line is vertical.
     """
-    SRC = (1248, 52, 1498, 348)     # the alcove unit, its frame verticals included
-    DST = (955, 1196)               # the dead bay's frame verticals
-    niche = wall.crop(SRC).transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-    niche = niche.resize((DST[1] - DST[0], SRC[3] - SRC[1]), Image.Resampling.LANCZOS)
+    # Only the strip that will still be VISIBLE: the tank covers device 282-842 and the
+    # humidor stands over 844-956, so everything left of 836 is hidden anyway and is left
+    # alone - including the brass picture light, which this would otherwise melt.
+    X0, X1, Y0, Y1 = 836, 962, 58, 274
+    a = np.asarray(wall).copy()
+    region = a[Y0:Y1, X0:X1, :3].astype(float)
+    r, g, b = region[..., 0], region[..., 1], region[..., 2]
+    hole = (r > 78) & (r > b + 24) & (g > b + 8)
+    # the moulding carries a dark shadow line beside it; take that with it or the frame
+    # leaves its own outline behind
+    grown = hole.copy()
+    for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+        grown |= np.roll(np.roll(hole, dy, 0), dx, 1)
+    hole = grown
+    total = int(hole.sum())
+    for _ in range(30):
+        if not hole.any():
+            break
+        # average of the four neighbours that are already wood
+        acc = np.zeros_like(region)
+        cnt = np.zeros(hole.shape)
+        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            sh = np.roll(np.roll(region, dy, 0), dx, 1)
+            ok = ~np.roll(np.roll(hole, dy, 0), dx, 1)
+            acc += sh * ok[..., None]
+            cnt += ok
+        fill = hole & (cnt > 0)
+        region[fill] = (acc[fill] / cnt[fill][..., None])
+        hole = hole & ~fill
+    a[Y0:Y1, X0:X1, :3] = region.round().clip(0, 255).astype(np.uint8)
+    print(f"  picture bay blanked: {total} moulding px filled from the wood beside them")
+    return Image.fromarray(a, "RGBA")
+
+
+def widen_alcove(wall):
+    """Turn the trophy bay and the dead bay next to it into ONE long lit niche.
+
+    An earlier pass cloned the niche into the bay next door, which gave two niches with a
+    pilaster between them. One unit reads better and a country's relics no longer risk
+    being split across the pier - but a niche cannot simply be stretched, because its
+    frame mouldings and the bolts on them would stretch with it.
+
+    So it is rebuilt: the frame slices come off the real niche unscaled, and the interior
+    is tiled from HALF of the real interior, every other copy mirrored. Mirroring is what
+    makes the seams free - a mirrored copy's left edge is the same column of pixels as its
+    neighbour's right edge, by construction. The half is then squashed by a few percent so
+    a whole number of them fills the run exactly; that is invisible on wood and on soft
+    lamp pools, where a partial tile at one end would not be.
+    """
+    SRC_X0, SRC_X1, Y0, Y1 = 1240, 1510, 52, 348
+    DST_X0, DST_X1 = 955, 1497        # the dead bay's left frame to the niche's right one
+    # The frame slice has to reach past BOTH mouldings - the outer frame line at 1248 and
+    # the inner one at 1260 - or the inner moulding rides along on every tile and reappears
+    # as a post standing in the middle of the hall.
+    F = 26
+    unit = wall.crop((SRC_X0, Y0, SRC_X1, Y1))
+    left = unit.crop((0, 0, F, unit.height))
+    body = unit.crop((F, 0, unit.width - F, unit.height))
+    half = body.crop((0, 0, body.width // 2, body.height))
+
+    run = (DST_X1 - DST_X0) - 2 * F
+    n = max(1, round(run / half.width))
+    tile_w = run / n
     out = wall.copy()
-    out.paste(niche, (DST[0], SRC[1]))
-    print(f"  second niche: logical {DST[0] / RS:.0f}-{DST[1] / RS:.0f} "
-          f"(shelves share SHELF_Y with the first)")
+    out.paste(left, (DST_X0, Y0))
+    for i in range(n):
+        piece = half if i % 2 == 0 else half.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        x0 = DST_X0 + F + round(i * tile_w)
+        x1 = DST_X0 + F + round((i + 1) * tile_w)
+        out.paste(piece.resize((x1 - x0, piece.height), Image.Resampling.LANCZOS), (x0, Y0))
+    out.paste(left.transpose(Image.Transpose.FLIP_LEFT_RIGHT), (DST_X1 - F, Y0))
+    print(f"  trophy hall: logical {DST_X0 / RS:.1f}-{DST_X1 / RS:.1f}, "
+          f"{n} tiles squashed {100 * (tile_w / half.width - 1):+.1f}%")
     return out
 
 
@@ -276,7 +339,7 @@ def build_room(seams, key=True):
         wall = key_glass(wall)
         floor = fill_glass_reflection(floor)
         wall, floor = rebuild_window(wall, floor)
-    wall = clone_alcove(wall)
+    wall = blank_bay(widen_alcove(wall))
     quantized(wall, 160).save("assets/bg_lair_wall.png")
     quantized(floor, 96).save("assets/bg_lair_floor.png")
     print(f"lair: wall {wall.width}x{WALL_H}, floor {floor.width}x{FLOOR_H} "

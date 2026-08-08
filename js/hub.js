@@ -40,28 +40,30 @@ const CEIL_MOUNT = 20;     // the window head beam, which is what the bag hangs 
 // three places rather than a shelf of objects: THE LOUNGE (bar, tank, sofa under the
 // picture light), TROPHIES AND MEDIA (alcove between two media walls), THE VIEW.
 const BAR = [0, 132];
-const TANK = { x: 150, y: 41, w: 150, h: 114 };     // the lit water, not the frame
-// Two niches: the plate's original and the mirrored copy clone_alcove paints into the
-// bay next door. Three relics across a 118-wide niche leaves ~13 of air between them;
-// four fits arithmetically (the widest relic is 26) but leaves 3, which reads as a
-// jumble sale rather than a trophy wall.
-const NICHES = [[485, 595], [629, 747]];
+// The lit water, not the frame. The brass surround is lair_tank_frame, a nine-slice
+// rebuilt by tools/build_lair_extras.py and blitted OVER the plate's original tank, so
+// the wall behind never had to be repaired - see build_tankframe.
+const TANK = { x: 156, y: 42, w: 250, h: 112 };
+const TANK_FRAME = { x: 141, y: 27, w: 280, h: 142 };
+// ONE long trophy hall - widen_alcove in tools/build_lair_wide.py rebuilds the niche and
+// the dead bay next to it as a single unit, logical 477.5-748.5 with a 13-wide frame
+// moulding at each end. Six relics across 244 leaves ~15 of air between them.
+const NICHES = [[491, 735]];
 // The row a relic's feet sit ON, measured off the plate: the brass shelf rails light up
 // at device rows 137, 201 and 264, which is logical 68.5, 100.5 and 132. These were 70,
 // 103 and 135 with a +1 in the blit, so every relic stood 2.5-4px INSIDE its own shelf.
 const SHELF_Y = [69, 101, 133];
-const ACROSS = 3;
+const ACROSS = 6;
 
-// One shelf is one country: ACROSS is the acts per country, so a shelf fills up exactly
-// as a chapter is cleared and the wall reads a country at a time. Niche-major, not
-// shelf-major - running a row across both niches would split a country over the pier.
+// One shelf is TWO countries now the hall is one unit: six across, three shelves, still
+// 18 slots. Filling is left to right, top down, in the order the acts were cleared.
 export const RELIC_SLOTS = NICHES.flatMap(([x0, x1]) => {
   const step = (x1 - x0) / ACROSS;
   return SHELF_Y.flatMap((y) => Array.from({ length: ACROSS },
     (_, i) => [Math.round(x0 + step * (i + 0.5)), y]));
 });
-// Both niches together, for the cull and the select bracket.
-const TROPHY_WALL = [NICHES[0][0], NICHES[NICHES.length - 1][1]];
+// the hall including its frame, for the cull and the select bracket
+const TROPHY_WALL = [477, 749];
 
 // Every glass opening build_lair_wide.py leaves in the plate - it prints this list. The
 // gym's long run, then the bedroom's corner window.
@@ -78,8 +80,8 @@ const MIRROR_FRAME = [1344, 50, 57, 103];
 export const BAG_X = 990;
 export const FIXTURES = [
   { id: 'bar', x: 60, hint: 'POUR ONE' },
-  { id: 'lounge', x: 395, hint: 'SIT AND SMOKE' },
-  { id: 'trophies', x: 616, hint: 'TROPHY WALL' },   // the pier between the two niches
+  { id: 'lounge', x: 350, hint: 'SIT AND SMOKE' },
+  { id: 'trophies', x: 613, hint: 'TROPHY WALL' },   // the middle of the hall
   { id: 'map', x: 800, hint: 'WORLD TOUR' },
   { id: 'hifi', x: 880, hint: 'SOUND TEST' },
   { id: 'bag', x: BAG_X, hint: 'WORK THE BAG', key: 'Z' },
@@ -157,7 +159,8 @@ const BED = { x: BED_X, y: WALL_BASE + 2, w: 140, h: 72 };
 // Sprites in the wall plane. Sizes mirror LAIR in tools/process_props.py; y is the
 // bottom edge and art is centred on x.
 const LAIR_ART = [
-  // the lounge: stools at the painted bar, the portrait under its picture light
+  // the lounge: stools at the painted bar. The cherub portrait that hung over the sofa
+  // is gone - the tank takes that wall, and the oil over the hearth is the better one.
   // The plate paints three shelves of near-identical amber bottles. These two rows go
   // over the lit ones - x 0-120, standing on the shelf surfaces at logical 68.5 and 98.5
   // measured off the plate's brass rails. The plate's own bottles still show in the gaps,
@@ -165,16 +168,14 @@ const LAIR_ART = [
   { art: 'lair_bar_bottles_top', x: 60, y: 69, w: 120, h: 23 },
   { art: 'lair_bar_bottles_low', x: 60, y: 99, w: 120, h: 23 },
   { art: 'lair_bar_stools', x: 92, y: WALL_BASE, w: 46, h: 40 },
-  // centred in its bay, whose gold inset measures x 330-477.5
-  { art: 'lair_portrait', x: 404, y: 140, w: 106, h: 84 },
   // Trophies. Two niches now - see clone_alcove in tools/build_lair_wide.py - with the
   // cigar cabinet built flush into the second one's base panel (482.5-591 x 147-165.5)
   // rather than standing in front of the wall. The arcade cabinet is gone: it was the
   // only injection-moulded object in a walnut room, and this bay is worth more as shelf.
-  // Freestanding again - built into the panelling it read as joinery rather than as a
-  // thing CHAD owns. This is the only clear stretch of wall left: 740 (where the trophy
-  // wall's last relic ends) to 796 (where the world map's frame starts).
-  { art: 'lair_humidor', x: 770, y: WALL_BASE, w: 56, h: 78 },
+  // Between the sofa and the trophy hall, which is where you would keep the cigars in a
+  // room where you smoke them on that sofa. 422-478: the sofa ends at 420.5 and the hall's
+  // frame starts at 477.5, so it fits the gap exactly.
+  { art: 'lair_humidor', x: 450, y: WALL_BASE, w: 56, h: 78 },
   // centred in the panelled bay, whose gold inset measures x 775.75-895.75, y 37-130
   { art: 'lair_worldmap', x: 836, y: 109, w: 80, h: 48 },
   { art: 'lair_hifi', x: 880, y: WALL_BASE, w: 48, h: 60 },
@@ -205,7 +206,7 @@ const LAIR_ART = [
 // The lounge is a pair: the same sofa empty and with CHAD sitting in it, registered on
 // the sofa's own foot by tools/build_lair_extras.py. His boots hang below the sofa
 // legs, which is why the canvas bottom sits a little in front of the wall base.
-const LOUNGE = { x: 395, y: WALL_BASE + 9, w: 141, h: 63 };
+const LOUNGE = { x: 350, y: WALL_BASE + 9, w: 141, h: 63 };
 
 
 // ------------------------------------------------------- fixture art fallback
@@ -223,10 +224,6 @@ function fallbackArt(name, w, h) {
   if (name === 'lair_worldmap') {
     panel('#0e1a34', '#4a6a9e');
     for (let i = 0; i < 90; i++) P.px(irand(4, w - 5), irand(4, h - 5), '#2e6aa8');
-  } else if (name === 'lair_portrait') {
-    panel('#3a2a12', '#c8a038');
-    P.rect(6, 6, w - 12, h - 12, '#2a1a12');
-    P.disc(w / 2, h * 0.4, 10, '#c89a68');
   } else if (name.startsWith('lair_bed_') && name !== 'lair_bed_fire') {
     P.rect(0, h * 0.45, w, h * 0.55, '#3a2214');
     P.rect(4, h * 0.5, w - 8, h * 0.2, '#d8d0c0');
@@ -633,9 +630,10 @@ export const HUB_STAGE = {
   glows: [
     { x: 60, y: 130, r: 48, col: '255,180,90', a: 0.14 },
     { x: 225, y: 150, r: 58, col: '90,200,230', a: 0.15 },
-    { x: 395, y: 60, r: 44, col: '255,190,110', a: 0.13 },
-    { x: 537, y: 150, r: 46, col: '255,180,90', a: 0.13 },
-    { x: 688, y: 150, r: 46, col: '255,180,90', a: 0.13 },
+    { x: 350, y: 60, r: 44, col: '255,190,110', a: 0.13 },
+    { x: 530, y: 150, r: 52, col: '255,180,90', a: 0.13 },
+    { x: 613, y: 150, r: 52, col: '255,180,90', a: 0.13 },
+    { x: 700, y: 150, r: 52, col: '255,180,90', a: 0.13 },
     { x: 800, y: 92, r: 44, col: '110,190,255', a: 0.13 },
     { x: 880, y: 150, r: 38, col: '60,220,140', a: 0.10 },
     // the master suite. The fire has its own breathing light in drawFirelight; these are
@@ -703,10 +701,10 @@ const bubbles = [];
 const smoke = [];
 const silt = [];
 const SCAPE_H = 61;           // lair_tankscape, sized in tools/process_props.py
-const SHARK_W = 46;           // lair_shark_*, from tools/build_lair_extras.py SHARK_H
+const SHARK_W = 56;           // lair_shark_*, from tools/build_lair_extras.py SHARK_H
 // The lit end of the cigar, measured off assets/lair/shark_0.png as an offset from the
 // sprite's own top-left. The smoke has to leave the cigar, not the middle of the shark.
-const CIGAR = { x: 44, y: 22 };
+const CIGAR = { x: 54, y: 27 };
 const SILT_N = 26;
 
 function resetTank() {
@@ -737,7 +735,7 @@ function bubble(x, y, r) {
 
 // One place that says where he is, so the smoke leaves the cigar and not his tail.
 function sharkY() {
-  return TANK.y + 14 + Math.sin(shark.t * 0.012) * 7;
+  return TANK.y + 8 + Math.sin(shark.t * 0.012) * 12;
 }
 
 // The lit end, in world coords, mirrored with him.
@@ -793,7 +791,7 @@ function updateTank() {
     }
   }
 
-  if ((shark.t & 31) === 0) bubble(TANK.x + rand(10, 18), TANK.y + TANK.h - 22, rand(1, 2));
+  if ((shark.t & 31) === 0) bubble(TANK.x + rand(8, 16), TANK.y + TANK.h - 24, rand(1, 2));
   if ((shark.t & 63) === 20) bubble(TANK.x + TANK.w - rand(10, 18), TANK.y + TANK.h - 24, rand(1, 2));
 
   for (let i = bubbles.length - 1; i >= 0; i--) {
@@ -876,12 +874,47 @@ function drawTank(ctx, camX) {
   ctx.rect(l, TANK.y, TANK.w, TANK.h);
   ctx.clip();
 
+  // The plate's blue only ever reached 150 logical, and the glass is 250 wide now, so
+  // the water is painted rather than borrowed - a gradient, the far wall's slow swell,
+  // and the glass box's own perspective edges.
+  const water = ctx.createLinearGradient(0, TANK.y, 0, TANK.y + TANK.h);
+  water.addColorStop(0, '#4a96d8');
+  water.addColorStop(0.55, '#2f6fbe');
+  water.addColorStop(1, '#1b4682');
+  ctx.fillStyle = water;
+  ctx.fillRect(l, TANK.y, TANK.w, TANK.h);
+  for (let i = 0; i < 7; i++) {
+    const cx = l + 14 + i * (TANK.w - 28) / 6 + Math.sin(shark.t * 0.004 + i) * 5;
+    const g = ctx.createRadialGradient(cx, TANK.y + TANK.h * 0.6, 2, cx, TANK.y + TANK.h * 0.6, 26);
+    g.addColorStop(0, 'rgba(14,46,96,0.30)');
+    g.addColorStop(1, 'rgba(14,46,96,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(cx - 26, TANK.y, 52, TANK.h);
+  }
+  // the box: the near glass edge, then the far wall inset from it
+  const d = 9;
+  ctx.strokeStyle = 'rgba(150,225,255,0.5)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(l + d + 0.5, TANK.y + d + 0.5, TANK.w - d * 2 - 1, TANK.h - d * 2 - 1);
+  ctx.strokeStyle = 'rgba(150,225,255,0.28)';
+  ctx.beginPath();
+  for (const [x0, y0, x1, y1] of [[0, 0, d, d], [TANK.w, 0, TANK.w - d, d],
+    [0, TANK.h, d, TANK.h - d], [TANK.w, TANK.h, TANK.w - d, TANK.h - d]]) {
+    ctx.moveTo(l + x0, TANK.y + y0); ctx.lineTo(l + x1, TANK.y + y1);
+  }
+  ctx.stroke();
+
   lightShafts(ctx, l);
   drawSilt(ctx, camX, false);
 
-  // his lair, on the tank floor and behind him
+  // his lair, on the tank floor and behind him. Two pieces: the second one goes down
+  // first and the original overlaps its left end, so the join is one object in front of
+  // another rather than a seam.
+  const floorY = TANK.y + TANK.h;
+  const scapeB = ASSETS.lair_tankscape_b;
+  if (scapeB) blit(ctx, scapeB, l + TANK.w - frameW(scapeB), floorY - frameH(scapeB));
   const scape = ASSETS.lair_tankscape || fallbackArt('lair_tankscape', TANK.w, SCAPE_H);
-  blit(ctx, scape, l, TANK.y + TANK.h - frameH(scape));
+  blit(ctx, scape, l, floorY - frameH(scape));
 
   const simg = ASSETS['lair_shark_' + shark.frame];
   if (simg) {
@@ -940,6 +973,9 @@ function drawTank(ctx, camX) {
   ctx.fillStyle = shimmer;
   ctx.fillRect(l, TANK.y, TANK.w, TANK.h);
   ctx.restore();
+
+  const frame = ASSETS.lair_tank_frame;
+  if (frame) blit(ctx, frame, Math.round(TANK_FRAME.x - camX), TANK_FRAME.y);
 }
 
 
