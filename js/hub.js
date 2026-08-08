@@ -224,7 +224,7 @@ const LAIR_ART = [
   { art: 'lair_bed_rug', x: 1570, y: WALL_BASE + 55, w: 138, h: 54 },
   // closer to the hearth than to the bed: the fireplace's mantel ends at 1600 and
   // this leaves a walking lane between them
-  { art: 'lair_bed_wardrobe', x: 1655, y: WALL_BASE, w: 62, h: 96 },
+  { art: 'lair_bed_wardrobe', x: 1668, y: WALL_BASE, w: 62, h: 96 },
   { art: 'lair_bed_nightstand', x: 1750, y: WALL_BASE, w: 33, h: 40 },   // beside the footboard
 ];
 // The lounge is a pair: the same sofa empty and with CHAD sitting in it, registered on
