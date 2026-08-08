@@ -20,6 +20,7 @@ There is no test runner, linter or package manager. Verification is in-browser, 
 - `index.html?auto=soak` — 50k-frame stuck-entity hunt over knockdowns and enemy holds. Clean run prints `SOAK-CLEAN`.
 - `index.html?auto=bot&stage=0` — naive bot plays a whole stage; reports pacing/damage/KOs.
 - `?auto=play|walk|jab|combo|parry|combat|super|super-hammer|super-express|boss|bossfight|miniboss|clear|over|ending` — steps the game into a state for screenshots.
+- `?auto=hub[-<fixture>]` — THE LAIR. Fixtures are triggered with **F** (`use`), not up — up is movement into the depth lanes, so it double-booked walking with activating.
 - `?auto=hub[-<fixture>]` — THE LAIR. Bare, or a fixture id from `FIXTURES` in `js/hub.js` (`hub-bar`, `hub-trophies`, `hub-lounge`, `hub-map`, `hub-hifi`, `hub-curl`, `hub-bench`, `hub-mirror`) to park CHAD there and trigger it, plus `hub-bag` (mid-punch), `hub-window` (the bag against the sunset) and `hub-bed` (close enough to the master suite that they wake up and speak). `&unlocked=N` sets how far the tour has got, which drives the relics on the shelves, the locked acts and how dark the window is.
 - `lab.html` — asset lab (CAST / ANIM / CROWD / SCALE / STAGE / CONTRAST / EFFECTS). ANIM exposes the selected sequence as a frame-by-frame contact sheet; comma/period step authored drawings. `sfxlab.html` — SFX slot audition.
 
@@ -211,6 +212,13 @@ asserted 3 distinct poses, and over its 400-sample window the random walk's mini
 25 runs was exactly 3 — so it failed at random. The fix is to widen the window until there
 is margin (650 samples gives a minimum of 4), not to lower the bar. Measure the minimum over
 many runs before believing a threshold.
+
+**A sprite faces where it is GOING, never where it happens to sit.** The baitfish were
+flipped by which side of the ball's centre they were on, which had half of them swimming
+backwards at any moment — a fish left of the centre is as likely to be heading right as
+left. Face off the actual per-frame delta, smoothed, with a dead zone so they do not flip
+every frame while hovering. Verified by counting disagreements between facing and travel
+over 33,432 moving samples: zero, with 0.14 turns per fish per second.
 
 **Three tenants, three zones.** The tank holds the shark, a moray in one of the wreck's
 gun ports, a coin-carrying crab on the sand and a baitball in the open water — deliberately

@@ -220,10 +220,11 @@ const LAIR_ART = [
   // FIREPLACE's centre, not the mirror's - the plate has them 1.5px apart, and the eye
   // lines a picture up with the mantel under it. It is the fight that produced the pelt
   // lying on the floor directly below it.
-  { art: 'lair_overmantel', x: 1562, y: 105, w: 77, h: 68 },
+  { art: 'lair_overmantel', x: 1562, y: 105, w: 87, h: 68 },
   { art: 'lair_bed_rug', x: 1570, y: WALL_BASE + 55, w: 138, h: 54 },
-  // as close to the bed as the wall allows - the window jamb starts at 1723
-  { art: 'lair_bed_wardrobe', x: 1688, y: WALL_BASE, w: 62, h: 96 },
+  // closer to the hearth than to the bed: the fireplace's mantel ends at 1600 and
+  // this leaves a walking lane between them
+  { art: 'lair_bed_wardrobe', x: 1655, y: WALL_BASE, w: 62, h: 96 },
   { art: 'lair_bed_nightstand', x: 1750, y: WALL_BASE, w: 33, h: 40 },   // beside the footboard
 ];
 // The lounge is a pair: the same sofa empty and with CHAD sitting in it, registered on
@@ -741,7 +742,7 @@ const SILT_N = 26;
 const EEL_AT = [0.227, 0.705];    // a real gun port in the hull, measured off the screen
 const EEL_NEAR = 54;              // how close the shark gets before it pulls its head in
 const EEL_HOLD = 110;             // frames it stays in after being startled
-const BAIT_N = 15;
+const BAIT_N = 26;
 const eel = { out: 1, t: 0, jaw: 0, hold: 0, near: false };
 const crab = { x: 0, dir: 1, t: 0, freeze: 0, rest: 0 };
 const bait = { cx: 0, cy: 0, vx: 0.25, vy: 0, fish: [] };
@@ -762,8 +763,9 @@ function resetTank() {
   bait.vx = 0.10; bait.vy = 0;
   bait.fish.length = 0;
   for (let i = 0; i < BAIT_N; i++) {
-    bait.fish.push({ x: bait.cx, y: bait.cy, ox: rand(-16, 16), oy: rand(-9, 9),
-      phase: rand(0, 9), rate: rand(0.008, 0.018), frame: irand(0, 3), push: 0 });
+    bait.fish.push({ x: bait.cx, y: bait.cy, ox: rand(-26, 26), oy: rand(-13, 13),
+      phase: rand(0, 9), rate: rand(0.008, 0.018), frame: irand(0, 3), push: 0,
+      face: 1, vx: 0 });
   }
   for (let i = 0; i < SILT_N; i++) {
     silt.push({
@@ -940,6 +942,7 @@ function updateBait() {
     f.phase += f.rate;
     const tx = bait.cx + f.ox + Math.cos(f.phase) * 3;
     const ty = bait.cy + f.oy + Math.sin(f.phase * 1.3) * 2;
+    const px = f.x;
     f.x += (tx - f.x) * 0.018;
     f.y += (ty - f.y) * 0.018;
     // the split: pushed straight out from him, hardest when he is closest
@@ -951,6 +954,13 @@ function updateBait() {
       f.y += (dy / (d || 1)) * k * 0.6;
       f.push = 12;
     } else if (f.push > 0) f.push--;
+    // Face where it is actually GOING. Facing by which side of the ball it sits on - the
+    // first attempt - has half of them swimming backwards at any moment, because a fish on
+    // the left of the ball is as likely to be heading right as left. The threshold is
+    // hysteresis: without it they flip every frame while they hover.
+    f.vx = f.vx * 0.8 + (f.x - px) * 0.2;
+    if (f.vx > 0.02) f.face = 1;
+    else if (f.vx < -0.02) f.face = -1;
     f.frame = ((f.phase * 6) | 0) & 3;
   }
 }
@@ -1086,7 +1096,7 @@ function drawTank(ctx, camX) {
     const img = ASSETS['lair_baitfish_' + f.frame];
     if (!img) break;
     const fx = Math.round(f.x - camX), fy = Math.round(f.y);
-    if (f.x < bait.cx) {
+    if (f.face < 0) {
       ctx.save();
       ctx.scale(-1, 1);
       blit(ctx, img, -fx - frameW(img), fy);
@@ -1423,7 +1433,7 @@ export function updateHub() {
   G.hubSel = sel;
 
   // the bag is punched, not opened; everything else is a panel or a short action
-  if (sel && sel !== 'bag' && input.pressed('up') && !G.hubFlex) {
+  if (sel && sel !== 'bag' && input.pressed('use') && !G.hubFlex) {
     if (sel === 'mirror') {
       pose(96);
       G.hubFlex = 96;
@@ -1442,7 +1452,7 @@ export function updateHub() {
   return -1;
 }
 
-const anyKey = () => ['back', 'attack', 'jump', 'parry', 'up', 'down', 'left', 'right']
+const anyKey = () => ['back', 'attack', 'jump', 'parry', 'use', 'up', 'down', 'left', 'right']
   .some((a) => input.pressed(a));
 
 // A rep lands when the pose loop wraps. Meter is the point of the gym: it is the only
@@ -1740,10 +1750,10 @@ export function drawHubUI(ctx) {
     const LOW = { bag: 100, lounge: 118, curl: 84, bench: 112 };
     const y = LOW[f.id] === undefined ? 26 : LOW[f.id];
     if (!f.key) upArrow(ctx, x, y + 10 + bob, '#ffd94a');
-    const hint = (f.key || 'UP') + ': ' + f.hint;
+    const hint = (f.key || 'F') + ': ' + f.hint;
     drawTextShadow(ctx, hint, x - textWidth(hint, 1) / 2, y + bob, '#f8f0e0', 1);
   }
 
-  const foot = 'ARROWS MOVE   Z PUNCH   X JUMP   HOLD C PARRY   ESC TITLE';
+  const foot = 'ARROWS MOVE   F USE   Z PUNCH   X JUMP   HOLD C PARRY   ESC TITLE';
   drawTextShadow(ctx, foot, (W - textWidth(foot, 1)) / 2, 262, '#686098', 1);
 }

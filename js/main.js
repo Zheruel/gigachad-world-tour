@@ -897,26 +897,26 @@ if (autoMode) {
         i === 0 || f.x - FIXTURES[i - 1].x >= 80));
       t('hub-fixtures-selectable', FIXTURES.every((f) => { at(f.id); return G.hubSel === f.id; }));
       at('bag');
-      tap('up');
+      tap('use');
       t('hub-bag-opens-nothing', !G.hubPanel);
       for (const id of ['map', 'hifi', 'trophies']) {
-        at(id); tap('up');
+        at(id); tap('use');
         t('hub-panel-' + id, G.hubPanel === id);
         tap('back');
         t('hub-panel-' + id + '-escapes', !G.hubPanel);
       }
-      at('mirror'); tap('up');
+      at('mirror'); tap('use');
       t('hub-mirror-flex', G.player.state === 'victory' && G.hubFlex > 0);
       step(120);
       t('hub-mirror-ends', G.player.state !== 'victory');
-      at('lounge'); tap('up'); step(30);
+      at('lounge'); tap('use'); step(30);
       t('hub-sits', G.hubSeat > 0 && G.hubStation === 'lounge');
       tap('attack'); step(2);
       t('hub-stands', G.hubSeat === 0 && G.hubStation === null && G.state === 'hub');
       // the two gym stations: he gets on, reps land and pay meter, any key racks it
       for (const id of ['curl', 'bench']) {
         G.meter = 0;
-        at(id); tap('up'); step(30);
+        at(id); tap('use'); step(30);
         t('hub-' + id + '-lifts', G.hubSeat > 0 && G.hubStation === id);
         step(180);
         t('hub-' + id + '-reps', G.hubReps > 0 && G.meter > 0);
@@ -924,7 +924,7 @@ if (autoMode) {
         t('hub-' + id + '-racks', G.hubSeat === 0 && G.hubStation === null);
       }
       G.meter = 0;
-      at('bar'); tap('up');
+      at('bar'); tap('use');
       t('hub-bar-pours', G.hubSeat > 0 && G.hubStation === 'bar');
       // it plays once and stands him back up on its own, unlike the gym stations
       step(140);
@@ -947,6 +947,19 @@ if (autoMode) {
         tank.shark.x = keep;
         step(420);
         t('hub-eel-comes-back-out', tank.eel.out > 0.9);
+        // A fish must face where it is GOING. Facing by which side of the ball it sat on -
+        // the first attempt - had half of them swimming backwards at any moment.
+        let wrong = 0, moving = 0;
+        const was = tank.bait.fish.map((f) => f.x);
+        for (let i = 0; i < 200; i++) {
+          step(1);
+          tank.bait.fish.forEach((f, n) => {
+            const dx = f.x - was[n];
+            if (Math.abs(dx) > 0.05) { moving++; if (Math.sign(dx) !== f.face) wrong++; }
+            was[n] = f.x;
+          });
+        }
+        t('hub-baitfish-face-forwards', moving > 500 && wrong === 0);
       }
       // both pets, drawing themselves, and facing the way they are walking
       t('hub-tiger-present', G.actors.length === 1
@@ -985,7 +998,7 @@ if (autoMode) {
         RELIC_SLOTS.every(([x2, y2], j) => i === j || y !== y2 || Math.abs(x - x2) >= 30)));
       // the map panel: cursor moves, a locked act refuses, an unlocked one starts
       G.unlockedStage = 0;
-      at('map'); tap('up');
+      at('map'); tap('use');
       t('hub-map-opens-on-newest', G.hubAct === 0);
       tap('down');
       t('hub-map-moves', G.hubAct === 1);
@@ -1365,7 +1378,7 @@ if (autoMode) {
       step(20);
     } else if (f) {
       G.player.x = f.x; step(3);
-      debugPress('up'); step(2); debugRelease('up'); step(20);
+      debugPress('use'); step(2); debugRelease('use'); step(20);
     } else {
       step(40);
     }

@@ -660,7 +660,7 @@ def build_tankframe():
           f"glass {(dw - 2 * inner) // RS}x{(dh - 2 * inner) // RS}")
 
 
-EEL_H, FISH_H, CRAB_H = 20, 5, 12
+EEL_H, FISH_H, CRAB_H = 20, 7, 12   # a mackerel at 5 was a grey smudge; its bars need 7
 
 
 def fix_porthole(frames):

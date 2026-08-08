@@ -15,6 +15,10 @@ const KEYMAP = {
   KeyX: 'jump', KeyK: 'jump',
   KeyC: 'parry', KeyL: 'parry',
   KeyV: 'super', KeyB: 'super', Space: 'super',
+  // 'use' is its own action, not 'up'. THE LAIR used up to trigger a fixture, which is
+  // also how you walk into the depth lanes, so standing at the bar and stepping back read
+  // as pouring a drink.
+  KeyF: 'use', KeyE: 'use',
   KeyP: 'pause', Enter: 'pause',
   Escape: 'back',
 };
@@ -23,9 +27,10 @@ const KEYMAP = {
 const PADMAP = {
   0: 'attack', 1: 'jump', 2: 'parry', 3: 'super', 5: 'super', 7: 'super',
   8: 'back', 9: 'pause', 12: 'up', 13: 'down', 14: 'left', 15: 'right',
+  4: 'use', 6: 'use',
 };
 
-const ACTIONS = ['left', 'right', 'up', 'down', 'attack', 'jump', 'parry', 'super', 'pause', 'back'];
+const ACTIONS = ['left', 'right', 'up', 'down', 'use', 'attack', 'jump', 'parry', 'super', 'pause', 'back'];
 
 function press(a) {
   // Keep the number of edges, not just a boolean. Several quick taps can arrive

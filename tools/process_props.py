@@ -81,6 +81,13 @@ LAIR = {
 }
 
 
+# A few props have to hit an exact WIDTH as well as a height, because they sit inside an
+# opening that was measured off the plate. Sizing by height alone let the overmantel oil come
+# out 92 logical wide into the 87-wide bay between the fireplace's fluted pilasters, covering
+# the fluting either side. A few percent of horizontal squash is invisible on a painting.
+EXACT_W = {"overmantel": 87}
+
+
 def scaled(img, h):
     """Two-step downscale keeps the detail that a single resize smears away."""
     w = max(1, round(img.width * h / img.height))
@@ -97,6 +104,8 @@ def process(name, broken, sizes=SIZES, src_dir=SRC, out_dir=OUT):
     th = int(lh * (0.45 if broken else 1.0) * RS)
     img = hard_alpha(subject(key_green(Image.open(src), tol=40)), 128)
     img = scaled(img, th)
+    if name in EXACT_W:
+        img = img.resize((EXACT_W[name] * RS, img.height), Image.LANCZOS)
     img = hard_alpha(img, 110)
     img = outline(img)
     # MEDIANCUT only takes RGB, so quantize the colour and re-attach the alpha
