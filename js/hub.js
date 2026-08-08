@@ -41,7 +41,25 @@ const CEIL_MOUNT = 20;     // the window head beam, which is what the bag hangs 
 // picture light), TROPHIES AND MEDIA (alcove between two media walls), THE VIEW.
 const BAR = [0, 132];
 const TANK = { x: 150, y: 41, w: 150, h: 114 };     // the lit water, not the frame
-const ALCOVE = [629, 747];                          // niche interior
+// Two niches: the plate's original and the mirrored copy clone_alcove paints into the
+// bay next door. Three relics across a 118-wide niche leaves ~13 of air between them;
+// four fits arithmetically (the widest relic is 26) but leaves 3, which reads as a
+// jumble sale rather than a trophy wall.
+const NICHES = [[485, 595], [629, 747]];
+const SHELF_Y = [70, 103, 135];
+const ACROSS = 3;
+
+// One shelf is one country: ACROSS is the acts per country, so a shelf fills up exactly
+// as a chapter is cleared and the wall reads a country at a time. Niche-major, not
+// shelf-major - running a row across both niches would split a country over the pier.
+export const RELIC_SLOTS = NICHES.flatMap(([x0, x1]) => {
+  const step = (x1 - x0) / ACROSS;
+  return SHELF_Y.flatMap((y) => Array.from({ length: ACROSS },
+    (_, i) => [Math.round(x0 + step * (i + 0.5)), y]));
+});
+// Both niches together, for the cull and the select bracket.
+const TROPHY_WALL = [NICHES[0][0], NICHES[NICHES.length - 1][1]];
+
 // Every glass opening build_lair_wide.py leaves in the plate - it prints this list. The
 // gym's long run, then the bedroom's corner window.
 const OPENINGS = [[922, 1294], [1723, 1920]];
@@ -59,7 +77,7 @@ export const FIXTURES = [
   { id: 'bar', x: 60, hint: 'POUR ONE' },
   { id: 'tank', x: 225, hint: 'FEED THEM' },
   { id: 'lounge', x: 395, hint: 'SIT AND SMOKE' },
-  { id: 'trophies', x: 688, hint: 'TROPHY WALL' },
+  { id: 'trophies', x: 616, hint: 'TROPHY WALL' },   // the pier between the two niches
   { id: 'map', x: 800, hint: 'WORLD TOUR' },
   { id: 'hifi', x: 880, hint: 'SOUND TEST' },
   { id: 'bag', x: BAG_X, hint: 'WORK THE BAG', key: 'Z' },
@@ -120,11 +138,13 @@ const BED = { x: BED_X, y: WALL_BASE + 2, w: 140, h: 72 };
 const LAIR_ART = [
   // the lounge: stools at the painted bar, the portrait under its picture light
   { art: 'lair_bar_stools', x: 92, y: WALL_BASE, w: 46, h: 40 },
-  { art: 'lair_portrait', x: 395, y: 140, w: 106, h: 84 },
-  { art: 'lair_humidor', x: 485, y: WALL_BASE, w: 33, h: 88 },
-  // trophies and media. The arcade cabinet is decor now - its attract loop still runs,
-  // but HALL OF PAIN is gone and its records live on the trophy wall.
-  { art: 'lair_arcade', x: 555, y: WALL_BASE, w: 34, h: 68 },
+  // centred in its bay, whose gold inset measures x 330-477.5
+  { art: 'lair_portrait', x: 404, y: 140, w: 106, h: 84 },
+  // Trophies. Two niches now - see clone_alcove in tools/build_lair_wide.py - with the
+  // cigar cabinet built flush into the second one's base panel (482.5-591 x 147-165.5)
+  // rather than standing in front of the wall. The arcade cabinet is gone: it was the
+  // only injection-moulded object in a walnut room, and this bay is worth more as shelf.
+  { art: 'lair_humidor_built', x: 537, y: 166, w: 98, h: 19 },
   // centred in the panelled bay, whose gold inset measures x 775.75-895.75, y 37-130
   { art: 'lair_worldmap', x: 836, y: 109, w: 80, h: 48 },
   { art: 'lair_hifi', x: 880, y: WALL_BASE, w: 48, h: 60 },
@@ -141,6 +161,12 @@ const LAIR_ART = [
   // rather than white: the tiger sleeps in this room too, and the dark mane is what
   // frames the ivory fangs so they still read at this size. It lies forward of the wall
   // base, out into the walking lane, because that is where a rug in front of a fire goes.
+  // The oil over the hearth, covering the plate's overmantel mirror (frame 1528-1600,
+  // y 37.5-103.5) with a couple of px to spare on the ornate crest. Hung on the
+  // FIREPLACE's centre, not the mirror's - the plate has them 1.5px apart, and the eye
+  // lines a picture up with the mantel under it. It is the fight that produced the pelt
+  // lying on the floor directly below it.
+  { art: 'lair_overmantel', x: 1562, y: 105, w: 77, h: 68 },
   { art: 'lair_bed_rug', x: 1570, y: WALL_BASE + 55, w: 138, h: 54 },
   // as close to the bed as the wall allows - the window jamb starts at 1723
   { art: 'lair_bed_wardrobe', x: 1688, y: WALL_BASE, w: 62, h: 96 },
@@ -185,10 +211,6 @@ function fallbackArt(name, w, h) {
   } else if (name === 'lair_bar_stools') {
     panel('#3a2214', '#8a5a2a');
     P.rect(0, 2, w, 4, '#c8bca8');
-  } else if (name === 'lair_arcade') {
-    panel('#141018', '#3a3a4a');
-    P.rect(3, 3, w - 6, 4, '#d838a0');
-    P.rect(3, h * 0.16, w * 0.6, h * 0.28, '#05050a');
   } else if (name === 'lair_hifi') {
     panel('#101018', '#3a3a4a');
     for (let y = 6; y < h - 8; y += 9) P.rect(3, y, w * 0.5, 6, '#1a1a24');
@@ -196,9 +218,13 @@ function fallbackArt(name, w, h) {
     P.rect(0, h - 5, w, 4, '#2a2a34');
     P.rect(0, h * 0.4, w, 3, '#2a2a34');
     for (let i = 0; i < 5; i++) P.disc(8 + i * (w - 16) / 4, h * 0.34, 4, '#3a3a46');
-  } else if (name === 'lair_humidor') {
-    panel('#3a2214', '#8a5a2a');
-    P.rect(4, 6, w - 8, h - 14, '#5a3a1e');
+  } else if (name === 'lair_humidor_built') {
+    panel('#2a1a10', '#8a5a2a');
+    for (let i = 0; i < 4; i++) P.rect(4 + i * (w - 8) / 4, 3, (w - 8) / 4 - 3, h - 9, '#5a3a1e');
+  } else if (name === 'lair_overmantel') {
+    panel('#3a2a12', '#c8a038');
+    P.rect(6, 6, w - 12, h - 12, '#221a12');
+    P.disc(w * 0.4, h * 0.42, 9, '#c89a68');
   } else if (name === 'lair_bag_chain') {
     for (let y = 0; y < h; y += 3) P.rect(w / 2 - 1, y, 2, 2, (y / 3) & 1 ? '#7a7488' : '#3e3a4c');
   } else if (name === 'lair_lounge_empty' || name === 'lair_lounge_chad') {
@@ -261,10 +287,10 @@ function buildLairMid() {
   wood(WINDOW[1], CEIL, HUB_WIDTH - WINDOW[1], BASE - CEIL);
   P.rect(BAR[0], 120, BAR[1] - BAR[0], 40, '#3a2214');
   P.rect(TANK.x, TANK.y, TANK.w, TANK.h, '#12506e');
-  // the alcove, with its three shelves where SHELVES says they are
-  P.rect(ALCOVE[0] - 4, 35, ALCOVE[1] - ALCOVE[0] + 8, 104, '#0a0810');
-  for (const shelf of SHELVES) {
-    P.rect(ALCOVE[0], shelf.y - 2, ALCOVE[1] - ALCOVE[0], 3, '#c89a4a');
+  // both niches, with their shelves where SHELF_Y says they are
+  for (const [x0, x1] of NICHES) {
+    P.rect(x0 - 4, 35, x1 - x0 + 8, 104, '#0a0810');
+    for (const y of SHELF_Y) P.rect(x0, y - 2, x1 - x0, 3, '#c89a4a');
   }
   P.rect(MIRROR.x, MIRROR.y, MIRROR.w, MIRROR.h, '#2a2634');
   for (let x = WINDOW[0]; x < WINDOW[1]; x += 60) P.rect(x, CEIL, 4, BASE - CEIL, '#12121a');
@@ -516,10 +542,12 @@ function drawFirelight(ctx, camX) {
   ctx.fillStyle = g;
   ctx.fillRect(fx - 120, FLOOR_Y - 124, 240, 244);
 
-  // the overmantel mirror is a dead black rectangle otherwise; this is the fire in it
+  // Firelight climbing the oil above the hearth. This used to be the fire REFLECTED in
+  // the overmantel mirror, which wanted to be bright; a canvas only catches the light, so
+  // it is half the strength and warmer at the bottom edge nearest the flames.
   const mx = OVERMANTEL[0] - camX;
   const m = ctx.createLinearGradient(0, OVERMANTEL[1] + OVERMANTEL[3], 0, OVERMANTEL[1]);
-  m.addColorStop(0, `rgba(255,150,60,${0.16 * flick})`);
+  m.addColorStop(0, `rgba(255,160,70,${0.08 * flick})`);
   m.addColorStop(1, 'rgba(255,120,50,0)');
   ctx.fillStyle = m;
   ctx.fillRect(mx, OVERMANTEL[1], OVERMANTEL[2], OVERMANTEL[3]);
@@ -565,7 +593,7 @@ export const HUB_STAGE = {
     { x: 60, y: 130, r: 48, col: '255,180,90', a: 0.14 },
     { x: 225, y: 150, r: 58, col: '90,200,230', a: 0.15 },
     { x: 395, y: 60, r: 44, col: '255,190,110', a: 0.13 },
-    { x: 555, y: 156, r: 40, col: '216,56,160', a: 0.12 },
+    { x: 537, y: 150, r: 46, col: '255,180,90', a: 0.13 },
     { x: 688, y: 150, r: 46, col: '255,180,90', a: 0.13 },
     { x: 800, y: 92, r: 44, col: '110,190,255', a: 0.13 },
     { x: 880, y: 150, r: 38, col: '60,220,140', a: 0.10 },
@@ -1064,7 +1092,6 @@ export function drawHubWall(ctx, camX) {
   drawBed(ctx, camX);
 
   drawMirrorGlint(ctx, camX);
-  drawArcadeScreen(ctx, camX);
   drawHifiMeters(ctx, camX);
   drawMapPins(ctx, camX);
   drawBagChain(ctx, camX);
@@ -1100,28 +1127,16 @@ function drawFixtureArt(ctx, camX, d, img) {
 // Surface y is where a relic's feet go, measured off the plate's glass shelves. The
 // tightest bay is the top one at 25 logical of headroom, which is what caps relic
 // height in tools/process_props.py.
-const SHELVES = [
-  { y: 70, xs: [660, 716] },
-  { y: 103, xs: [660, 716] },
-  { y: 135, xs: [688] },
-];
-
 const beatenBosses = () => Object.keys(BOSSES)
   .map((k) => ({ k, act: STAGES.findIndex((s) => s.boss === k) }))
   .filter((b) => b.act >= 0 && b.act < G.unlockedStage)
   .sort((a, b) => a.act - b.act);
 
-function relicSlots() {
-  const out = [];
-  for (const shelf of SHELVES) for (const sx of shelf.xs) out.push([sx, shelf.y]);
-  return out;
-}
-
 function drawAlcove(ctx, camX) {
-  const ox = ALCOVE[0] - camX;
-  if (ox > W || ox + (ALCOVE[1] - ALCOVE[0]) < 0) return;
+  const ox = TROPHY_WALL[0] - camX;
+  if (ox > W || ox + (TROPHY_WALL[1] - TROPHY_WALL[0]) < 0) return;
   const beaten = beatenBosses();
-  const slots = relicSlots();
+  const slots = RELIC_SLOTS;
   beaten.forEach((b, n) => {
     if (n >= slots.length) return;
     const img = ASSETS['lair_relic_' + b.k];
@@ -1169,65 +1184,6 @@ function drawMirrorGlint(ctx, camX) {
     ctx.fillRect(sx, sy - 5, 1, 11);
     ctx.fillRect(sx - 1, sy - 1, 3, 3);
   }
-}
-
-// The cabinet ships with a flat black screen so the attract loop can live here. The
-// screen is 13x16 logical, measured off assets/lair/arcade.png - at that size the only
-// thing that reads as a beat em up is what an actual one puts on screen: two health
-// bars, two fighters and a floor.
-const SCREEN = { dx: -7, y: 136, w: 13, h: 16 };
-function drawArcadeScreen(ctx, camX) {
-  // decor since HALL OF PAIN was retired, so its x comes off the wall art, not FIXTURES
-  const x = Math.round(artAt('lair_arcade').x - camX);
-  if (x < -30 || x > W + 30) return;
-  const sx = x + SCREEN.dx, sy = SCREEN.y, sw = SCREEN.w, sh = SCREEN.h;
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(sx, sy, sw, sh);
-  ctx.clip();
-  ctx.fillStyle = '#0a0616';
-  ctx.fillRect(sx, sy, sw, sh);
-
-  // a loop of exchanges: each side chips the other's bar down, then it resets
-  const loop = G.rawTime % 900;
-  const beat = (loop >> 3) & 3;
-  ctx.fillStyle = '#1a1430';
-  ctx.fillRect(sx + 1, sy + 1, 5, 1);
-  ctx.fillRect(sx + 7, sy + 1, 5, 1);
-  ctx.fillStyle = '#ffd94a';
-  ctx.fillRect(sx + 1, sy + 1, Math.max(1, 5 - ((loop / 180) | 0)), 1);
-  ctx.fillStyle = '#d83858';
-  const hpB = Math.max(1, 5 - ((loop / 210) | 0));
-  ctx.fillRect(sx + 12 - hpB, sy + 1, hpB, 1);
-
-  const scroll = (G.rawTime >> 2) % 5;
-  ctx.fillStyle = '#241a44';
-  for (let i = -1; i < 4; i++) ctx.fillRect(sx + i * 5 + scroll, sy + 4, 3, 10);
-  ctx.fillStyle = '#3c2a66';
-  ctx.fillRect(sx, sy + 14, sw, 1);
-
-  // 3px wide with a skin-toned head is the smallest thing that still reads as a man
-  // rather than a bar of colour
-  const fy = sy + 14;
-  const man = (fx, body, head) => {
-    ctx.fillStyle = body;
-    ctx.fillRect(fx, fy - 4, 3, 4);
-    ctx.fillStyle = head;
-    ctx.fillRect(fx, fy - 6, 3, 2);
-  };
-  man(sx + 2 + (beat === 1 ? 1 : 0), '#2a2a3a', '#f0c090');
-  man(sx + 8 - (beat === 3 ? 1 : 0), '#8a2038', '#d8a878');
-  if (beat === 1 || beat === 3) {
-    ctx.fillStyle = '#fff8e0';
-    ctx.fillRect(sx + 6, fy - 4, 2, 2);
-  }
-
-  ctx.fillStyle = 'rgba(0,0,0,0.22)';
-  for (let i = sy; i < sy + sh; i += 2) ctx.fillRect(sx, i, sw, 1);
-  ctx.restore();
-  // marquee, warm and always on
-  ctx.fillStyle = 'rgba(255,220,150,0.18)';
-  ctx.fillRect(x - 12, 126, 18, 6);
 }
 
 // The amplifier's display panel, measured off assets/lair/hifi.png the same way.
@@ -1292,7 +1248,7 @@ function drawSelectRing(ctx, camX) {
   const boxes = {
     bar: [4, 34, 130, 140],
     tank: [TANK.x - 6, TANK.y - 6, TANK.w + 12, TANK.h + 12],
-    trophies: [ALCOVE[0] - 6, 33, ALCOVE[1] - ALCOVE[0] + 12, 110],
+    trophies: [TROPHY_WALL[0] - 6, 33, TROPHY_WALL[1] - TROPHY_WALL[0] + 12, 110],
     lounge: [LOUNGE.x - LOUNGE.w / 2 - 2, LOUNGE.y - LOUNGE.h, LOUNGE.w + 4, LOUNGE.h],
     map: artRing('lair_worldmap', 3),
     hifi: [880 - 26, WALL_BASE - 62, 52, 62],

@@ -3,7 +3,7 @@ import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, clamp, addSco
 import { initInput, input, endFrameInput, pollGamepad, debugPress, debugRelease } from './input.js';
 import { SPR, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { initStage, initStageObj, drawStage, updateMotes, STAGES, stageDef } from './stages.js';
-import { HUB_STAGE, CHAPTERS, FIXTURES, BED_X, hubBed, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
+import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
 import { createProp } from './props.js';
 import { loadAmbience, updateAmbience, reactStage } from './ambience.js';
 import { loadFX, fx } from './fx.js';
@@ -956,6 +956,13 @@ if (autoMode) {
         t('hub-bed-ignores-him', hubBed().pose === before);
       }
       t('hub-room-is-four-screens', G.stage.width === 1920 && G.camMax === 1920 - W);
+      // The trophy wall is sized for the tour, not for the acts that exist today: two
+      // niches x three shelves x three across is six countries at three acts each.
+      // drawAlcove silently drops any relic past the last slot, so this is the check
+      // that the wall has not quietly run out of room.
+      t('hub-trophy-wall-fits-six-countries', RELIC_SLOTS.length >= 18);
+      t('hub-relics-clear-each-other', RELIC_SLOTS.every(([x, y], i) =>
+        RELIC_SLOTS.every(([x2, y2], j) => i === j || y !== y2 || Math.abs(x - x2) >= 30)));
       // the map panel: cursor moves, a locked act refuses, an unlocked one starts
       G.unlockedStage = 0;
       at('map'); tap('up');

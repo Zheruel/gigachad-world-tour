@@ -215,6 +215,31 @@ def rebuild_window(wall, floor):
     return Image.fromarray(a, "RGBA"), Image.fromarray(f, floor.mode)
 
 
+def clone_alcove(wall):
+    """Give the trophy wall a second niche, by copying the one the plate already has.
+
+    One niche of three shelves holds five relics. At three per country that is not even
+    two countries, and the bay next door - between the lounge and the alcove - is dead
+    panelling that the arcade and the humidor were only standing in front of.
+
+    The niche is NOT regenerated. It is lit wood, brass rails and glass, and asking the
+    generator for a second one that matches is the panel-B-does-not-line-up-with-panel-C
+    problem again; copying the pixels is exact by construction. Both bays are bounded by
+    the same panelling, so the two frame verticals are all the alignment there is to get
+    right. The copy is MIRRORED: the wood grain and the lamp pools are the tell, and a
+    flipped niche reads as a matching pair rather than as the same object twice.
+    """
+    SRC = (1248, 52, 1498, 348)     # the alcove unit, its frame verticals included
+    DST = (955, 1196)               # the dead bay's frame verticals
+    niche = wall.crop(SRC).transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    niche = niche.resize((DST[1] - DST[0], SRC[3] - SRC[1]), Image.Resampling.LANCZOS)
+    out = wall.copy()
+    out.paste(niche, (DST[0], SRC[1]))
+    print(f"  second niche: logical {DST[0] / RS:.0f}-{DST[1] / RS:.0f} "
+          f"(shelves share SHELF_Y with the first)")
+    return out
+
+
 def quantized(img, colors):
     """MEDIANCUT only takes RGB, so quantize the colour and re-attach the alpha."""
     if img.mode != "RGBA":
@@ -251,6 +276,7 @@ def build_room(seams, key=True):
         wall = key_glass(wall)
         floor = fill_glass_reflection(floor)
         wall, floor = rebuild_window(wall, floor)
+    wall = clone_alcove(wall)
     quantized(wall, 160).save("assets/bg_lair_wall.png")
     quantized(floor, 96).save("assets/bg_lair_floor.png")
     print(f"lair: wall {wall.width}x{WALL_H}, floor {floor.width}x{FLOOR_H} "

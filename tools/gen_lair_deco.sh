@@ -21,7 +21,6 @@ S="32-bit arcade beat em up game object sprite in the style of Streets of Rage 4
 L="dark walnut wood, polished brass and oxblood leather, lit by magenta and cyan neon"
 
 echo "=== furniture ==="
-$G $O/humidor.png      portrait  "A tall narrow glass fronted walnut cigar humidor cabinet standing on the floor, brass hinges and a brass handle, three shelves of cigar boxes and loose cigars visible through the glass, warm amber light glowing from inside the cabinet, $L, $S" &
 $G $O/bag_chain.png    portrait  "A single heavy galvanised steel chain hanging straight down, thick oval links, a flat steel ceiling mounting bracket with bolts at the very top and a heavy steel swivel shackle at the very bottom, the chain perfectly vertical and taut, nothing else in the image, $S" &
 wait
 

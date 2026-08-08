@@ -42,13 +42,16 @@ LAIR = {
     # between them. World scale is ~50 logical px per metre.
     "gym_plates": (34, 56),
     "gym_kettles": (56, 26),
-    # the widened room: a cigar cabinet and the painting
-    "humidor": (36, 88),
+    # the widened room: the painting over the sofa, the oil over the fireplace, and the
+    # cigar cabinet - which is now a flush front built into the second niche's base panel
+    # (logical 482.5-591 x 147-165.5), not a box standing against the wall
+    "humidor_built": (98, 19),
+    "overmantel": (77, 68),
     "portrait": (106, 84),
     # exactly the run from the ceiling bracket to the bag's collar, so it never tiles
     "bag_chain": (10, 100),
     # One relic per boss, standing in the alcove. Every bay is ~32 logical of headroom
-    # (SHELVES in js/hub.js is measured off the plate's glass shelf lines), so these
+    # (SHELF_Y in js/hub.js is measured off the plate's glass shelf lines), so these
     # clear it with a little air above.
     "relic_raja": (22, 26),
     "relic_mirchi": (22, 26),

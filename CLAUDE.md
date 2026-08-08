@@ -105,6 +105,23 @@ a 9x4 cage of 5px bars and panel B's grid did not line up with panel C's; a grid
 rectangles is geometry, and geometry is cheaper to paint than to ask for. It repaints the
 floor's reflection of those bars too, or the granite goes on reflecting the old window.
 
+**When the plate already contains what you need, copy it — do not ask for a second one.**
+The trophy wall needed a second niche (one held five relics; the tour wants three per
+country). A niche is lit wood, brass rails and glass, so *generating* a matching one is
+the panel-B-does-not-line-up-with-panel-C problem again. `clone_alcove()` copies the
+pixels of the one the plate has into the dead bay next door, which is exact by
+construction — both bays are bounded by the same panelling, so the two frame verticals
+are the only alignment to get right (source 1248-1498, dest 955-1196, one resize). The
+copy is **mirrored**: the wood grain and the baked lamp pools are the tell, and a flipped
+niche reads as a matching pair rather than the same object twice. Verify the builder is
+byte-reproducible (`md5` before and after a no-op run) before adding a step like this, or
+you cannot tell your change from a drifting rebuild.
+
+`RELIC_SLOTS` is then **niche-major, not shelf-major**: one shelf is one country, so a
+row must not run across the pier between the niches. `?auto=verify` checks the wall holds
+six countries and that no two slots on a shelf are within 30 logical of each other —
+`drawAlcove` silently drops any relic past the last slot.
+
 **Anything animated in the room is one strip**, never separate generations: the gym rigs,
 the lounge sofa and the bedroom's bed all hold their furniture and their occupants in the
 same sprite. **The bed is the exception, and the reason is worth reading before you
