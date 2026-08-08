@@ -52,8 +52,12 @@ FIRE_W = 32      # the firebox interior is 59x35 logical; the flames clip at the
 FENDER = (1530, 148, 68, 20)   # must match FENDER in js/hub.js
 BED_W = 140      # bed length. The art is 2:1, so this puts the headboard near 70 -
                  # a solid shape beside CHAD's 96 rather than a long thin slab
-CURL_RIG_H = 38  # the dumbbell rack alone; set so CHAD beside it comes out at his 96
-BENCH_RIG_H = 62 # the bench plus its posts and the racked bar
+# Both set so CHAD comes out at his standing 96, which is the number that matters - the
+# rack and the bench are whatever size the generation drew them RELATIVE to him. Measured
+# off the poses: CHAD is 991 px tall beside a 560 px rack, so a 38-logical rack (the old
+# value, carried over from a generation that drew him leaner) put him at 56.
+CURL_RIG_H = 54
+BENCH_RIG_H = 70 # the bench plus its posts and the racked bar
 
 
 def keyed(path):
@@ -298,24 +302,135 @@ def slice_strip(path, n, blob=True):
     return [biggest_blob(c) if blob else subject(c) for c in cells]
 
 
-def build_rig(prefix, rig_h, side):
-    """A gym station: one strip holding the rig alone and then three poses of CHAD on it.
+def keyed_full(path):
+    """Chroma-keyed but NOT cropped to its subject.
 
-    Scaled by the RIG, not by the tallest frame - the equipment is the thing that has to
-    stay the size the room was laid out for, and CHAD's raised arms would otherwise
-    shrink the whole station every time he lifts. One strip means the rig is already
-    identical in all four poses, so `register` only has to line the anchors up.
+    The whole point of generating one pose at a time against a reference is that the rig
+    lands in the same place in every frame; cropping each to its own bbox throws that away
+    the moment CHAD's arm reaches further in one pose than another. Same rule as the bed
+    set: one shared box, never each to its own.
     """
-    frames = slice_strip(SRC + prefix + ".png", 4, blob=False)
-    factor = rig_h * RS / frames[0].height
-    frames, floor_pad = register([rescale(f, factor) for f in frames], side=side)
+    return hard_alpha(key_green(Image.open(path), tol=40), 128)
+
+
+def man_span(img):
+    """Every row of every column that CHAD occupies - skin, hair or denim, and everything
+    between the topmost and lowest of them in that column, which is how his black vest and
+    boots get included without a colour test that would also catch the equipment.
+
+    Conservative on purpose. It is used to decide where the canonical rig may NOT be
+    stamped, so over-protecting only leaves the pose's own pixels alone.
+    """
+    a = np.asarray(img).astype(int)
+    op = a[..., 3] > 128
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    mask = op & (((r - b > 38) & (r > 110) & (r >= g) & (g >= b))     # skin
+                 | ((r > 150) & (g > 140) & (r - b > 30))             # blond
+                 | ((b - r > 18) & (b > 60)))                         # denim
+    span = np.zeros_like(mask)
+    for x in range(mask.shape[1]):
+        ys = np.nonzero(mask[:, x])[0]
+        if len(ys):
+            span[ys.min():ys.max() + 1, x] = True
+    return span
+
+
+def below_the_bar(rig):
+    """The first row under the loaded barbell, where the sprite narrows to just its posts.
+
+    The bench's rig-alone frame carries a bar racked across its posts, and poses 1 and 2
+    have lifted that bar off - stamp the whole rig onto them and the station grows a second
+    barbell. Below this row is bench, bases and post, which is every part that touches the
+    floor and every part that was morphing.
+    """
+    rows = (np.asarray(rig.getchannel("A")) > 128).sum(1)
+    top = rows[:len(rows) // 2]
+    if not top.any():
+        return 0
+    peak = int(np.argmax(top))
+    for y in range(peak, len(rows)):
+        if rows[y] < 0.35 * top[peak]:
+            return y
+    return 0
+
+
+def stamp_rig(frames, drop_bar):
+    """Make the equipment pixel-identical in every pose by stamping frame 0's back on.
+
+    Even one-pose-at-a-time against a reference leaves a few percent of drift, and a few
+    percent of a dumbbell rack at 18 frames a pose is a rack that breathes. The rig is the
+    one thing here that is definitionally the same in all four frames, so it is drawn once
+    and copied - the fireplace's log stack, again.
+    """
+    rig = np.asarray(frames[0]).copy()
+    stamp = rig[..., 3] > 128
+    if drop_bar:
+        stamp[:below_the_bar(frames[0])] = False
+    out = [frames[0]]
+    for f in frames[1:]:
+        a = np.asarray(f).copy()
+        put = stamp & ~man_span(f)
+        a[put] = rig[put]
+        out.append(Image.fromarray(a, "RGBA"))
+    return out
+
+
+def drop_specks(img, frac=0.03):
+    """Bin any disconnected shape smaller than `frac` of the biggest one.
+
+    The lockout pose came back with two loose fragments of a barbell it had half drawn on
+    the posts and then changed its mind about. biggest_blob is too blunt here - the man and
+    his equipment are legitimately one shape in some poses and two in others - so this
+    keeps everything of a sensible size and drops the crumbs.
+    """
+    a = np.asarray(img.getchannel("A")) > 16
+    comps = components(a, min_pixels=8)
+    if not comps:
+        return img
+    biggest = max(c["area"] for c in comps)
+    keep = np.zeros_like(a)
+    for c in comps:
+        if c["area"] >= biggest * frac:
+            keep[c["ys"], c["xs"]] = True
+    out = np.asarray(img).copy()
+    out[~keep, 3] = 0
+    return Image.fromarray(out, "RGBA")
+
+
+def build_rig(prefix, rig_h, drop_bar=False):
+    """A gym station: the rig alone, then three poses of CHAD on it - FOUR separate
+    generations, each drawn against the rig.
+
+    They used to be one strip, on the theory that a model asked for four poses in a row
+    repeats the equipment rather than re-inventing it. It does not. Measured in the columns
+    where CHAD is not standing, the strip's bench and posts differed from the rig-alone
+    frame by 137-270% of their own silhouette and the dumbbell rack by 3-5%. One pose per
+    generation against a reference is what the bed set had to do for the same reason.
+
+    Scaled by the RIG, not by the tallest frame - the equipment has to stay the size the
+    room was laid out for, and CHAD's raised arms would otherwise shrink the whole station
+    every time he lifts.
+    """
+    names = [prefix + "_rig"] + [f"{prefix}_{i}" for i in range(3)]
+    frames = [keyed_full(SRC + n + ".png") for n in names]
+    box = [f.getbbox() for f in frames]
+    rig_box = box[0]
+    factor = rig_h * RS / (rig_box[3] - rig_box[1])
+    frames = [rescale(f, factor) for f in frames]
+    # ONE shared box, big enough for every pose, measured after the scale
+    box = [f.getbbox() for f in frames]
+    shared = (min(b[0] for b in box) - 1, min(b[1] for b in box) - 1,
+              max(b[2] for b in box) + 1, max(b[3] for b in box) + 1)
+    frames = [f.crop(shared) for f in frames]
+    frames = finish_set([drop_specks(f) for f in stamp_rig(frames, drop_bar)], 48)
     os.makedirs(OUT, exist_ok=True)
-    names = [prefix + "_empty"] + [f"{prefix}_{i}" for i in range(3)]
-    for name, f in zip(names, frames):
-        finish(f, 48).save(f"{OUT}{name}.png")
+    out_names = [prefix + "_empty"] + [f"{prefix}_{i}" for i in range(3)]
+    for name, f in zip(out_names, frames):
+        f.save(f"{OUT}{name}.png")
+    floor = np.nonzero(np.asarray(frames[0].getchannel("A")) > 128)[0].max()
     print(f"{OUT}{prefix}_*.png  {frames[0].width}x{frames[0].height}  "
           f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})  "
-          f"y = WALL_BASE + {round(floor_pad / RS)}")
+          f"y = WALL_BASE + {round((frames[0].height - 1 - floor) / RS)}")
 
 
 def best_shift(base, other, band, limit=6):
@@ -467,12 +582,12 @@ def build_fire():
 
 
 def build_curl():
-    # the rack sits to CHAD's right in every pose, so it is the right edge that registers
-    build_rig("gym_curl", CURL_RIG_H, "right")
+    build_rig("gym_curl", CURL_RIG_H)
 
 
 def build_bench():
-    build_rig("gym_bench", BENCH_RIG_H, "left")
+    # its rig-alone frame carries a racked barbell that poses 1 and 2 have lifted off
+    build_rig("gym_bench", BENCH_RIG_H, drop_bar=True)
 
 
 def build_tiger():
@@ -703,6 +818,23 @@ def fix_porthole(frames):
     return out
 
 
+def head_row(img, frac=0.34):
+    """The mean row of the leading third of a swimmer - which is its head.
+
+    A fish's own bounding box is NOT its centreline: the tail swings out of plane, so the
+    two frames with the body curved measure 15 device px tall and the two with it straight
+    measure 11. Centring each frame on its own box therefore put the head at row 5.9 in
+    two frames and 7.97 in the other two, and the whole shoal bobbed a logical pixel up
+    and down at half the swim rate - which is what reads as flicker.
+    """
+    a = np.asarray(img.getchannel("A")) > 128
+    ys, xs = np.nonzero(a)
+    cut = int(xs.max() - (xs.max() - xs.min() + 1) * frac)
+    sel = a.copy()
+    sel[:, :cut] = False
+    return np.nonzero(sel)[0].mean()
+
+
 def build_tenants():
     """The tank's other residents.
 
@@ -711,11 +843,13 @@ def build_tenants():
       eel   on its LEFT edge, which is the rusted porthole it leans out of. The eel moves
             between frames and the hole must not - centre these and the hole would slide
             around the hull while he withdraws into it.
-      fish  centred, like the shark: nothing in open water stands on anything.
-      crab  bottom-anchored and centred, like a walker: it walks the sand.
+      fish  on its HEAD. It swims, so nothing about it stands on anything, but its head is
+            the one part the swim cycle was drawn to hold still.
+      crab  bottom-anchored and centred, like a walker: it walks the sand, and a body that
+            rises and falls as its legs gather is a crab walking rather than a fault.
     """
     os.makedirs(OUT, exist_ok=True)
-    for name, target, mode in (("eel", EEL_H, "left"), ("baitfish", FISH_H, "centre"),
+    for name, target, mode in (("eel", EEL_H, "left"), ("baitfish", FISH_H, "head"),
                                ("crab", CRAB_H, "bottom")):
         frames = slice_strip(SRC + name + ".png", 4)
         factor = target * RS / max(f.height for f in frames)
@@ -725,12 +859,18 @@ def build_tenants():
             frames = fix_porthole(frames)
         else:
             w = max(f.width for f in frames) + 2
-            h = max(f.height for f in frames) + 2
+            h = max(f.height for f in frames) + 4
+            heads = [head_row(f) for f in frames] if mode == "head" else None
             out = []
-            for f in frames:
+            for i, f in enumerate(frames):
                 canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-                y = h - f.height - 1 if mode == "bottom" else (h - f.height) // 2
-                canvas.paste(f, ((w - f.width) // 2, y), f)
+                if mode == "bottom":
+                    y = h - f.height - 1
+                elif mode == "head":
+                    y = int(round(h / 2 - heads[i]))
+                else:
+                    y = (h - f.height) // 2
+                canvas.paste(f, ((w - f.width) // 2, max(0, min(y, h - f.height))), f)
                 out.append(canvas)
             frames = out
         for i, f in enumerate(finish_set(frames, 40)):

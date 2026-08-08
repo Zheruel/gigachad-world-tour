@@ -260,12 +260,10 @@ like an accident). Point the tail with a measurement, not a guess: her head is a
 +33 from `BED.x`, found by diffing each pose against the median of all eight - the bed does
 not move, so whatever changed is her.
 
-**Everything in this room needs somewhere to live, and the tiger was the last thing without
-it.** He walked toward CHAD and lay down wherever CHAD stopped, which is a follower, not a
-resident. He sleeps on the hearth rug now - which is the PELT of the cat in the painting
-above it, so the three big-cat items finally tell one story instead of being three cats. The
-den x is 1592, not the rug's centre: the pelt's head and fangs are its left 40 logical px and
-a tiger lying across them is a muddle of two heads.
+**The tiger lives WITH CHAD, not in one spot.** He settles wherever the man has ended up,
+gets up and comes after him when he wanders off, and re-settles now and then for no reason.
+He had a den on the hearth rug for one pass and it fixed him to a single object - most of
+the room never saw him at all. A pet is worth having because it turns up.
 
 Three things about him are worth keeping in mind for anything else that lives in a room:
 
@@ -275,14 +273,50 @@ Three things about him are worth keeping in mind for anything else that lives in
   the ORDER rather than the timings, because the order is what makes it read.
 - **A wander timer cannot share a clock with a pose timer.** His go-and-find-CHAD roll hung
   off the same `t` as his look-around, and every look-around reset it: measured, he never once
-  left the hearth in 24,000 frames. Its own countdown fixed it - and then the first value was
-  far too short, because the room is 1920 px wide and he covers 0.42 of them a frame, so a
-  round trip is 6,600 frames and setting off every 2,500 had him walking 82% of the time. He
-  stays where CHAD is and goes home when CHAD leaves; sending him back on a timer is what made
-  a pacing animal.
+  left his spot in 24,000 frames. Its own countdown fixed it - and then the first value was far
+  too short, because the room is 1920 px wide and he covers 0.42 of them a frame, so a round
+  trip is 6,600 frames and setting off every 2,500 had him walking 82% of the time.
 - **Proximity is right for a look and wrong for anything more.** Walking up to him lifts his
   head - the same rule the sleepers in the suite use - but it cannot get him up. That is the
   line between "he noticed you" and "you tripped a switch".
+
+**Two sprites that swap in place have to be built as one set, and a strip is not enough to
+make them one.** The gym stations were four poses in a horizontal strip - the rig alone, then
+CHAD using it - on the theory that a model asked for a row repeats the equipment rather than
+re-inventing it. It does not. Measured in the columns where CHAD is NOT standing, the strip's
+bench and posts differed from its own rig-alone frame by 137-270% of their silhouette, and the
+dumbbell rack by 3-5%; at 16 frames a pose that is a bench that morphs and a rack that
+breathes. Three things fixed it, and all three were needed:
+
+- **One generation per pose against the rig as a reference image**, which is what the bed set
+  had to do for the same reason. Say `do not move it, do not resize it, do not redraw it`; "the
+  same equipment" gets you a redrawn one of the same description.
+- **Chain the moving poses off pose 0, not off the rig.** The rig reference holds the
+  equipment still and says nothing about the man or the bar in his hands - so the first pass
+  drew a barbell with plates twice the diameter in one pose as the other, and pose 1 put the
+  bar across his face.
+- **Generate the rig-alone frame LAST, against a pose.** Generated first it came back the odd
+  one out: its rack was the same width as the poses' but 20% taller, a different SHAPE, which
+  no uniform scale reconciles. The first one is only a jig.
+
+Then `build_rig` stamps the canonical rig back over every pose below the barbell, so the half
+that touches the floor is not merely close but identical. What it must not paint over is CHAD,
+and a colour test alone will not do it - his vest and boots are as black as the steel. The mask
+is skin, blond and denim, then everything between the topmost and lowest of those IN EACH
+COLUMN, which picks up the vest and the boots between his shoulders and his soles.
+
+**Scale the station by CHAD, not by the equipment.** `CURL_RIG_H` was 38 because that is what
+the old generation's rack measured; the new one drew a chunkier rack, and 38 put CHAD at 56
+against his standing 96. He is the fixed quantity in this game - the rack is whatever size the
+picture drew it RELATIVE to him, which came out 54.
+
+**Four frames of a swimmer register on the HEAD, never on the bounding box.** The baitfish
+flickered vertically because a fish's box is not its centreline: the two frames with the body
+curved measure 15 device px tall and the two with it straight measure 11, so centring each on
+its own box put the eye at row 5.9 in two frames and 7.97 in the other two - a full logical
+pixel of bob at half the swim rate, on 26 fish at once. `head_row()` takes the mean row of the
+leading third and aligns on that: spread 2.04 px to 0.04. The crab still bobs 0.9 px and that
+one is correct, because it is bottom-anchored and walking.
 
 Meaner at 58 logical px is the LINE OF THE BACK, not detail: shoulder blades standing above it
 with the head carried below it is a stalking animal, and a level back with the head up is a

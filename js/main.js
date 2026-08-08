@@ -969,24 +969,24 @@ if (autoMode) {
         && G.actors.every((a) => typeof a.draw === 'function'));
       {
         const tg = hubTiger();
-        const den = tg.x;
-        t('hub-tiger-sleeps-at-the-hearth', tg.state === 'sleep' && den > 1500 && den < 1650);
         // he gets up in STAGES. A cat that goes from flat out to walking on one frame is a
         // switch, so the order matters more than the timing: head up, sit, stretch, walk.
-        const order = [];
-        G.player.x = den - 40;
-        petsWatch(den, 260);
-        for (let i = 0; i < 400 && tg.state !== 'walk'; i++) {
+        G.player.x = tg.x - 400;
+        tg.state = 'lie'; tg.t = 0; tg.alert = 0; tg.target = tg.x;
+        const order = ['lie'];
+        petsWatch(tg.x, 260);
+        for (let i = 0; i < 500 && tg.state !== 'walk'; i++) {
           step(1);
           if (order[order.length - 1] !== tg.state) order.push(tg.state);
         }
-        t('hub-tiger-gets-up-in-stages',
-          order.join(',') === 'sleep,wake,sit,stretch,walk' || order.join(',') === 'wake,sit,stretch,walk');
-        // and he comes looking for CHAD rather than waiting to be walked up to
+        t('hub-tiger-gets-up-in-stages', order.join(',') === 'lie,wake,sit,stretch,walk');
+        // and he lives WITH CHAD: park the man at the far end and the tiger turns up
         G.player.x = 220;
         let closest = 9999;
-        for (let i = 0; i < 30000; i++) { step(1); closest = Math.min(closest, Math.abs(tg.x - 220)); }
-        t('hub-tiger-comes-to-find-him', closest < 200);
+        for (let i = 0; i < 12000; i++) { step(1); closest = Math.min(closest, Math.abs(tg.x - 220)); }
+        t('hub-tiger-follows-him', closest < 200);
+        // and settles beside him rather than walking through him
+        t('hub-tiger-settles-beside-him', Math.abs(tg.x - 220) > 20 && Math.abs(tg.x - 220) < 320);
       }
       // the master suite: she shifts about on her own and speaks now and then. She does
       // NOT react to him, so walking up must change nothing.
