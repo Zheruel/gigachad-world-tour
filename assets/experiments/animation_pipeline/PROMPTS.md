@@ -76,6 +76,22 @@ juvenile sprat with a muted warm lateral glint. No additional fish frames should
 generated. The final one-pixel tail motion is derived deterministically from each
 anchor.
 
+### Fish art-direction reset (installed)
+
+```text
+Create exactly one compact, full-bodied silver-blue reef baitfish facing right. Match
+the broad, bright schooling-fish silhouette in the supplied gameplay reference: short
+oval/fusiform body, pale silver belly, blue-gray back, small dark eye, modest forked
+tail, compact fins. It must read clearly after reduction to roughly 32 by 18 pixels.
+Match the supplied tankscape and shark's crisp 1990s arcade pixel art. Strict side
+profile, entire fish visible, genuinely transparent background. One fish and one pose
+only. No elongated sardine or anchovy shape, giant eye, scenery, bubbles, shadow, text,
+blur, antialiasing, multiple fish, or sprite sheet.
+```
+
+The installed large and small fish are both reductions of this one anchor. Only the
+tail fan moves; the body pixels remain locked.
+
 ## Optional tiger image-to-video motion source
 
 Use the tiger identity anchor as the first frame on a solid chroma-green canvas.

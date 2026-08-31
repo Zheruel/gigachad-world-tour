@@ -20,13 +20,13 @@ async function loadSet(directory, count) {
 
 const sets = {
   tiger: [
-    { title:'Current production', dir:'tiger-current', count:6, note:'Consistent identity, but a rigid torso and friendly head carriage.', metric:'current_alpha_churn' },
+    { title:'Restored production', dir:'tiger-current', count:6, note:'The smaller original silhouette fits the room and keeps a lighter, cleaner walk.', metric:'current_alpha_churn', recommended:true },
     { title:'Direct sheet', dir:'tiger-sheet-direct', count:8, note:'Better paw staging; design remains too close to the old house-cat attitude.', metric:'direct_alpha_churn' },
-    { title:'Anchor-first hybrid', dir:'tiger-sheet-hybrid', count:8, note:'New dangerous anchor survives the cycle; lower head and stronger shoulder mass.', metric:'hybrid_alpha_churn', recommended:true },
+    { title:'Anchor-first hybrid · rejected', dir:'tiger-sheet-hybrid', count:8, note:'Lower and more dangerous, but roughly 30% wider in game and visibly lumbers through the walk.', metric:'hybrid_alpha_churn' },
   ],
   tigerRest: [
-    { title:'Current rest family', dir:'tiger-rest-current', count:5, note:'Readable progression, but the upright head and softer face lose the predator silhouette.', metric:'current_alpha_churn' },
-    { title:'Anchor-first rest family', dir:'tiger-rest-hybrid', count:5, note:'The same low dangerous identity now carries through sleep, notice, rise, stretch, and snarl.', metric:'hybrid_alpha_churn', recommended:true },
+    { title:'Restored rest family', dir:'tiger-rest-current', count:5, note:'Matches the smaller production walk and preserves the familiar room scale.', metric:'current_alpha_churn', recommended:true },
+    { title:'Anchor-first rest family · rejected', dir:'tiger-rest-hybrid', count:5, note:'Consistent with the larger redesign, but too massive for the room and the preferred walk.', metric:'hybrid_alpha_churn' },
   ],
   couch: [
     { title:'Current per-pose edits', dir:'couch-current', count:4, note:'Furniture is exceptionally stable; the large pose jumps make CHAD pop.', metric:'current_lower_band_drift' },
@@ -89,7 +89,8 @@ const fishDefs = [
   { title:'Current · 26 fish', dir:'fish-current', count:4, n:26, note:'Small redraws across 26 independently phased bodies become whole-school shimmer.', metric:'current_body_churn' },
   { title:'Single static anchor · 14 fish', dir:'fish-static', count:4, n:14, note:'Zero body churn; pathing and school deformation do all of the animation.', metric:'static_body_churn' },
   { title:'Tail-only · 14 fish', dir:'fish-tail', count:4, n:14, note:'The first optimization fixed body flicker, but its chunky eye and clone-stamped silhouette still look synthetic.', metric:'tail_only_body_churn' },
-  { title:'Mixed sardines + sprats · 11 fish', dirs:['fish-sardine-v2','fish-sprat-v2'], count:4, n:11, note:'Two natural proportions and sizes, restrained eyes, coordinated facing, slower tail cadence, and more breathing room.', metric:'mixed_body_churn', recommended:true },
+  { title:'Mixed sardines + sprats · 11 fish', dirs:['fish-sardine-v2','fish-sprat-v2'], count:4, n:11, note:'Body motion is stable, but the narrow naturalistic silhouettes are too small and weak in the live tank.', metric:'mixed_body_churn' },
+  { title:'Broad silver school · 9 fish', dirs:['fish-school-v3','fish-school-v3-small'], count:4, n:9, note:'One cohesive, brighter species derived at two sizes from a locked body; closer to the chunky arcade silhouette in the original reference.', metric:'school_body_churn', recommended:true },
 ];
 
 function seeded(i) { const x = Math.sin(i * 91.733) * 43758.5453; return x - Math.floor(x); }

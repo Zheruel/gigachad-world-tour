@@ -380,12 +380,17 @@ def tail_from_anchor(stem: str, target_h: int, output: str) -> list[Image.Image]
 
 
 def fish_from_anchor() -> tuple[list[Image.Image], list[Image.Image],
+                                list[Image.Image], list[Image.Image],
                                 list[Image.Image], list[Image.Image]]:
     old = tail_from_anchor("fish-anchor", 14, "fish-tail")
     static = save_set("fish-static", [old[1].copy() for _ in range(4)], 12)
     sardine = tail_from_anchor("fish-sardine-v2", 13, "fish-sardine-v2")
     sprat = tail_from_anchor("fish-sprat-v2", 10, "fish-sprat-v2")
-    return static, old, sardine, sprat
+    # Both installed sizes come from one immutable broad-bodied anchor, so the school
+    # varies in scale without mixing incompatible fish designs.
+    school = tail_from_anchor("fish-school-v3", 28, "fish-school-v3")
+    school_small = tail_from_anchor("fish-school-v3", 23, "fish-school-v3-small")
+    return static, old, sardine, sprat, school, school_small
 
 
 def couch_midpoints() -> tuple[list[Image.Image], list[Image.Image]]:
@@ -451,7 +456,8 @@ def main() -> None:
         "fish-current",
         [BASELINE / f"fish/{i}.png" for i in range(4)],
     )
-    fish_static, fish_tail, fish_sardine, fish_sprat = fish_from_anchor()
+    (fish_static, fish_tail, fish_sardine, fish_sprat,
+     fish_school, fish_school_small) = fish_from_anchor()
 
     metrics = {
         "tiger": {
@@ -487,6 +493,11 @@ def main() -> None:
             "mixed_body_churn": [
                 (a + b) / 2 for a, b in
                 zip(body_churn(fish_sardine), body_churn(fish_sprat))
+            ],
+            "school_alpha_churn": alpha_churn(fish_school),
+            "school_body_churn": [
+                (a + b) / 2 for a, b in
+                zip(body_churn(fish_school), body_churn(fish_school_small))
             ],
         },
     }

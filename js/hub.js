@@ -25,7 +25,7 @@ import { ASSETS } from './assets.js';
 import { STAGES } from './stages.js';
 import { BOSSES } from './bosses.js';
 import { input } from './input.js';
-import { spawnPop, spawnSmoke, spawnSpark } from './effects.js';
+import { spawnCigarSmoke, spawnPop, spawnSpark } from './effects.js';
 import { CHAPTERS, openPanel, updateHubPanel, drawHubPanel } from './hubpanels.js';
 
 export { CHAPTERS };
@@ -110,12 +110,16 @@ const SMOKE_CYCLE = SMOKE_HOLDS.reduce((a, b) => a + b, 0);
 const SMOKE_EXHALE = SMOKE_HOLDS.slice(0, -1).reduce((a, b) => a + b, 0);
 
 function loungeFrame() {
+  return 'lair_lounge_smoke_' + loungeFrameIndex();
+}
+
+function loungeFrameIndex() {
   let t = G.hubSeat % SMOKE_CYCLE;
   for (let i = 0; i < SMOKE_HOLDS.length; i++) {
-    if (t < SMOKE_HOLDS[i]) return 'lair_lounge_smoke_' + i;
+    if (t < SMOKE_HOLDS[i]) return i;
     t -= SMOKE_HOLDS[i];
   }
-  return 'lair_lounge_smoke_0';
+  return 0;
 }
 
 // The bar is a station too, but it PLAYS ONCE and stands him back up rather than looping:
@@ -220,6 +224,16 @@ export const LAIR_ART = [
 // the sofa's own foot by tools/build_lair_extras.py. His boots hang below the sofa
 // legs, which is why the canvas bottom sits a little in front of the wall base.
 const LOUNGE = { x: 290, y: WALL_BASE + 9, w: 141, h: 63 };
+// Measured from the top-left of each final registered lounge frame. The cigar travels
+// almost thirty logical pixels during the gesture, so a fixed emitter visibly floats.
+const LOUNGE_CIGAR_TIPS = [
+  [75, 11], [82, 10], [82, 10], [77, 14], [76, 14], [79, 13], [98, 13],
+];
+const LOUNGE_MOUTH = [69, 9];
+
+function loungePoint(point) {
+  return [LOUNGE.x - LOUNGE.w / 2 + point[0], LOUNGE.y - LOUNGE.h + point[1]];
+}
 
 
 // ------------------------------------------------------- fixture art fallback
@@ -728,7 +742,7 @@ const SILT_N = 26;
 // animal reacting to the shark from a hole it never leaves is a lot of machinery for a
 // sprite you have to go looking for.
 // Fewer overlapping phases make the school read as individual fish rather than shimmer.
-const BAIT_N = 11;
+const BAIT_N = 9;
 const crab = { x: 0, dir: 1, t: 0, freeze: 0, rest: 0 };
 const bait = { cx: 0, cy: 0, vx: 0.25, vy: 0, fish: [] };
 
@@ -747,9 +761,9 @@ function resetTank() {
   bait.vx = 0.10; bait.vy = 0;
   bait.fish.length = 0;
   for (let i = 0; i < BAIT_N; i++) {
-    bait.fish.push({ x: bait.cx, y: bait.cy, ox: rand(-26, 26), oy: rand(-13, 13),
+    bait.fish.push({ x: bait.cx, y: bait.cy, ox: rand(-34, 34), oy: rand(-18, 18),
       phase: rand(0, 9), rate: rand(0.008, 0.018), frame: irand(0, 3), push: 0,
-      face: 1, variant: i % 3 === 0 ? 1 : 0 });
+      face: 1, variant: i % 4 === 0 ? 1 : 0 });
   }
   for (let i = 0; i < SILT_N; i++) {
     silt.push({
@@ -885,7 +899,9 @@ function updateBait() {
   bait.cx += bait.vx;
   bait.cy += bait.vy;
   bait.vy += Math.sin(shark.t * 0.004) * 0.0018;
-  const lo = TANK.x + 26, hi = TANK.x + TANK.w - 26;
+  // f.x is a sprite left edge, not its centre. Leave room for the broad new fish so the
+  // baitball does not spend its turns half-clipped by the glass.
+  const lo = TANK.x + 36, hi = TANK.x + TANK.w - 66;
   if (bait.cx < lo) { bait.cx = lo; bait.vx = Math.abs(bait.vx); }
   if (bait.cx > hi) { bait.cx = hi; bait.vx = -Math.abs(bait.vx); }
   bait.cy = clamp(bait.cy, TANK.y + 12, TANK.y + TANK.h * 0.5);
@@ -912,15 +928,15 @@ function updateBait() {
     f.frame = ((f.phase * 3) | 0) & 3;
   }
 
-  // Give the different silhouettes room to read instead of stacking into one bright
-  // flickering knot. Eleven fish makes this tiny pairwise pass negligible.
+  // Give the broad silhouettes room to read instead of stacking into one bright knot.
+  // Nine fish makes this tiny pairwise pass negligible.
   for (let i = 0; i < bait.fish.length; i++) {
     for (let j = i + 1; j < bait.fish.length; j++) {
       const a = bait.fish[i], b = bait.fish[j];
       const dx = b.x - a.x, dy = b.y - a.y;
       const d = Math.hypot(dx, dy);
-      if (d > 0 && d < 7) {
-        const push = (7 - d) * 0.015;
+      if (d > 0 && d < 11) {
+        const push = (11 - d) * 0.015;
         a.x -= dx / d * push; a.y -= dy / d * push;
         b.x += dx / d * push; b.y += dy / d * push;
       }
@@ -1438,7 +1454,7 @@ function updatePet() {
   tiger.x += Math.sign(dx) * SPEED;
   tiger.y += (clamp(player.y + 14, 214, 238) - tiger.y) * 0.02;
   tiger.phase += SPEED;
-  tiger.frame = (tiger.phase / 5 | 0) % 8;
+  tiger.frame = (tiger.phase / 5 | 0) % 6;
 }
 function drawPet(ctx, camX) {
   const img = ASSETS['lair_tiger_' + tigerPose()] || ASSETS.lair_tiger_lie;
@@ -1519,9 +1535,17 @@ export function updateHub() {
       // the AAAH lands when he finishes it, not when he picks it up
       if (G.hubSeat === DRINK_AAAH) spawnPop(barAt, G.player.y - 104, 'AAAH');
       if (G.hubSeat > DRINK_END) { G.hubSeat = 0; G.hubStation = null; return -1; }
-    } else if (G.hubSeat % SMOKE_CYCLE === SMOKE_EXHALE) {
-      // one plume per drag, from his mouth, timed to the pose that blows it
-      for (let i = 0; i < 3; i++) spawnSmoke(LOUNGE.x + 4 + rand(-2, 2), LOUNGE.y - 56, 1);
+    } else {
+      // A small ember wisp follows the cigar through every authored pose. The larger
+      // exhale is separate and leaves his mouth on the final key pose.
+      if (G.hubSeat % 14 === 0) {
+        const [x, y] = loungePoint(LOUNGE_CIGAR_TIPS[loungeFrameIndex()]);
+        spawnCigarSmoke(x, y, 1);
+      }
+      if (G.hubSeat % SMOKE_CYCLE === SMOKE_EXHALE) {
+        const [x, y] = loungePoint(LOUNGE_MOUTH);
+        for (let i = 0; i < 5; i++) spawnCigarSmoke(x + rand(-2, 2), y, 1);
+      }
     }
     if (G.hubSeat > 24 && anyKey()) {
       G.hubSeat = 0;

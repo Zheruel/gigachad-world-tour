@@ -15,14 +15,14 @@ use `STEP FRAME` to inspect registration without playback hiding a bad transitio
 
 ### Tiger: anchor first, then one sheet
 
-The best result starts with one carefully art-directed stalking pose, derives the
-walk sheet from that anchor, and registers every processed cell around the ribcage.
-Bounding-box or paw centering is wrong because the paws are supposed to travel; it
-makes an otherwise usable in-place cycle slide from side to side. The same anchor was
-used for a compact rest-pose sheet so the animal keeps its low, dangerous silhouette.
+The anchor-first experiment produced the more dangerous design, but it also grew about
+30% wider at game scale and its walk felt heavier and worse in the room. Production was
+therefore restored to the smaller original six-frame walk and matching rest family.
+The rejected larger experiment remains in the lab for comparison. Registering any
+future cycle should still use the ribcage rather than moving paw extrema.
 
 The direct sheet control improved leg staging but retained the friendlier house-cat
-attitude. The installed hybrid has eight walk frames rather than six.
+attitude. Neither generated tiger family is currently installed.
 
 ### Couch: one midpoint edit at a time
 
@@ -38,11 +38,13 @@ fixture pixel is now sourced from the same image in every frame; only CHAD chang
 
 ### Fish: generate once, animate deterministically
 
-At this scale a regenerated body is noise, not animation. The final school mixes two
-single-image anchors: a slim sardine and smaller sprat. Code derives four frames for
-each by moving only the detached tail fan one device pixel; each body is byte-identical.
-Eleven fish face with the school's travel direction, use a slower tail cadence, and
-repel one another gently so they do not merge into a flashing silver knot.
+At this scale a regenerated body is noise, not animation. The sardine/sprat pass removed
+flicker but missed the desired art direction: both were narrow, naturalistic, and too
+small in the live tank. The installed school uses one broader, brighter silver-fish
+anchor that matches the original arcade reference, reduced to two sizes. Code derives
+four frames by moving only the detached tail fan one device pixel; every body is
+byte-identical. Nine fish face with the school's travel direction, use a slower tail
+cadence, and repel one another gently so they do not merge into a flashing knot.
 
 ## Optional video-to-sprite route
 

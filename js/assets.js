@@ -86,8 +86,6 @@ export const FILES = {
   lair_tiger_3: 'assets/lair/tiger_3.png',
   lair_tiger_4: 'assets/lair/tiger_4.png',
   lair_tiger_5: 'assets/lair/tiger_5.png',
-  lair_tiger_6: 'assets/lair/tiger_6.png',
-  lair_tiger_7: 'assets/lair/tiger_7.png',
   lair_shark_0: 'assets/lair/shark_0.png',
   lair_shark_1: 'assets/lair/shark_1.png',
   lair_shark_2: 'assets/lair/shark_2.png',

@@ -58,6 +58,19 @@ export function spawnSmoke(x, y, n) {
   }
 }
 
+// Lounge cigar smoke needs more contrast than combat smoke because it is usually drawn
+// over pale aquarium water. Keep it thin and long-lived so several puffs join into a
+// readable curl instead of one large opaque blob.
+export function spawnCigarSmoke(x, y, n) {
+  for (let i = 0; i < (n || 1); i++) {
+    G.effects.push({
+      type: 'cigarSmoke', x: x + (Math.random() * 3 - 1.5), y,
+      vx: -0.08 + Math.random() * 0.22, vy: -0.20 - Math.random() * 0.18,
+      t: 0, life: 64 + Math.random() * 30,
+    });
+  }
+}
+
 export function spawnDebris(x, y, n, colors) {
   const pal = colors || ['#b0682e', '#8a4a20', '#d8a860'];
   for (let i = 0; i < (n || 6); i++) {
@@ -85,7 +98,9 @@ export function updateEffects() {
     e.t++;
     if (e.type === 'dust') { e.x += e.vx; e.y += e.vy; e.vy += 0.04; }
     if (e.type === 'steam') { e.x += e.vx; e.y += e.vy; e.vy *= 0.99; }
-    if (e.type === 'smoke') { e.x += e.vx; e.y += e.vy; e.vy *= 0.985; e.vx *= 0.99; }
+    if (e.type === 'smoke' || e.type === 'cigarSmoke') {
+      e.x += e.vx; e.y += e.vy; e.vy *= 0.985; e.vx *= 0.99;
+    }
     if (e.type === 'debris') { e.x += e.vx; e.y += e.vy; e.vy += 0.14; e.vx *= 0.985; }
     if (e.type === 'pop') { e.y -= 0.5; }
     if (e.t >= e.life) G.effects.splice(i, 1);
@@ -130,12 +145,14 @@ export function drawEffects(ctx, camX) {
       ctx.ellipse(sx, sy, 5 + k * 8, 4 + k * 6, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1;
-    } else if (e.type === 'smoke') {
+    } else if (e.type === 'smoke' || e.type === 'cigarSmoke') {
       const k = e.t / e.life;
-      ctx.globalAlpha = Math.max(0, 0.4 - k * 0.4);
-      ctx.fillStyle = '#d8d4c8';
+      const cigar = e.type === 'cigarSmoke';
+      ctx.globalAlpha = Math.max(0, (cigar ? 0.52 : 0.4) * (1 - k));
+      ctx.fillStyle = cigar ? '#aab3ba' : '#d8d4c8';
       ctx.beginPath();
-      ctx.ellipse(sx, sy, 2 + k * 9, 2 + k * 7, 0, 0, Math.PI * 2);
+      ctx.ellipse(sx, sy, (cigar ? 1.5 : 2) + k * (cigar ? 7 : 9),
+        (cigar ? 1.5 : 2) + k * (cigar ? 6 : 7), 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1;
     } else if (e.type === 'debris') {
