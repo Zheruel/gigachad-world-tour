@@ -6,7 +6,7 @@ import { fx } from './fx.js';
 import { spawnSteam, spawnSmoke, spawnDust } from './effects.js';
 
 const ART = {};
-const SETS = { laundry: 4, awning: 4, fan: 4 };
+const SETS = { laundry: 4, awning: 4, fan: 4, shutter: 4 };
 
 export function loadAmbience() {
   return Promise.all(Object.entries(SETS).flatMap(([name, n]) => {
@@ -80,7 +80,50 @@ function reactionAt(x) {
   return n;
 }
 
+// The shopfronts roll their shutters down when a gate locks and back up when the wave
+// clears, a few frames apart down the street. One number and one timer, and it makes
+// the gates feel caused rather than imposed.
+// It is state, so it ticks in update(); shutterState() is exported so ?auto=verify can
+// assert against a number rather than a pixel.
+export function updateShutters() {
+  G.shutterT = Math.max(0, Math.min(400, G.shutterT + (G.locked ? 1 : -1.6)));
+}
+
+export function shutterState() {
+  return (G.stage.shutters || []).map((x, i) => {
+    const k = (G.shutterT - i * 6) / 24;
+    return k < 0 ? 0 : k > 1 ? 1 : k;
+  });
+}
+
+function drawShutters(ctx, camX) {
+  const list = G.stage.shutters;
+  const art = ART.shutter;
+  // A shutter has to hang in a shopfront opening the plate actually paints, and those
+  // x's are measured off assets/stages/dirty_delhi/wall.png rather than guessed. Until
+  // the art and the measurements exist it draws NOTHING: a grey rectangle floating in
+  // mid-air is worse than an absent effect, and "everything degrades to a fallback"
+  // has to mean degrading to nothing when nothing is the honest answer.
+  if (!list || !G.shutterT || !art || !art.length) return;
+  const k = shutterState();
+  for (let i = 0; i < list.length; i++) {
+    if (!k[i]) continue;
+    const sx = Math.round(list[i].x - camX);
+    const img = art[Math.min(art.length - 1, Math.floor(k[i] * (art.length - 1)))];
+    if (!img) continue;
+    const w = frameW(img), h = frameH(img);
+    if (sx + w < -20 || sx > W + 20) continue;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(sx, list[i].y, w, Math.round(h * k[i]));
+    ctx.clip();
+    blit(ctx, img, sx, list[i].y);
+    ctx.restore();
+  }
+}
+
 export function drawAmbienceFacade(ctx, camX) {
+  drawShutters(ctx, camX);
   for (const a of (G.stage.ambience || [])) {
     const set = ART[a.kind];
     if (!set || !set.length) continue;

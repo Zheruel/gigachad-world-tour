@@ -100,6 +100,105 @@ ENEMY_STATES = {
     "getup": ["{p}_idle.png"],
 }
 
+# ---- DIRTY DELHI --------------------------------------------------------
+# Every one of these is generated as strips, so the frames are numbered from 1 and
+# the idle is four frames of breathing rather than one still pose. The older cast's
+# one-frame idle is why they stand dead still between waves.
+# Extra states beyond the drawn set are carried anyway: NAMEMAP in js/aiframes.js
+# resolves them, and a state the code does not ask for yet costs nothing.
+D1_ENEMIES = {
+    "cooker": {
+        "idle": ["cooker_idle1.png", "cooker_idle2.png", "cooker_idle3.png", "cooker_idle4.png"],
+        "walk": ["cooker_walk1.png", "cooker_walk2.png", "cooker_walk3.png", "cooker_walk4.png"],
+        "atk": ["cooker_beam2.png", "cooker_beam3.png", "cooker_beam4.png"],
+        "beam": ["cooker_beam1.png", "cooker_beam2.png", "cooker_beam3.png", "cooker_beam4.png"],
+        "hurt": ["cooker_hurt1.png", "cooker_hurt2.png"],
+        "down": ["cooker_hurt3.png"],
+    },
+    "thela": {
+        "idle": ["thela_idle1.png", "thela_idle2.png", "thela_idle3.png", "thela_idle4.png"],
+        "walk": ["thela_walk1.png", "thela_walk2.png", "thela_walk3.png", "thela_walk4.png"],
+        # the ram is his signature, so it is what the attack state plays
+        "atk": ["thela_ram2.png", "thela_ram3.png", "thela_ram4.png"],
+        "ram": ["thela_ram1.png", "thela_ram2.png", "thela_ram3.png", "thela_ram4.png"],
+        "punch": ["thela_atk1.png", "thela_atk2.png", "thela_atk3.png"],
+        "hurt": ["thela_hurt1.png", "thela_hurt2.png"],
+        "down": ["thela_hurt3.png"],
+    },
+    "mudlark": {
+        "idle": ["mudlark_idle1.png", "mudlark_idle2.png", "mudlark_idle3.png", "mudlark_idle4.png"],
+        "walk": ["mudlark_walk1.png", "mudlark_walk2.png", "mudlark_walk3.png", "mudlark_walk4.png"],
+        "atk": ["mudlark_grab1.png", "mudlark_grab2.png", "mudlark_grab3.png"],
+        "rise": ["mudlark_rise1.png", "mudlark_rise2.png", "mudlark_rise3.png", "mudlark_rise4.png"],
+        "hurt": ["mudlark_hurt1.png", "mudlark_hurt2.png"],
+        "down": ["mudlark_hurt3.png"],
+    },
+    "dhobi": {
+        "idle": ["dhobi_idle1.png", "dhobi_idle2.png", "dhobi_idle3.png", "dhobi_idle4.png"],
+        "walk": ["dhobi_walk1.png", "dhobi_walk2.png", "dhobi_walk3.png", "dhobi_walk4.png"],
+        "atk": ["dhobi_whip2.png", "dhobi_whip3.png", "dhobi_whip4.png"],
+        "whip": ["dhobi_whip1.png", "dhobi_whip2.png", "dhobi_whip3.png", "dhobi_whip4.png"],
+        "hurt": ["dhobi_hurt1.png", "dhobi_hurt2.png"],
+        "down": ["dhobi_hurt3.png"],
+    },
+    "bull": {
+        "idle": ["sandh_paw1.png"],
+        "walk": ["sandh_walk1.png", "sandh_walk2.png", "sandh_walk3.png", "sandh_walk4.png"],
+        # the paw IS the telegraph, so it is what the wind-up and the strike play
+        "atk": ["sandh_paw4.png", "sandh_charge2.png", "sandh_charge3.png"],
+        "paw": ["sandh_paw1.png", "sandh_paw2.png", "sandh_paw3.png", "sandh_paw4.png"],
+        "charge": ["sandh_charge1.png", "sandh_charge2.png", "sandh_charge3.png", "sandh_charge4.png"],
+        "hurt": ["sandh_hurt1.png", "sandh_hurt2.png"],
+        "down": ["sandh_hurt3.png"],
+    },
+    "dabbawala": {
+        "idle": ["dabbawala_run1.png"],
+        "walk": ["dabbawala_run1.png", "dabbawala_run2.png", "dabbawala_run3.png", "dabbawala_run4.png"],
+        "run": ["dabbawala_run1.png", "dabbawala_run2.png", "dabbawala_run3.png", "dabbawala_run4.png"],
+        "hurt": ["dabbawala_drop1.png", "dabbawala_drop2.png"],
+        "down": ["dabbawala_drop3.png"],
+    },
+    "thekedar": {
+        "idle": ["thekedar_idle1.png", "thekedar_idle2.png", "thekedar_idle3.png", "thekedar_idle4.png"],
+        "walk": ["thekedar_idle1.png", "thekedar_idle2.png", "thekedar_idle3.png", "thekedar_idle4.png"],
+        "atk": ["thekedar_swing1.png", "thekedar_swing2.png", "thekedar_swing3.png"],
+        "punch": ["thekedar_swing1.png", "thekedar_swing2.png", "thekedar_swing3.png"],
+        "hurt": ["thekedar_hurt1.png", "thekedar_hurt2.png"],
+        "down": ["thekedar_hurt3.png"],
+    },
+}
+
+# The two minibosses draw through the boss state machine, which asks for
+# idle / walk / punch / grab / slam / hurt / down.
+D1_BOSSES = {
+    "pappu": {
+        "idle": ["pappu_idle1.png", "pappu_idle2.png", "pappu_idle3.png", "pappu_idle4.png"],
+        "walk": ["pappu_walk1.png", "pappu_walk2.png", "pappu_walk3.png", "pappu_walk4.png"],
+        "punch": ["pappu_charge2.png", "pappu_charge3.png", "pappu_charge4.png"],
+        "charge": ["pappu_charge1.png", "pappu_charge2.png", "pappu_charge3.png", "pappu_charge4.png"],
+        "grab": ["pappu_grab1.png", "pappu_grab2.png", "pappu_grab3.png"],
+        "slam": ["pappu_stomp2.png", "pappu_stomp3.png", "pappu_stomp4.png"],
+        "stomp": ["pappu_stomp1.png", "pappu_stomp2.png", "pappu_stomp3.png", "pappu_stomp4.png"],
+        "hurt": ["pappu_hurt1.png", "pappu_hurt2.png"],
+        "down": ["pappu_hurt3.png"],
+    },
+    "langda": {
+        "idle": ["langda_idle1.png", "langda_idle2.png", "langda_idle3.png", "langda_idle4.png"],
+        # he runs a wire rather than walking, so "walk" is the hang
+        "walk": ["langda_hang1.png", "langda_hang2.png", "langda_hang3.png"],
+        "hang": ["langda_hang1.png", "langda_hang2.png", "langda_hang3.png"],
+        "punch": ["langda_drop2.png", "langda_drop3.png", "langda_drop4.png"],
+        "drop": ["langda_drop1.png", "langda_drop2.png", "langda_drop3.png", "langda_drop4.png"],
+        "grab": ["langda_snatch1.png", "langda_snatch2.png", "langda_snatch3.png"],
+        "snatch": ["langda_snatch1.png", "langda_snatch2.png", "langda_snatch3.png"],
+        "slam": ["langda_screech2.png", "langda_screech3.png", "langda_screech4.png"],
+        "screech": ["langda_screech1.png", "langda_screech2.png", "langda_screech3.png", "langda_screech4.png"],
+        "throw": ["langda_throw1.png", "langda_throw2.png", "langda_throw3.png"],
+        "hurt": ["langda_hurt1.png", "langda_hurt2.png"],
+        "down": ["langda_hurt3.png"],
+    },
+}
+
 
 def existing(files):
     return [f for f in files if os.path.exists(FRAMES + f)]
@@ -126,6 +225,13 @@ def main():
         s = build_set(prefix, RANA_STATES if key == "rana" else BOSS_STATES)
         if s:
             manifest[key] = s
+    # DIRTY DELHI carries its states literally rather than through a shared template:
+    # every family was generated as strips with its own pose list.
+    for key, states in {**D1_ENEMIES, **D1_BOSSES}.items():
+        got = {state: existing(files) for state, files in states.items()}
+        got = {k: v for k, v in got.items() if v}
+        if got:
+            manifest[key] = got
     with open(FRAMES + "manifest.json", "w") as f:
         json.dump(manifest, f, indent=2)
     total = sum(len(v) for c in manifest.values() for v in c.values())

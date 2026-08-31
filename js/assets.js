@@ -2,18 +2,14 @@
 // NOTE: assets/ai/* are reference-only and are never loaded here.
 import { RS } from './engine.js';
 
-const FILES = {
+export const FILES = {
   title_art: 'assets/title_art.png',
   logo: 'assets/logo.png',
   ending_art: 'assets/ending_art.png',
   go_sign: 'assets/go_sign.png',
   portrait_chad: 'assets/portrait_chad.png',
   portrait_chad_48: 'assets/portrait_chad_48.png',
-  portrait_mirchi: 'assets/portrait_mirchi.png',
   portrait_raja: 'assets/portrait_raja.png',
-  portrait_refund: 'assets/portrait_refund.png',
-  portrait_yadav: 'assets/portrait_yadav.png',
-  portrait_rana: 'assets/portrait_rana.png',
   bg_lair_wall: 'assets/bg_lair_wall.png',
   bg_lair_floor: 'assets/bg_lair_floor.png',
   lair_worldmap: 'assets/lair/worldmap.png',
@@ -89,12 +85,10 @@ const FILES = {
   lair_shark_3: 'assets/lair/shark_3.png',
   // keyed by boss id, so js/hub.js can look one up straight off BOSSES
   lair_relic_raja: 'assets/lair/relic_raja.png',
-  lair_relic_mirchi: 'assets/lair/relic_mirchi.png',
-  lair_relic_refund: 'assets/lair/relic_refund.png',
-  lair_relic_yadav: 'assets/lair/relic_yadav.png',
-  lair_relic_rana: 'assets/lair/relic_rana.png',
   bg_bazaar_v2_wall: 'assets/stages/bazaar_v2/wall.png',
   bg_bazaar_v2_floor: 'assets/stages/bazaar_v2/floor.png',
+  bg_d1_wall: 'assets/stages/dirty_delhi/wall.png',
+  bg_d1_floor: 'assets/stages/dirty_delhi/floor.png',
   prop_crate: 'assets/props/crate.png',
   prop_crate_b: 'assets/props/crate_b.png',
   prop_matka: 'assets/props/matka.png',

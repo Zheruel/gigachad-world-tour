@@ -9,7 +9,7 @@ import { loadAmbience, updateAmbience, reactStage } from './ambience.js';
 import { ENTRANCE_LAST_FRAME, loadStory, resetStory, updateMotorcycleArrival, drawMotorcycleArrival } from './story.js';
 import { audio, loadSFX } from './audio.js';
 import { loadFX } from './fx.js';
-import { drawProp } from './props.js';
+import { drawProp, createProp } from './props.js';
 import { updateEffects, drawEffects } from './effects.js';
 
 const STAGE = STAGES[0];
@@ -17,31 +17,50 @@ const CAM_MAX = STAGE.width - W;
 
 const cast = [
   { key: 'player', name: 'CHAD', role: 'Playable hero', state: 'jab' },
-  { key: 'goonda', name: 'Goonda', role: 'Baseline brawler', state: 'atk' },
-  { key: 'bandar', name: 'Bandar', role: 'Fast pickup thief', state: 'atk' },
-  { key: 'batta', name: 'Batta', role: 'Unblockable reach heavy', state: 'atk' },
-  { key: 'masala', name: 'Masala', role: 'Reflectable ranged disruptor', state: 'atk' },
-  { key: 'constable', name: 'Constable', role: 'Guard and space control', state: 'atk' },
-  { key: 'pehlwan', name: 'Pehlwan', role: 'Poise grappler', state: 'atk' },
-  { key: 'operator', name: 'Operator', role: 'Reflectable back-line support', state: 'atk' },
-  { key: 'sepoy', name: 'Chain Sepoy', role: 'Elite mixed-pressure fighter', state: 'atk' },
-  { key: 'raja', name: 'Rickshaw Raja', role: 'Stage boss · King of the Meter', state: 'punch' },
+  { key: 'goonda', name: 'Goonda', role: 'The metronome · stays boring on purpose', state: 'atk' },
+  { key: 'bandar', name: 'Bandar', role: 'Fast thief · takes what is on the floor', state: 'atk' },
+  { key: 'batta', name: 'Batta', role: 'Reach · a red arc that hits his own side too', state: 'atk' },
+  { key: 'cooker', name: 'Cooker', role: 'Zoner · a beam down the lane, and he vents when he dies', state: 'atk' },
+  { key: 'thela', name: 'Thela', role: 'Heavy · poise, and a cart that deletes his ram', state: 'atk' },
+  { key: 'mudlark', name: 'Mudlark', role: 'Ambusher · out of the water, drags you back to it', state: 'atk' },
+  { key: 'dhobi', name: 'The Dhobi', role: 'Named elite · the longest reach in the game', state: 'atk' },
+  { key: 'dabbawala', name: 'Dabbawala', role: 'Runner · ignores you, and the wave pays if he gets out', state: 'walk' },
+  { key: 'bull', name: 'Sandh', role: 'Hazard · 18 damage to anything he touches, both sides', state: 'atk' },
+  { key: 'pappu', name: 'Ustad Pappu', role: 'Miniboss · the fight is the arena', state: 'punch' },
+  { key: 'langda', name: 'Langda', role: 'Mid-boss · will not hold still', state: 'punch' },
+  { key: 'dredger', name: 'The Dredger', role: 'Level boss · a machine', state: 'punch' },
+  { key: 'thekedar', name: 'The Thekedar', role: 'Phase two · a frightened man with a spanner', state: 'atk' },
 ];
 
+// Indexed positionally against STAGES[0].waves, boss gates included.
 const wavePurpose = [
-  'Basic crowd read plus a low, fast disruption target.',
-  'Introduces the committed charger and ranged denial together.',
-  'First guarded formation; tests target selection.',
-  'Heavy body control with reach and charger pressure.',
-  'Back-line support arrives behind a mixed street group.',
-  'Dense specialist wave: guard, range, charge, and poise.',
-  'Full-role elite exam before the boss gate.',
-  'Rickshaw Raja boss arena and vehicle phase.',
+  'Can you parry and combo. Three goondas and nothing else.',
+  'Can you protect a pickup, with two thieves working the floor.',
+  'Can you evade red — and bait the arc into his own friends.',
+  'USTAD PAPPU. Can you fight with no space and no props.',
+  'Can you choose a target under a timer, with the runner crossing.',
+  'Can you kill something in the right place. The cooker vents.',
+  'Two red arcs at once, and no crowd to bait them into.',
+  'All of it, with the bull crossing a full lane.',
+  'LANGDA. Can you fight something that will not hold still.',
+  'Meet the water. The back of the lane is now a way to die.',
+  'Terrain you make yourself, among the chemical drums.',
+  'Poise, on a slope, in a slick — and the dhobi among the sheets.',
+  'The back lane is hostile, on a floor that moves.',
+  'The exam, with the sluice running.',
+  'THE DREDGER. Can you fight the arena itself.',
 ];
 
 const propMeta = [
-  ['crate', 'Breakable supply crate · shake drop'],
-  ['matka', 'Small clay-pot breakable'], ['table', 'Wide breakable · plate drop'],
+  ['crate', 'Breakable supply crate · +30'],
+  ['table', 'Stall table · +15'],
+  ['mithai', 'The level’s only 1-UP · behind a stall, one lane back'],
+  ['drum', 'Chemical drum · bursts into a 12s slick, terrain you place yourself'],
+  ['bracket', 'Awning bracket · six of them, each shortens Langda’s wire'],
+  ['thelacart', 'The heavy’s handcart · break it and the ram is gone for good'],
+  ['thelapole', 'The heavy’s boat pole · the same rig, the ghat’s prop'],
+  ['dhobislab', 'Washing slab · deletes the dhobi’s charged whip'],
+  ['matka', 'Small clay-pot breakable'],
   ['tyres', 'Durable low obstacle'], ['sign', 'Fragile street signage'],
 ];
 
@@ -86,6 +105,7 @@ const sctx = stageView.getContext('2d');
 const overview = document.getElementById('overview');
 const octx = overview.getContext('2d');
 const camera = document.getElementById('camera');
+camera.max = String(CAM_MAX);   // from the stage, so the slider cannot outlive the route
 const cameraReadout = document.getElementById('cameraReadout');
 const playRoute = document.getElementById('playRoute');
 const castCanvases = new Map();
@@ -126,11 +146,40 @@ function card(parent, src, title, description) {
   return el;
 }
 
+// Draws a prop through the game's own art()/drawProp path, so the card shows exactly
+// what the level shows - authored PNG where one exists, code fallback where it does not.
+function propCard(parent, kind, broken, title, description) {
+  const png = `assets/props/${kind}${broken ? '_b' : ''}.png`;
+  const authored = !!ASSETS[`prop_${kind}${broken ? '_b' : ''}`];
+  const el = document.createElement('article');
+  el.className = 'asset-card';
+  el.innerHTML = '<div class="preview"></div>'
+    + `<div class="meta"><h3>${title}</h3><p>${description}</p>`
+    + `<code>${authored ? png : 'code fallback · js/props.js'}</code></div>`;
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 128;
+  c.style.cssText = 'width:128px;height:128px;image-rendering:pixelated';
+  const cx = c.getContext('2d');
+  cx.imageSmoothingEnabled = false;
+  const pr = createProp(kind, 0, 0);
+  if (broken) { pr.broken = true; pr.dead = true; }
+  cx.save();
+  cx.translate(64, 96);
+  cx.scale(2, 2);
+  drawProp(cx, pr, 0);
+  cx.restore();
+  el.querySelector('.preview').appendChild(c);
+  parent.appendChild(el);
+}
+
 function buildInventory() {
   const propCards = document.getElementById('propCards');
   for (const [kind, description] of propMeta) {
-    card(propCards, `assets/props/${kind}.png`, kind, description);
-    card(propCards, `assets/props/${kind}_b.png`, `${kind} · broken`, 'Destroyed state');
+    // A prop with no PNG yet draws its code fallback in the game, so the reviewer
+    // has to show that rather than a broken image - otherwise the page says "missing"
+    // about something the player will see perfectly well.
+    propCard(propCards, kind, false, kind, description);
+    propCard(propCards, kind, true, `${kind} · broken`, 'Destroyed state');
   }
   const storyCards = document.getElementById('storyCards');
   for (const a of storyAssets) card(storyCards, ...a);
@@ -398,7 +447,10 @@ function encounterForCamera() {
 
 function drawEncounterSilhouettes() {
   const wave = encounterForCamera();
-  const keys = wave.boss ? ['raja'] : wave.spawns;
+  // Derived, so a boss gate keeps showing the right body when the act's boss changes.
+  const keys = wave.boss ? [STAGE.boss]
+    : wave.miniboss ? [wave.miniboss, ...wave.spawns]
+      : wave.spawns;
   const gap = Math.min(70, 360 / Math.max(1, keys.length - 1));
   keys.forEach((key, i) => {
     const set = SPR[key];

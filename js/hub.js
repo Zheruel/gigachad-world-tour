@@ -158,7 +158,7 @@ const BED = { x: BED_X, y: WALL_BASE + 2, w: 140, h: 72 };
 
 // Sprites in the wall plane. Sizes mirror LAIR in tools/process_props.py; y is the
 // bottom edge and art is centred on x.
-const LAIR_ART = [
+export const LAIR_ART = [
   // the lounge: stools at the painted bar. The cherub portrait that hung over the sofa
   // is gone - the tank takes that wall, and the oil over the hearth is the better one.
   // The plate paints three shelves of near-identical amber bottles. These two rows go

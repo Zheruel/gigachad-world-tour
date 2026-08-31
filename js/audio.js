@@ -123,14 +123,18 @@ let seqTimer = null, nextStepTime = 0, stepIdx = 0, song = null;
 // One slot per thing the game can actually play. The tour was cut back to a single act to
 // be rebuilt one at a time, and its music will be written for the acts that survive rather
 // than carried over - so stage2-5 and boss2-5 went with them.
-const SLOTS = ['lair', 'title', 'stage1', 'boss', 'ending'];
+// Act I is two themes sharing a key and a hook, handed over at the drain, plus the shared
+// miniboss `boss` and the level boss's own `boss1`. A slot with neither an mp3 nor a
+// SONGS entry simply plays nothing and never appears in the jukebox, so adding names
+// breaks nothing and needs no code change when the files land.
+const SLOTS = ['lair', 'title', 'stage1a', 'stage1b', 'boss', 'boss1', 'ending'];
 const htmlTracks = Object.fromEntries(SLOTS.map((s) => [s, null]));
 
 function mf(m) { return 440 * Math.pow(2, (m - 69) / 12); } // midi -> freq
 
 // ---- songs: 16th-note steps. 0 = rest. drums: 1 kick, 2 snare, 3 hat ----
 const SONGS = {
-  stage1: {
+  stage1a: {
     bpm: 132, loop: 64,
     bass: [
       33, 0, 33, 33, 0, 33, 0, 33, 36, 0, 36, 36, 0, 36, 0, 36,

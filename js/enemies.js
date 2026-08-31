@@ -1,13 +1,14 @@
 // enemies.js - the Chandni Chowk street crew: AI states, turn-taking attacks,
 // hit reactions, wall splats.
 import {
-  G, W, FLOOR_TOP, FLOOR_BOT, clamp, rand, irand, addScore, diff, clampToArena,
+  G, W, FLOOR_TOP, FLOOR_BOT, clamp, rand, irand, addScore, diff, clampToArena, clampToLane, laneMin, zoneDrag,
   airborne, juggleMul, fall, inAir,
 } from './engine.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
 import { spawnSpark, spawnDust, impact, spawnPop } from './effects.js';
 import { hurtPlayer, grabPlayer, resolveIncomingHit } from './player.js';
-import { spawnShot } from './shots.js';
+import { spawnShot, spawnZone } from './shots.js';
+import { createProp } from './props.js';
 
 const TYPES = {
   // street thug in a vest and lungi: the baseline, comes at you in threes
@@ -25,18 +26,42 @@ const TYPES = {
   constable: { hp: 58, speed: 0.76, dmg: 9, score: 250, canGrab: true, set: 'constable', w: 50, h: 86, range: 58, shadowR: 15, poise: 2 },
   operator: { hp: 31, speed: 0.95, dmg: 7, score: 240, canGrab: false, set: 'operator', w: 45, h: 80, range: 145, shadowR: 13 },
   sepoy: { hp: 78, speed: 1.02, dmg: 12, score: 360, canGrab: false, set: 'sepoy', w: 54, h: 94, range: 70, shadowR: 17, poise: 1 },
+
+  // ---- DIRTY DELHI ----
+  // screaming pressure cooker: a slow steam beam down the lane that hurts anyone
+  // standing in it, and he vents when he dies. The level's anti-mash lesson, taught
+  // in one death rather than in a tooltip.
+  cooker: { hp: 30, speed: 0.80, dmg: 8, score: 220, canGrab: false, set: 'cooker', w: 46, h: 82, range: 110, shadowR: 14 },
+  // one rig, four props across the chapter: a handcart here, a boat pole on the ghat.
+  // Break the prop and the ram is gone for good and he is a slow brawler.
+  thela: { hp: 85, speed: 0.55, dmg: 12, score: 400, canGrab: false, set: 'thela', w: 58, h: 92, range: 40, shadowR: 20, poise: 2, rig: 'thelacart' },
+  // comes out of the water at the back of the lane and drags you toward the edge.
+  // Its whole job is making you notice which way you are facing.
+  mudlark: { hp: 22, speed: 1.40, dmg: 6, score: 180, canGrab: false, set: 'mudlark', w: 40, h: 70, range: 30, shadowR: 12, fromWater: true },
+  // a named elite, not a boss: no intro card and no health bar, but the longest
+  // reach in the game and a wrap-and-drag that hauls you at the water.
+  dhobi: { hp: 120, speed: 0.90, dmg: 13, score: 900, canGrab: false, set: 'dhobi', w: 50, h: 90, range: 96, shadowR: 16, poise: 3, rig: 'dhobislab' },
+  // a runner is a wave flag, not a role: no attack, ignores you, sprints the arena.
+  dabbawala: { hp: 12, speed: 2.60, dmg: 0, score: 120, canGrab: false, set: 'dabbawala', w: 40, h: 84, range: 0, shadowR: 13, runner: true, offSlot: true, noCount: true },
+  // SANDH: paws the ground at one edge, then charges one depth lane. Hittable,
+  // stays down, and hurts everything it touches - which is most of the point.
+  bull: { hp: 60, speed: 3.20, dmg: 18, score: 500, canGrab: false, set: 'bull', w: 90, h: 74, range: 60, shadowR: 26, poise: 9, offSlot: true, noCount: true },
 };
 
 const WINDUP = { goonda: 18, batta: 28, masala: 22, bandar: 12, pehlwan: 24,
-  constable: 22, operator: 25, sepoy: 24 };
+  constable: 22, operator: 25, sepoy: 24,
+  cooker: 26, thela: 30, mudlark: 20, dhobi: 26, dabbawala: 0, bull: 40 };
 // frame at which an attack switches from the strike to the follow-through
-const ATK_RECOVER = { goonda: 9, batta: 14, masala: 12, bandar: 99, pehlwan: 16 };
+const ATK_RECOVER = { goonda: 9, batta: 14, masala: 12, bandar: 99, pehlwan: 16,
+  cooker: 20, thela: 18, mudlark: 12, dhobi: 16, bull: 12 };
 // below this much movement in a frame a body counts as standing still
 const MOVE_EPS = 0.12;
 const JUGGLE_CAP = 4;
 const PARRY_CLASS = { goonda: 'counter', batta: 'unblockable', masala: 'reflect',
   bandar: 'counter', pehlwan: 'unblockable', constable: 'counter',
-  operator: 'reflect', sepoy: 'counter' };
+  operator: 'reflect', sepoy: 'counter',
+  cooker: 'unblockable', thela: 'unblockable', mudlark: 'counter',
+  dhobi: 'unblockable', dabbawala: 'counter', bull: 'unblockable' };
 
 export function spawnEnemy(type, x, y) {
   const T = TYPES[type];
@@ -47,11 +72,13 @@ export function spawnEnemy(type, x, y) {
     x, y, z: 0, vx: 0, vy: 0, vz: 0, face: x < G.player.x ? 1 : -1,
     hp, maxhp: hp, dmg: T.dmg, score: T.score, canGrab: T.canGrab,
     poise: T.poise || 0, maxPoise: T.poise || 0,
-    speed: T.speed * diff().aggro, range: T.range, holdT: 0,
+    speed: T.speed * diff().aggro, baseSpeed: T.speed * diff().aggro, range: T.range, holdT: 0,
     tint: '', juggle: 0, orbit: Math.random() < 0.5 ? -1 : 1, stridePhase: 0, moved: 0,
     state: 'spawn', t: 0, targetX: clamp(x + (x < G.player.x ? 70 : -70), G.camX + 24, G.camX + W - 24),
     atkCd: irand(30, 80), dead: false, removeMe: false, flash: 0,
     w: T.w, h: T.h, shadowR: T.shadowR, hitLanded: false,
+    offSlot: !!T.offSlot, noCount: !!T.noCount, runner: !!T.runner,
+    noLane: false, ffCd: 0, pitCd: 0, rig: null, ramGone: false,
     hurt(dmg, dir, heavy, launch) { hurtEnemy(e, dmg, dir, heavy, launch); },
     parried(dmg, dir) {
       hurtEnemy(e, dmg, dir, false, false);
@@ -60,6 +87,21 @@ export function spawnEnemy(type, x, y) {
     thrown(dir) { throwEnemy(e, dir); },
   };
   G.enemies.push(e);
+
+  // "One heavy, four props" is this hook and nothing else: the prop is an ordinary
+  // breakable in G.props, so the y-sort, the player's target list and hurtProp all
+  // work on it already, and onBreak is the whole mechanic.
+  if (T.rig) {
+    e.rig = createProp(T.rig, x + e.face * 32, y + 6);
+    e.rig.onBreak = () => { e.ramGone = true; e.range = 40; };
+    G.props.push(e.rig);
+  }
+  // He arrives out of the river, behind the lane, and walks up onto the lip. He is
+  // visible and not yet dangerous for those 20 frames - that IS his telegraph.
+  if (T.fromWater && laneMin(x) > FLOOR_TOP) {
+    e.y = laneMin(x) - 12; e.noLane = true; e.state = 'rise'; e.t = 0;
+  }
+  if (T.runner) { e.state = 'runner'; e.face = 1; e.noLane = true; }
   return e;
 }
 
@@ -94,6 +136,21 @@ function hurtEnemy(e, dmg, dir, heavy, launch) {
     if (G.player.grabbedBy === e) { G.player.grabbedBy = null; G.player.state = 'idle'; }
     // Enemy defeats never generate resources. Health is authored through
     // specific breakable objects, keeping stage balance deterministic.
+    // The one exception is placed, not looted: the runner is carrying lunch, and
+    // dropping him is a decision the wave asked you to make under a timer.
+    if (e.runner) {
+      G.pickups.push({ x: e.x, y: e.y, kind: 'tiffin', heal: 45, t: 0 });
+      G.runnerEscaped = false;
+    }
+    // He vents when he dies, burning whatever is next to him. The zone is the
+    // player's half of it and tryHitLane is the neighbours' - a full-width box,
+    // because a pressure cooker does not care which way it was facing.
+    if (e.kind === 'cooker') {
+      spawnZone('fire', e.x, e.y, 34, 90);
+      tryHitLane({ x: e.x, y: e.y, z: e.z, face: 0 }, 14, 70, true, 22);
+      G.shake = Math.max(G.shake, 6);
+      G.audio.sfx('heavy');
+    }
   } else if (launch || heavy) {
     const wasAir = airborne(e);
     if (!wasAir) e.juggle = 0;
@@ -143,17 +200,69 @@ function wallSplat(e, side) {
   if (e.hp <= 0) { e.hp = 1; e.state = 'down'; hurtEnemy(e, 1, -side, true, false); }
 }
 
+// Over the lip and into the river. A ring-out is a free kill, which is the whole
+// reason the ghat's crowd is bigger and tougher than the market's. `thrown` has to
+// go first: hurtEnemy refuses that state, the same trap the throw code documents.
+function pitFall(e) {
+  if (e.dead || e.pitCd > 0) return;
+  e.pitCd = 24;
+  e.state = 'down'; e.t = 0; e.vx = 0; e.vz = 0;
+  spawnDust(e.x, e.y, 6);
+  spawnPop(e.x, e.y - 70, 'RING OUT');
+  G.shake = Math.max(G.shake, 6);
+  G.audio.sfx('slam');
+  addScore(150);
+  hurtEnemy(e, 9999, 0, true, false);
+  e.z = -40;   // the dying arc sinks instead of lying on a floor that is not there
+}
+
 // Attacker slots: two at a time normally, three once the crowd is big, so a
 // full wave actually pressures you instead of politely queueing.
+// A runner is not fighting and the bull is not queueing, so neither takes a slot
+// or counts toward the wave - a wave that waited for the bull could never clear.
 function slotsUsed() {
   let n = 0;
-  for (const e of G.enemies) if (!e.dead && (e.state === 'windup' || e.state === 'attack')) n++;
+  for (const e of G.enemies) if (!e.dead && !e.offSlot && (e.state === 'windup' || e.state === 'attack')) n++;
   return n;
 }
 function slotCap() { return aliveEnemies() >= 4 ? 3 : 2; }
 
+// A red attack does not care who is standing in it. The same box tryHitPlayer uses,
+// swept over the other bodies and the breakables instead of the player. There is no
+// separate `friendly:` flag: red IS the flag, it already drives the telegraph colour,
+// and a second source of truth for the same fact would drift.
+// It never touches G.boss - a summoned crew shredding the thing that summoned it is
+// not a mechanic, it is an exploit.
+export function tryHitLane(src, dmg, range, heavy, tol) {
+  const face = src.face || 0;
+  const cx = src.x + face * range * 0.5, halfW = range * 0.5 + 11;
+  let hit = false;
+  for (const o of G.enemies) {
+    if (o === src || o.dead || o.state === 'dying' || o.runner || o.ffCd > 0) continue;
+    // Friendly fire is a punish, never a stunlock engine. A body already reeling is
+    // skipped: re-entering 'down' or 'hurt' resets the stuck watchdog, and two
+    // cookers beaming each other could then hold each other still forever and the
+    // wave would never clear. ?auto=soak found exactly that.
+    if (o.state === 'down' || o.state === 'thrown' || o.state === 'getup'
+      || o.state === 'hurt' || o.state === 'stagger') continue;
+    if (Math.abs(o.x - cx) < halfW && Math.abs(o.y - src.y) < (tol || 15) && Math.abs(o.z - src.z) < 30) {
+      o.ffCd = 20;   // a 26-frame beam is one hit on a neighbour, not twenty
+      o.hurt(dmg, Math.sign(o.x - src.x) || face || 1, heavy, heavy);
+      spawnSpark(o.x, o.y - 44);
+      spawnPop(o.x, o.y - 78, 'FRIENDLY');
+      hit = true;
+    }
+  }
+  for (const pr of G.props) {
+    if (pr.broken || pr === src.rig) continue;
+    if (Math.abs(pr.x - cx) < halfW && Math.abs(pr.y - src.y) < (tol || 15)) pr.hurt(dmg, face || 1);
+  }
+  return hit;
+}
+
 function tryHitPlayer(e, dmg, range, heavy, tol, parryClass = PARRY_CLASS[e.kind]) {
   const p = G.player;
+  if (parryClass === 'unblockable') tryHitLane(e, dmg, range, heavy, tol);
   if (p.state === 'down' || p.state === 'getup' || p.dying) return;
   if (Math.abs(p.x - (e.x + e.face * range * 0.5)) < range * 0.5 + 11 && Math.abs(p.y - e.y) < (tol || 15) && p.z < 24) {
     if (resolveIncomingHit(p, e, { parryClass })) return true;
@@ -166,9 +275,12 @@ function tryHitPlayer(e, dmg, range, heavy, tol, parryClass = PARRY_CLASS[e.kind
 }
 
 // The macaque robs the floor: if a pickup is closer than the player, go take it.
+// Not the 1-up: there is one in the level, and losing it to an RNG roll is a tax,
+// not a decision.
 function nearestPickup(e) {
   let best = null, bd = 150;
   for (const q of G.pickups) {
+    if (q.kind === 'life') continue;
     const d = Math.abs(q.x - e.x);
     if (d < bd) { bd = d; best = q; }
   }
@@ -183,8 +295,14 @@ export function updateEnemies() {
     e.t++;
     if (e.flash > 0) e.flash--;
     if (e.wallCd > 0) e.wallCd--;
+    if (e.ffCd > 0) e.ffCd--;
+    if (e.pitCd > 0) e.pitCd--;
+    if (e.rig && !e.rig.broken && e.dead) e.rig.onBreak = null;   // debris outlives its owner
     if (e.state !== 'down' && e.state !== 'thrown' && e.z <= 0) e.juggle = 0;
-    if (e.state !== 'loot') e.face = p.x < e.x ? -1 : 1;
+    if (e.state !== 'loot' && e.state !== 'runner') e.face = p.x < e.x ? -1 : 1;
+    // Wet sand slows both sides, which is the point of it. Derived from the base
+    // each frame so every e.speed read downstream gets it without knowing about it.
+    e.speed = e.baseSpeed * zoneDrag(e);
 
     // Watchdogs: a body must never be able to freeze. Passive states only
     // survive while whoever put the enemy there is still holding up their end.
@@ -204,10 +322,53 @@ export function updateEnemies() {
         if (Math.abs(dx) < 4) { e.state = 'idle'; e.t = 0; }
         break;
       }
+      // He ignores you and runs for the far side. Two things happen at the end of
+      // it and both are wave state: he gets away, or you get a meal.
+      case 'runner': {
+        e.x += e.face * e.speed;
+        if (e.x > G.camX + W + 40 || e.x < G.camX - 40) { e.removeMe = true; G.runnerEscaped = true; }
+        break;
+      }
+      // Out of the water and onto the lip. Twenty frames of visible and harmless.
+      case 'rise': {
+        e.y += 0.6;
+        if (e.y >= laneMin(e.x)) { e.y = laneMin(e.x); e.noLane = false; e.state = 'approach'; e.t = 0; }
+        break;
+      }
+      // The drag: he has you, and every frame he takes you a little further back
+      // toward the edge he came out of. Mash out on the ordinary grab contract.
+      case 'drag': {
+        if (p.grabbedBy !== e) { e.state = 'idle'; e.t = 0; e.atkCd = irand(40, 80); break; }
+        e.holdT++;
+        p.y = Math.max(laneMin(p.x), p.y - 0.8);
+        e.y = p.y; e.x = p.x + e.face * 22;
+        if (p.mash >= 5) {
+          p.grabbedBy = null; p.mash = 0;
+          e.state = 'stagger'; e.t = 0; e.vx = -e.face * 1.2;
+          hurtEnemy(e, 6, -e.face, false, false);
+        } else if (e.holdT > 90) {
+          p.grabbedBy = null; p.mash = 0;
+          hurtPlayer(p, 8, e.face, true);
+          e.state = 'backoff'; e.t = 0;
+        }
+        break;
+      }
       case 'idle': {
+        // The bull does not queue for a turn and does not orbit: he walks to whichever
+        // edge is further away, locks one depth lane, and paws. Everything after that
+        // is the ordinary windup -> attack chain, so he gets the red telegraph free.
+        if (e.kind === 'bull') {
+          const edge = p.x > (G.camX + W / 2) ? G.camX + 24 : G.camX + W - 24;
+          e.face = edge < e.x ? -1 : 1;
+          e.x += Math.sign(edge - e.x) * 1.6;
+          e.y += clamp(p.y - e.y, -0.8, 0.8);
+          if (Math.abs(edge - e.x) < 6) { e.face = -e.face; e.state = 'windup'; e.t = 0; }
+          break;
+        }
         // Orbit the player instead of bunching up on one spot, so a crowd
         // spreads across the arena and stays readable.
-        const wantY = clamp(p.y + e.orbit * (e.kind === 'masala' || e.kind === 'operator' ? 26 : 16), FLOOR_TOP, FLOOR_BOT);
+        // laneMin, not FLOOR_TOP: on the ghat the AI must never aim into the river.
+        const wantY = clamp(p.y + e.orbit * (e.kind === 'masala' || e.kind === 'operator' ? 26 : 16), laneMin(e.x), FLOOR_BOT);
         e.y += clamp(wantY - e.y, -0.6, 0.6);
         if (Math.abs(e.y - wantY) < 2 && Math.random() < 0.004) e.orbit *= -1;
         const gap = Math.abs(p.x - e.x);
@@ -280,6 +441,10 @@ export function updateEnemies() {
           if (e.kind === 'bandar') { e.vx = e.face * 3.6; e.vz = 3.0; e.z = 0.1; G.audio.sfx('dash'); }
           if (e.kind === 'pehlwan') { e.vx = e.face * 2.2; G.audio.sfx('dash'); }
           if (e.kind === 'constable') e.armor = 1;
+          if (e.kind === 'thela' && !e.ramGone) { e.vx = e.face * 2.6; G.audio.sfx('dash'); }
+          if (e.kind === 'bull') { e.vx = e.face * e.speed; G.audio.sfx('dash'); }
+        } else if (e.kind === 'bull' && e.t % 6 === 0) {
+          spawnDust(e.x - e.face * 26, e.y, 2);   // pawing the ground, for 40 frames
         }
         break;
       }
@@ -309,6 +474,57 @@ export function updateEnemies() {
           e.x += e.vx; e.z += e.vz; e.vz -= 0.22;
           if (!e.hitLanded) { tryHitPlayer(e, e.dmg, 34, false, 16); if (G.hitstop > 0) e.hitLanded = true; }
           if (e.z <= 0) { e.z = 0; e.vz = 0; e.state = 'backoff'; e.t = 0; spawnDust(e.x, e.y, 2); }
+        } else if (e.kind === 'cooker') {
+          // A screaming beam down the lane. It is a sweep, not a strike, so it calls
+          // tryHitLane itself rather than riding tryHitPlayer's one-line hook.
+          if (e.t < 26 && e.t % 3 === 0) {
+            spawnShot('steam', e.x + e.face * (16 + e.t * 2.4), e.y, e.face * 1.4, 0,
+              { source: e, parryClass: 'unblockable' });
+            tryHitPlayer(e, 3, 110, false, 12);
+            if (e.t === 0) G.audio.sfx('whiff');
+          }
+          if (e.t > 38) { e.state = 'backoff'; e.t = 0; }
+        } else if (e.kind === 'thela') {
+          // With the cart gone he is a slow brawler for the rest of his life, and
+          // that is the whole reward for breaking it.
+          if (e.ramGone) {
+            if (e.t === 6 && !e.hitLanded) { tryHitPlayer(e, 8, 44, false, 14, 'counter'); e.hitLanded = true; }
+            if (e.t > 22) { e.state = 'idle'; e.atkCd = irand(60, 110); }
+          } else {
+            e.x += e.vx; e.vx *= 0.97;
+            if (e.rig && !e.rig.broken) { e.rig.x = e.x + e.face * 32; e.rig.y = e.y + 6; }
+            if (!e.hitLanded && tryHitPlayer(e, e.dmg, 74, true, 18)) e.hitLanded = true;
+            if (e.t % 4 === 0) spawnDust(e.x - e.face * 12, e.y, 1);
+            if (e.t > 40) { e.vx = 0; e.state = 'idle'; e.atkCd = irand(80, 140); e.poise = e.maxPoise; }
+          }
+        } else if (e.kind === 'mudlark' || e.kind === 'dhobi') {
+          // The mudlark always tries for the drag; the dhobi mostly whips and
+          // sometimes wraps you up. His slab is what gives him the long reach.
+          const reach = e.kind === 'dhobi' ? (e.rig && !e.rig.broken ? 96 : 62) : 30;
+          const strike = e.kind === 'dhobi' ? 8 : 5;
+          if (e.t === strike && !e.hitLanded) {
+            e.hitLanded = true;
+            const canHold = Math.abs(p.x - e.x) < reach && Math.abs(p.y - e.y) < 14 && p.z < 12 &&
+              !p.dying && p.invuln <= 0 && p.state !== 'down' && p.state !== 'getup' && !p.grabbedBy;
+            if (canHold && (e.kind === 'mudlark' || Math.random() < 0.4)) {
+              grabPlayer(p, e);
+              e.state = 'drag'; e.t = 0; e.holdT = 0;
+              G.audio.sfx('throw');
+              break;
+            }
+            tryHitPlayer(e, e.dmg, reach, e.kind === 'dhobi', 15);
+            G.audio.sfx(e.kind === 'dhobi' ? 'weapon' : 'punch');
+          }
+          if (e.t > (e.kind === 'dhobi' ? 30 : 20)) { e.state = 'idle'; e.atkCd = irand(60, 120); }
+        } else if (e.kind === 'bull') {
+          // 18 damage to anything he touches, both sides - and "both sides" is free,
+          // because the charge is red and tryHitPlayer routes every red through the lane.
+          e.x += e.vx;
+          if (!e.hitLanded && tryHitPlayer(e, e.dmg, 60, true, 20)) e.hitLanded = true;
+          if (e.t % 3 === 0) spawnDust(e.x - e.face * 20, e.y, 2);
+          if (e.x < G.camX + 16 || e.x > G.camX + W - 16 || e.t > 200) {
+            e.vx = 0; e.state = 'idle'; e.t = 0; e.hitLanded = false;
+          }
         } else { // pehlwan: charge into a bear hug
           e.x += e.vx; e.vx *= 0.94;
           if (e.t === 10 && !e.hitLanded) {
@@ -404,11 +620,15 @@ export function updateEnemies() {
     // its AI state: enemies drift in depth, back off and sway while nominally 'idle',
     // and playing the standing frame through that is what reads as sliding. Measuring
     // after the arena clamp also stops the legs cycling while walking into a wall.
-    e.y = clamp(e.y, FLOOR_TOP, FLOOR_BOT);
-    const side = clampToArena(e);
+    e.y = Math.min(e.y, FLOOR_BOT);
+    const wet = clampToLane(e);
+    const side = e.runner ? 0 : clampToArena(e);
     e.moved = Math.hypot(e.x - x0, e.y - y0);
     e.stridePhase += e.moved;
+    // wallSplat owns the x axis and pitFall the depth axis, so they can never
+    // compete for the same body - the else makes that precedence explicit.
     if (side && !e.dead && (e.state === 'down' || e.state === 'thrown')) wallSplat(e, side);
+    else if (wet && !e.dead) pitFall(e);
   }
   // sweep removed
   for (let i = G.enemies.length - 1; i >= 0; i--) if (G.enemies[i].removeMe) G.enemies.splice(i, 1);
@@ -472,8 +692,11 @@ export function drawEnemy(ctx, e, camX) {
   }
 }
 
+// The count the wave gate and the spawn cap read. Runners and the bull are exempt:
+// a wave that waited for the dabbawala to be killed could never clear, and a bull
+// crossing the lane must not eat one of the six slots the wave was written for.
 export function aliveEnemies() {
   let n = 0;
-  for (const e of G.enemies) if (!e.dead) n++;
+  for (const e of G.enemies) if (!e.dead && !e.noCount) n++;
   return n;
 }

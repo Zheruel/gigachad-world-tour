@@ -30,7 +30,13 @@ const HEIGHTS = {
   player: 96,
   goonda: 80, batta: 82, masala: 79, bandar: 46, pehlwan: 97,
   constable: 86, operator: 80, sepoy: 94,
+  // DIRTY DELHI. These are CANVAS heights, and the canvas is sized by the family's
+  // tallest pose rather than by the body - see tools/check_cast_scale.py. So Langda's
+  // 103 is a hanging macaque with his arms fully extended; the animal himself reads at
+  // 58, which is what TYPES.langda's hitbox uses.
+  cooker: 82, thela: 107, mudlark: 70, dhobi: 90, dabbawala: 89, bull: 105,
   raja: 104, mirchi: 100, refund: 106, yadav: 108, rana: 112,
+  pappu: 104, langda: 103, dredger: 150, thekedar: 88,
 };
 
 // game frame name -> candidate manifest state names (first hit wins)
@@ -49,6 +55,21 @@ const NAMEMAP = {
   jumpfall: ['jumpfall', 'jump'],
   idle_cigar: ['idle_cigar'], idle_shades: ['idle_shades'],
   idle_flex: ['idle_flex'], idle_knuckles: ['idle_knuckles'],
+  // DIRTY DELHI. Every new pose needs a chain or it silently renders the code
+  // fallback forever - which is what makes art landing one strip at a time work.
+  charge: ['charge', 'run', 'walk'],
+  stomp: ['stomp', 'slam', 'punch'],
+  beam: ['beam', 'atk', 'atk1'],
+  ram: ['ram', 'charge', 'run', 'walk'],
+  push: ['push', 'walk'],
+  rise: ['rise', 'getup', 'idle'],
+  whip: ['whip', 'atk', 'atk1'],
+  paw: ['paw', 'idle'],
+  hang: ['hang', 'idle'],
+  drop: ['drop', 'jumpfall', 'jump', 'atk'],
+  screech: ['screech', 'atk', 'atk1'],
+  snatch: ['snatch', 'grab', 'atk'],
+  swing: ['swing', 'atk', 'atk1', 'punch'],
 };
 
 function mkCanvas(w, h) {

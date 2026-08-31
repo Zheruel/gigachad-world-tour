@@ -3,7 +3,9 @@
   "silent": true,
   "lair": "neon_shadows.mp3",
   "title": null,
-  "stage1": null,
+  "stage1a": null,
+  "stage1b": null,
   "boss": null,
+  "boss1": null,
   "ending": null
 }

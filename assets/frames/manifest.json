@@ -316,32 +316,6 @@
       "pehlwan_idle.png"
     ]
   },
-  "rickshaw": {
-    "idle": [
-      "rickshaw_idle.png"
-    ],
-    "walk": [
-      "rickshaw_walk1.png",
-      "rickshaw_walk2.png",
-      "rickshaw_walk3.png",
-      "rickshaw_walk4.png"
-    ],
-    "atk": [
-      "rickshaw_atk.png",
-      "rickshaw_atk2.png",
-      "rickshaw_atk3.png"
-    ],
-    "hurt": [
-      "rickshaw_hurt.png",
-      "rickshaw_hurt2.png"
-    ],
-    "down": [
-      "rickshaw_down.png"
-    ],
-    "getup": [
-      "rickshaw_idle.png"
-    ]
-  },
   "constable": {
     "idle": [
       "constable_idle.png"
@@ -449,116 +423,337 @@
       "raja_down.png"
     ]
   },
-  "mirchi": {
+  "cooker": {
     "idle": [
-      "mirchi_idle.png"
+      "cooker_idle1.png",
+      "cooker_idle2.png",
+      "cooker_idle3.png",
+      "cooker_idle4.png"
     ],
     "walk": [
-      "mirchi_walk1.png",
-      "mirchi_walk2.png"
+      "cooker_walk1.png",
+      "cooker_walk2.png",
+      "cooker_walk3.png",
+      "cooker_walk4.png"
     ],
-    "punch": [
-      "mirchi_punch.png",
-      "mirchi_punch2.png",
-      "mirchi_punch3.png"
+    "atk": [
+      "cooker_beam2.png",
+      "cooker_beam3.png",
+      "cooker_beam4.png"
     ],
-    "grab": [
-      "mirchi_grab.png"
-    ],
-    "slam": [
-      "mirchi_slam.png",
-      "mirchi_slam2.png",
-      "mirchi_slam3.png"
+    "beam": [
+      "cooker_beam1.png",
+      "cooker_beam2.png",
+      "cooker_beam3.png",
+      "cooker_beam4.png"
     ],
     "hurt": [
-      "mirchi_hurt.png",
-      "mirchi_hurt2.png"
+      "cooker_hurt1.png",
+      "cooker_hurt2.png"
     ],
     "down": [
-      "mirchi_down.png"
+      "cooker_hurt3.png"
     ]
   },
-  "refund": {
+  "thela": {
     "idle": [
-      "refund_idle.png"
+      "thela_idle1.png",
+      "thela_idle2.png",
+      "thela_idle3.png",
+      "thela_idle4.png"
     ],
     "walk": [
-      "refund_walk1.png",
-      "refund_walk2.png"
+      "thela_walk1.png",
+      "thela_walk2.png",
+      "thela_walk3.png",
+      "thela_walk4.png"
+    ],
+    "atk": [
+      "thela_ram2.png",
+      "thela_ram3.png",
+      "thela_ram4.png"
+    ],
+    "ram": [
+      "thela_ram1.png",
+      "thela_ram2.png",
+      "thela_ram3.png",
+      "thela_ram4.png"
     ],
     "punch": [
-      "refund_punch.png",
-      "refund_punch2.png",
-      "refund_punch3.png"
-    ],
-    "grab": [
-      "refund_grab.png"
-    ],
-    "slam": [
-      "refund_slam.png",
-      "refund_slam2.png",
-      "refund_slam3.png"
+      "thela_atk1.png",
+      "thela_atk2.png",
+      "thela_atk3.png"
     ],
     "hurt": [
-      "refund_hurt.png",
-      "refund_hurt2.png"
+      "thela_hurt1.png",
+      "thela_hurt2.png"
     ],
     "down": [
-      "refund_down.png"
+      "thela_hurt3.png"
     ]
   },
-  "yadav": {
+  "mudlark": {
     "idle": [
-      "yadav_idle.png"
+      "mudlark_idle1.png",
+      "mudlark_idle2.png",
+      "mudlark_idle3.png",
+      "mudlark_idle4.png"
     ],
     "walk": [
-      "yadav_walk1.png",
-      "yadav_walk2.png"
+      "mudlark_walk1.png",
+      "mudlark_walk2.png",
+      "mudlark_walk3.png",
+      "mudlark_walk4.png"
     ],
-    "punch": [
-      "yadav_punch.png",
-      "yadav_punch2.png",
-      "yadav_punch3.png"
+    "atk": [
+      "mudlark_grab1.png",
+      "mudlark_grab2.png",
+      "mudlark_grab3.png"
     ],
-    "grab": [
-      "yadav_grab.png"
-    ],
-    "slam": [
-      "yadav_slam.png",
-      "yadav_slam2.png",
-      "yadav_slam3.png"
+    "rise": [
+      "mudlark_rise1.png",
+      "mudlark_rise2.png",
+      "mudlark_rise3.png",
+      "mudlark_rise4.png"
     ],
     "hurt": [
-      "yadav_hurt.png",
-      "yadav_hurt2.png"
+      "mudlark_hurt1.png",
+      "mudlark_hurt2.png"
     ],
     "down": [
-      "yadav_down.png"
+      "mudlark_hurt3.png"
     ]
   },
-  "rana": {
+  "dhobi": {
     "idle": [
-      "rana_1.png"
+      "dhobi_idle1.png",
+      "dhobi_idle2.png",
+      "dhobi_idle3.png",
+      "dhobi_idle4.png"
     ],
     "walk": [
-      "rana_2.png",
-      "rana_3.png"
+      "dhobi_walk1.png",
+      "dhobi_walk2.png",
+      "dhobi_walk3.png",
+      "dhobi_walk4.png"
     ],
-    "punch": [
-      "rana_4.png",
-      "rana_chain_lash.png"
+    "atk": [
+      "dhobi_whip2.png",
+      "dhobi_whip3.png",
+      "dhobi_whip4.png"
     ],
-    "grab": [
-      "rana_4.png"
-    ],
-    "slam": [
-      "rana_chain_slam.png"
+    "whip": [
+      "dhobi_whip1.png",
+      "dhobi_whip2.png",
+      "dhobi_whip3.png",
+      "dhobi_whip4.png"
     ],
     "hurt": [
-      "rana_react_hurt.png"
+      "dhobi_hurt1.png",
+      "dhobi_hurt2.png"
     ],
     "down": [
-      "rana_react_down.png"
+      "dhobi_hurt3.png"
+    ]
+  },
+  "bull": {
+    "idle": [
+      "sandh_paw1.png"
+    ],
+    "walk": [
+      "sandh_walk1.png",
+      "sandh_walk2.png",
+      "sandh_walk3.png",
+      "sandh_walk4.png"
+    ],
+    "atk": [
+      "sandh_paw4.png",
+      "sandh_charge2.png",
+      "sandh_charge3.png"
+    ],
+    "paw": [
+      "sandh_paw1.png",
+      "sandh_paw2.png",
+      "sandh_paw3.png",
+      "sandh_paw4.png"
+    ],
+    "charge": [
+      "sandh_charge1.png",
+      "sandh_charge2.png",
+      "sandh_charge3.png",
+      "sandh_charge4.png"
+    ],
+    "hurt": [
+      "sandh_hurt1.png",
+      "sandh_hurt2.png"
+    ],
+    "down": [
+      "sandh_hurt3.png"
+    ]
+  },
+  "dabbawala": {
+    "idle": [
+      "dabbawala_run1.png"
+    ],
+    "walk": [
+      "dabbawala_run1.png",
+      "dabbawala_run2.png",
+      "dabbawala_run3.png",
+      "dabbawala_run4.png"
+    ],
+    "run": [
+      "dabbawala_run1.png",
+      "dabbawala_run2.png",
+      "dabbawala_run3.png",
+      "dabbawala_run4.png"
+    ],
+    "hurt": [
+      "dabbawala_drop1.png",
+      "dabbawala_drop2.png"
+    ],
+    "down": [
+      "dabbawala_drop3.png"
+    ]
+  },
+  "thekedar": {
+    "idle": [
+      "thekedar_idle1.png",
+      "thekedar_idle2.png",
+      "thekedar_idle3.png",
+      "thekedar_idle4.png"
+    ],
+    "walk": [
+      "thekedar_idle1.png",
+      "thekedar_idle2.png",
+      "thekedar_idle3.png",
+      "thekedar_idle4.png"
+    ],
+    "atk": [
+      "thekedar_swing1.png",
+      "thekedar_swing2.png",
+      "thekedar_swing3.png"
+    ],
+    "punch": [
+      "thekedar_swing1.png",
+      "thekedar_swing2.png",
+      "thekedar_swing3.png"
+    ],
+    "hurt": [
+      "thekedar_hurt1.png",
+      "thekedar_hurt2.png"
+    ],
+    "down": [
+      "thekedar_hurt3.png"
+    ]
+  },
+  "pappu": {
+    "idle": [
+      "pappu_idle1.png",
+      "pappu_idle2.png",
+      "pappu_idle3.png",
+      "pappu_idle4.png"
+    ],
+    "walk": [
+      "pappu_walk1.png",
+      "pappu_walk2.png",
+      "pappu_walk3.png",
+      "pappu_walk4.png"
+    ],
+    "punch": [
+      "pappu_charge2.png",
+      "pappu_charge3.png",
+      "pappu_charge4.png"
+    ],
+    "charge": [
+      "pappu_charge1.png",
+      "pappu_charge2.png",
+      "pappu_charge3.png",
+      "pappu_charge4.png"
+    ],
+    "grab": [
+      "pappu_grab1.png",
+      "pappu_grab2.png",
+      "pappu_grab3.png"
+    ],
+    "slam": [
+      "pappu_stomp2.png",
+      "pappu_stomp3.png",
+      "pappu_stomp4.png"
+    ],
+    "stomp": [
+      "pappu_stomp1.png",
+      "pappu_stomp2.png",
+      "pappu_stomp3.png",
+      "pappu_stomp4.png"
+    ],
+    "hurt": [
+      "pappu_hurt1.png",
+      "pappu_hurt2.png"
+    ],
+    "down": [
+      "pappu_hurt3.png"
+    ]
+  },
+  "langda": {
+    "idle": [
+      "langda_idle1.png",
+      "langda_idle2.png",
+      "langda_idle3.png",
+      "langda_idle4.png"
+    ],
+    "walk": [
+      "langda_hang1.png",
+      "langda_hang2.png",
+      "langda_hang3.png"
+    ],
+    "hang": [
+      "langda_hang1.png",
+      "langda_hang2.png",
+      "langda_hang3.png"
+    ],
+    "punch": [
+      "langda_drop2.png",
+      "langda_drop3.png",
+      "langda_drop4.png"
+    ],
+    "drop": [
+      "langda_drop1.png",
+      "langda_drop2.png",
+      "langda_drop3.png",
+      "langda_drop4.png"
+    ],
+    "grab": [
+      "langda_snatch1.png",
+      "langda_snatch2.png",
+      "langda_snatch3.png"
+    ],
+    "snatch": [
+      "langda_snatch1.png",
+      "langda_snatch2.png",
+      "langda_snatch3.png"
+    ],
+    "slam": [
+      "langda_screech2.png",
+      "langda_screech3.png",
+      "langda_screech4.png"
+    ],
+    "screech": [
+      "langda_screech1.png",
+      "langda_screech2.png",
+      "langda_screech3.png",
+      "langda_screech4.png"
+    ],
+    "throw": [
+      "langda_throw1.png",
+      "langda_throw2.png",
+      "langda_throw3.png"
+    ],
+    "hurt": [
+      "langda_hurt1.png",
+      "langda_hurt2.png"
+    ],
+    "down": [
+      "langda_hurt3.png"
     ]
   }
 }

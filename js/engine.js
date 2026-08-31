@@ -31,6 +31,17 @@ export const G = {
   camMax: 0,
   camLock: 0,        // camera locked at this x while a wave is active
   locked: false,
+  // Per-fight arena override, in logical px of inset PER SIDE. Pappu's chalk circle,
+  // the train roof and the tower lobby are one feature wearing three hats, so the
+  // walls live here rather than in any one fight. Everything writes the TARGET and
+  // updateWaves owns the ramp - a fight that wrote the number directly would fight
+  // the release for as long as it took to die.
+  arenaSqueeze: 0,
+  arenaSqueezeTarget: 0,
+  sluice: null,           // { t } once the outfall is armed, for the ghat's rhythm
+  runnerEscaped: false,   // the dabbawala got away, so the next gate is two men heavier
+  introResume: null,      // wave state parked across a miniboss reveal
+  shutterT: 0,            // shopfront rollers, driven by G.locked
   goTimer: 0,        // "GO ->" arrow display timer
   score: 0,
   hiscore: 0,
@@ -137,8 +148,8 @@ export function airborne(e) {
 export const WALL_PAD = 14;
 export const SPLAT_SPEED = 1.5;   // |vx| above this splats instead of just stopping
 
-export function arenaMin() { return G.camX + WALL_PAD; }
-export function arenaMax() { return G.camX + W - WALL_PAD; }
+export function arenaMin() { return G.camX + WALL_PAD + (G.arenaSqueeze || 0); }
+export function arenaMax() { return G.camX + W - WALL_PAD - (G.arenaSqueeze || 0); }
 
 // Clamps a body inside the arena. Returns 0 for no wall contact, or -1/+1 for
 // the side it splatted against (only when it arrived fast enough to matter).
@@ -154,6 +165,43 @@ export function clampToArena(e, restitution) {
   }
   e.vx = 0;
   return 0;
+}
+
+// Movement multiplier for a body standing in a dragging zone (the dredger's spoil
+// dump). 1 when it is standing in nothing, which is almost always. It lives here
+// rather than in shots.js because player.js needs it and shots.js imports player.js.
+export function zoneDrag(e) {
+  let m = 1;
+  for (const z of G.zones) {
+    if (z.drag === undefined || z.drag === 1) continue;
+    if (Math.abs(e.x - z.x) < z.r && Math.abs(e.y - z.y) < 14 && e.z < 12) m = Math.min(m, z.drag);
+  }
+  return m;
+}
+
+// ---- the back of the lane, which on the ghat is water ----
+// FLOOR_TOP is the wall seam everywhere else. A stage can raise it over a span of x
+// with `pits: [{x0, x1, y}]`, and past that lip there is no floor.
+export function laneMin(x) {
+  const pits = (G.stage && G.stage.pits) || null;
+  if (!pits) return FLOOR_TOP;
+  for (const p of pits) if (x >= p.x0 && x < p.x1) return p.y;
+  return FLOOR_TOP;
+}
+
+// Puts a body back on the lane and returns -1 when it went over the lip of a real
+// pit. A body on its own feet is clamped out; a body that is down, thrown or being
+// dragged goes in. That distinction is the whole design - you cannot walk into the
+// river, you can only be PUT in it. `lo > FLOOR_TOP` is the "there is water here"
+// test, so a stage with no pits behaves exactly as it always did.
+export function clampToLane(e) {
+  if (e.noLane) return 0;
+  const lo = laneMin(e.x);
+  if (e.y >= lo) return 0;
+  const fell = lo > FLOOR_TOP
+    && (e.state === 'down' || e.state === 'thrown' || e.state === 'grabbed');
+  e.y = lo;
+  return fell ? -1 : 0;
 }
 
 export function addScore(n) {

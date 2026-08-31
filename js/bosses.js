@@ -5,7 +5,7 @@
 //                      Break the cart and he loses the charge for good.
 //   YADAV   (boss)     corrupt inspector: lathi thrust, spinning lathi sweep,
 //                      tear gas, and a whistle that brings two goondas running.
-import { G, W, FLOOR_TOP, FLOOR_BOT, clamp, irand, addScore, diff, clampToArena, fall, inAir } from './engine.js';
+import { G, W, FLOOR_TOP, FLOOR_BOT, clamp, irand, addScore, diff, clampToArena, clampToLane, laneMin, fall, inAir } from './engine.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
 import { spawnSpark, spawnDust, spawnShock, impact, spawnPop, spawnRing } from './effects.js';
 import { hurtPlayer, grabPlayer, resolveIncomingHit } from './player.js';
@@ -13,6 +13,35 @@ import { spawnShot, spawnArc, spawnZone } from './shots.js';
 import { spawnEnemy } from './enemies.js';
 
 export const BOSSES = {
+  // ---- DIRTY DELHI ----
+  // Their real pattern sets are built one fight at a time; until then each one is
+  // assembled from the shared library so the route is playable end to end and
+  // `every-act-has-a-boss` holds. `mini: true` is data here rather than a line in
+  // main.js's wave code, which is where it used to be set.
+  pappu: {
+    name: 'USTAD PAPPU', title: 'AKHARA CHAMPION', taunt: 'THE CIRCLE IS CLOSED',
+    set: 'pappu', rageSet: 'pappuRage', portrait: 'portrait_pappu',
+    hp: 260, speed: 0.90, w: 62, h: 100, shadowR: 21, score: 3000, mini: true,
+    patterns: ['dashpunch', 'grab'],
+    rageLine: 'MORE ROOM. LESS MERCY.',
+    lines: ['NO WEAPONS', 'STAND AND FIGHT', 'THE CIRCLE HOLDS'],
+  },
+  langda: {
+    name: 'LANGDA', title: 'THE MONKEY KING', taunt: 'THE STREET PAYS ME',
+    set: 'langda', rageSet: 'langdaRage', portrait: 'portrait_langda',
+    hp: 380, speed: 1.60, w: 40, h: 58, shadowR: 13, score: 4200, mini: true,
+    patterns: ['dashpunch', 'wrench', 'whistle'],
+    rageLine: 'NO MORE WIRE',
+    lines: ['MINE', 'ALL OF IT MINE', 'MY STREET'],
+  },
+  dredger: {
+    name: 'THE DREDGER', title: 'WHAT EATS THE RIVER', taunt: 'THE RIVER IS A CONTRACT',
+    set: 'dredger', rageSet: 'dredgerLow', portrait: 'portrait_dredger',
+    hp: 520, speed: 0.70, w: 96, h: 130, shadowR: 30, score: 9000,
+    patterns: ['dashpunch', 'wrench', 'teargas', 'whistle'],
+    rageLine: 'THE ARM COMES DOWN',
+    lines: ['(the winch screams)', '(chain rattle over the water)'],
+  },
   raja: {
     name: 'RICKSHAW RAJA', title: 'KING OF THE METER', taunt: 'NO CHANGE. ONLY PAIN.',
     set: 'raja', rageSet: 'rajaRage', portrait: 'portrait_raja',
@@ -174,7 +203,7 @@ export function updateBoss() {
 
   switch (b.state) {
     case 'idle': {
-      const wantY = clamp(p.y, FLOOR_TOP, FLOOR_BOT);
+      const wantY = clamp(p.y, laneMin(b.x), FLOOR_BOT);
       b.y += clamp(wantY - b.y, -spd * 0.6, spd * 0.6);
       const dx = p.x - b.x;
       if (Math.abs(dx) > 40) b.x += Math.sign(dx) * spd * 0.5;
@@ -366,7 +395,7 @@ export function updateBoss() {
       if (b.t === 6) {
         b.whistles++;
         const backup = b.key === 'refund' ? 'operator' : b.key === 'rana' ? 'sepoy' : 'constable';
-        spawnEnemy(backup, G.camX - 20, FLOOR_TOP + 20);
+        spawnEnemy(backup, G.camX - 20, laneMin(G.camX) + 20);
         spawnEnemy(backup, G.camX + W + 20, FLOOR_BOT - 20);
         spawnPop(b.x, b.y - b.h - 8,
           b.key === 'refund' ? 'ESCALATION!' : b.key === 'rana' ? 'SEPOYS!' : 'CONSTABLES!');
@@ -400,7 +429,8 @@ export function updateBoss() {
       break;
     }
   }
-  b.y = clamp(b.y, FLOOR_TOP, FLOOR_BOT);
+  b.y = Math.min(b.y, FLOOR_BOT);
+  clampToLane(b);   // a boss is never ringed out; it just cannot stand in the river
   clampToArena(b, 0);
 }
 

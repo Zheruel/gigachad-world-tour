@@ -23,9 +23,12 @@ export function spawnArc(kind, x, y, vx, vz, dmg, burst, options = {}) {
     reflected: false });
 }
 
-// kind: 'chutney' (poison) | 'gas' (poison) | 'fire' (burn)
-export function spawnZone(kind, x, y, r, life) {
-  G.zones.push({ kind, x, y, r, t: 0, life });
+// kind: 'chutney' (poison) | 'gas' (poison) | 'fire' (burn) | 'spoil' (wet sand)
+// opts: { both } also hurts enemies, { drag } multiplies movement inside it.
+// Both default off, so every zone that existed before this behaves exactly as it did -
+// making all zones two-sided would silently change five fights.
+export function spawnZone(kind, x, y, r, life, opts) {
+  G.zones.push({ kind, x, y, r, t: 0, life, both: !!(opts && opts.both), drag: (opts && opts.drag) || 1 });
 }
 
 export function updateShots() {
@@ -80,7 +83,13 @@ export function updateShots() {
     const inside = Math.abs(p.x - z.x) < z.r && Math.abs(p.y - z.y) < 14 && p.z < 12;
     if (inside && z.t % 24 === 0) {
       if (z.kind === 'fire') hurtPlayer(p, 4, p.x < z.x ? -1 : 1, false);
-      else poisonPlayer(p, 180);
+      else if (z.kind !== 'spoil') poisonPlayer(p, 180);
+    }
+    if (z.both && z.t % 24 === 0) {
+      for (const e of G.enemies) {
+        if (e.dead || e.state === 'dying') continue;
+        if (Math.abs(e.x - z.x) < z.r && Math.abs(e.y - z.y) < 14 && e.z < 12) e.hurt(4, Math.sign(e.x - z.x) || 1, false, false);
+      }
     }
     if (z.t > z.life) G.zones.splice(i, 1);
   }

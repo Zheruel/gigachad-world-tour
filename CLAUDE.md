@@ -184,9 +184,9 @@ occupant area, which reads as a cut however long you hold it.
 The room's ambient life is **not** reactive. She shifts pose every ~8s on a random walk
 over neighbours and speaks once every ~30s, silent 86% of the time; nothing she does keys
 off where CHAD is standing. A proximity trigger made walking past feel like tripping a
-switch, and a line every few seconds reads as a chatbot rather than company. The bed's frame 3 is the "awake"
-pose, held while CHAD is within `NEAR_BED` — the sleepers are proximity-driven, not a
-`FIXTURES` entry, so there is no walk-up prompt.
+switch, and a line every few seconds reads as a chatbot rather than company. They are not a
+`FIXTURES` entry either, so there is no walk-up prompt and nothing to press: the suite is
+somewhere you walk through, not something you use.
 
 The tank is **decor, not a fixture** - there is nothing to walk up to. It had a FEED THEM
 action, which existed to make the shoal ball up under the food; with the shoal gone and the
@@ -545,6 +545,54 @@ a character without a `suplex` sheet still animates.
 `KIND_META` in `js/crowd.js` is the single source of truth for background-actor sizing —
 `tools/process_npcs.py` reads it rather than keeping a copy, so baked art and lab checks
 cannot drift apart.
+
+**A family's canvas is sized by its TALLEST pose, and `--fill` comes from the reference —
+never the other way round.** `process_char.py` silently rescales any single frame taller
+than `--height` (line 116), which destroys the one-scale-for-all-poses invariant the tool
+exists to enforce, and it prints nothing. Hand-picked numbers had three of DIRTY DELHI's
+nine families clamped: Langda hangs at **1.78×** his crouched idle, the thela's overhand
+punch at 1.17×, and the bull *rears* when hit at 1.42× his walk. `tools/check_cast_scale.py
+<char> --ref <pose> --body <logical height>` measures the strips and solves for the
+`--height`/`--fill` that make the tallest pose fit exactly. `HEIGHTS` is therefore a
+CANVAS height, not a body height — Langda's 103 is a hanging macaque; the animal reads at
+58, which is what his hitbox uses.
+
+**Two cleverer ways to measure scale agreement, both of which lie.** Head width in the top
+tenth of the figure is nonsense for any pose that is not upright — in a shoulder charge the
+top of the figure is a shoulder. Silhouette area is not conserved either: a crouched or
+charging body occludes itself and measures 20-30% smaller while being exactly the same
+size. What is unambiguous is the tallest frame per strip: a pose shorter than standing is
+information, a strip *taller* than standing can only be a scale disagreement. Everything
+past that needs a named pose per strip, which is what `normalize_sheets.py` does and why.
+
+**A route plate is generated as anchor chains per AREA, not as N independent screens.** A
+join inside an area is nearly free — the model drew both views against the same
+description — and a join between areas lands where the plate rules already want an
+architectural divider. DIRTY DELHI is 26 screens from 19 generations with **seven** hard
+joins. Views repeat within an area *mirrored* rather than stretched; forcing a 1536-wide
+generation across two screens is the aspect distortion that made the first Tokyo plate mush.
+
+**One curb row per area, not per view.** Each view's wall band is squeezed from `0..curb`
+into 362 px, so a view cut at 627 and its neighbour at 724 come out with architecture 15%
+different in size. Taking the area's median holds masonry scale constant inside an area and
+only lets it change where a divider is hiding the join.
+
+**Grade each floor band onto the bottom third of its OWN wall.** Asked for "empty ground a
+fighter can walk across", the generator draws dry brown dirt whatever the room is — the
+first DIRTY DELHI stitch had a sandy road running through a flooded culvert and out along a
+poisoned river. That wall band is the light the plate actually has at ground level, so a
+floor graded onto it cannot disagree with its room however the room changes. It is also
+self-adjusting, which hand-tinting three areas is not.
+
+**Then turn the runtime light DOWN.** `dusk()` was tuned while a market plate stood in for
+the river, so it was carrying the whole day-to-night ramp. With real night panels underneath
+it double-darkened and the boss arena was unreadable. When the plate starts doing the work,
+the code has to stop.
+
+**A missing effect degrades to NOTHING, not to a placeholder.** The shutter layer drew grey
+rectangles at x positions guessed against the *old* plate, which put them floating in
+mid-air. Every fixture x is measured off the finished wall — the same rule as the lair — and
+until the art and the measurements exist the layer draws nothing at all.
 
 ## Asset generation with GPT Image
 

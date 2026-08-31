@@ -2,7 +2,7 @@
 // the full-meter Meteor Lariat, status effects and recovery.
 import {
   G, FLOOR_TOP, FLOOR_BOT, METER_MAX, clamp, addScore, addMeter, bumpCombo, diff,
-  clampToArena, airborne, juggleMul, fall, inAir,
+  clampToArena, clampToLane, laneMin, zoneDrag, airborne, juggleMul, fall, inAir,
 } from './engine.js';
 import { input } from './input.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
@@ -72,7 +72,7 @@ export function createPlayer() {
     face: 1, hp: 100, maxhp: 100,
     state: 'idle', t: 0, combo: 0, route: 'flow',
     hitDone: false, chainQueued: false, queuedHits: 0, hitConfirm: false,
-    invuln: 0,
+    invuln: 0, pitCd: 0,
     grabbedBy: null, mash: 0, superT: 0,
     runT: 0, idleT: 0, idleAnim: 0, quickGetup: false, groundT: 0,
     stridePhase: 0, moved: 0, chainSkip: 0,
@@ -266,6 +266,7 @@ export function updatePlayer(p) {
   const x0 = p.x, y0 = p.y;
   p.t++;
   if (p.invuln > 0) p.invuln--;
+  if (p.pitCd > 0) p.pitCd--;
   if (p.blind > 0) p.blind--;
   if (p.poison > 0) {
     p.poison--;
@@ -304,17 +305,18 @@ export function updatePlayer(p) {
       }
       if (ax || ay) {
         if (ax) p.face = ax;
+        const dg = zoneDrag(p);   // wet sand: it stays, and it slows everything in it
         // holding the direction after a dash keeps you running
         if (p.runT > 0 && ax === p.face) {
           p.state = 'run';
-          p.x += ax * 2.5;
-          p.y += ay * 1.1;
+          p.x += ax * 2.5 * dg;
+          p.y += ay * 1.1 * dg;
           if (G.time % 7 === 0) spawnDust(p.x, p.y, 1);
         } else {
           p.runT = 0;
           p.state = 'walk';
-          p.x += ax * 1.38;
-          p.y += ay * 1.0;
+          p.x += ax * 1.38 * dg;
+          p.y += ay * 1.0 * dg;
         }
       } else { p.state = 'idle'; p.runT = 0; p.stridePhase = 0; }
 
@@ -532,12 +534,31 @@ export function updatePlayer(p) {
   else if (p.runT > 0) p.runT--;
 
   // clamp to floor band + arena walls
-  p.y = clamp(p.y, FLOOR_TOP, FLOOR_BOT);
+  p.y = Math.min(p.y, FLOOR_BOT);
+  if (clampToLane(p)) pitFallPlayer(p);
   clampToArena(p, 0);
   // measured after the clamp: pushing into a wall must not cycle the legs
   p.moved = Math.hypot(p.x - x0, p.y - y0);
   if (p.state === 'walk' || p.state === 'run') p.stridePhase += p.moved;
   else if (p.state === 'idle') p.stridePhase = 0;
+}
+
+// He goes in the river; he does not stay in it. A pit that eats a life on a knockdown
+// near the edge is a loop you cannot climb out of, so this costs 20 hp and the dignity
+// and puts him back on the lip. It is still more than a wall splat costs, which is the
+// whole difference between a player who uses the water and one who does not.
+function pitFallPlayer(p) {
+  if (p.pitCd > 0) return;
+  p.pitCd = 40;
+  spawnDust(p.x, laneMin(p.x), 8);
+  spawnRing(p.x, laneMin(p.x), '#8fd8c8');
+  spawnPop(p.x, laneMin(p.x) - 30, 'SOAKED');
+  p.hp = Math.max(1, p.hp - Math.round(20 * diff().dmg));
+  p.y = laneMin(p.x) + 2; p.z = 0; p.vz = 0; p.vx = 0;
+  p.invuln = 90;
+  G.combo = 0;
+  G.shake = Math.max(G.shake, 5);
+  G.audio.sfx('slam');
 }
 
 export function hurtPlayer(p, dmg, dir, heavy) {

@@ -159,7 +159,7 @@ export function drawBossIntro(ctx, camX) {
     ctx.fillStyle = 'rgba(5,10,20,0.88)'; ctx.fillRect(0, 20, W, 54);
     drawTextShadow(ctx, 'THE STATION IS CLOSED', center('THE STATION IS CLOSED', 2), 28, '#f4f7ff', 2);
     drawTextShadow(ctx, 'INSPECTOR YADAV - NO WARRANT REQUIRED', center('INSPECTOR YADAV - NO WARRANT REQUIRED', 1), 58, blue ? '#70a8ff' : '#ff6068', 1);
-  } else {
+  } else if (b.key === 'rana') {
     // Rana is first read as a lightning silhouette, then answers with the chain slam.
     const reveal = Math.max(0, Math.min(1, (t - 48) / 70));
     ctx.fillStyle = `rgba(3,1,8,${0.72 * (1 - reveal * 0.65)})`; ctx.fillRect(0, 0, W, H);
@@ -172,6 +172,19 @@ export function drawBossIntro(ctx, camX) {
       drawTextShadow(ctx, 'EVERY ROAD LED TO THIS GATE', center('EVERY ROAD LED TO THIS GATE', 1), 207, '#d8b8b8', 1);
       drawTextShadow(ctx, 'COMMANDER RANA', center('COMMANDER RANA', 3), 224, '#ff4f4f', 3);
       drawTextShadow(ctx, 'THE IRON LION', center('THE IRON LION', 1), 254, '#ffd075', 1);
+    }
+  } else {
+    // The neutral card. Every boss reveal is meant to use something only its own
+    // stage has, so this is a placeholder to be replaced per boss - but it has to be
+    // NEUTRAL: it used to be Rana's lightning, so any boss added without a branch
+    // silently inherited a thunderstorm and a camera offset meant for a fort gate.
+    const reveal = Math.max(0, Math.min(1, (t - 30) / 60));
+    ctx.fillStyle = `rgba(4,3,6,${0.66 * (1 - reveal * 0.7)})`; ctx.fillRect(0, 0, W, H);
+    bossFrame(t < 110 ? 'walk' : 'idle', t < 110 ? ((t >> 3) & 1) : 0);
+    if (t > 70) {
+      ctx.fillStyle = 'rgba(8,6,12,0.86)'; ctx.fillRect(0, 202, W, 68);
+      drawTextShadow(ctx, b.def.title, center(b.def.title, 1), 214, '#c8c0d8', 1);
+      drawTextShadow(ctx, b.def.name, center(b.def.name, 2), 232, '#ffd075', 2);
     }
   }
 

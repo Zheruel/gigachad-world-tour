@@ -1,18 +1,18 @@
 // main.js - boot, fixed-timestep loop, game state machine, rendering, debug hook
-import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, clamp, addScore } from './engine.js';
+import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, clamp, addScore, laneMin, arenaMin, arenaMax } from './engine.js';
 import { initInput, input, endFrameInput, pollGamepad, debugPress, debugRelease } from './input.js';
 import { SPR, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { initStage, initStageObj, drawStage, updateMotes, STAGES, stageDef } from './stages.js';
 import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, hubSay, hubTiger, petsWatch, hubTank, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
 import { createProp } from './props.js';
-import { loadAmbience, updateAmbience, reactStage } from './ambience.js';
+import { loadAmbience, updateAmbience, reactStage, updateShutters, shutterState } from './ambience.js';
 import { loadFX, fx } from './fx.js';
 import { loadFG, drawFG } from './fg.js';
 import { createPlayer, updatePlayer, drawPlayer, hurtPlayer } from './player.js';
 import { spawnEnemy, updateEnemies, drawEnemy, aliveEnemies } from './enemies.js';
 import { createBoss, updateBoss, drawBoss, BOSSES } from './bosses.js';
 import { updateShots, drawShots, drawZones, spawnShot, spawnZone } from './shots.js';
-import { updateProps, drawProp } from './props.js';
+import { updateProps, drawProp, PROP_TYPES } from './props.js';
 import { updateEffects, drawEffects, drawRagnarokGround, spawnPop, spawnSteam } from './effects.js';
 import { drawHUD, drawPause } from './hud.js';
 import { drawTitle, drawIntro, drawBossIntro, drawClear, drawOver, drawEnding } from './screens.js';
@@ -152,15 +152,58 @@ function spawnFromQueue() {
   const fromLeft = (G.spawnSide = !G.spawnSide);
   // just inside the arena edge: they run in rather than trudging on from off-screen
   const x = fromLeft ? G.camX + 18 : G.camX + W - 18;
-  const y = FLOOR_TOP + Math.random() * (FLOOR_BOT - FLOOR_TOP);
+  const lo = laneMin(x);
+  const y = lo + Math.random() * (FLOOR_BOT - lo);
   spawnEnemy(type, x, y);
   G.spawnCd = 36;
+}
+
+// stage1a is the market, stage1b starts at the river, and between them the drain has
+// no music at all - the track stops and what is left is dripping water. audio.music()
+// is already a no-op on an unchanged slot, so this can be called liberally.
+function stageTrack() {
+  const st = G.stage;
+  if (!st.musicB) return st.music;
+  return G.camX >= st.musicBX ? st.musicB : st.music;
+}
+
+// Beats with no wave attached, gated by player x exactly like the waves are. They fire
+// once and in order, which is what keeps the drain's music cut and the crane's arrival
+// from re-triggering every time the camera drifts back over them.
+function updateEvents() {
+  const p = G.player;
+  for (const ev of (G.stage.events || [])) {
+    if (ev.done || p.x < ev.x) continue;
+    ev.done = true;
+    if (ev.kind === 'music') audio.music(ev.slot);
+    else if (ev.kind === 'bull') spawnEnemy('bull', G.camX + W - 20, p.y);
+    else if (ev.kind === 'sluice') G.sluice = { t: 0 };
+    else if (ev.kind === 'crane') { G.shake = Math.max(G.shake, 5); audio.sfx('enrage'); }
+  }
+}
+
+// From x 8300, every ~25s the outfall dumps. Telegraphed twice - the horn two seconds
+// out and the foam a beat before that - so it is a rhythm you fight inside, never a
+// random shove. A body on its feet is clamped at the lip and merely loses ground; a
+// body that is down goes over, and that asymmetry falls out of clampToLane for free.
+const SLUICE_PERIOD = 1500, SLUICE_PUSH = 90;
+function updateSluice() {
+  if (!G.sluice) return;
+  const s = ++G.sluice.t % SLUICE_PERIOD;
+  G.sluice.tell = s > SLUICE_PERIOD - 150;
+  if (s === SLUICE_PERIOD - 120) audio.sfx('blip');
+  if (s > SLUICE_PERIOD - SLUICE_PUSH) {
+    G.player.y -= 0.6;
+    for (const e of G.enemies) if (!e.dead && !e.noLane) e.y -= 0.6;
+  }
 }
 
 function updateWaves() {
   const p = G.player;
   const waves = G.stage.waves;
   if (G.spawnCd > 0) G.spawnCd--;
+  updateEvents();
+  updateSluice();
   if (!G.waveActive) {
     const next = waves[G.waveIndex + 1];
     if (next && p.x >= next.x) {
@@ -183,13 +226,23 @@ function updateWaves() {
         next.done = true;
         G.waveActive = true;
         G.locked = true;
-        G.camLock = G.camX;
+        // A boss arena is designed before the boss, so a fight that has one pins the
+        // camera there rather than wherever the player happened to stop walking.
+        G.camLock = clamp(next.camX === undefined ? G.camX : next.camX, G.camX, G.camMax);
         G.spawnQueue = [...next.spawns];
         G.spawnCd = 0;
+        // The runner got away last time, so this wave is two men heavier. The
+        // consequence lands a gate late, which is what makes it a decision.
+        if (G.runnerEscaped) { G.spawnQueue.push('goonda', 'goonda'); G.runnerEscaped = false; }
+        if (next.runner) {
+          const r = spawnEnemy(next.runner, G.camX - 30, laneMin(G.camX) + 30);
+          r.face = 1;
+        }
+        if (next.bull) spawnEnemy('bull', G.camX + W - 20, p.y);
         if (next.miniboss) {
-          const b = createBoss(next.miniboss, G.camX + W - 40, 211);
-          // BOSSES has no `mini` flag on any entry, so checkBossClear would have taken the
-          // full-boss branch and ended the act the moment a wave miniboss died
+          const b = createBoss(next.miniboss, G.camLock + W - 40, 211);
+          // BOSSES entries carry `mini` now, but a wave can still force it: checkBossClear
+          // would otherwise take the full-boss branch and end the act when one died.
           b.mini = true;
           if (next.miniboss === 'mirchi') {
             // his cart is a real breakable prop - smash it and he loses the charge
@@ -198,9 +251,19 @@ function updateWaves() {
             b.cart.onBreak = () => { b.cartGone = true; };
             G.props.push(b.cart);
           }
-          spawnPop(G.camX + W / 2, 84, b.def.name + ' APPEARS');
           audio.sfx('enrage');
           audio.music(G.stage.bossMusic);
+          // A miniboss with a designed arena gets a real reveal, and the wave state is
+          // parked across it: bossintro used to belong to the terminal boss alone, which
+          // assumed the fight it was introducing ended the act.
+          if (next.intro) {
+            G.introResume = { waveActive: true, locked: true };
+            setState('bossintro');
+            G.fade = 0.7;
+            G.shake = 5;
+          } else {
+            spawnPop(G.camX + W / 2, 84, b.def.name + ' APPEARS');
+          }
         } else {
           audio.sfx('blip');
           if (G.waveIndex === 0) audio.voice('duke_come_get_some', 1200);
@@ -213,13 +276,19 @@ function updateWaves() {
     if (!G.spawnQueue.length && aliveEnemies() === 0 && !bossBusy) {
       G.waveActive = false;
       G.locked = false;
+      G.arenaSqueezeTarget = 0;   // belt and braces: a fight ending any other way still lets go
       G.goTimer = 200;
       audio.sfx('go');
       addScore(50);
-      if (G.stage.music) audio.music(G.stage.music);
+      if (G.stage.music) audio.music(stageTrack());
     }
   }
   if (G.goTimer > 0) G.goTimer--;
+  // One owner of the number, many writers of the target. A fight that drove the walls
+  // directly would fight its own release for as long as it took to die, and 0.6 px a
+  // frame is what makes a crowd WALK inward rather than snap.
+  const sq = G.arenaSqueezeTarget - G.arenaSqueeze;
+  if (sq) G.arenaSqueeze += clamp(sq, -0.6, 0.6);
   // camera: forward-only scroll, locked during waves
   if (!G.locked) {
     G.camX = clamp(Math.max(G.camX, p.x - 255), 0, G.camMax);
@@ -233,13 +302,23 @@ function updatePickups() {
   for (let i = G.pickups.length - 1; i >= 0; i--) {
     const pk = G.pickups[i];
     pk.t++;
-    if (pk.t > 600) { G.pickups.splice(i, 1); continue; }
-    const usable = p.hp < p.maxhp;
+    // A 1-up you can lose to a timer is worse than no 1-up, and one you cannot take
+    // at full health is one a good run never gets to keep.
+    const life = pk.kind === 'life';
+    if (!life && pk.t > 600) { G.pickups.splice(i, 1); continue; }
+    const usable = life || p.hp < p.maxhp;
     if (Math.abs(p.x - pk.x) < 11 && Math.abs(p.y - pk.y) < 9 && p.z < 8 && usable) {
-      p.hp = Math.min(p.maxhp, p.hp + pk.heal);
-      spawnPop(pk.x, pk.y - 20, '+' + pk.heal);
-      audio.sfx('pickup');
-      addScore(50);
+      if (life) {
+        G.lives++;
+        spawnPop(pk.x, pk.y - 24, '1UP');
+        audio.sfx('enrage');
+        addScore(2000);
+      } else {
+        p.hp = Math.min(p.maxhp, p.hp + pk.heal);
+        spawnPop(pk.x, pk.y - 20, '+' + pk.heal);
+        audio.sfx('pickup');
+        addScore(50);
+      }
       G.pickups.splice(i, 1);
     }
   }
@@ -273,6 +352,7 @@ function checkBossClear() {
   if (b.mini) {
     if (b.t > 60) {
       G.boss = null;
+      G.arenaSqueezeTarget = 0;
       addScore(500);
     }
     return;
@@ -378,7 +458,17 @@ function update() {
     const life = b && b.key === 'rana' ? 230 : b && b.key === 'yadav' ? 210 : 195;
     if (t > life || (t > 75 && input.pressed('attack'))) {
       setState('play');
-      audio.music(G.stage.bossMusic);
+      // A miniboss reveal has a wave running behind it and has to hand that back; the
+      // terminal boss does not, and its music is the level's own rather than the shared
+      // one every miniboss and mid-boss shares.
+      if (G.introResume) {
+        G.waveActive = G.introResume.waveActive;
+        G.locked = G.introResume.locked;
+        G.introResume = null;
+        audio.music(G.stage.bossMusic);
+      } else {
+        audio.music(G.stage.bossMusicFinal || G.stage.bossMusic);
+      }
     }
     return;
   }
@@ -428,7 +518,9 @@ function update() {
       p.state = 'getup'; p.t = 0; p.invuln = 120;
       G.meter = METER_MAX / 2;
       setState('play');
-      audio.music(G.boss && !G.boss.dead ? G.stage.bossMusic : G.stage.music);
+      audio.music(G.boss && !G.boss.dead
+        ? (G.boss.mini ? G.stage.bossMusic : (G.stage.bossMusicFinal || G.stage.bossMusic))
+        : stageTrack());
       return;
     }
     if (G.continueT <= 0) enterHub(true);
@@ -463,6 +555,7 @@ function update() {
   updateEffects();
   updateMotes();
   updateAmbience();
+  updateShutters();
   if (G.stage.id === 'locker' && G.time % 24 === 0) {
     spawnSteam(G.camX + Math.random() * W, 200 + Math.random() * 16, 1);
   }
@@ -787,11 +880,25 @@ if (autoMode) {
     // never recovers (an enemy frozen in 'down' also blocks the wave forever).
     startAt(stageParam);
     const p = G.player;
+    // The bull and the dabbawala are deliberately absent: neither has an idle the
+    // soak's abuse loop makes sense against, and neither counts toward a wave, so
+    // "never recovers" is not a failure for them.
     const kinds = ['goonda', 'batta', 'masala', 'bandar', 'pehlwan',
-      'constable', 'operator', 'sepoy'];
+      'constable', 'operator', 'sepoy',
+      'cooker', 'thela', 'mudlark', 'dhobi'];
     const stuck = {};
     const seen = {};
     let frames = 0;
+    // Stop the crowd fighting EACH OTHER, without touching the recovery states this
+    // harness exists to measure. Only the attack family is cancelled.
+    const hush = () => {
+      for (const e of G.enemies) {
+        if (e.state === 'approach' || e.state === 'windup' || e.state === 'attack' || e.state === 'backoff') {
+          e.state = 'idle'; e.t = 0;
+        }
+        if (e.state === 'idle') e.atkCd = 99999;
+      }
+    };
     const note = (e) => {
       const key = e.kind + ':' + e.state;
       stuck[key] = (stuck[key] || 0) + 1;
@@ -801,7 +908,7 @@ if (autoMode) {
       p.hp = p.maxhp; p.dying = false; p.state = 'idle'; p.invuln = 999;
       const kind = kinds[round % kinds.length];
       for (let i = 0; i < 4; i++) {
-        const e = spawnEnemy(kind, p.x + 30 + i * 14, FLOOR_TOP + 6 + i * 18);
+        const e = spawnEnemy(kind, p.x + 30 + i * 14, laneMin(p.x) + 6 + i * 18);
         e.state = 'idle'; e.atkCd = 20; e.hp = 400;
         seen[kind] = true;
       }
@@ -818,8 +925,13 @@ if (autoMode) {
         update(); endFrameInput();
         frames++;
       }
-      // give everything a long, undisturbed window to recover
-      for (let i = 0; i < 400; i++) { update(); endFrameInput(); frames++; }
+      // Give everything a long, undisturbed window to recover - and with friendly
+      // fire on every red, "undisturbed" now has to be arranged. Four battas left to
+      // themselves keep arcing each other, so one is legitimately down at any sample
+      // and the harness would report the mechanic working as a stuck body.
+      // It has to be re-applied every frame: a finished attack hands itself a fresh
+      // atkCd, so parking the number once buys about a second of quiet.
+      for (let i = 0; i < 400; i++) { hush(); update(); endFrameInput(); frames++; }
       for (const e of G.enemies) {
         if (e.dead || e.removeMe) continue;
         if (e.state !== 'idle' && e.state !== 'approach' && e.state !== 'windup' &&
@@ -852,7 +964,7 @@ if (autoMode) {
       step(400);
       // settle window: any legitimate hold or knockdown resolves well inside this
       p.invuln = 999;
-      step(300);
+      for (let i = 0; i < 300; i++) { hush(); update(); endFrameInput(); frames++; }
       for (const e of G.enemies) {
         if (e.dead || e.removeMe) continue;
         // genuinely stuck = passive state with nobody holding it up, or way past its timeout
@@ -894,7 +1006,8 @@ if (autoMode) {
       }
       return best;
     };
-    while (frames < 60 * 300 && G.state !== 'clear' && G.state !== 'over') {
+    // A stage is fifteen minutes, so five minutes of bot is a timeout, not a result.
+    while (frames < 60 * 1100 && G.state !== 'clear' && G.state !== 'over') {
       const t = target();
       debugRelease('left'); debugRelease('right'); debugRelease('up'); debugRelease('down');
       if (t) {
@@ -1097,7 +1210,7 @@ if (autoMode) {
       startGame(0); t('intro-state', G.state === 'intro');
       step(500); t('arrival-holds-for-character-beat', G.state === 'intro');
       step(ENTRANCE_LAST_FRAME - 498); t('play-state', G.state === 'play');
-      t('stage1-name', G.stage.name === 'BAZAAR HEAT');
+      t('stage1-name', G.stage.name === STAGES[0].name && !!G.stage.name);
       // One act, deliberately: the rest were cut to be rebuilt one at a time. What still
       // has to hold is that every act names a boss that exists.
       t('every-act-has-a-boss', STAGES.length >= 1
@@ -1222,6 +1335,180 @@ if (autoMode) {
       t('poison-applied', G.player.poison > 0);
       G.zones.length = 0; G.player.poison = 0;
 
+      // ---- DIRTY DELHI: friendly fire on every red ----
+      // The skill ceiling of the level is "make them hit each other" rather than
+      // "press harder", so this is the highest fun-per-line in it and it is asserted
+      // on the bull, whose whole tell is that he does 18 to ANYTHING he touches.
+      G.enemies.length = 0; G.boss = null; G.zones.length = 0;
+      G.player.hp = 100; G.player.invuln = 0; G.player.dying = false;
+      G.player.state = 'idle'; G.player.z = 0;
+      {
+        const victim = spawnEnemy('goonda', G.player.x + 130, G.player.y);
+        victim.state = 'idle'; victim.atkCd = 999; victim.hp = 400; victim.maxhp = 400;
+        const bull = spawnEnemy('bull', G.player.x - 60, G.player.y);
+        bull.state = 'attack'; bull.t = 0; bull.face = 1; bull.vx = 3.2; bull.hitLanded = false;
+        const vhp = victim.hp, php = G.player.hp;
+        step(90);
+        t('bull-hurts-both-sides', victim.hp < vhp && G.player.hp < php);
+      }
+      G.enemies.length = 0; G.player.hp = 100; G.player.invuln = 0; step(6);
+
+      // ---- the cooker teaches the anti-mash lesson in one death ----
+      {
+        const ck = spawnEnemy('cooker', G.player.x + 200, G.player.y);
+        const nb = spawnEnemy('goonda', G.player.x + 214, G.player.y);
+        nb.state = 'idle'; nb.atkCd = 999; nb.hp = 400; nb.maxhp = 400;
+        const nhp = nb.hp;
+        ck.hurt(999, 1, true, false);
+        t('cooker-vent-hits-neighbours', nb.hp < nhp && G.zones.some((z) => z.kind === 'fire'));
+      }
+      G.enemies.length = 0; G.zones.length = 0; step(6);
+
+      // ---- one heavy, four props: the cart deletes the ram for good ----
+      {
+        const th = spawnEnemy('thela', G.player.x + 70, G.player.y);
+        const hadRig = !!th.rig && G.props.includes(th.rig);
+        th.rig.hurt(999, 1);
+        t('thela-loses-ram-with-cart', hadRig && th.ramGone === true && th.range === 40);
+      }
+      G.enemies.length = 0; step(6);
+
+      // ---- the water is a pit, on the DEPTH axis, and it is a free kill ----
+      // Pushed onto the live stage rather than waiting for the ghat, so the mechanic
+      // is asserted independently of any one level's geography.
+      const realPits = G.stage.pits;
+      G.stage.pits = [{ x0: 0, x1: 99999, y: FLOOR_TOP + 20 }];
+      {
+        const lip = laneMin(G.player.x);
+        const wet = spawnEnemy('goonda', G.player.x + 40, lip + 6);
+        wet.hp = 400; wet.maxhp = 400;
+        wet.state = 'down'; wet.t = 0; wet.y = lip - 8; wet.vx = 0;
+        step(6);
+        t('water-edge-kills', wet.dead === true);
+        t('water-edge-is-not-a-wall', wet.x > G.camX + 20 && wet.x < G.camX + W - 20);
+      }
+      G.enemies.length = 0;
+      {
+        // He pays health and dignity, never a life: a hole that eats a life on a
+        // knockdown near the edge is a loop you cannot climb out of.
+        const lives0 = G.lives;
+        // The ring-out above left 12 frames of hitstop, and update() returns false
+        // through those - four steps of "nothing happened" is a check that measures
+        // the previous check.
+        G.hitstop = 0;
+        G.player.hp = 100; G.player.invuln = 0; G.player.dying = false; G.player.pitCd = 0;
+        // groundT too, or a leftover count from an earlier check gets him up on the
+        // first frame and the clamp never sees a body that is down.
+        G.player.state = 'down'; G.player.t = 0; G.player.groundT = 0; G.player.quickGetup = false;
+        G.player.y = laneMin(G.player.x) - 8;
+        step(4);
+        t('water-edge-costs-the-player-health', G.player.hp < 100 && G.player.hp > 0
+          && G.lives === lives0 && !G.player.dying
+          && G.player.y >= laneMin(G.player.x));
+      }
+      G.stage.pits = realPits;   // put the route's own water back, not null
+      G.player.hp = 100; G.player.invuln = 0; G.player.state = 'idle'; step(6);
+
+      // ---- the one 1-up in the level ----
+      {
+        const others = Object.entries(PROP_TYPES).filter(([k, T]) => T.drop === 'life');
+        t('one-up-is-a-single-prop-kind', others.length === 1 && others[0][0] === 'mithai');
+        G.pickups.length = 0;
+        const box = createProp('mithai', G.player.x + 24, G.player.y);
+        G.props.push(box);
+        box.hurt(999, 1);
+        const up = G.pickups.find((q) => q.kind === 'life');
+        t('one-up-drops-from-the-mithai-box', !!up);
+        step(700);   // the ordinary despawn window, and then some
+        t('one-up-never-expires', G.pickups.includes(up));
+        const lives0 = G.lives;
+        G.player.hp = G.player.maxhp;   // and it is not gated on being hurt
+        G.player.x = up.x; G.player.y = up.y; G.player.z = 0;
+        step(4);
+        t('one-up-is-taken-at-full-health', G.lives === lives0 + 1);
+      }
+      G.pickups.length = 0; G.enemies.length = 0; step(6);
+
+      // ---- the gates feel caused: the shutters follow the lock, staggered ----
+      {
+        const wasLocked = G.locked;
+        G.locked = true; step(140);
+        const down = shutterState();
+        G.locked = false; step(120);
+        const up = shutterState();
+        t('shutters-follow-the-gate',
+          down.length === G.stage.shutters.length
+          && down.every((k) => k > 0.9) && up.every((k) => k < 0.05));
+        // and they roll one after another rather than together
+        G.shutterT = 0; step(1); G.locked = true; step(30);
+        const mid = shutterState();
+        t('shutters-roll-in-sequence', mid[0] > mid[mid.length - 1]);
+        G.locked = wasLocked; G.shutterT = 0;
+      }
+
+      // ---- the route: six areas, three boss-grade fights, one quiet one ----
+      {
+        const st = G.stage;
+        const w = st.waves;
+        t('route-is-six-areas', st.areas.length === 6
+          && st.areas[st.areas.length - 1].x1 === st.width);
+        t('route-has-three-boss-fights',
+          w.filter((q) => q.miniboss || q.boss).length === 3
+          && w[w.length - 1].boss === true);
+        // Every wave gate is inside the route and they only ever go forwards -
+        // updateWaves increments waveIndex and never comes back for a skipped one.
+        t('waves-are-ordered-and-inside-the-route',
+          w.every((q, i) => q.x >= 0 && q.x < st.width && (i === 0 || q.x > w[i - 1].x)));
+        // The quiet area: no gate at all between the mid-boss and the river.
+        const drain = st.areas.find((a) => a.id === 'drain');
+        const wire = st.areas[st.areas.indexOf(drain) - 1];
+        t('the-drain-is-empty', !w.some((q) => q.x > wire.x1 && q.x < drain.x1));
+        // and it is long enough to BE an area. 82.8 px/s, and the doc says 40 seconds.
+        t('the-drain-is-forty-seconds', (drain.x1 - wire.x1) / 82.8 > 30);
+        t('pits-only-on-the-river', st.pits.every((q) => q.x0 >= drain.x1 && q.y > FLOOR_TOP));
+        // 8 crates at +30 and 4 tables at +15. A level's health economy is placed,
+        // so it is a number that can be asserted rather than a hope.
+        const heal = st.props.reduce((n, d) => n + (PROP_TYPES[d.kind].drop === 'shake' ? 30
+          : PROP_TYPES[d.kind].drop === 'plate' ? 15 : 0), 0);
+        t('placed-healing-is-300', heal === 300);
+        t('one-up-is-placed-once', st.props.filter((d) => d.kind === 'mithai').length === 1);
+        t('langda-has-six-brackets', st.props.filter((d) => d.kind === 'bracket').length === 6);
+        // Nobody lives past the drain, and that emptiness is authored rather than
+        // forgotten - it is most of why the second half lands.
+        t('the-river-is-unpopulated', st.birds.every((b) => b.x < wire.x1));
+      }
+
+      // ---- a miniboss with a designed arena gets a real reveal ----
+      {
+        const idx = G.stage.waves.findIndex((q) => q.miniboss);
+        const wv = G.stage.waves[idx];
+        G.waveIndex = idx - 1; G.waveActive = false; G.locked = false;
+        G.enemies.length = 0; G.spawnQueue = []; G.boss = null; G.hitstop = 0;
+        for (const q of G.stage.waves) q.done = false;
+        G.player.x = wv.x + 2; G.player.hp = 100; G.camX = wv.x - 300;
+        step(3);
+        t('miniboss-gets-a-reveal', G.state === 'bossintro' && !!G.boss && G.boss.mini === true);
+        t('miniboss-arena-is-designed', Math.round(G.camLock) === wv.camX);
+        step(210);
+        // and the wave it interrupted is handed back rather than lost
+        t('miniboss-reveal-returns-the-wave',
+          G.state === 'play' && G.waveActive === true && G.locked === true);
+        G.boss.hurt(9999, 1, true, false); step(140);
+        t('miniboss-does-not-end-the-act', G.state === 'play' && G.boss === null);
+      }
+      G.enemies.length = 0; G.spawnQueue = []; G.hitstop = 0;
+
+      // ---- the drain has no music at all ----
+      {
+        const st = G.stage;
+        const ev = st.events.filter((q) => q.kind === 'music');
+        t('the-drain-stops-the-track',
+          ev.length === 2 && ev[0].slot === null && ev[1].slot === st.musicB);
+        t('the-river-answers-the-market', st.music === 'stage1a' && st.musicB === 'stage1b');
+        t('the-level-boss-has-its-own-theme',
+          st.bossMusicFinal === 'boss1' && st.bossMusic === 'boss');
+      }
+
       // ---- quick getup ----
       G.player.hp = 100; G.player.invuln = 0;
       hurtPlayer(G.player, 5, 1, true);
@@ -1344,7 +1631,10 @@ if (autoMode) {
       G.waveIndex = -1; G.waveActive = false; G.locked = false;
       G.enemies.length = 0; G.spawnQueue = [];
       for (const w of G.stage.waves) w.done = false;
-      G.player.x = 421; G.player.hp = 100; G.camX = 160;
+      // Just past the first gate, with the camera behind it. Derived, not typed: it used
+      // to be 421/160 against a wave at 380, and it only passed by coincidence.
+      G.player.x = G.stage.waves[0].x + 41; G.player.hp = 100;
+      G.camX = Math.max(0, G.stage.waves[0].x - 220);
       step(5);
       t('wave-trigger', G.waveActive === true && G.locked === true);
       step(120);
@@ -1363,15 +1653,18 @@ if (autoMode) {
       t('life-lost', G.lives === lives0 - 1);
       t('respawn', G.player.hp === G.player.maxhp && G.state === 'play');
 
-      // ---- Act I: RICKSHAW RAJA + his breakable vehicle ----
+      // ---- Act I's boss, whoever the act names ----
       window.__game.skipToBoss(); G.player.x = G.camX + 230; step(3);
-      t('boss-raja', !!G.boss && G.boss.key === 'raja');
-      t('raja-has-rickshaw', !!G.boss && !!G.boss.cart && G.props.includes(G.boss.cart));
-      if (G.boss && G.boss.cart) {
-        G.boss.cart.hurt(999, 1);
-        step(4);
-        t('cart-breaks-disables-charge', G.boss.cartGone === true);
-      }
+      t('act1-boss-arrives', !!G.boss && G.boss.key === STAGES[0].boss);
+      t('boss-has-its-breakable', !!G.boss
+        && (!G.boss.def.cart || (!!G.boss.cart && G.props.includes(G.boss.cart))));
+      // "a breakable in the world that deletes a pattern for good" used to be asserted
+      // on RAJA's rickshaw. No stage names him any more, so the contract is asserted
+      // where it is actually reachable - on the thela's cart above, and on the dredger's
+      // winch below once that fight exists. Kept as an explicit check rather than a
+      // guarded block that silently stops running when the boss changes.
+      t('boss-breakable-contract-is-covered',
+        PROP_TYPES.thelacart.hp > 0 && (!G.boss.def.cart || G.boss.cartGone !== undefined));
       step(205);
       t('boss-intro-ends', G.state === 'play');
       // The rest of the boss state machine, which used to be asserted on YADAV in Act IV:
@@ -1387,7 +1680,7 @@ if (autoMode) {
       t('act1-clear', G.state === 'clear');
       step(200); debugPress('attack'); step(4); debugRelease('attack');
       t('clear-returns-to-hub', G.state === 'hub');
-      t('clear-brings-home-a-relic', G.hubRelicKey === 'raja' && G.hubRelicT > 0);
+      t('clear-brings-home-a-relic', G.hubRelicKey === STAGES[0].boss && G.hubRelicT > 0);
       // Clearing an act is the one thing that writes the save, so this is the point at
       // which "the jukebox is not persisted" is testable against a save THIS build wrote.
       // A fresh start has to come up on the room's own track.

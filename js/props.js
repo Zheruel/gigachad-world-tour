@@ -5,6 +5,7 @@ import { G, addScore } from './engine.js';
 import { ASSETS } from './assets.js';
 import { Pix, blit, frameW, frameH } from './sprites.js';
 import { spawnDebris, spawnDust, spawnPop, impact } from './effects.js';
+import { spawnZone } from './shots.js';
 
 // kind -> { hp, w, h, shadowR, score, drop, debris }
 export const PROP_TYPES = {
@@ -17,6 +18,22 @@ export const PROP_TYPES = {
   // the dojo heavy bag. js/hub.js builds it with its own hurt() so it never breaks;
   // this entry exists for the footprint and so tools/process_props.py can size the art.
   bag: { hp: 9999, w: 24, h: 84, shadowR: 0, score: 0, drop: null, debris: ['#5a3a20', '#3a2414', '#8a6a44'] },
+
+  // ---- DIRTY DELHI ----
+  // `art` borrows another prop's sprite until this one has its own generation.
+  // the level's only 1-up, one lane back behind a stall you have to break first
+  mithai: { hp: 10, w: 26, h: 20, shadowR: 11, score: 200, drop: 'life', art: 'crate', debris: ['#f0d0a0', '#e8a840', '#c86030'] },
+  // it drops nothing: it BECOMES terrain, which is better, because the designer
+  // places it and both sides can be pushed into it
+  drum: { hp: 18, w: 30, h: 40, shadowR: 14, score: 60, drop: null, art: 'tyres',
+    burst: { kind: 'chutney', r: 30, life: 720 }, debris: ['#2a6a9a', '#4a8aba', '#d8d0b0'] },
+  // six along Langda's arena, each one shortening the wire he can run
+  bracket: { hp: 15, w: 18, h: 14, shadowR: 0, score: 80, drop: null, art: 'sign', debris: ['#5a5a62', '#8a8a92', '#3a3a42'] },
+  // the heavy's prop: a handcart in the market, a boat pole on the ghat
+  thelacart: { hp: 30, w: 54, h: 40, shadowR: 24, score: 120, drop: null, art: 'cart', debris: ['#c08a3a', '#8a5a20', '#d8d0b8'] },
+  thelapole: { hp: 30, w: 70, h: 14, shadowR: 10, score: 120, drop: null, art: 'sign', debris: ['#a8804a', '#6a4a24', '#d0b888'] },
+  // break it and the dhobi loses 34 px of the longest reach in the game
+  dhobislab: { hp: 40, w: 46, h: 18, shadowR: 20, score: 160, drop: null, art: 'table', debris: ['#8a8a8a', '#b8b8b0', '#5a5a58'] },
 };
 
 // ---- procedural art (swapped for AI PNGs later without touching this file) --
@@ -162,11 +179,15 @@ const BUILDERS = { crate, matka, tyres, table, sign, cart, bag };
 // Prefer the generated art; the procedural build below is the fallback so a
 // missing PNG shows a real prop rather than nothing.
 function art(kind, broken) {
-  const png = ASSETS['prop_' + kind + (broken ? '_b' : '')];
+  const T = PROP_TYPES[kind];
+  const src = (T && T.art) || kind;   // a new prop can borrow art until it has its own
+  const png = ASSETS['prop_' + src + (broken ? '_b' : '')];
   if (png) return png;
-  const key = kind + (broken ? '_b' : '');
+  const key = src + (broken ? '_b' : '');
   if (!ART[key]) {
-    const c = BUILDERS[kind](broken);
+    // "Everything degrades to a fallback" has to be true by construction: a kind with
+    // no builder used to be a TypeError inside render(), which takes the HUD with it.
+    const c = (BUILDERS[src] || BUILDERS.crate)(broken);
     c._as = 1;   // code art is authored at 1 logical px
     ART[key] = c;
   }
@@ -214,6 +235,9 @@ function hurtProp(pr, dmg, dir) {
       heal: T.drop === 'shake' ? 30 : T.drop === 'plate' ? 15 : 0, t: 0,
     });
   }
+  // The drum does not drop anything - it BECOMES terrain, which is better, because
+  // the designer places it and both sides can be pushed into it.
+  if (T.burst) spawnZone(T.burst.kind, pr.x, pr.y, T.burst.r, T.burst.life);
   if (pr.onBreak) pr.onBreak(pr);
 }
 
