@@ -39,7 +39,7 @@ const ZONES = [
 
 const FIXTURE_NOTES = {
   bar: 'Plays ONCE: five poses on 18/12/12/42/40 holds, the AAAH on the last swallow, then it stands him up itself.',
-  lounge: 'Sits him on the chesterfield. Four poses on 200/26/54/96 holds - a man with a cigar spends most of his time not smoking it.',
+  lounge: 'Sits him on the chesterfield. Four stable key poses plus three generated midpoint edits smooth the hand and head arc without redrawing the furniture.',
   trophies: 'Opens the relic gallery. Derived from STAGES, so a cut act takes its relic with it.',
   map: 'The world map: picks the act and leaves the room. ESC closes the panel rather than pausing behind it.',
   hifi: 'The jukebox. SETS the room track for this session - it is not saved, so a fresh start comes up on the lounge track.',
@@ -64,9 +64,9 @@ const SETS = [
   },
   {
     title: 'THE SOFA · smoke', dir: 'assets/lair/lounge_smoke_N.png',
-    frames: [0, 1, 2, 3].map((i) => 'lair_lounge_smoke_' + i),
-    holds: [200, 26, 54, 96], cadence: 'true cadence',
-    note: 'The rest is by far the longest hold; an even cycle reads as a machine. The procedural plume leaves his mouth on frame 3.',
+    frames: [0, 1, 2, 3, 4, 5, 6].map((i) => 'lair_lounge_smoke_' + i),
+    holds: [200, 14, 22, 18, 54, 18, 96], cadence: 'true cadence',
+    note: 'Stable authored keys alternate with one-at-a-time midpoint edits. The sofa stays registered while CHAD raises the cigar, draws, and exhales.',
   },
   {
     title: 'THE FIRE · 4 frames', dir: 'assets/lair/fire_N.png',
@@ -76,9 +76,9 @@ const SETS = [
   },
   {
     title: 'THE TIGER · walk', dir: 'assets/lair/tiger_N.png',
-    frames: [0, 1, 2, 3, 4, 5].map((i) => 'lair_tiger_' + i),
+    frames: [0, 1, 2, 3, 4, 5, 6, 7].map((i) => 'lair_tiger_' + i),
     hold: 12, cadence: 'true cadence',
-    note: '0.42 px a frame, one frame every 5 px of travel. A round trip of the room is ~6,600 frames, which is why his wander timer is its own clock.',
+    note: 'Eight low stalking poses, registered on the ribcage rather than moving paw extrema. One frame every 5 px of travel.',
   },
   {
     title: 'THE TIGER · rest', dir: 'assets/lair/tiger_*.png',
@@ -96,7 +96,7 @@ const SETS = [
     title: 'THE BAITBALL · 4 frames', dir: 'assets/lair/baitfish_N.png',
     frames: [0, 1, 2, 3].map((i) => 'lair_baitfish_' + i),
     hold: 13, cadence: 'true cadence',
-    note: 'Body identical and straight in all four, only the tail fan tilts: 31-41% silhouette churn down to 4-5%. Aligned on the mean row of the leading third, not the bounding box.',
+    note: 'One generated anchor supplies every frame. The body is immutable; only the tail fan moves by one device pixel, and the room uses 14 fish instead of 26 overlapping phases.',
   },
   {
     title: 'THE CRAB · 4 frames', dir: 'assets/lair/crab_N.png',

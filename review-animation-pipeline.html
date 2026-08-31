@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Animation Generation Lab</title>
+<style>
+  :root { color-scheme: dark; --bg:#0a0910; --panel:#171421; --line:#393148; --ink:#f0e9dd; --dim:#aba2b3; --gold:#ffd45c; --green:#62d79a; --red:#f06b70; }
+  * { box-sizing:border-box }
+  body { margin:0; background:radial-gradient(circle at 50% -20%,#2b2442 0,var(--bg) 48rem); color:var(--ink); font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace }
+  main { width:min(1440px,100%); margin:auto; padding:24px }
+  header { display:flex; gap:24px; justify-content:space-between; align-items:end; margin-bottom:20px }
+  h1,h2,h3 { margin:0; color:var(--gold); letter-spacing:.08em }
+  h1 { font-size:clamp(22px,4vw,38px) } h2 { font-size:18px } h3 { font-size:13px }
+  p { margin:.35rem 0 0 } .dim { color:var(--dim) }
+  .toolbar { display:flex; flex-wrap:wrap; gap:9px; align-items:center; padding:10px; border:1px solid var(--line); background:var(--panel); margin-bottom:24px }
+  button,input { font:inherit } button { color:var(--ink); background:#2a2336; border:1px solid var(--line); padding:7px 11px; cursor:pointer } button:hover { border-color:var(--gold) }
+  input { accent-color:var(--red) }
+  section { margin:30px 0 } .section-head { border-bottom:1px solid var(--line); padding-bottom:9px; margin-bottom:12px }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px }
+  .card { min-width:0; border:1px solid var(--line); background:var(--panel) }
+  .card.recommended { border-color:#7b6841; box-shadow:inset 0 3px var(--gold) }
+  .preview { height:250px; display:grid; place-items:center; overflow:hidden; background-color:#111018; background-image:linear-gradient(45deg,#1b1824 25%,transparent 25%),linear-gradient(-45deg,#1b1824 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1b1824 75%),linear-gradient(-45deg,transparent 75%,#1b1824 75%); background-size:20px 20px; background-position:0 0,0 10px,10px -10px,-10px 0 }
+  canvas.sprite { width:100%; height:100%; image-rendering:pixelated }
+  .meta { padding:10px } .badge { color:#09070d; background:var(--gold); padding:2px 6px; margin-left:6px; font-size:10px }
+  .readout { margin-top:6px; color:var(--green); font-size:11px; min-height:2.8em }
+  .fish .preview { height:190px; background:#07182c }
+  .fish canvas { width:100%; height:100%; image-rendering:pixelated }
+  .decision { display:grid; grid-template-columns:repeat(3,1fr); gap:12px }
+  .decision article { border:1px solid var(--line); background:var(--panel); padding:13px }
+  .decision strong { color:var(--gold) }
+  code { color:#73cdec }
+  @media(max-width:900px){header{align-items:start;flex-direction:column}.grid,.decision{grid-template-columns:1fr}.preview{height:220px}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div><h1>ANIMATION GENERATION LAB</h1><p class="dim">Final-size playback: old production · direct sheet · anchor-first hybrid.</p></div>
+    <p class="dim">Tiger · couch smoke · baitfish</p>
+  </header>
+
+  <div class="toolbar">
+    <button id="pause">PAUSE</button>
+    <button id="step">STEP ONE FRAME</button>
+    <label>SPEED <input id="speed" type="range" min="35" max="180" value="100"></label>
+    <span class="dim">Judge silhouette and motion here—not the 1536px source sheets.</span>
+  </div>
+
+  <section>
+    <div class="section-head"><h2>TIGER · PROWL</h2><p class="dim">The target is weight transfer and menace without identity drift.</p></div>
+    <div class="grid" id="tigerGrid"></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>TIGER · REST TO ALERT</h2><p class="dim">One identity through lie, wake, sit, stretch, and snarl.</p></div>
+    <div class="grid" id="tigerRestGrid"></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>COUCH · SIT AND SMOKE</h2><p class="dim">The furniture must be dead still while the action travels only through arm, head, ember, and breath.</p></div>
+    <div class="grid" id="couchGrid"></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>BAITFISH · SCHOOL AT REAL SCALE</h2><p class="dim">The fix is less sprite animation and fewer overlapping fish; smooth paths provide the life.</p></div>
+    <div class="grid fish" id="fishGrid"></div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>PIPELINE DECISION</h2></div>
+    <div class="decision">
+      <article><h3>Large organic actor</h3><p><strong>Anchor → sheet → register.</strong> Generate one excellent identity pose first, derive the whole motion family from it, then apply one shared scale, ground line, and palette.</p></article>
+      <article><h3>Actor on furniture</h3><p><strong>Stable keys → one midpoint edit at a time → register on furniture.</strong> Wide sheets redraw both the actor and fixture; adjacent-reference edits keep each change small enough to control.</p></article>
+      <article><h3>Tiny repeated sprite</h3><p><strong>One anchor → code-derived micro-motion.</strong> Do not ask image generation to redraw a 7px body. Move only a one-pixel tail fan and animate the school procedurally.</p></article>
+    </div>
+  </section>
+</main>
+<script type="module" src="js/review-animation-pipeline.js"></script>
+</body>
+</html>

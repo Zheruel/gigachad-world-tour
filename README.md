@@ -309,6 +309,10 @@ and it plays, no code change; remove the flag to get the chiptunes everywhere el
 - `lab.html` is the asset lab: ANIM plays sequences at real game timing and exposes
   every authored drawing in a frame-by-frame contact sheet (`,` / `.` step drawings);
   CAST, SCALE, STAGE, AMBIENCE, CONTRAST and EFFECTS cover the other visual checks.
+- `review-animation-pipeline.html` compares the tiger, couch-smoke and baitfish
+  generation strategies at final size; pause and step individual frames to audit
+  registration. Its prompts and measured conclusions live under
+  `assets/experiments/animation_pipeline/`.
 - `review-1-1.html` is the Bazaar Heat production review room: scrub the complete
   route, jump between wave gates, toggle presentation layers, and inspect the exact
   Stage 1 cast and asset inventory.

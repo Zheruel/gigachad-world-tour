@@ -101,14 +101,13 @@ const fixtureAt = (id) => FIXTURES.find((f) => f.id === id);
 // AND the man, so it is offset until the drawn CHAD lands on the fixture's x. y is
 // WALL_BASE plus the overhang build_lair_extras.py prints - his boots are in front of
 
-// The sit is four poses on a loop of holds, not one still frame with particles over it:
-// he rests, lifts the cigar, draws on it, then tips his head back and blows it out. The
-// rest is by far the longest hold - a man with a cigar spends most of his time not smoking
-// it, and an even cycle reads as a machine.
-const SMOKE_HOLDS = [200, 26, 54, 96];
+// The four authored key poses keep the furniture perfectly still. Three midpoint edits
+// bridge them without asking a wide sheet to redraw CHAD or the sofa. The rest is still
+// by far the longest hold - a man with a cigar spends most of his time not smoking it.
+const SMOKE_HOLDS = [200, 14, 22, 18, 54, 18, 96];
 const SMOKE_CYCLE = SMOKE_HOLDS.reduce((a, b) => a + b, 0);
 // the frame the plume leaves his mouth on, so the procedural smoke agrees with the drawing
-const SMOKE_EXHALE = SMOKE_HOLDS[0] + SMOKE_HOLDS[1] + SMOKE_HOLDS[2];
+const SMOKE_EXHALE = SMOKE_HOLDS.slice(0, -1).reduce((a, b) => a + b, 0);
 
 function loungeFrame() {
   let t = G.hubSeat % SMOKE_CYCLE;
@@ -728,7 +727,8 @@ const SILT_N = 26;
 // The other tenants. The moray that used to live in the wreck's gun port is gone - one
 // animal reacting to the shark from a hole it never leaves is a lot of machinery for a
 // sprite you have to go looking for.
-const BAIT_N = 26;
+// Fewer overlapping phases make the school read as individual fish rather than shimmer.
+const BAIT_N = 14;
 const crab = { x: 0, dir: 1, t: 0, freeze: 0, rest: 0 };
 const bait = { cx: 0, cy: 0, vx: 0.25, vy: 0, fish: [] };
 
@@ -1421,7 +1421,7 @@ function updatePet() {
   tiger.x += Math.sign(dx) * SPEED;
   tiger.y += (clamp(player.y + 14, 214, 238) - tiger.y) * 0.02;
   tiger.phase += SPEED;
-  tiger.frame = (tiger.phase / 5 | 0) % 6;
+  tiger.frame = (tiger.phase / 5 | 0) % 8;
 }
 function drawPet(ctx, camX) {
   const img = ASSETS['lair_tiger_' + tigerPose()] || ASSETS.lair_tiger_lie;
