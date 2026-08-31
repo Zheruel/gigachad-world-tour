@@ -187,6 +187,9 @@ def torso_place(frames: list[Image.Image], pad: int = 2) -> list[Image.Image]:
 def save_set(name: str, frames: list[Image.Image], colors: int) -> list[Image.Image]:
     directory = OUT / name
     directory.mkdir(parents=True, exist_ok=True)
+    # A shorter regenerated set must not leave a stale numbered frame behind.
+    for path in directory.glob("*.png"):
+        path.unlink()
     finished = finish_set(frames, colors)
     for i, frame in enumerate(finished):
         frame.save(directory / f"{i}.png")
@@ -197,6 +200,15 @@ def alpha_churn(frames: list[Image.Image]) -> list[float]:
     masks = [np.asarray(frame.getchannel("A")) > 128 for frame in frames]
     return [100 * (masks[i] ^ masks[(i + 1) % len(masks)]).sum()
             / max(1, masks[i].sum()) for i in range(len(masks))]
+
+
+def body_churn(frames: list[Image.Image], tail_fraction: float = 0.28) -> list[float]:
+    """Silhouette change after excluding the deliberately animated left tail fan."""
+    masks = [np.asarray(frame.getchannel("A")) > 128 for frame in frames]
+    x = int(masks[0].shape[1] * tail_fraction)
+    bodies = [mask[:, x:] for mask in masks]
+    return [100 * (bodies[i] ^ bodies[(i + 1) % len(bodies)]).sum()
+            / max(1, bodies[i].sum()) for i in range(len(bodies))]
 
 
 def lower_band_churn(frames: list[Image.Image], start: float = 0.55) -> list[float]:
@@ -231,6 +243,75 @@ def lock_couch(frames: list[Image.Image]) -> list[Image.Image]:
     return out
 
 
+def dilate(mask: np.ndarray, steps: int = 1) -> np.ndarray:
+    """Small dependency-free binary dilation used to grow an actor matte."""
+    out = mask.copy()
+    for _ in range(steps):
+        p = np.pad(out, 1)
+        out = (p[1:-1, 1:-1] | p[:-2, 1:-1] | p[2:, 1:-1]
+               | p[1:-1, :-2] | p[1:-1, 2:])
+    return out
+
+
+def actor_matte(empty: Image.Image, pose: Image.Image) -> np.ndarray:
+    """Recover CHAD from a full-scene pose without inheriting redrawn leather.
+
+    The generated source does not contain layers.  Strong skin, denim and blond pixels
+    form a conservative seed; only nearby pixels that substantially differ from the
+    canonical empty fixture may join it.  This captures dark vest/boots/outlines while
+    keeping the sofa's changing highlights out of the matte.
+    """
+    e = np.asarray(empty).astype(np.int32)
+    p = np.asarray(pose).astype(np.int32)
+    opaque = p[..., 3] > 16
+    empty_opaque = e[..., 3] > 16
+    rgb = p[..., :3]
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    diff = np.sqrt(((p[..., :3] - e[..., :3]) ** 2).sum(axis=2))
+
+    skin = (r > 92) & (r > g * 1.13) & (g > b * 1.12)
+    denim = (b > 56) & (b > r * 1.10) & (b > g * 1.03)
+    blond = (r > 125) & (g > 88) & (b < 115) & (r > g * 1.06)
+    seed = opaque & (skin | denim | blond | ~empty_opaque)
+
+    h, w = opaque.shape
+    yy, xx = np.mgrid[:h, :w]
+    # Nothing above the couch back can be furniture, so keep the full vertical range;
+    # excluding the top 8% clipped the blond crown in the first matte pass.
+    actor_zone = (xx > w * .19) & (xx < w * .72)
+    candidate = opaque & actor_zone & ((diff > 27) | ~empty_opaque)
+    matte = seed & actor_zone
+    # Grow only through pixels that differ from the canonical plate. Limited growth
+    # reaches black clothing without flooding along small leather redraws.
+    for _ in range(11):
+        matte |= dilate(matte) & candidate
+    matte = dilate(matte, 1) & opaque & actor_zone
+    # Reject the long sofa seam and isolated tuft highlights that differ enough to join
+    # the foreground candidate. This union follows the only regions CHAD can occupy
+    # across the seven authored poses: upper body/arms, then trousers and boots.
+    anatomy_zone = (
+        ((xx > w * .34) & (xx < w * .59) & (yy < h * .66))
+        | ((xx > w * .19) & (xx < w * .43) & (yy > h * .12) & (yy < h * .58))
+        | ((xx > w * .50) & (xx < w * .72) & (yy > h * .10) & (yy < h * .64))
+        | ((xx > w * .31) & (xx < w * .70) & (yy > h * .39))
+    )
+    return matte & anatomy_zone
+
+
+def canonical_couch(frames: list[Image.Image]) -> list[Image.Image]:
+    """Composite every moving pose over the exact same empty sofa/table pixels."""
+    empty = frames[0]
+    e = np.asarray(empty)
+    out = [empty]
+    for pose in frames[1:]:
+        p = np.asarray(pose)
+        matte = actor_matte(empty, pose)
+        pixels = e.copy()
+        pixels[matte] = p[matte]
+        out.append(Image.fromarray(pixels, "RGBA"))
+    return out
+
+
 def generated_set(stem: str, cols: int, rows: int, target_h: int,
                   furniture: bool = False) -> list[Image.Image]:
     frames = split_grid(GEN / f"{stem}.png", cols, rows)
@@ -251,18 +332,16 @@ def current_set(name: str, paths: list[Path], furniture: bool = False) -> list[I
     return frames
 
 
-def fish_from_anchor() -> tuple[list[Image.Image], list[Image.Image]]:
-    anchor = trim(Image.open(GEN / "fish-anchor.png").convert("RGBA"))
-    anchor = rescale_set([anchor], 14)[0]
+def tail_from_anchor(stem: str, target_h: int, output: str) -> list[Image.Image]:
+    anchor = trim(Image.open(GEN / f"{stem}.png").convert("RGBA"))
+    anchor = rescale_set([anchor], target_h)[0]
     anchor = hard_alpha(anchor, 90)
     canvas = Image.new("RGBA", (anchor.width + 4, anchor.height + 4), (0, 0, 0, 0))
     canvas.paste(anchor, (2, 2), anchor)
-    base = finish_set([canvas], 12)[0]
+    base = canvas
 
-    static = [base.copy() for _ in range(4)]
-
-    # The tail fan is the leading sixth of this left-facing canvas.  Leave the root
-    # fixed and move only the fan by one device pixel: the largest safe motion at 14px.
+    # The generated anchors face right, so the tail fan occupies the leftmost sixth.
+    # Leave the root fixed and move only the fan by one device pixel.
     alpha = np.asarray(base.getchannel("A")) > 128
     xs = np.flatnonzero(alpha.any(axis=0))
     cut = int(xs.min() + max(2, (xs.max() - xs.min() + 1) * 0.16))
@@ -275,10 +354,41 @@ def fish_from_anchor() -> tuple[list[Image.Image], list[Image.Image]]:
         frame.paste(fan, (0, dy), fan)
         tail.append(frame)
 
-    return save_set("fish-static", static, 12), save_set("fish-tail", tail, 12)
+    directory = OUT / output
+    directory.mkdir(parents=True, exist_ok=True)
+    # The generated anchors already carry a navy edge. Adding the project's generic
+    # one-pixel outline here would consume too much of a 10-13px-high fish.
+    prepped = [hard_alpha(frame, 90) for frame in tail]
+    alphas = [frame.getchannel("A") for frame in prepped]
+    montage = Image.new("RGB", (sum(frame.width for frame in prepped),
+                                max(frame.height for frame in prepped)))
+    x = 0
+    rgbs = []
+    for frame, alpha in zip(prepped, alphas):
+        rgb = Image.new("RGB", frame.size, (0, 0, 0))
+        rgb.paste(frame.convert("RGB"), (0, 0), alpha)
+        montage.paste(rgb, (x, 0)); x += rgb.width
+        rgbs.append(rgb)
+    palette = montage.quantize(colors=18, method=Image.MEDIANCUT, dither=Image.NONE)
+    finished = []
+    for i, (rgb, alpha) in enumerate(zip(rgbs, alphas)):
+        frame = rgb.quantize(palette=palette, dither=Image.NONE).convert("RGBA")
+        frame.putalpha(alpha)
+        frame.save(directory / f"{i}.png")
+        finished.append(frame)
+    return finished
 
 
-def couch_midpoints() -> list[Image.Image]:
+def fish_from_anchor() -> tuple[list[Image.Image], list[Image.Image],
+                                list[Image.Image], list[Image.Image]]:
+    old = tail_from_anchor("fish-anchor", 14, "fish-tail")
+    static = save_set("fish-static", [old[1].copy() for _ in range(4)], 12)
+    sardine = tail_from_anchor("fish-sardine-v2", 13, "fish-sardine-v2")
+    sprat = tail_from_anchor("fish-sprat-v2", 10, "fish-sprat-v2")
+    return static, old, sardine, sprat
+
+
+def couch_midpoints() -> tuple[list[Image.Image], list[Image.Image]]:
     """Interleave three one-at-a-time midpoint edits with the stable source poses."""
     src = ROOT / "assets/ai/lair"
     empty = keyed(str(src / "lounge_empty.png"))
@@ -304,7 +414,9 @@ def couch_midpoints() -> list[Image.Image]:
     factor = SOFA_H * RS / empty.height
     scaled = [rescale(empty, factor)] + [rescale(frame, factor) for frame in aligned]
     registered, _ = register(scaled)
-    return save_set("couch-midpoints", registered[1:], 72)
+    midpoint = save_set("couch-midpoints", registered[1:], 72)
+    composited = save_set("couch-canonical", canonical_couch(registered)[1:], 72)
+    return midpoint, composited
 
 
 def main() -> None:
@@ -333,13 +445,13 @@ def main() -> None:
     couch_direct = generated_set("couch-sheet-direct", 3, 2, 126, furniture=True)
     couch_hybrid = generated_set("couch-sheet-hybrid", 3, 2, 126, furniture=True)
     couch_locked = save_set("couch-hybrid-locked", lock_couch(couch_hybrid), 72)
-    couch_mids = couch_midpoints()
+    couch_mids, couch_canonical = couch_midpoints()
 
     current_fish = current_set(
         "fish-current",
         [BASELINE / f"fish/{i}.png" for i in range(4)],
     )
-    fish_static, fish_tail = fish_from_anchor()
+    fish_static, fish_tail, fish_sardine, fish_sprat = fish_from_anchor()
 
     metrics = {
         "tiger": {
@@ -357,11 +469,25 @@ def main() -> None:
             "hybrid_lower_band_drift": lower_band_churn(couch_hybrid),
             "locked_lower_band_drift": lower_band_churn(couch_locked),
             "midpoint_lower_band_drift": lower_band_churn(couch_mids),
+            "canonical_lower_band_drift": lower_band_churn(couch_canonical),
         },
         "fish": {
             "current_alpha_churn": alpha_churn(current_fish),
+            "current_body_churn": body_churn(current_fish),
             "static_alpha_churn": alpha_churn(fish_static),
+            "static_body_churn": body_churn(fish_static),
             "tail_only_alpha_churn": alpha_churn(fish_tail),
+            "tail_only_body_churn": body_churn(fish_tail),
+            "sardine_alpha_churn": alpha_churn(fish_sardine),
+            "sprat_alpha_churn": alpha_churn(fish_sprat),
+            "mixed_alpha_churn": [
+                (a + b) / 2 for a, b in
+                zip(alpha_churn(fish_sardine), alpha_churn(fish_sprat))
+            ],
+            "mixed_body_churn": [
+                (a + b) / 2 for a, b in
+                zip(body_churn(fish_sardine), body_churn(fish_sprat))
+            ],
         },
     }
     (BASE / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n")

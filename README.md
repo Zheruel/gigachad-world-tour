@@ -313,6 +313,9 @@ and it plays, no code change; remove the flag to get the chiptunes everywhere el
   generation strategies at final size; pause and step individual frames to audit
   registration. Its prompts and measured conclusions live under
   `assets/experiments/animation_pipeline/`.
+- `tools/video_to_sprite.py` samples an image-to-video result, removes a chroma-green
+  background, selects candidates, registers them on stable mass, and applies one shared
+  palette. It is an optional motion-source path; its output still requires frame review.
 - `review-1-1.html` is the Bazaar Heat production review room: scrub the complete
   route, jump between wave gates, toggle presentation layers, and inspect the exact
   Stage 1 cast and asset inventory.

@@ -30,18 +30,31 @@ Both six-cell sheets failed. Even with a strong anchor, the model redrew the pel
 knees, sofa seams, and side table from cell to cell. Freezing pixels after generation
 made visible seams and was also rejected.
 
-The installed sequence keeps the four original, stable key poses and inserts three
-separately generated halfway poses. Each edit sees only its two neighbouring key
-poses, is aligned against the invariant lower sofa band, and is then processed with
-the same scale and canvas registration as the originals. Lower-band change stays
-between 0.08% and 0.19%, versus roughly 21% to 44% for sheet generation.
+The sequence keeps the four original key poses and inserts three separately generated
+halfway poses. Each edit sees only its two neighbouring key poses. Alignment alone
+still left subtle leather redraws, so the final pass recovers only CHAD's changing
+pixels and composites them over one canonical empty sofa/table plate. Every visible
+fixture pixel is now sourced from the same image in every frame; only CHAD changes.
 
 ### Fish: generate once, animate deterministically
 
-At this scale a regenerated body is noise, not animation. One generated anchor is
-quantized once; code derives four frames by moving only the detached tail fan one
-device pixel. The body is byte-identical. The school is reduced from 26 independently
-phased fish to 14, preventing overlapping outlines from reading as flicker.
+At this scale a regenerated body is noise, not animation. The final school mixes two
+single-image anchors: a slim sardine and smaller sprat. Code derives four frames for
+each by moving only the detached tail fan one device pixel; each body is byte-identical.
+Eleven fish face with the school's travel direction, use a slower tail cadence, and
+repel one another gently so they do not merge into a flashing silver knot.
+
+## Optional video-to-sprite route
+
+Image-to-video is useful for discovering organic in-betweens for a large actor. It is
+not the final asset format. Start from a high-resolution key pose on chroma green, keep
+the camera completely static, request a short seamless in-place action, then extract
+more candidates than needed. Select the clearest key poses, remove the background,
+register them on stable mass, and apply one shared palette. Furniture should still be
+composited from one canonical plate after extraction.
+
+The direct image sheet/per-pose route remains better for tiny repeated fish, because
+video compression and diffusion drift affect a large percentage of a 6-11px body.
 
 ## Pipeline rules
 
@@ -50,8 +63,8 @@ phased fish to 14, preventing overlapping outlines from reading as flicker.
 - Use chroma green for repeatable sprite generation. Some transparent requests arrived
   as RGB files with the preview checkerboard baked into the pixels; the processor can
   recover them, but chroma keying is less ambiguous.
-- Register on stable mass: tiger ribcage, sofa lower band, fish body. Never register an
-  animation on moving extrema.
+- Register on stable mass: tiger ribcage and fish body. Composite fixtures from a
+  canonical plate. Never register an animation on moving extrema.
 - Judge both at enlarged scale and at actual game scale. Pause and step every frame.
 
 The numeric measurements used by the lab are saved in `metrics.json`.

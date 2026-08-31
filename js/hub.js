@@ -728,7 +728,7 @@ const SILT_N = 26;
 // animal reacting to the shark from a hole it never leaves is a lot of machinery for a
 // sprite you have to go looking for.
 // Fewer overlapping phases make the school read as individual fish rather than shimmer.
-const BAIT_N = 14;
+const BAIT_N = 11;
 const crab = { x: 0, dir: 1, t: 0, freeze: 0, rest: 0 };
 const bait = { cx: 0, cy: 0, vx: 0.25, vy: 0, fish: [] };
 
@@ -749,7 +749,7 @@ function resetTank() {
   for (let i = 0; i < BAIT_N; i++) {
     bait.fish.push({ x: bait.cx, y: bait.cy, ox: rand(-26, 26), oy: rand(-13, 13),
       phase: rand(0, 9), rate: rand(0.008, 0.018), frame: irand(0, 3), push: 0,
-      face: 1, vx: 0 });
+      face: 1, variant: i % 3 === 0 ? 1 : 0 });
   }
   for (let i = 0; i < SILT_N; i++) {
     silt.push({
@@ -894,9 +894,10 @@ function updateBait() {
   const sx = shark.x + SHARK_W / 2, sy = sharkY() + 20;
   for (const f of bait.fish) {
     f.phase += f.rate;
-    const tx = bait.cx + f.ox + Math.cos(f.phase) * 3;
+    const tx = bait.cx + f.ox + Math.cos(f.phase) * 1.5;
     const ty = bait.cy + f.oy + Math.sin(f.phase * 1.3) * 2;
     const px = f.x;
+    f.prevX = px;
     f.x += (tx - f.x) * 0.018;
     f.y += (ty - f.y) * 0.018;
     // the split: pushed straight out from him, hardest when he is closest
@@ -908,14 +909,29 @@ function updateBait() {
       f.y += (dy / (d || 1)) * k * 0.6;
       f.push = 12;
     } else if (f.push > 0) f.push--;
-    // Face where it is actually GOING. Facing by which side of the ball it sits on - the
-    // first attempt - has half of them swimming backwards at any moment, because a fish on
-    // the left of the ball is as likely to be heading right as left. The threshold is
-    // hysteresis: without it they flip every frame while they hover.
-    f.vx = f.vx * 0.8 + (f.x - px) * 0.2;
-    if (f.vx > 0.02) f.face = 1;
-    else if (f.vx < -0.02) f.face = -1;
-    f.frame = ((f.phase * 6) | 0) & 3;
+    f.frame = ((f.phase * 3) | 0) & 3;
+  }
+
+  // Give the different silhouettes room to read instead of stacking into one bright
+  // flickering knot. Eleven fish makes this tiny pairwise pass negligible.
+  for (let i = 0; i < bait.fish.length; i++) {
+    for (let j = i + 1; j < bait.fish.length; j++) {
+      const a = bait.fish[i], b = bait.fish[j];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.hypot(dx, dy);
+      if (d > 0 && d < 7) {
+        const push = (7 - d) * 0.015;
+        a.x -= dx / d * push; a.y -= dy / d * push;
+        b.x += dx / d * push; b.y += dy / d * push;
+      }
+    }
+  }
+  for (const f of bait.fish) {
+    const dx = f.x - f.prevX;
+    // Preserve direction through tiny sub-pixel hovering. A visible turn is allowed
+    // only when the fish really travelled far enough for the flipped silhouette to fit.
+    if (dx > 0.05) f.face = 1;
+    else if (dx < -0.05) f.face = -1;
   }
 }
 
@@ -1036,9 +1052,10 @@ function drawTank(ctx, camX) {
     }
   }
   for (const f of bait.fish) {
-    const img = ASSETS['lair_baitfish_' + f.frame];
+    const prefix = f.variant ? 'lair_baitfish_b_' : 'lair_baitfish_';
+    const img = ASSETS[prefix + f.frame];
     if (!img) break;
-    const fx = Math.round(f.x - camX), fy = Math.round(f.y);
+    const fx = Math.round(f.x - camX), fy = Math.round(f.y + (f.variant ? 2 : 0));
     if (f.face < 0) {
       ctx.save();
       ctx.scale(-1, 1);

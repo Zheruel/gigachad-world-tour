@@ -58,15 +58,37 @@ Solid chroma green background (#00ff00).
 Run it for lounge → cigar raised, cigar raised → draw, and draw → exhale. A wide couch
 sheet is intentionally not part of the final method because it redraws the fixture.
 
-## Fish anchor
+## Fish anchors
 
 ```text
-Create one tiny left-facing baitfish sprite for a 1990s arcade aquarium scene. Simple
-silver-blue fusiform body, one dark eye, small fins, clearly separated forked tail,
-dark readable outline, very limited palette, crisp hard pixels. Straight neutral pose;
-the body must be suitable as a fixed animation anchor at about 14 device pixels high.
-No shadow, bubbles, scenery or text. Transparent background with comfortable margin.
+Create exactly one sleek sardine/anchovy baitfish in side view, facing right. Use a
+long narrow hydrodynamic body, modest forked tail, tiny realistic dark eye, restrained
+fins, silver belly, cool blue-gray back and one soft cyan highlight. Match premium
+1990s arcade pixel art with deliberate clusters and a compact palette. It must remain
+readable after reduction to roughly 22-28 pixels long and 7-11 pixels high. One isolated
+fish, neutral horizontal pose, genuine transparent background, no cartoon eye, thick
+black contour, scenery, bubbles, text, blur or antialiasing. Keep the tail root clearly
+separable for deterministic one-pixel animation.
 ```
 
-No additional fish frames should be generated. The final one-pixel tail motion is
-derived deterministically from this anchor.
+Generate a second anchor separately with the same constraints but as a smaller, slimmer
+juvenile sprat with a muted warm lateral glint. No additional fish frames should be
+generated. The final one-pixel tail motion is derived deterministically from each
+anchor.
+
+## Optional tiger image-to-video motion source
+
+Use the tiger identity anchor as the first frame on a solid chroma-green canvas.
+
+```text
+Locked orthographic side-view camera. The tiger performs exactly one seamless in-place
+low stalking walk cycle: shoulders and hips transfer real weight, paws lift and plant
+in sequence, spine flexes subtly, and the tail counterbalances. The tiger never travels
+across the frame. Preserve the exact head, stripe map, collar, body proportions, scale,
+lighting, pixel-art rendering and green background. No camera movement, zoom, crop,
+rotation, new objects, scenery, morphing, motion blur, interpolation blur or text. End
+in the same physical pose as the first frame for a clean loop.
+```
+
+Extract candidates with `tools/video_to_sprite.py`, then review and keep only the
+clearest eight frames. The video is a motion source, not a shippable sprite animation.

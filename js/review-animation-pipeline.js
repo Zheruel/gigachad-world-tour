@@ -32,7 +32,8 @@ const sets = {
     { title:'Current per-pose edits', dir:'couch-current', count:4, note:'Furniture is exceptionally stable; the large pose jumps make CHAD pop.', metric:'current_lower_band_drift' },
     { title:'Direct sheet · rejected', dir:'couch-sheet-direct', count:6, note:'A clearer hand arc, but CHAD and the furniture are redrawn and shift between cells.', metric:'direct_lower_band_drift' },
     { title:'Anchor-first sheet · rejected', dir:'couch-sheet-hybrid', count:6, note:'A stronger static anchor does not stop a wide sheet from changing pelvis, knees, and fixture.', metric:'hybrid_lower_band_drift' },
-    { title:'Reference midpoint edits', dir:'couch-midpoints', count:7, note:'Three one-at-a-time in-betweens inserted between the four stable canonical poses.', metric:'midpoint_lower_band_drift', recommended:true },
+    { title:'Reference midpoint edits', dir:'couch-midpoints', count:7, note:'Three one-at-a-time in-betweens inserted between the four stable canonical poses.', metric:'midpoint_lower_band_drift' },
+    { title:'Canonical fixture composite', dir:'couch-canonical', count:7, note:'Each pose contributes CHAD only; every visible sofa and table pixel comes from one immutable plate.', metric:'canonical_lower_band_drift', exactFixture:true, recommended:true },
   ],
 };
 
@@ -56,7 +57,9 @@ async function mountSpriteGroup(kind, root, metrics) {
     item.ctx = item.canvas.getContext('2d');
     item.ctx.imageSmoothingEnabled = false;
     const values = metrics[kind][item.metric];
-    cards[index].querySelector('.readout').textContent = metricText(values, kind === 'couch' ? 'lower-band change' : 'silhouette change');
+    cards[index].querySelector('.readout').textContent = item.exactFixture
+      ? 'fixture source: one immutable plate · measured change below is moving legs only'
+      : metricText(values, kind === 'couch' ? 'lower-band change' : 'silhouette change');
   }));
 }
 
@@ -83,9 +86,10 @@ function drawSprite(item, t) {
 }
 
 const fishDefs = [
-  { title:'Current · 26 fish', dir:'fish-current', count:4, n:26, note:'Even 4% body churn becomes whole-school shimmer when 26 phases overlap.', metric:'current_alpha_churn' },
-  { title:'Single static anchor · 14 fish', dir:'fish-static', count:4, n:14, note:'Zero sprite churn; pathing and school deformation do all of the animation.', metric:'static_alpha_churn' },
-  { title:'Tail-only · 14 fish', dir:'fish-tail', count:4, n:14, note:'The body is immutable; only the detached tail fan shifts by one device pixel.', metric:'tail_only_alpha_churn', recommended:true },
+  { title:'Current · 26 fish', dir:'fish-current', count:4, n:26, note:'Small redraws across 26 independently phased bodies become whole-school shimmer.', metric:'current_body_churn' },
+  { title:'Single static anchor · 14 fish', dir:'fish-static', count:4, n:14, note:'Zero body churn; pathing and school deformation do all of the animation.', metric:'static_body_churn' },
+  { title:'Tail-only · 14 fish', dir:'fish-tail', count:4, n:14, note:'The first optimization fixed body flicker, but its chunky eye and clone-stamped silhouette still look synthetic.', metric:'tail_only_body_churn' },
+  { title:'Mixed sardines + sprats · 11 fish', dirs:['fish-sardine-v2','fish-sprat-v2'], count:4, n:11, note:'Two natural proportions and sizes, restrained eyes, coordinated facing, slower tail cadence, and more breathing room.', metric:'mixed_body_churn', recommended:true },
 ];
 
 function seeded(i) { const x = Math.sin(i * 91.733) * 43758.5453; return x - Math.floor(x); }
@@ -93,12 +97,13 @@ async function mountFish(root, metrics) {
   root.innerHTML = fishDefs.map(item => cardHTML(item, true)).join('');
   const cards = [...root.querySelectorAll('.card')];
   await Promise.all(fishDefs.map(async (item,index) => {
-    item.images = await loadSet(item.dir,item.count);
+    item.variantImages = item.dirs ? await Promise.all(item.dirs.map(dir => loadSet(dir,item.count))) : null;
+    item.images = item.variantImages ? item.variantImages[0] : await loadSet(item.dir,item.count);
     item.canvas = cards[index].querySelector('canvas');
     item.canvas.height = 190;
     item.ctx = item.canvas.getContext('2d');
     item.ctx.imageSmoothingEnabled = false;
-    cards[index].querySelector('.readout').textContent = metricText(metrics.fish[item.metric], 'silhouette change');
+    cards[index].querySelector('.readout').textContent = metricText(metrics.fish[item.metric], 'body change');
   }));
 }
 
@@ -116,7 +121,8 @@ function drawSchool(item,t) {
     const x=cx+(seeded(i+31)-.5)*150*ring+Math.cos(t*.00065+phase)*3;
     const y=cy+(seeded(i+47)-.5)*76*ring+Math.sin(t*.00083+phase)*2;
     const frame=paused ? manualFrame%item.count : Math.floor(t*.006+phase*2)%item.count;
-    const image=item.images[(frame+item.count)%item.count];
+    const images=item.variantImages ? item.variantImages[i%item.variantImages.length] : item.images;
+    const image=images[(frame+item.count)%item.count];
     ctx.drawImage(image,Math.round(x),Math.round(y));
   }
 }

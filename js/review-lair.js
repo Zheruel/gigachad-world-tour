@@ -96,7 +96,7 @@ const SETS = [
     title: 'THE BAITBALL · 4 frames', dir: 'assets/lair/baitfish_N.png',
     frames: [0, 1, 2, 3].map((i) => 'lair_baitfish_' + i),
     hold: 13, cadence: 'true cadence',
-    note: 'One generated anchor supplies every frame. The body is immutable; only the tail fan moves by one device pixel, and the room uses 14 fish instead of 26 overlapping phases.',
+    note: 'Two generated anchors supply a 7:4 mix of slim sardines and smaller sprats. Bodies remain immutable, tails move one pixel slowly, and all eleven face with the school except while splitting around the shark.',
   },
   {
     title: 'THE CRAB · 4 frames', dir: 'assets/lair/crab_N.png',
