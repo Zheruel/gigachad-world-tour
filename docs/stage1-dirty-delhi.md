@@ -1,5 +1,8 @@
 # STAGE 1 — DIRTY DELHI
 
+> Status: production design record for the shipped act. Some early implementation notes
+> are historical; runtime code and the root README are authoritative.
+
 One route, 12480 logical px, **26 screens**, about **15 minutes**. Noon in Chandni Chowk to
 midnight on a pontoon, with no title cards in between: the market and the river are the same
 place seen from two ends, and the level's argument is that everything the first half throws
@@ -390,12 +393,11 @@ $G $O/dredger_winch.png landscape "A rusted industrial winch drum wound with ste
 
 ## The entrance
 
-The built arrival is eight locked-scale motorcycle and dismount keys, six locked-scale standing
-performance keys and one parked motorcycle; the cigar is baked into every relevant frame and only
-smoke, exhaust, skid dust and small particles are procedural. Reviewable frame by frame in
-`review-1-1.html`, which drives the production `drawMotorcycleArrival()` timeline with its real
-audio cues. Prompt record `assets/ai/entrance_v8/`, builder `tools/build_entrance_v2.py`,
-licensed audio record `audio/sfx/ENTRANCE_SOURCES.md`.
+The production arrival uses the nineteen-frame V8 motorcycle, dismount, cigar, and guard
+sequence; smoke, exhaust, skid dust, and small particles remain procedural. It is reviewable
+frame by frame in `review-1-1.html`, which drives the production
+`drawMotorcycleArrival()` timeline. Prompt record: `assets/ai/entrance_v8/`. Builder:
+`tools/build_entrance_v8.py`.
 
 ## Music
 

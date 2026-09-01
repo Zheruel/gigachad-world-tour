@@ -1,5 +1,8 @@
 # STAGE 2 — THE NIGHT TRAIN
 
+> Status: unimplemented proposal. This document describes intended content, not the
+> current runtime.
+
 One route, 9000 logical px, **18.75 screens**, about **15 minutes**. A station at nine in the
 evening and a sleeper heading south at midnight. The level is about *leaving*: the first third is
 the only stretch in the game where CHAD is trying to be somewhere rather than to win a fight, and

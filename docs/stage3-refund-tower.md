@@ -1,5 +1,8 @@
 # STAGE 3 — REFUND TOWER
 
+> Status: unimplemented proposal. This document describes intended content, not the
+> current runtime.
+
 One route, 8000 logical px, **16.7 screens**, about **15 minutes**. The train gets in at dawn, in
 the monsoon, in another city, and the chapter ends on a roof over the sea. The shortest level and
 the densest: it is the one that stops being about *where you are* and starts being about *who you

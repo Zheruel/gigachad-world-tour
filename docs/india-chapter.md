@@ -1,5 +1,8 @@
 # The India chapter — the plan
 
+> Status: roadmap and canon. Only DIRTY DELHI is currently implemented; later acts and
+> roster entries are proposals. Runtime code and the root README are authoritative.
+
 Three stages, nine boss-grade fights, and a journey rather than three rooms: dirty Delhi from
 its market to its river, the night train out of it, and a tower in another city in the monsoon.
 Stage 1's first plate and the core combat systems are built. Everything else is specified stage
