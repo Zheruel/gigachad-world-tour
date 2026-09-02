@@ -292,6 +292,11 @@ warm glow downriver that never gets closer.
 River: foam clumps drifting and clumping on two rates, and the wall plane reflected in the water
 with the same `translate + scale(1,-0.5) + alpha` trick `drawWorld` already uses on fighters.
 
+**People, on the market half only.** Chai-walas, spice sellers and a tailor in the shopfronts the
+plate painted for them, porters on the back lane, a dog, an auto-rickshaw and a cow crossing. They
+flinch when the fighting comes close and go inside when the shutters come down. Past the drain the
+street is empty on purpose.
+
 **Rats at three holes** on the ghat — not a swarm. **Floating debris** as y-sorted actors: a
 bottle, a marigold garland, a sunk scooter with its handlebars above the surface.
 

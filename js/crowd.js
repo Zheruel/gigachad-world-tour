@@ -12,6 +12,7 @@ import { G, W, FLOOR_TOP } from './engine.js';
 import { blit, frameW, frameH } from './sprites.js';
 import { fx } from './fx.js';
 import { audio } from './audio.js';
+import { shutterState } from './ambience.js';
 
 const FRAMES = {};   // kind -> [Image], and kind + '_r' -> react frames
 
@@ -252,7 +253,17 @@ export function drawCrowd(ctx, camX, plane) {
       ctx.fill();
       ctx.globalAlpha = 1;
     }
-    ctx.globalAlpha = a.alpha === undefined ? 1 : a.alpha;
+    let alpha = a.alpha === undefined ? 1 : a.alpha;
+    // a vendor whose shutter is coming down has gone inside: he fades with it rather
+    // than standing in front of a closed roller
+    if (plane === 'facade' && G.shutterT && G.stage.shutters) {
+      const ks = shutterState();
+      G.stage.shutters.forEach((s, i) => {
+        if (a.x >= s.x - 6 && a.x <= s.x + (s.w || 60) + 6) alpha *= 1 - ks[i];
+      });
+    }
+    if (alpha <= 0.02) continue;
+    ctx.globalAlpha = alpha;
     if (a.flip) {
       ctx.save();
       ctx.scale(-1, 1);

@@ -8,6 +8,7 @@ import { ASSETS } from './assets.js';
 import { drawOutside, drawTrainWallPlane, initTrain, ROOF_X, ABOARD_X } from './train.js';
 import { createProp } from './props.js';
 import { initAmbience, drawAmbienceFacade, drawBirds } from './ambience.js';
+import { initCrowd, drawCrowd } from './crowd.js';
 
 const FLOOR_Y = 181; // where the facades meet the street, all stages
 
@@ -155,8 +156,8 @@ function buildDelhiFloor() {
 
 // ------------------------------------------------------------- ambience
 // Environment motion is split between this authored light/dust pass and
-// ambience.js's keyed cloth, fans and reactive birds. Decorative full-body NPCs
-// are deliberately absent: they competed with the combat silhouettes.
+// ambience.js's shutters and reactive birds, and crowd.js's people. The people stand
+// in the plate's own shopfronts and on the back lane, never on the fighting lanes.
 
 // The level's real signature, and it costs no art: hard white midday sun at the
 // market end, sodium and green-black water at the river end, ramped across the
@@ -387,12 +388,12 @@ export function drawRingCrowd(ctx, camX) {
     // shoulders stand in the bottom 60 px and the fight reads over them
     const x = Math.round(edge - w / 2 + dir * 10);
     const y = Math.round(H + 26 + Math.sin(G.rawTime * 0.04 + dir) * 1.2 + (wob ? Math.sin(G.rawTime * 0.9) * wob : 0));
-    blit(ctx, img, x, y - h);
-    // and the near side is in shadow: they are between the sun and the camera
+    // the near side is in shadow: they are between the sun and the camera. Darkened
+    // through a filter on the blit itself - a source-atop fill darkens everything the
+    // canvas already holds under the rect, which drew a dark slab behind their heads.
     ctx.save();
-    ctx.globalCompositeOperation = 'source-atop';
-    ctx.fillStyle = 'rgba(20,10,8,0.28)';
-    ctx.fillRect(x, y - h, w, h);
+    ctx.filter = 'brightness(0.74) saturate(0.9)';
+    blit(ctx, img, x, y - h);
     ctx.restore();
   }
   ctx.restore();
@@ -540,6 +541,30 @@ export const STAGES = [
     ],
     // Three roosts, and nobody at all past the drain. That contrast is most of why
     // the second half lands, so the emptiness is authored rather than forgotten.
+    // The market's people. Every one stands where the plate already painted a stall
+    // for them - a counter, a samovar, a row of stools - and only the porters, the dog
+    // and the traffic use the road, all of it on the back lane behind the fighting.
+    crowd: [
+      { kind: 'chai', x: 352, y: 179 },
+      { kind: 'spice', x: 545, y: 179 },
+      { kind: 'fan', x: 762, y: 180 }, { kind: 'chai', x: 846, y: 179 },
+      { kind: 'chai', x: 1124, y: 179 },
+      { kind: 'fan', x: 1546, y: 180 }, { kind: 'chai', x: 1602, y: 179 },
+      { kind: 'spice', x: 1862, y: 179 },
+      { kind: 'porter', x: 420, y: 187, patrol: [300, 900], speed: 0.3 },
+      { kind: 'porter', x: 1300, y: 189, patrol: [1180, 1820], speed: 0.28, flip: true },
+      { kind: 'dog', x: 1288, y: 190 },
+      { kind: 'rick', x: -200, y: 181, cross: [-200, 2000], period: 1500, speed: 1.7, shadow: 0 },
+      // the food street, up to the shutters that close ahead of MIRCHI's pitch
+      { kind: 'chai', x: 2742, y: 179 },
+      { kind: 'fan', x: 3122, y: 180 }, { kind: 'spice', x: 3292, y: 179 },
+      { kind: 'tailor', x: 3562, y: 179 }, { kind: 'chai', x: 3802, y: 179 },
+      { kind: 'spice', x: 4302, y: 179 },
+      { kind: 'porter', x: 2700, y: 188, patrol: [2600, 3300], speed: 0.3, flip: true },
+      { kind: 'porter', x: 3700, y: 187, patrol: [3500, 4200], speed: 0.32 },
+      { kind: 'dog', x: 4106, y: 190 },
+      { kind: 'cow', x: 2500, y: 181, cross: [2500, 3400], period: 1800, speed: 0.4, shadow: 0 },
+    ],
     birds: [
       { x: 500, y: 218 }, { x: 526, y: 225 }, { x: 575, y: 232 }, { x: 548, y: 212 },
       { x: 2330, y: 228 }, { x: 2360, y: 220 }, { x: 2392, y: 231 },
@@ -716,6 +741,7 @@ export function initStageObj(st) {
   G.actors = [];
   G.hubSeat = 0;
   initAmbience(st);
+  initCrowd(st.crowd);
   G.zones = [];
   for (const w of st.waves) { w.done = false; if (w.spawns0) w.spawns = [...w.spawns0]; else w.spawns0 = [...w.spawns]; }
   if (st.init) st.init(st);
@@ -754,6 +780,8 @@ export function drawStage(ctx, camX) {
   }
 
   drawAmbienceFacade(ctx, camX);
+  // people in the shopfronts take the same light as the facade behind them
+  drawCrowd(ctx, camX, 'facade');
 
   // light pools anchored to world positions
   for (const lx of st.lamps) {
@@ -776,6 +804,8 @@ export function drawStage(ctx, camX) {
     for (let x = -off; x < W; x += 160) ctx.drawImage(layers.floor, x, FLOOR_Y);
   }
 
+  // anyone on the road stays on the back lane, so drawing them under the fighters holds
+  drawCrowd(ctx, camX, 'street');
   drawBirds(ctx, camX);
   st.ambient(ctx, camX, layers);
 }

@@ -6,6 +6,7 @@ import { initStage, initStageObj, drawStage, drawRingCrowd, updateMotes, STAGES,
 import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, hubSay, hubTiger, petsWatch, hubTank, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
 import { createProp } from './props.js';
 import { loadAmbience, updateAmbience, reactStage, updateShutters, shutterState } from './ambience.js';
+import { loadCrowd, updateCrowd } from './crowd.js';
 import { loadFX, fx } from './fx.js';
 import { loadFG, drawFG } from './fg.js';
 import { createPlayer, updatePlayer, drawPlayer, hurtPlayer } from './player.js';
@@ -507,6 +508,7 @@ function update() {
     updateEffects();
     updateMotes();
     updateAmbience();
+    updateCrowd();
     if (pick >= 0) {
       // the launch: a sting, the room's track down, black, then the act's arrival
       audio.sfx('go');
@@ -652,6 +654,7 @@ function update() {
   updateEffects();
   updateMotes();
   updateAmbience();
+  updateCrowd();
   updateShutters();
   if (G.stage.id === 'locker' && G.time % 24 === 0) {
     spawnSteam(G.camX + Math.random() * W, 200 + Math.random() * 16, 1);
@@ -861,7 +864,7 @@ function frame(now) {
 
 // boot: load PNG assets + AI frames first (posters/title/sprites need them), then start
 loadSave();
-Promise.all([loadAssets(), loadAIFrames(), loadSFX(), loadFX(), loadFG(), loadAmbience(), loadStory()]).then(() => {
+Promise.all([loadAssets(), loadAIFrames(), loadSFX(), loadFX(), loadFG(), loadAmbience(), loadCrowd(), loadStory()]).then(() => {
   initStage(0); // build background layers + motes so the title can scroll them
   setState('title');
   audio.music('title');   // pending until the first key unlocks audio
@@ -1415,8 +1418,10 @@ if (autoMode) {
       t('renders-with-pickups', renderOk);
       G.pickups.length = 0;
 
-      // ---- the living street (environmental, never pasted-on full-body NPCs) ----
-      t('background-npcs-removed', !('crowd' in G.stage));
+      // ---- the living street: people on the plate's own stalls, nobody on the fighting lanes ----
+      const crowd = G.stage.crowd || [];
+      t('market-has-a-crowd', crowd.length >= 10 && crowd.every((c) => c.x < 5000 || c.cross));
+      t('crowd-stays-off-the-lanes', crowd.every((c) => c.y <= 190));
       // Stage 1 deliberately replaced bolted-on cloth/fan/foreground pieces
       // with reactive pigeons and a clean playfield. Verify the shipped art
       // direction rather than the discarded ambience prototype.
