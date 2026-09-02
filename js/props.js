@@ -28,12 +28,32 @@ export const PROP_TYPES = {
   drum: { hp: 18, w: 30, h: 40, shadowR: 14, score: 60, drop: null, art: 'tyres',
     burst: { kind: 'chutney', r: 30, life: 720 }, debris: ['#2a6a9a', '#4a8aba', '#d8d0b0'] },
   // six along Langda's arena, each one shortening the wire he can run
-  bracket: { hp: 15, w: 18, h: 14, shadowR: 0, score: 80, drop: null, art: 'sign', debris: ['#5a5a62', '#8a8a92', '#3a3a42'] },
+  bracket: { hp: 15, w: 24, h: 18, shadowR: 0, score: 80, drop: null, art: 'sign', airOnly: true, debris: ['#5a5a62', '#8a8a92', '#3a3a42'] },
   // the heavy's prop: a handcart in the market, a boat pole on the ghat
   thelacart: { hp: 30, w: 54, h: 40, shadowR: 24, score: 120, drop: null, art: 'cart', debris: ['#c08a3a', '#8a5a20', '#d8d0b8'] },
   thelapole: { hp: 30, w: 70, h: 14, shadowR: 10, score: 120, drop: null, art: 'sign', debris: ['#a8804a', '#6a4a24', '#d0b888'] },
   // break it and the dhobi loses 34 px of the longest reach in the game
   dhobislab: { hp: 40, w: 46, h: 18, shadowR: 20, score: 160, drop: null, art: 'table', debris: ['#8a8a8a', '#b8b8b0', '#5a5a58'] },
+  // the dredger's deck winch: break it and the bucket never lifts again
+  winch: { hp: 80, w: 54, h: 40, shadowR: 22, score: 600, drop: null, art: 'cart', debris: ['#3a3a42', '#8a7a5a', '#c8b890'] },
+
+  // ---- THE NIGHT TRAIN ----
+  // the health economy: trolleys and trunks at +30, parcel stacks and berth tables at +15
+  trolley: { hp: 20, w: 36, h: 40, shadowR: 16, score: 60, drop: 'shake', art: 'cart', debris: ['#8a7a5a', '#c0c0c8', '#5a4a3a'] },
+  trunk: { hp: 20, w: 38, h: 26, shadowR: 17, score: 60, drop: 'shake', art: 'crate', debris: ['#3a4a6a', '#8a8a92', '#c8b060'] },
+  parcel: { hp: 18, w: 34, h: 36, shadowR: 15, score: 40, drop: 'plate', art: 'crate', debris: ['#b09060', '#8a6a40', '#e0d0a0'] },
+  berthtable: { hp: 18, w: 30, h: 20, shadowR: 14, score: 40, drop: 'plate', art: 'table', debris: ['#6a5a4a', '#a09080', '#3a3028'] },
+  // purely for the sound
+  glasses: { hp: 12, w: 26, h: 22, shadowR: 12, score: 30, drop: null, art: 'crate', debris: ['#d8e8f0', '#a0c0d0', '#f8f8ff'] },
+  // scalds when it goes: 40 px of boiling tea either side
+  urn: { hp: 22, w: 24, h: 40, shadowR: 12, score: 80, drop: null, art: 'tyres',
+    burst: { kind: 'fire', r: 40, life: 150 }, debris: ['#c8c8d0', '#8a8a92', '#e0b060'] },
+  // the pantry's fridge, behind the counter in the far lane: the level's 1-up
+  fridge: { hp: 30, w: 30, h: 48, shadowR: 15, score: 200, drop: 'life', art: 'crate', debris: ['#e0e0e8', '#a0a0a8', '#c04040'] },
+  // one per carriage, above head height: break it and nobody stops the train again
+  chain: { hp: 10, w: 14, h: 30, shadowR: 0, score: 150, drop: null, art: 'sign', airOnly: true, debris: ['#c03030', '#8a8a92', '#5a5a62'] },
+  // the heavy's third prop: a steel trunk on his head, spilling luggage when it breaks
+  thelatrunk: { hp: 30, w: 44, h: 30, shadowR: 20, score: 120, drop: null, art: 'crate', debris: ['#3a4a6a', '#c8b060', '#e0d0c0'] },
 };
 
 // ---- procedural art (swapped for AI PNGs later without touching this file) --
@@ -181,7 +201,7 @@ const BUILDERS = { crate, matka, tyres, table, sign, cart, bag };
 function art(kind, broken) {
   const T = PROP_TYPES[kind];
   const src = (T && T.art) || kind;   // a new prop can borrow art until it has its own
-  const png = ASSETS['prop_' + src + (broken ? '_b' : '')];
+  const png = ASSETS['prop_' + kind + (broken ? '_b' : '')] || ASSETS['prop_' + src + (broken ? '_b' : '')];
   if (png) return png;
   const key = src + (broken ? '_b' : '');
   if (!ART[key]) {
@@ -195,13 +215,13 @@ function art(kind, broken) {
 }
 
 // ---- lifecycle ----------------------------------------------------------
-export function createProp(kind, x, y) {
+export function createProp(kind, x, y, z) {
   const T = PROP_TYPES[kind];
   const pr = {
-    kind: 'prop', prop: kind, x, y, z: 0, vx: 0, vz: 0,
+    kind: 'prop', prop: kind, x, y, z: z || 0, vx: 0, vz: 0,
     hp: T.hp, maxhp: T.hp, w: T.w, h: T.h, shadowR: T.shadowR,
     broken: false, dead: false, t: 0, flash: 0, shakeT: 0,
-    state: 'idle', face: 1,
+    state: 'idle', face: 1, airOnly: !!T.airOnly,
     hurt(dmg, dir) { hurtProp(pr, dmg, dir); },
     thrown() {},
   };
@@ -215,17 +235,17 @@ function hurtProp(pr, dmg, dir) {
   pr.shakeT = 8;
   const T = PROP_TYPES[pr.prop];
   if (pr.hp > 0) {
-    spawnDebris(pr.x, pr.y - pr.h * 0.4, 3, T.debris);
+    spawnDebris(pr.x, pr.y - pr.z - pr.h * 0.4, 3, T.debris);
     G.audio.sfx('armor');
     impact(false, dmg);
     return;
   }
   pr.broken = true;
   pr.dead = true;   // stops the combat code targeting it again
-  spawnDebris(pr.x, pr.y - pr.h * 0.5, 14, T.debris);
-  spawnDust(pr.x, pr.y, 4);
+  spawnDebris(pr.x, pr.y - pr.z - pr.h * 0.5, 14, T.debris);
+  if (!pr.z) spawnDust(pr.x, pr.y, 4);
   addScore(T.score);
-  spawnPop(pr.x, pr.y - pr.h - 10, '+' + T.score);
+  spawnPop(pr.x, pr.y - pr.z - pr.h - 10, '+' + T.score);
   impact(true, 14);
   G.shake = Math.max(G.shake, 5);
   G.audio.sfx('slam');

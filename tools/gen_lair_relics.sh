@@ -17,10 +17,6 @@ T="standing upright on display as a trophy, battered and clearly used, lit hard 
 
 echo "=== relics ==="
 $G $O/relic_raja.png    square "A battered brass and black auto rickshaw taxi fare meter torn off its mounting, a small boxy analogue meter with a chrome flag lever on the side and a cracked glass dial face, trailing two cut wires from its base, $T" &
-$G $O/relic_mirchi.png  square "A huge dented steel cooking ladle standing upright in a big steel chaat serving bowl, the ladle handle worn smooth and the bowl scorched and stained orange with spice, $T" &
-$G $O/relic_refund.png  square "A grey 1990s office desk telephone with the handset off the hook hanging by its coiled cord, cracked plastic casing, a call centre headset draped over it, $T" &
-$G $O/relic_yadav.png   square "An Indian police officer's peaked khaki cap resting on top of a crossed pair of long bamboo lathi canes bound together, the cap badge dulled brass, $T" &
-$G $O/relic_rana.png    square "A heavy brass championship belt with an ornate roaring lion head as its centre plate, the leather strap thick and cracked, standing upright on a small black display stand, $T" &
 wait
 
 echo "=== relics done ==="

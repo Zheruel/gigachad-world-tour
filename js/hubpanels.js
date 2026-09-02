@@ -274,7 +274,9 @@ function drawMap(ctx) {
 // -------------------------------------------------------------- jukebox panel
 // Names for the chiptunes in js/audio.js SONGS; the slot ids are positional.
 const TRACK_NAMES = {
-  lair: 'NEON SHADOWS', title: 'ATTRACT', stage1: 'CHANDNI CHOWK RUN', boss: 'NO REFUNDS',
+  lair: 'NEON SHADOWS', title: 'ATTRACT',
+  stage1a: 'CHANDNI CHOWK RUN', stage1b: 'THE RIVER ANSWERS', boss: 'NO REFUNDS', boss1: 'WHAT EATS THE RIVER',
+  stage2a: 'PLATFORM ONE', stage2b: 'THE 22:40 SOUTH', boss2: 'THE COUPLER',
   ending: 'VICTORY',
 };
 // Five slots now that the tour is one act, so they fit in a single column.

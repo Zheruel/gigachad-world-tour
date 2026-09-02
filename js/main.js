@@ -1,8 +1,8 @@
 // main.js - boot, fixed-timestep loop, game state machine, rendering, debug hook
-import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, clamp, addScore, laneMin, arenaMin, arenaMax } from './engine.js';
+import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, RANKS, clamp, addScore, laneMin, laneMax, arenaMin, arenaMax } from './engine.js';
 import { initInput, input, endFrameInput, pollGamepad, debugPress, debugRelease } from './input.js';
 import { SPR, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
-import { initStage, initStageObj, drawStage, updateMotes, STAGES, stageDef } from './stages.js';
+import { initStage, initStageObj, drawStage, drawRingCrowd, updateMotes, STAGES, stageDef } from './stages.js';
 import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, hubSay, hubTiger, petsWatch, hubTank, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
 import { createProp } from './props.js';
 import { loadAmbience, updateAmbience, reactStage, updateShutters, shutterState } from './ambience.js';
@@ -11,6 +11,8 @@ import { loadFG, drawFG } from './fg.js';
 import { createPlayer, updatePlayer, drawPlayer, hurtPlayer } from './player.js';
 import { spawnEnemy, updateEnemies, drawEnemy, aliveEnemies } from './enemies.js';
 import { createBoss, updateBoss, drawBoss, BOSSES } from './bosses.js';
+import { drawDelhiWallPlane, delhiIntro } from './delhi_bosses.js';
+import { updateTrain, drawTrainOverlay, startDeparture, startTunnel, chainFor, chainBroken, doorX, ABOARD_X, ROOF_X } from './train.js';
 import { updateShots, drawShots, drawZones, spawnShot, spawnZone } from './shots.js';
 import { updateProps, drawProp, PROP_TYPES } from './props.js';
 import { updateEffects, drawEffects, drawRagnarokGround, spawnPop, spawnSteam } from './effects.js';
@@ -19,7 +21,7 @@ import { drawTitle, drawIntro, drawBossIntro, drawClear, drawOver, drawEnding } 
 import { audio, loadManifest, loadSFX } from './audio.js';
 import { loadAssets } from './assets.js';
 import { loadAIFrames } from './aiframes.js';
-import { ENTRANCE_LAST_FRAME, loadStory, resetStory, updateMotorcycleArrival, drawMotorcycleArrival } from './story.js';
+import { ENTRANCE_LAST_FRAME, STATION_LAST_FRAME, loadStory, resetStory, updateMotorcycleArrival, drawMotorcycleArrival, updateStationArrival, drawStationArrival } from './story.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -81,6 +83,7 @@ function startStage(index) {
   G.stageIndex = index;
   initStage(index);
   const st = stageDef(index);
+  for (const pr of G.props) if (pr.prop === 'chain') pr.onBreak = () => chainBroken();
   const keepHp = G.player ? Math.max(G.player.hp, 60) : 100;
   G.player = createPlayer();
   if (index > 0) G.player.hp = Math.min(G.player.maxhp, keepHp + 35);
@@ -129,6 +132,7 @@ function enterHub(fresh) {
   G.boss = null;
   G.combo = 0;
   G.comboT = 0;
+  G.rank = -1; G.rankT = 0;
   G.props = [createBag()];
   G.hubAct = 0;
   G.shakePoster = 0;
@@ -150,11 +154,13 @@ function spawnFromQueue() {
   if (G.spawnCd > 0) return;
   const type = G.spawnQueue.shift();
   const fromLeft = (G.spawnSide = !G.spawnSide);
+  const thief = type === 'bandar' && G.spawnThief;
   // just inside the arena edge: they run in rather than trudging on from off-screen
   const x = fromLeft ? G.camX + 18 : G.camX + W - 18;
   const lo = laneMin(x);
-  const y = lo + Math.random() * (FLOOR_BOT - lo);
-  spawnEnemy(type, x, y);
+  const y = lo + Math.random() * (laneMax(x) - lo);
+  const e = spawnEnemy(type, x, y);
+  if (thief) { e.thief = true; G.spawnThief = false; }
   G.spawnCd = 36;
 }
 
@@ -179,6 +185,32 @@ function updateEvents() {
     else if (ev.kind === 'bull') spawnEnemy('bull', G.camX + W - 20, p.y);
     else if (ev.kind === 'sluice') G.sluice = { t: 0 };
     else if (ev.kind === 'crane') { G.shake = Math.max(G.shake, 5); audio.sfx('enrage'); }
+    // THE NIGHT TRAIN
+    else if (ev.kind === 'ticket') { if (G.train) G.train.ticket = true; spawnPop(p.x, p.y - 80, 'ONE TICKET. SOUTH.'); audio.sfx('blip'); }
+    else if (ev.kind === 'trolleys') { if (G.train) G.train.trolleyCd = 120; }
+    else if (ev.kind === 'whistle') { audio.sfx('go'); G.shake = Math.max(G.shake, 2); }
+    else if (ev.kind === 'tunnel') startTunnel();
+  }
+}
+
+// The parcel dock's hand trucks: from the event until the platform, one rolls down the
+// slope every few seconds while a gate is up, the bull's mechanic in a different coat.
+function updateTrainHazards() {
+  const tr = G.train;
+  if (!tr) return;
+  if (tr.trolleyCd > 0 && G.camX >= 2400 && G.camX < 3360 - W + 200) {
+    if (--tr.trolleyCd <= 0) {
+      if (G.waveActive && G.enemies.filter((e) => e.kind === 'handtruck' && !e.dead).length < 1) {
+        const e = spawnEnemy('handtruck', G.camX + W - 20, G.player.y);
+        e.state = 'windup'; e.t = 0; e.face = -1;
+        audio.sfx('armor');
+      }
+      tr.trolleyCd = 420;
+    }
+  }
+  if (tr.pendingSpawns) {
+    const list = tr.pendingSpawns; tr.pendingSpawns = null;
+    list.forEach((k, i) => spawnEnemy(k, G.camX + W - 30 - i * 40, 208 + i * 6));
   }
 }
 
@@ -191,6 +223,8 @@ function updateSluice() {
   if (!G.sluice) return;
   const s = ++G.sluice.t % SLUICE_PERIOD;
   G.sluice.tell = s > SLUICE_PERIOD - 150;
+  G.sluice.k = clamp((s - (SLUICE_PERIOD - 150)) / 150, 0, 1);   // 0..1 across tell + push
+  G.sluice.pushing = s > SLUICE_PERIOD - SLUICE_PUSH;
   if (s === SLUICE_PERIOD - 120) audio.sfx('blip');
   if (s > SLUICE_PERIOD - SLUICE_PUSH) {
     G.player.y -= 0.6;
@@ -231,13 +265,20 @@ function updateWaves() {
         G.camLock = clamp(next.camX === undefined ? G.camX : next.camX, G.camX, G.camMax);
         G.spawnQueue = [...next.spawns];
         G.spawnCd = 0;
+        G.spawnThief = !!next.thief;
         // The runner got away last time, so this wave is two men heavier. The
         // consequence lands a gate late, which is what makes it a decision.
         if (G.runnerEscaped) { G.spawnQueue.push('goonda', 'goonda'); G.runnerEscaped = false; }
         if (next.runner) {
           const r = spawnEnemy(next.runner, G.camX - 30, laneMin(G.camX) + 30);
           r.face = 1;
+          // on the train a runner goes for the chain, if there is still one to pull
+          if (G.train) {
+            const c = chainFor(G.camX + W / 2);
+            if (c) { r.chainTarget = c; r.runner = true; r.state = 'runner'; r.noLane = true; r.x = G.camX + 10; }
+          }
         }
+        if (next.depart) startDeparture();
         if (next.bull) spawnEnemy('bull', G.camX + W - 20, p.y);
         if (next.miniboss) {
           const b = createBoss(next.miniboss, G.camLock + W - 40, 211);
@@ -266,7 +307,7 @@ function updateWaves() {
           }
         } else {
           audio.sfx('blip');
-          if (G.waveIndex === 0) audio.voice('duke_come_get_some', 1200);
+          if (G.waveIndex === 0 && !G.stage.introVoice) audio.voice('duke_come_get_some', 1200);
         }
       }
     }
@@ -289,6 +330,9 @@ function updateWaves() {
   // frame is what makes a crowd WALK inward rather than snap.
   const sq = G.arenaSqueezeTarget - G.arenaSqueeze;
   if (sq) G.arenaSqueeze += clamp(sq, -0.6, 0.6);
+  const rr = G.arenaRearTarget - G.arenaRear;
+  if (rr) G.arenaRear += clamp(rr, -0.8, 0.8);
+  if (G.ringWobble > 0) G.ringWobble--;
   // camera: forward-only scroll, locked during waves
   if (!G.locked) {
     G.camX = clamp(Math.max(G.camX, p.x - 255), 0, G.camMax);
@@ -304,10 +348,17 @@ function updatePickups() {
     pk.t++;
     // A 1-up you can lose to a timer is worse than no 1-up, and one you cannot take
     // at full health is one a good run never gets to keep.
-    const life = pk.kind === 'life';
-    if (!life && pk.t > 600) { G.pickups.splice(i, 1); continue; }
-    const usable = life || p.hp < p.maxhp;
+    const life = pk.kind === 'life', ticket = pk.kind === 'ticket';
+    if (!life && !ticket && pk.t > 600) { G.pickups.splice(i, 1); continue; }
+    const usable = life || ticket || p.hp < p.maxhp;
     if (Math.abs(p.x - pk.x) < 11 && Math.abs(p.y - pk.y) < 9 && p.z < 8 && usable) {
+      if (ticket) {
+        if (G.train) G.train.ticket = true;
+        spawnPop(pk.x, pk.y - 20, 'TICKET');
+        audio.sfx('blip');
+        G.pickups.splice(i, 1);
+        continue;
+      }
       if (life) {
         G.lives++;
         spawnPop(pk.x, pk.y - 24, '1UP');
@@ -340,6 +391,7 @@ function checkPlayerDeath() {
       p.state = 'dead';
       G.continueT = 9 * 60 + 59;
       setState('over');
+      audio.voice('duke_game_over', 2400, true);
       audio.music(null);
       persist();
     }
@@ -350,6 +402,7 @@ function checkBossClear() {
   const b = G.boss;
   if (!b || !b.dead || G.state !== 'play') return;
   if (b.mini) {
+    if (b.t === 30 && b.key === 'tte') audio.voice('duke_book_em', 1600, true);
     if (b.t > 60) {
       G.boss = null;
       G.arenaSqueezeTarget = 0;
@@ -360,9 +413,10 @@ function checkBossClear() {
   if (b.t > 70) {
     if (!b.victoryLine) {
       b.victoryLine = true;
-      if (b.key === 'mirchi') audio.voice('duke_gotta_hurt', 1600);
-      else if (b.key === 'yadav') audio.voice('duke_book_em', 1600);
-      else if (b.key === 'rana') audio.voice('duke_hail', 1800);
+      // urgent: a combo callout must not swallow the act's last word
+      if (b.key === 'mirchi' || b.key === 'dredger') audio.voice('duke_gotta_hurt', 1600, true);
+      else if (b.key === 'yadav') audio.voice('duke_book_em', 1600, true);
+      else if (b.key === 'rana' || b.key === 'birju') audio.voice('duke_hail', 1800, true);
     }
     G.clearStats = {
       hits: G.stats.hits, kos: G.stats.kos,
@@ -408,7 +462,7 @@ function update() {
       return;
     }
     G.time++;
-    if (G.comboT > 0 && --G.comboT === 0) G.combo = 0;
+    if (G.comboT > 0 && --G.comboT === 0) { G.combo = 0; G.rank = -1; }
     // The play camera only ever scrolls forward; in a room you have to walk back.
     // It runs before the player because clampToArena derives the room's walls from
     // it, and a camera that lags the body by a frame pins him against a stale wall.
@@ -432,9 +486,12 @@ function update() {
   }
   if (G.state === 'intro') {
     const introT = G.rawTime - G.stateT;
+    const station = G.stage.id === 'train';
     if (G.stageIndex === 0) updateMotorcycleArrival(introT);
-    const introLife = G.stageIndex === 0 ? ENTRANCE_LAST_FRAME : 130;
+    else if (station) { updateStationArrival(introT); updateEffects(); }
+    const introLife = G.stageIndex === 0 ? ENTRANCE_LAST_FRAME : station ? STATION_LAST_FRAME : 130;
     if (G.rawTime - G.stateT > introLife || input.pressed('attack')) {
+      if (station) { updateStationArrival(STATION_LAST_FRAME); G.effects.length = 0; }
       // Skipping the arrival has to stop the motorcycle, which loops. updateMotorcycleArrival
       // only cut it at frame 214 and is never called again once the state leaves `intro`, so
       // pressing Z early left the engine running under the stage, the tally and THE LAIR.
@@ -449,7 +506,10 @@ function update() {
     if (G.shake > 0) { G.shake *= 0.85; if (G.shake < 0.3) G.shake = 0; }
     const t = G.rawTime - G.stateT;
     const b = G.boss;
-    if (b) {
+    // The arena was designed at camLock; the camera arrives there during the reveal
+    // rather than staying wherever the player happened to trip the gate.
+    if (G.camX < G.camLock) G.camX = Math.min(G.camLock, G.camX + 1.5);
+    if (b && !delhiIntro(b, t)) {
       const stop = G.camX + (b.key === 'mirchi' ? 338 : b.key === 'rana' ? 350 : 320);
       const startAt = b.key === 'rana' ? 90 : 28;
       if (t > startAt && b.x > stop) b.x -= b.key === 'yadav' ? 1.25 : 0.9;
@@ -545,8 +605,12 @@ function update() {
     if (G.parrySlow & 1) return false;
   }
   G.time++;
-  if (G.comboT > 0 && --G.comboT === 0) G.combo = 0;
+  if (G.comboT > 0 && --G.comboT === 0) { G.combo = 0; G.rank = -1; }
+  if (G.rankT > 0) G.rankT--;
 
+  // the cut onto the train holds the world still for a second of black
+  if (updateTrain()) return false;
+  updateTrainHazards();
   updatePlayer(G.player);
   updateProps();
   updateEnemies();
@@ -599,10 +663,17 @@ function render() {
       break;
     case 'intro':
       if (G.stageIndex === 0) drawMotorcycleArrival(ctx);
+      else if (G.stage.id === 'train') drawStationArrival(ctx);
       else drawIntro(ctx);
       break;
     case 'bossintro': drawBossIntro(ctx, G.camX); break;
-    case 'clear': drawClear(ctx); break;
+    case 'clear':
+      drawStage(ctx, G.camX);
+      drawWorld(ctx);
+      drawFG(ctx, G.camX);
+      drawTrainOverlay(ctx, G.camX);
+      drawClear(ctx);
+      break;
     case 'ending': drawEnding(ctx); break;
     case 'over': {
       drawStage(ctx, G.camX);
@@ -624,6 +695,8 @@ function render() {
       drawStage(ctx, G.camX);
       drawWorld(ctx);
       drawFG(ctx, G.camX);
+      drawRingCrowd(ctx, G.camX);
+      drawTrainOverlay(ctx, G.camX);
       ctx.restore();
       drawHUD(ctx);
       if (G.paused) drawPause(ctx);
@@ -662,6 +735,8 @@ function render() {
 
 function drawWorld(ctx) {
   const camX = G.camX;
+  // wall-plane fight furniture (Langda's wire) sits behind every world actor
+  drawDelhiWallPlane(ctx, camX);
   // lingering floor hazards go under everything else
   drawZones(ctx, camX);
   drawRagnarokGround(ctx, camX);
@@ -671,7 +746,7 @@ function drawWorld(ctx) {
   for (const pk of G.pickups) {
     const bob = Math.sin(pk.t * 0.1) * 2;
     const name = pk.kind === 'shake' ? 'pick_lassi' : 'pick_chaat';
-    const img = fx(name, 0);
+    const img = pk.kind === 'ticket' ? null : fx(name, 0);
     const x = Math.round(pk.x - camX);
     ctx.save();
     ctx.globalAlpha = 0.28;
@@ -683,6 +758,10 @@ function drawWorld(ctx) {
     if (img) {
       const w = frameW(img), h = frameH(img);
       blit(ctx, img, x - w / 2, Math.round(pk.y - h + 2 + bob));
+    } else if (pk.kind === 'ticket') {
+      const ty = Math.round(pk.y - 12 + bob);
+      ctx.fillStyle = '#e8dcc0'; ctx.fillRect(x - 7, ty, 14, 8);
+      ctx.fillStyle = '#c04030'; ctx.fillRect(x - 5, ty + 2, 9, 2); ctx.fillRect(x - 5, ty + 5, 6, 1);
     } else {
       const spr = pk.kind === 'shake' ? SPR.shake : SPR.plate;
       blit(ctx, spr, x - frameW(spr) / 2, Math.round(pk.y - frameH(spr) + 3 + bob));
@@ -1000,7 +1079,7 @@ if (autoMode) {
       let best = null, bd = 1e9;
       const list = G.boss && !G.boss.dead ? [...G.enemies, G.boss] : G.enemies;
       for (const e of list) {
-        if (e.dead || e.state === 'dying') continue;
+        if (e.dead || e.state === 'dying' || e.cow) continue;   // she is not a target, she is a mistake
         const d = Math.abs(e.x - p.x) + Math.abs(e.y - p.y) * 2;
         if (d < bd) { bd = d; best = e; }
       }
@@ -1255,6 +1334,8 @@ if (autoMode) {
       t('combo-launch', gr.state === 'down' || gr.dead);
       t('meter-gain', G.meter > 0);
       t('combo-counter', G.bestCombo >= 2);
+      // the style ladder: the first word lands on the fifth hit of a chain and the HUD holds it
+      t('rank-ladder', G.bestCombo < RANKS[0].at || (G.rank >= 0 && RANKS[G.rank].at <= G.bestCombo && G.rankT > 0));
       t('combo-flow-route', G.player.route === 'flow');
       step(80);
       G.enemies.length = 0; step(20);
@@ -1412,7 +1493,8 @@ if (autoMode) {
       // ---- the one 1-up in the level ----
       {
         const others = Object.entries(PROP_TYPES).filter(([k, T]) => T.drop === 'life');
-        t('one-up-is-a-single-prop-kind', others.length === 1 && others[0][0] === 'mithai');
+        const lifeKinds = others.map(([k]) => k).sort().join(',');
+        t('one-up-is-a-single-prop-kind', lifeKinds === 'fridge,mithai' && STAGES.every((s) => s.props.filter((q) => PROP_TYPES[q.kind].drop === 'life').length === 1));
         G.pickups.length = 0;
         const box = createProp('mithai', G.player.x + 24, G.player.y);
         G.props.push(box);
@@ -1498,6 +1580,79 @@ if (autoMode) {
       }
       G.enemies.length = 0; G.spawnQueue = []; G.hitstop = 0;
 
+      // ---- the three DIRTY DELHI fights: each one has a thing that is not damage ----
+      {
+        const jump = (key) => {
+          const ws = G.stage.waves;
+          const i = ws.findIndex((q) => q.miniboss === key || (key === 'dredger' && q.boss));
+          for (const q of ws) q.done = false;
+          for (let k = 0; k < i; k++) ws[k].done = true;
+          G.waveIndex = i - 1; G.waveActive = false; G.locked = false;
+          G.enemies.length = 0; G.spawnQueue = []; G.boss = null; G.hitstop = 0;
+          G.zones = []; G.shots = []; G.pickups = [];
+          G.player.hp = 100; G.player.state = 'idle'; G.player.invuln = 0; G.player.z = 0; G.player.vz = 0;
+          G.player.x = ws[i].x + 2; G.player.y = 215; G.camX = Math.max(0, ws[i].x - 255);
+          step(3);
+          if (G.state === 'bossintro') step(210);
+          G.enemies.length = 0;
+          return G.boss;
+        };
+        // PAPPU: the arena is the fight
+        let b = jump('pappu');
+        t('pappu-circle-shrinks-arena', !!b && G.arenaSqueezeTarget === 88 && G.arenaSqueeze > 60);
+        const st0 = b.state; b.hurt(5, 1, false, false);
+        t('pappu-shrugs-off-light-hits', b.state === st0 && b.poise === 2);
+        b.hurt(b.maxhp / 2 + 1, 1, false, false); step(2);
+        t('pappu-enrage-widens-the-ring', G.arenaSqueezeTarget === 58);
+        b.hurt(9999, 1, true, true); step(140);
+        t('pappu-death-releases-the-ring', G.boss === null && G.arenaSqueezeTarget === 0);
+        // LANGDA: the wire, the timer, the meter
+        b = jump('langda');
+        t('langda-starts-on-the-wire', !!b && b.onWire === true && b.z > 10 && b.state === 'wire');
+        let dropped = false;
+        for (let i = 0; i < 700 && !dropped; i++) { step(1); dropped = b.state === 'drop'; }
+        t('langda-always-drops-eventually', dropped);
+        while (b.z > 0 || b.state === 'drop' || b.state === 'land') step(1);
+        G.meter = 50; b.stolen = 0; b.state = 'snatch'; b.t = 9; b.hitLanded = false;
+        G.player.x = b.x + b.face * 10; G.player.y = b.y; G.player.z = 0; G.player.state = 'idle'; G.player.invuln = 0; G.player.hp = 100;
+        step(2);
+        const afterSnatch = G.meter;
+        t('langda-snatches-a-meter-segment', afterSnatch <= 30 && b.stolen === 25);
+        b.hurt(b.maxhp / 2 + 1, 1, false, false); step(2);
+        t('langda-enrage-breaks-the-brackets',
+          b.wireGone === true && G.props.filter((q) => q.prop === 'bracket' && !q.broken).length === 0);
+        b.hurt(9999, 1, true, true); step(2);
+        t('langda-death-returns-the-meter', G.meter === afterSnatch + 25 && b.stolen === 0);
+        step(140);
+        // THE DREDGER: the bucket, the crew, the cab, the winch, the man
+        b = jump('dredger');
+        t('dredger-rests-out-of-reach', !!b && b.phase === 'machine' && b.z >= 60);
+        t('dredger-arena-is-the-pontoon', G.camX === G.camLock && b.reflectTarget.x - G.camX < W);
+        let crew = false;
+        for (let i = 0; i < 400 && !crew; i++) { step(1); crew = G.enemies.some((e) => e.kind === 'mudlark'); }
+        t('dredger-always-has-crew', crew);
+        G.shots = [{ kind: 'slurry', x: b.rail.x - 60, y: 215, z: 0, vx: -3, vz: 0, dmg: 9, t: 0, life: 400,
+          source: b, parryClass: 'reflect', reflected: true }];
+        for (let i = 0; i < 150 && G.shots.length; i++) step(1);
+        t('dredger-reflected-hose-cracks-the-cab', b.glass === 2 && G.shots.length === 0);
+        b.winch.hurt(999, 1); step(200);
+        const stopped = b.winchGone === true && b.state === 'grounded' && b.z === 0;
+        step(400);
+        t('dredger-winch-stops-the-bucket', stopped && b.state === 'grounded' && b.z === 0);
+        b.hurt(b.hp - 80, 1, false, false); step(5);
+        t('dredger-operator-comes-out', b.phase === 'operator' && b.label === 'THE THEKEDAR' && b.maxhp === 90);
+        b.hurt(9999, 1, true, true); step(80);
+        t('dredger-dies-as-a-man', b.dead === true && b.state === 'dying');
+        // hand the suite a quiet street again
+        G.boss = null; G.enemies.length = 0; G.spawnQueue = []; G.zones = []; G.shots = []; G.pickups = [];
+        G.arenaSqueeze = 0; G.arenaSqueezeTarget = 0; G.hitstop = 0;
+        for (const q of G.stage.waves) q.done = false;
+        G.waveIndex = -1; G.waveActive = false; G.locked = false;
+        G.player.x = 200; G.player.y = 215; G.player.hp = 100; G.player.state = 'idle'; G.camX = 0;
+        G.props = (G.stage.props || []).map((d) => createProp(d.kind, d.x, d.y, d.z));
+        setState('play');
+      }
+
       // ---- the drain has no music at all ----
       {
         const st = G.stage;
@@ -1507,6 +1662,203 @@ if (autoMode) {
         t('the-river-answers-the-market', st.music === 'stage1a' && st.musicB === 'stage1b');
         t('the-level-boss-has-its-own-theme',
           st.bossMusicFinal === 'boss1' && st.bossMusic === 'boss');
+      }
+
+      // ---- THE NIGHT TRAIN: the station opening, then the rules the doc promised ----
+      {
+        startStage(1);
+        t('station-intro-state', G.state === 'intro' && G.stage.id === 'train');
+        step(STATION_LAST_FRAME + 2);
+        t('station-intro-ends-on-platform', G.state === 'play' && G.player.x === 150 && G.effects.length === 0);
+      }
+      {
+        startStage(1); setState('play'); G.fade = 0;
+        const st = G.stage, tr = G.train;
+        const rake0 = tr.rakeX;
+        t('train-is-act-two', st.id === 'train' && !!tr && st.width === 9120 && st.floorW === st.width && st.num === '1-2');
+        const at = (x) => {
+          G.enemies.length = 0; G.spawnQueue = []; G.boss = null; G.hitstop = 0; G.shots = []; G.zones = []; G.pickups = [];
+          const ws = st.waves;
+          const i = ws.findIndex((q) => q.x > x);
+          for (let k = 0; k < ws.length; k++) ws[k].done = i < 0 || k < i;
+          G.waveIndex = (i < 0 ? ws.length : i) - 1; G.waveActive = false; G.locked = false;
+          G.arenaSqueeze = 0; G.arenaSqueezeTarget = 0; G.arenaRear = 0; G.arenaRearTarget = 0;
+          const p = G.player;
+          p.x = x; p.y = 211; p.z = 0; p.vz = 0; p.vx = 0; p.state = 'idle'; p.t = 0; p.hp = 100; p.invuln = 0; p.grabbedBy = null; p.pitCd = 0;
+          G.camX = Math.max(0, Math.min(G.camMax, x - 255));
+          Object.assign(tr, { aboard: x >= ABOARD_X, climbed: x >= ROOF_X, cut: 0, departure: null, softFail: false, tunnel: 0, bridge: 0, brake: 0,
+            lurch: 0, lurchCd: 900, rakeX: rake0, rakeV: 0, pendingSpawns: null, bridgeEvery: 0, bridgeCd: 0, blind: 0 });
+          for (const ev of st.events) ev.done = ev.x <= x;   // what is behind you has happened
+          step(2);
+        };
+        // the corridor is 30 px deep, the roof 80 with an edge, the footbridge a pit
+        at(5300);
+        t('corridor-halves-the-lane', laneMax(5300) - laneMin(5300) === 30 && laneMax(8100) - laneMin(8100) === 80
+          && laneMax(2000) - laneMin(2000) === 41 && laneMax(300) - laneMin(300) === 60);
+        // the lurch slides both sides
+        const g1 = spawnEnemy('goonda', 5400, 211); g1.state = 'idle'; g1.atkCd = 9999; g1.z = 0; g1.vz = 0; g1.orbit = 0; G.player.invuln = 9999; step(1);
+        g1.atkCd = 9999;
+        const y0p = G.player.y, y0e = g1.y;
+        tr.lurchCd = 1; step(3);
+        t('lurch-arms-on-schedule', tr.lurch > 0);
+        for (let i = 0; i < 30; i++) { step(1); g1.atkCd = 9999; }
+        t('lurch-slides-both-sides', tr.lurchDir * (G.player.y - y0p) > 6 && tr.lurchDir * (g1.y - y0e) > 6);
+        G.player.invuln = 0;
+        // the tunnel kills the lights
+        at(6300); G.player.x = 6410; step(2);
+        t('tunnel-kills-the-lights', tr.tunnel > 150);
+        // a runner pulls the chain: the train brakes, everyone goes down, the next gate comes early
+        at(5980); G.player.x = 6001; step(3);
+        const runner = G.enemies.find((e) => e.chainTarget);
+        t('runner-goes-for-the-chain', !!runner && runner.state === 'runner');
+        for (const e of G.enemies) if (e !== runner) e.removeMe = true;
+        G.spawnQueue = []; G.player.invuln = 9999;
+        const nextWave = st.waves.find((w) => w.x === 6600);
+        const before = nextWave.spawns.length;
+        for (let i = 0; i < 600 && tr.brake === 0; i++) step(1);
+        t('chain-pull-brakes-the-train', tr.brake > 0 && tr.chainsPulled === 1);
+        G.player.invuln = 0;
+        step(52);
+        t('brake-puts-everyone-down', ['hurt', 'down', 'getup'].includes(G.player.state));
+        t('chain-pull-calls-the-next-wave', before > 0 && nextWave.spawns.length === 0);
+        nextWave.spawns = [...nextWave.spawns0];
+        // break a chain and nobody stops the train again
+        at(5000);
+        G.props.find((q) => q.prop === 'chain' && !q.broken).hurt(999, 1);
+        t('broken-chain-disarms-it', tr.chainBroken === true && chainFor(5100) === null);
+        at(5980); G.player.x = 6001; step(3);
+        t('disarmed-chain-spawns-a-fighter', !G.enemies.some((e) => e.chainTarget) && G.enemies.some((e) => e.kind === 'goonda'));
+        tr.chainBroken = false;
+        // MANJA: above the lane, jump-only, drops after three throws, climbs back
+        at(5480);
+        const m = spawnEnemy('manja', 5560, 200);
+        t('manja-perches-above-the-lane', m.perched === true && m.z === 52 && m.airOnly === true);
+        m.hurt(5, 1, false, false); step(14);
+        t('manja-shrugs-a-light-hit-on-the-berth', m.perched === true && m.state === 'perch');
+        G.player.x = 5520; G.player.y = m.y; G.player.invuln = 9999;
+        let thrown = 0, dropped = false;
+        for (let i = 0; i < 1400 && !dropped; i++) { step(1); if (m.state === 'pthrow' && m.t === 15) thrown++; dropped = m.state === 'drop'; G.shots.length = 0; }
+        t('manja-drops-after-three-throws', dropped && thrown >= 3);
+        m.atkCd = 9999;
+        for (let i = 0; i < 500 && m.state !== 'climb' && !m.perched; i++) { step(1); m.atkCd = 9999; }
+        t('manja-climbs-back-up', m.state === 'climb' || m.perched === true);
+        G.player.invuln = 0;
+        // the cow: no damage, only offence, and the offence lands behind her
+        at(600);
+        const cow = spawnEnemy('gai', 700, 215); cow.face = 1; cow.state = 'graze'; cow.grazing = true; cow.grazeT = 9999; step(1);
+        t('the-cow-takes-no-damage', cow.state === 'graze' && !cow.dead && cow.hp === cow.maxhp && cow.noCount === true);
+        G.player.x = 660; G.player.y = 215; G.player.state = 'idle'; G.player.invuln = 0;
+        cow.hurt(30, 1, true, true); step(1);
+        t('a-hit-cow-turns-to-kick', cow.state === 'windup' && cow.face === 1 && cow.hp === cow.maxhp && !cow.dead);
+        const hpc = G.player.hp;
+        for (let i = 0; i < 30 && G.player.hp === hpc; i++) step(1);
+        t('the-cow-kicks-behind', G.player.hp < hpc && cow.hitLanded === true);
+        cow.removeMe = true; step(1);
+        // the coolie: a green heavy you can counter
+        at(1000);
+        const cl = spawnEnemy('coolie', 1060, 215); cl.state = 'windup'; cl.t = 0; cl.face = -1; cl.atkCd = 9999; cl.z = 0;
+        G.player.x = 1024; G.player.y = 215; G.player.state = 'idle'; G.player.invuln = 0; G.player.hp = 100;
+        for (let i = 0; i < 60 && G.player.hp === 100; i++) step(1);
+        t('coolie-slam-is-a-heavy', G.player.hp < 100 && (G.player.state === 'down' || G.player.state === 'hurt'));
+        G.enemies.length = 0;
+        // the ticket: bought at the grille, taken by the thief, carried to the TTE
+        at(1240); G.player.x = 1260; step(2);
+        t('the-ticket-is-bought', tr.ticket === true);
+        at(1690); G.player.x = 1701; step(3);
+        for (let i = 0; i < 300 && !G.enemies.some((e) => e.thief); i++) step(1);
+        const thief = G.enemies.find((e) => e.thief);
+        t('one-bandar-is-the-thief', !!thief);
+        for (const e of G.enemies) if (e !== thief) e.removeMe = true;
+        step(1);
+        thief.x = G.player.x + 20; thief.y = G.player.y; thief.face = -1; thief.state = 'attack'; thief.t = 0; thief.hitLanded = false; thief.vx = -3; thief.vz = 2; thief.z = 1;
+        G.player.invuln = 0; G.player.state = 'idle';
+        for (let i = 0; i < 40 && tr.ticket; i++) step(1);
+        t('the-thief-takes-the-ticket', tr.ticket === false && thief.hasTicket === true && thief.state === 'runner');
+        thief.hurt(999, 1, true, false); step(2);
+        const tk = G.pickups.find((q) => q.kind === 'ticket');
+        t('killing-the-thief-drops-it', !!tk);
+        G.player.x = tk.x; G.player.y = tk.y; G.player.z = 0; G.player.state = 'idle'; G.hitstop = 0; step(20);
+        t('ticket-carries-to-the-tte', tr.ticket === true);
+        // the departure: the platform runs out, or a running jump
+        at(4290); G.player.x = 4301; step(3);
+        t('departure-is-a-situation', !!tr.departure && G.waveActive === true && tr.rakeV > 0);
+        for (let i = 0; i < 1400 && !tr.aboard; i++) { step(1); G.enemies.length = 0; G.spawnQueue = []; }
+        t('departure-soft-fails', tr.aboard === true && tr.softFail === true && G.camX === ABOARD_X && G.state === 'play');
+        step(70);
+        t('soft-fail-costs-two-men', G.enemies.filter((e) => e.kind === 'goonda').length === 2);
+        at(4290); G.player.x = 4301; step(3);
+        G.enemies.length = 0; G.spawnQueue = [];
+        G.player.x = doorX(); G.player.state = 'jump'; G.player.z = 12; G.player.vz = 1; step(2);
+        t('running-jump-boards-the-train', tr.aboard === true && tr.softFail === false);
+        // the ladder: the corridor ends on a cut and the roof starts at the camera's edge
+        at(ROOF_X - 100); G.player.x = ROOF_X - 30; step(1);
+        t('the-ladder-is-a-cut', tr.climbed === true && tr.cut > 0 && G.camX === ROOF_X && G.player.x > ROOF_X);
+        step(45);
+        t('the-roof-starts-in-the-open', tr.cut === 0 && G.state === 'play' && laneMax(G.player.x) === 261);
+        // THE TTE: the check, the torch, the ticket, and no rage
+        const jumpTo = (key) => {
+          const i = st.waves.findIndex((q) => q.miniboss === key || (key === 'birju' && q.boss));
+          at(st.waves[i].x - 10); G.player.x = st.waves[i].x + 2; step(3);
+          if (G.state === 'bossintro') step(215);
+          G.enemies.length = 0;
+          return G.boss;
+        };
+        tr.ticket = true;
+        let b = jumpTo('tte');
+        t('tte-arrives-on-the-train', !!b && b.key === 'tte' && b.mini === true && G.state === 'play' && b.hostile === false);
+        b.atkCd = 9999; b.state = 'idle';
+        const corpse = spawnEnemy('goonda', b.x - 60, b.y); corpse.state = 'idle'; step(1); corpse.hurt(999, 1, true, false);
+        for (let i = 0; i < 60; i++) { step(1); b.atkCd = 9999; }
+        t('under-the-tte-the-fallen-stay', corpse.state === 'corpse' && corpse.removeMe === false);
+        b.checkCd = 0; b.state = 'idle';
+        for (let i = 0; i < 500 && corpse.state === 'corpse'; i++) { step(1); b.atkCd = 9999; }
+        t('the-check-revives-at-half', corpse.dead === false && corpse.hp === Math.ceil(corpse.maxhp / 2));
+        G.enemies.length = 0;
+        b.face = 1; b.state = 'torch'; b.t = 5; G.player.x = b.x + 80; G.player.y = b.y; G.player.z = 0; G.player.face = -1;
+        G.player.state = 'parry'; G.player.t = 0; G.player.invuln = 0;
+        debugPress('parry'); step(1); debugRelease('parry');
+        t('reflected-torch-blinds-him', b.blindT > 0);
+        b.hurt(Math.round(b.maxhp / 2) + 1, 1, false, false); step(2);
+        t('the-tte-does-not-rage', b.enraged === false);
+        b.hurt(9999, 1, true, false); step(80);
+        t('the-tte-gets-off-quietly', G.boss === null && !G.enemies.some((e) => e.state === 'corpse'));
+        tr.ticket = false;
+        b = jumpTo('tte');
+        t('no-ticket-means-two-more-men', b.hostile === true);
+        // BIRJU: the wind, the uncouple, the bridges, the girder grab, the edge, the side
+        tr.ticket = true;
+        b = jumpTo('birju');
+        t('birju-is-the-level-boss', !!b && b.key === 'birju' && !b.mini && G.camX === G.camLock);
+        b.atkCd = 9999; b.state = 'idle';
+        const px = G.player.x; G.player.state = 'idle'; G.player.invuln = 9999;
+        for (let i = 0; i < 20; i++) { step(1); b.atkCd = 9999; }
+        t('wind-pushes-rearward', G.player.x < px - 3);
+        b.hurt(Math.round(b.maxhp * 0.4), 1, false, false);
+        for (let i = 0; i < 600 && b.uncouples === 0; i++) { step(1); if (b.state === 'idle') b.atkCd = 9999; }
+        t('uncouple-shrinks-the-roof', b.uncouples === 1 && G.arenaRearTarget === 60);
+        for (let i = 0; i < 120; i++) { step(1); b.atkCd = 9999; }
+        t('rear-wall-advances', G.arenaRear >= 59 && arenaMin() > G.camLock + 60);
+        b.hurt(Math.round(b.maxhp * 0.2), 1, false, false); step(2);
+        t('bridges-come-with-the-rage', b.enraged === true && tr.bridgeEvery === 480);
+        b.state = 'idle'; b.atkCd = 9999; b.t = 0; b.face = 1;
+        G.player.x = b.x + 26; G.player.y = b.y; G.player.state = 'idle'; G.player.invuln = 0; G.player.z = 0; G.player.grabbedBy = null;
+        b.pattern = 'lift'; b.state = 'lift'; b.t = 0; step(1);
+        t('girder-grab-lifts-you', G.player.grabbedBy === b && G.player.z > 20 && tr.bridgeCd <= 110);
+        G.player.mash = 8; step(2);
+        t('girder-grab-is-escapable', G.player.grabbedBy === null && G.player.z === 0);
+        b.state = 'idle'; b.atkCd = 9999;
+        G.player.state = 'idle'; G.player.invuln = 0; G.player.z = 30; tr.bridge = 41; tr.bridgeHit = false;
+        const hp0 = G.player.hp; step(2);
+        t('the-girder-takes-the-lifted', G.player.hp < hp0);
+        b.atkCd = 9999;
+        G.hitstop = 0; G.player.state = 'down'; G.player.z = 0; G.player.vz = 0; G.player.invuln = 0; G.player.pitCd = 0; G.player.grabbedBy = null; G.player.y = laneMax(G.player.x) + 4;
+        const hp1 = G.player.hp; step(1);
+        t('roof-edge-takes-the-helpless', G.player.hp < hp1 && G.player.y <= laneMax(G.player.x));
+        G.hitstop = 0; b.hurt(9999, 1, true, true); step(60);
+        t('birju-dies-over-the-side', b.dead === true && b.state === 'dying' && b.z < -10 && G.state === 'play');
+        // and back to the market for the rest of the suite
+        startStage(0); setState('play'); G.fade = 0;
+        G.player.x = 200; G.player.y = 215; G.camX = 0;
       }
 
       // ---- quick getup ----

@@ -11,7 +11,8 @@ step, and no JavaScript dependencies.
 
 - Logical resolution: 480×270.
 - Authored-art scale: `RS = 2`, producing a 960×540 canvas.
-- Shipped content: THE LAIR plus one 12,480-pixel DIRTY DELHI stage.
+- Shipped content: THE LAIR, the 12,480-pixel DIRTY DELHI stage, and the 9,120-pixel
+  NIGHT TRAIN stage.
 - THE LAIR width: 1,920 logical pixels.
 - Future acts in `docs/` are proposals, not runtime content.
 
@@ -40,8 +41,8 @@ Other useful modes:
 - `/?auto=bot&stage=0` — automated stage balance run.
 - `/?auto=hub-<fixture>` — lair fixture setup.
 - `lab.html` — general asset and animation inspection.
+- `sfxlab.html` — audition every SFX slot against the Streets of Rage 2 rip.
 - `review-animation-pipeline.html` — tiger, couch, and fish frame review.
-- `review-1-1.html` — production Stage 1 route review.
 
 `window.__game` exposes `start`, `stage`, `press`, `release`, `step`, `spawn`,
 `skipToBoss`, `hurtBoss`, `setPlayerPos`, `state`, `G`, `BOSSES`, and `STAGES`.
@@ -49,6 +50,9 @@ Other useful modes:
 ## Architecture rules
 
 - `js/engine.js` owns constants and the shared mutable context `G`.
+- `js/bosses.js` runs the shared boss machine; a fight with its own mechanics lives in a
+  per-act module (`js/delhi_bosses.js`) as hooks (`init/update/draw/onHurt/onEnrage/
+  onDown/onDeath/intro`) and shares helpers through `js/bosslib.js`, never the reverse.
 - `js/main.js` owns the fixed-step loop, high-level states, waves, camera, draw order,
   debug API, and verification suite.
 - Systems should operate on `G`; avoid cross-module imports that create cycles.
@@ -57,6 +61,8 @@ Other useful modes:
 - Draw order is load-bearing: plates, wall-plane fixtures, world actors, lighting,
   effects, foreground, then UI.
 - Missing PNGs, frames, music, and SFX must fail gracefully to existing fallbacks.
+- Music is `audio/manifest.json` slots; voice lines are optional named files listed in
+  `audio/voice/README.md`. Add a line by adding a slot there, not by special-casing a path.
 
 ## Spatial and sprite contracts
 
@@ -104,6 +110,16 @@ production copies.
 - Use `./.venv/bin/python` for PIL/numpy tooling.
 - `tools/serve.py` is the supported development server.
 - `tools/process_char.py` enforces shared scale, ground registration, palette, and outline.
+- `tools/process_props.py` sizes props, lair fixtures and stage ambience sprites from its
+  tables; `tools/gen_d1_props.sh`, `tools/gen_d1_ambience.sh` and `tools/gen_d2_props.sh`
+  are their generators.
+- THE NIGHT TRAIN: `tools/gen_d2_plates.sh` generates the views (keyed views paint windows
+  and sky chroma green), `tools/build_night_train.py` stitches them into the RGBA wall
+  plate, `tools/gen_d2_cast.sh`, `tools/gen_d2_extra.sh` and `tools/process_d2_cast.sh`
+  produce MANJA, the TTE, BIRJU, the COOLIE and the cow.
+- `tools/rescale_strips.py` brings a strip that came back at the wrong scale onto its
+  family's scale before `tools/process_char.py`; `tools/check_cast_scale.py` tells you which.
+- `tools/patch_plate.py` blends an inpainted crop back into a plate; never hand-paste one.
 - `tools/build_manifest.py` must run after character-frame changes.
 - `tools/build_animation_experiments.py` rebuilds the current lair animation comparison.
 - `tools/audit_repo.py` checks runtime references, stale tracked paths, and duplicate totals.

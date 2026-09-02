@@ -72,10 +72,6 @@ LAIR = {
     # size as a payphone, which is what made the shelf read wrong. Height is roughly the
     # real object at the room's ~50 logical px per metre, capped at the bay.
     "relic_raja": (22, 20),      # a taxi meter, about 40cm on its bracket
-    "relic_mirchi": (22, 21),    # a chutney bowl and ladle
-    "relic_refund": (20, 26),    # a payphone handset unit - the biggest thing here
-    "relic_yadav": (22, 23),     # a police cap on its stand
-    "relic_rana": (26, 25),      # a mounted head on a plinth
     "bar_stools": (44, 40),
     "gloves": (20, 30),
     # the master suite. The bed itself is a strip and comes from build_lair_extras.py.
@@ -83,6 +79,81 @@ LAIR = {
     "bed_nightstand": (44, 40),
     "bed_rug": (126, 54),   # sized by HEIGHT here; the width follows the art
 }
+
+
+# DIRTY DELHI: the stage's own props, the dredger's rig, and the market shutter. Raw
+# generations come from tools/gen_d1_props.sh. Sizes are logical (w, h); only h drives the
+# scale, the width follows the art. `out` overrides the default assets/props/ destination.
+D1_SRC = "assets/ai/d1props/"
+D1 = {
+    "drum": (30, 40),
+    "mithai": (26, 20),
+    "bracket": (24, 18),
+    "thelapole": (84, 14),
+    "dhobislab": (46, 18),
+    # the bucket IS the boss's body in js/delhi_bosses.js: 96 tall including the chain stub,
+    # so the steel itself reads about 70 against a 90-tall fighter
+    "dredger_bucket": (72, 96),
+    "dredger_bucket_open": (96, 96),
+    "dredger_winch": (54, 40),
+    "hose_nozzle": (28, 14),
+    "shutter": (60, 80),
+    # ambience: the ring crowd (backs, a head shorter than a fighter), the ghat's rats
+    # and what floats past the pontoon. Not breakable, so they go to assets/ambience/.
+    "crowd_a_key": (220, 84),
+    "crowd_b_key": (220, 84),
+    "rat": (16, 8),
+    "debris_bottle": (12, 6),
+    "debris_garland": (16, 5),
+    "debris_scooter": (24, 12),
+}
+# raw name -> runtime file name (js/assets.js keys)
+D1_NAME = {"dredger_bucket": "bucket", "dredger_bucket_open": "bucket_open", "dredger_winch": "winch"}
+D1_OUT = {
+    "shutter": "assets/ambience/delhi_shutter_1.png",
+    "crowd_a_key": "assets/ambience/delhi_crowd_a.png",
+    "crowd_b_key": "assets/ambience/delhi_crowd_b.png",
+    "rat": "assets/ambience/delhi_rat.png",
+    "debris_bottle": "assets/ambience/delhi_debris_bottle.png",
+    "debris_garland": "assets/ambience/delhi_debris_garland.png",
+    "debris_scooter": "assets/ambience/delhi_debris_scooter.png",
+}
+D1_NO_BROKEN = {"dredger_bucket", "dredger_bucket_open", "hose_nozzle", "shutter",
+                "crowd_a_key", "crowd_b_key", "rat", "debris_bottle", "debris_garland", "debris_scooter"}
+# How tall the broken state is, as a fraction of the whole prop. The default 0.45 is
+# rubble on the floor; a snapped bracket stays bolted to the wall at full size, and the
+# wrecked winch is still most of a winch.
+# long flat things are sized by WIDTH: a punting pole scaled to 14 tall came out 167 long
+D1_BY_WIDTH = {"thelapole", "dhobislab"}
+D1_BROKEN_H = {"bracket": 1.0, "dredger_winch": 0.85, "drum": 0.6, "thelapole": 0.9, "dhobislab": 0.7, "mithai": 0.5}
+# THE NIGHT TRAIN: props from tools/gen_d2_props.sh, plus the rake, the family and the
+# pigeons for the wall plane (assets/ambience/).
+D2_SRC = "assets/ai/d2props/"
+D2 = {
+    "trolley": (36, 40), "trunk": (38, 26), "parcel": (34, 36), "berthtable": (30, 20),
+    "glasses": (26, 22), "urn": (24, 40), "fridge": (30, 48), "chain": (14, 30),
+    "thelatrunk": (44, 30), "handtruck": (40, 36),
+    "portrait_tte": (48, 48), "portrait_birju": (48, 48),
+    "family": (96, 40), "pigeons": (110, 14),
+    # the rake standing at platform 1: two coaches, sized to stand on the platform edge
+    # with its roof under the canopy (the wall band is 181 tall)
+    "rake": (760, 250),
+}
+D2_OUT = {
+    "portrait_tte": "assets/portrait_tte.png", "portrait_birju": "assets/portrait_birju.png",
+    "family": "assets/ambience/train_family.png", "pigeons": "assets/ambience/train_pigeons.png",
+    "rake": "assets/ambience/train_rake.png",
+}
+D2_NO_BROKEN = {"handtruck", "portrait_tte", "portrait_birju", "family", "pigeons", "rake"}
+D2_BROKEN_H = {"chain": 0.5, "fridge": 0.6, "urn": 0.55, "trolley": 0.6, "thelatrunk": 0.7}
+D2_BY_WIDTH = {"family", "pigeons"}
+
+# the relics for the trophy wall, sized like the others in LAIR
+LAIR.update({
+    "relic_dredger": (22, 22),   # the brass permit token on its block
+    "relic_birju": (16, 26),     # a coupling pin, standing
+    "relic_sir": (24, 18),       # the headset on its stand
+})
 
 
 # A few props have to hit an exact WIDTH as well as a height, because they sit inside an
@@ -102,15 +173,18 @@ def scaled(img, h):
     return img.resize((w * 3, h * 3), Image.LANCZOS).resize((w, h), Image.LANCZOS)
 
 
-def process(name, broken, sizes=SIZES, src_dir=SRC, out_dir=OUT):
+def process(name, broken, sizes=SIZES, src_dir=SRC, out_dir=OUT, out_name=None, out_path=None, broken_h=0.45):
     src = src_dir + name + ("_b" if broken else "") + ".png"
     if not os.path.exists(src):
         print(f"SKIP {src}")
         return
     lw, lh = sizes[name]
     # a broken prop is rubble: it sits lower and spreads wider
-    th = int(lh * (0.45 if broken else 1.0) * RS)
+    th = int(lh * (broken_h if broken else 1.0) * RS)
     img = hard_alpha(subject(key_green(Image.open(src), tol=40)), 128)
+    if name in (D1_BY_WIDTH | D2_BY_WIDTH) and not broken:
+        tw = int(lw * RS)
+        th = max(1, round(img.height * tw / img.width))
     img = scaled(img, th)
     if name in EXACT_W:
         img = img.resize((EXACT_W[name] * RS, img.height), Image.LANCZOS)
@@ -122,17 +196,29 @@ def process(name, broken, sizes=SIZES, src_dir=SRC, out_dir=OUT):
     rgb.paste(img.convert("RGB"), (0, 0), alpha)
     q = rgb.quantize(colors=40, method=Image.MEDIANCUT, dither=Image.NONE).convert("RGBA")
     q.putalpha(alpha)
-    os.makedirs(out_dir, exist_ok=True)
-    dst = out_dir + name + ("_b" if broken else "") + ".png"
+    dst = out_path or (out_dir + (out_name or name) + ("_b" if broken else "") + ".png")
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
     q.save(dst)
     print(f"{dst:<34} {q.width}x{q.height}  (logical {round(q.width / RS)}x{round(q.height / RS)})")
 
 
 if __name__ == "__main__":
-    names = sys.argv[1:] or list(SIZES) + list(LAIR)
+    names = sys.argv[1:] or list(SIZES) + list(LAIR) + list(D1) + list(D2)
     for n in names:
-        if n in LAIR:
+        if n in LAIR and n.startswith("relic_") and os.path.exists(D1_SRC + n + ".png"):
+            process(n, False, LAIR, D1_SRC, LAIR_OUT)
+        elif n in LAIR and n.startswith("relic_") and os.path.exists(D2_SRC + n + ".png"):
+            process(n, False, LAIR, D2_SRC, LAIR_OUT)
+        elif n in LAIR:
             process(n, False, LAIR, LAIR_SRC, LAIR_OUT)
+        elif n in D1:
+            process(n, False, D1, D1_SRC, OUT, D1_NAME.get(n), D1_OUT.get(n))
+            if n not in D1_NO_BROKEN:
+                process(n, True, D1, D1_SRC, OUT, D1_NAME.get(n), broken_h=D1_BROKEN_H.get(n, 0.45))
+        elif n in D2:
+            process(n, False, D2, D2_SRC, OUT, None, D2_OUT.get(n))
+            if n not in D2_NO_BROKEN:
+                process(n, True, D2, D2_SRC, OUT, None, broken_h=D2_BROKEN_H.get(n, 0.45))
         else:
             process(n, False)
             process(n, True)

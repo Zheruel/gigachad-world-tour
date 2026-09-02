@@ -37,6 +37,8 @@ const HEIGHTS = {
   cooker: 82, thela: 107, mudlark: 70, dhobi: 90, dabbawala: 89, bull: 105,
   raja: 104, mirchi: 100, refund: 106, yadav: 108, rana: 112,
   pappu: 104, langda: 103, dredger: 150, thekedar: 88,
+  // THE NIGHT TRAIN. Canvas heights again: MANJA's is his leap, BIRJU's the pin overhead.
+  manja: 84, tte: 92, birju: 118, coolie: 120, gai: 94,   // the cow's canvas is her head thrown up; she stands at 70
 };
 
 // game frame name -> candidate manifest state names (first hit wins)
@@ -70,6 +72,14 @@ const NAMEMAP = {
   screech: ['screech', 'atk', 'atk1'],
   snatch: ['snatch', 'grab', 'atk'],
   swing: ['swing', 'atk', 'atk1', 'punch'],
+  // THE NIGHT TRAIN
+  perch: ['perch', 'idle'],
+  torch: ['torch', 'atk', 'atk1'],
+  ledger: ['ledger', 'atk', 'atk1'],
+  stamp: ['stamp', 'grab', 'atk'],
+  chain: ['chain', 'atk', 'atk1', 'punch'],
+  hook: ['hook', 'throw', 'atk'],
+  uncouple: ['uncouple', 'grab', 'idle'],
 };
 
 function mkCanvas(w, h) {

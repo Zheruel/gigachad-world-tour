@@ -136,7 +136,9 @@ The final prompt set for the tiger, couch, and fish experiment lives in
 
 - Chroma-key or preserve real alpha.
 - Remove isolated components and edge contamination.
-- Determine one scale from an approved reference pose.
+- Determine one scale from an approved reference pose. A short strip often comes back
+  larger than the rest; `tools/check_cast_scale.py` shows it and `tools/rescale_strips.py`
+  brings it onto the family's scale by the length of a full-length pose.
 - Place all frames on one canvas and ground line.
 - Register locomotion on stable torso mass.
 - Quantize the complete family against one palette.

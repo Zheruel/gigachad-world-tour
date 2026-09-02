@@ -1,9 +1,11 @@
 // screens.js - title, stage intro, boss intro, stage clear, ending, game over
 import { G, W, H } from './engine.js';
 import { SPR, drawText, drawTextShadow, textWidth, getFrame, blit, frameW, frameH } from './sprites.js';
-import { drawStage, STAGES } from './stages.js';
+import { drawStage, drawRingCrowd, STAGES } from './stages.js';
 import { ASSETS } from './assets.js';
 import { drawProp } from './props.js';
+import { drawDelhiWallPlane } from './delhi_bosses.js';
+import { drawTrainOverlay } from './train.js';
 
 function center(str, scale) { return (W - textWidth(str, scale)) / 2; }
 
@@ -112,7 +114,51 @@ export function drawBossIntro(ctx, camX) {
   const pf = getFrame(SPR.player, 'idle', (G.rawTime >> 4) & 1, 1);
   blit(ctx, pf, Math.round(G.player.x - camX - frameW(pf) / 2), Math.round(G.player.y - frameH(pf) + 4));
 
-  if (b.key === 'raja') {
+  if (b.delhi) {
+    // The Delhi fights draw themselves: the reveal is the mechanic arriving - the
+    // crowd closing, the wire, the bucket coming down out of the dark.
+    drawDelhiWallPlane(ctx, camX);
+    for (const pr of G.props) if (!pr.broken && pr.x > camX - 40 && pr.x < camX + W + 40) drawProp(ctx, pr, camX);
+    b.delhi.draw(ctx, b, camX);
+    if (b.key === 'pappu') {
+      drawRingCrowd(ctx, camX);
+      ctx.fillStyle = 'rgba(30,14,6,0.84)'; ctx.fillRect(0, 202, W, 68);
+      drawTextShadow(ctx, 'NO WEAPONS. NO ROOM. NO LEAVING.', center('NO WEAPONS. NO ROOM. NO LEAVING.', 1), 214, '#e8d0a0', 1);
+      drawTextShadow(ctx, 'USTAD PAPPU', center('USTAD PAPPU', 2), 232, '#ffb860', 2);
+    } else if (b.key === 'tte') {
+      drawTrainOverlay(ctx, camX);
+      ctx.fillStyle = 'rgba(8,8,16,0.84)'; ctx.fillRect(0, 202, W, 68);
+      const line = G.train && G.train.ticket ? 'HE IS NOT ANGRY. HE IS THE RULES.' : 'NO TICKET. NO SEAT. NO ARGUMENT.';
+      drawTextShadow(ctx, line, center(line, 1), 214, '#d0d0e0', 1);
+      drawTextShadow(ctx, 'THE TTE', center('THE TTE', 2), 232, '#f0e8c0', 2);
+    } else if (b.key === 'birju') {
+      drawTrainOverlay(ctx, camX);
+      // the loco's headlight, throwing your shadow back down the roof
+      if (t > 50) {
+        const k = Math.min(1, (t - 50) / 30);
+        const g = ctx.createLinearGradient(W, 0, 0, 0);
+        g.addColorStop(0, `rgba(255,240,200,${0.35 * k})`);
+        g.addColorStop(1, 'rgba(255,240,200,0)');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      }
+      ctx.fillStyle = 'rgba(6,8,18,0.84)'; ctx.fillRect(0, 202, W, 68);
+      drawTextShadow(ctx, 'NOWHERE TO STAND. NOWHERE TO GO.', center('NOWHERE TO STAND. NOWHERE TO GO.', 1), 214, '#c8d0e8', 1);
+      drawTextShadow(ctx, 'BIRJU - THE COUPLER', center('BIRJU - THE COUPLER', 2), 232, '#ffb860', 2);
+    } else if (b.key === 'langda') {
+      if (t > 30 && t < 40) { ctx.fillStyle = 'rgba(255,240,200,0.18)'; ctx.fillRect(0, 0, W, H); }
+      ctx.fillStyle = 'rgba(12,10,20,0.84)'; ctx.fillRect(0, 202, W, 68);
+      drawTextShadow(ctx, 'THE STREET PAYS HIM. SO WILL YOU.', center('THE STREET PAYS HIM. SO WILL YOU.', 1), 214, '#d0c8e8', 1);
+      drawTextShadow(ctx, 'LANGDA - THE MONKEY KING', center('LANGDA - THE MONKEY KING', 2), 232, '#ffd075', 2);
+    } else {
+      // the dredger's floodlight snaps on with the winch
+      if (t > 50) { ctx.fillStyle = `rgba(255,240,200,${t < 58 ? 0.3 : 0.06})`; ctx.fillRect(0, 0, W, H); }
+      if (t > 60) {
+        ctx.fillStyle = 'rgba(4,8,10,0.86)'; ctx.fillRect(0, 202, W, 68);
+        drawTextShadow(ctx, 'WHAT EATS THE RIVER', center('WHAT EATS THE RIVER', 1), 214, '#a8c0c8', 1);
+        drawTextShadow(ctx, 'THE DREDGER', center('THE DREDGER', 3), 228, '#e8f0f0', 3);
+      }
+    }
+  } else if (b.key === 'raja') {
     // Raja arrives as part of the road: brakes sideways, kills the meter,
     // and turns the vehicle itself into phase one's arena hazard.
     if (b.cart) drawProp(ctx, b.cart, camX);
@@ -197,15 +243,14 @@ export function drawBossIntro(ctx, camX) {
 }
 
 export function drawClear(ctx) {
-  ctx.fillStyle = 'rgba(10,6,10,0.9)';
+  ctx.fillStyle = 'rgba(10,6,10,0.78)';
   ctx.fillRect(0, 0, W, H);
   const t = G.rawTime - G.stateT;
   drawTextShadow(ctx, 'STAGE CLEAR', center('STAGE CLEAR', 3), 32, '#ffd94a', 3);
   const cleared = G.stage ? G.stage.name : '';
   drawTextShadow(ctx, cleared, center(cleared, 1), 56, '#c8c0e0', 1);
+  // the tally sits over the arena he won, with him still standing in it
   if (ASSETS.portrait_chad_48) blit(ctx, ASSETS.portrait_chad_48, 46, 112);
-  const hero = getFrame(SPR.player, 'victory', 0, 1);
-  blit(ctx, hero, 366, 118);
   const st = G.clearStats || { hits: 0, kos: 0, bonus: 0, combo: 0 };
   let y = 82;
   const lines = [

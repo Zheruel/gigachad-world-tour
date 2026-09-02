@@ -3,8 +3,9 @@
 // Each stage draws AI wall/floor PNGs when present and falls back to a
 // procedural pixel-art build of the same street when they are missing.
 import { G, W, H, clamp, rand, irand, arenaMin, arenaMax } from './engine.js';
-import { Pix, artScale } from './sprites.js';
+import { Pix, artScale, blit, frameW, frameH } from './sprites.js';
 import { ASSETS } from './assets.js';
+import { drawOutside, drawTrainWallPlane, initTrain, ROOF_X, ABOARD_X } from './train.js';
 import { createProp } from './props.js';
 import { initAmbience, drawAmbienceFacade, drawBirds } from './ambience.js';
 
@@ -191,9 +192,13 @@ function dirtyDelhiAmbient(ctx, camX, layers) {
   const grade = zone ? (zone.k < 0.5 ? zone.a.grade : zone.b.grade) : (st.grade || '255,190,110');
   const gradeA = zone ? zone.a.gradeA + (zone.b.gradeA - zone.a.gradeA) * zone.k : (st.gradeA || 0.045);
 
-  // authored warm glows, anchored where the plate actually shows a fire or a lamp
+  dirtyDelhiWater(ctx, camX, st);
+  drawRats(ctx, camX, st);
+
+  // authored warm glows, anchored where the plate actually shows a fire or a lamp; a
+  // glow with `swing` is the drain's one bulb on its cord, and its pool moves with it
   for (const g of (G.stage.glows || [])) {
-    const sx = g.x - camX;
+    const sx = g.x - camX + (g.swing ? Math.sin(t * 0.045) * 6 : 0);
     if (sx < -80 || sx > W + 80) continue;
     const r = g.r || 30;
     const grad = ctx.createRadialGradient(sx, g.y, 2, sx, g.y, r);
@@ -239,9 +244,163 @@ function dirtyDelhiAmbient(ctx, camX, layers) {
   if (G.arenaSqueeze > 1) drawChalkRing(ctx, camX);
 }
 
-// A ring of onlookers standing on the arena walls, and the chalk they are stood
-// around. Procedural on purpose: it is cheaper than sprites and it cannot drift
-// out of agreement with arenaMin/arenaMax, which is the only thing that matters.
+// Rats at three holes on the ghat - not a swarm. Each one lives on its own clock: out
+// of the hole, a few steps along the wall, back in; anything landing nearby sends it
+// straight back. State is per-rat on the stage's list, seeded from its x.
+function drawRats(ctx, camX, st) {
+  const img = ASSETS.amb_rat;
+  if (!img || !st.rats) return;
+  const t = G.rawTime;
+  for (const r of st.rats) {
+    const sx0 = r.x - camX;
+    if (sx0 < -60 || sx0 > W + 60) continue;
+    const period = 420 + (r.x % 7) * 40;
+    let k = ((t + r.x * 3) % period) / period;   // 0..1 through one outing
+    const scared = (G.stageReacts || []).some((q) => Math.abs(q.x - r.x) < 120);
+    if (scared) k = Math.min(k, 0.05);
+    const out = k < 0.15 ? k / 0.15 : k < 0.6 ? 1 : k < 0.75 ? 1 - (k - 0.6) / 0.15 : 0;
+    if (out <= 0) continue;
+    const reach = 26 * out;
+    const dir = r.dir || 1;
+    const scurry = k > 0.15 && k < 0.6 ? Math.sin(t * 0.5) * 1.2 : 0;
+    const x = Math.round(sx0 + dir * reach + scurry);
+    const y = r.y;
+    ctx.save();
+    if (dir < 0) { ctx.translate(x, 0); ctx.scale(-1, 1); ctx.translate(-x, 0); }
+    ctx.globalAlpha = Math.min(1, out * 2);
+    blit(ctx, img, x - Math.round(frameW(img) / 2), y - frameH(img) + ((t >> 3) & 1 && out === 1 ? 1 : 0));
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// The two procedural layers per plate the level is built on. Market: heat off the road.
+// River: the wall plane in the water, foam on two rates, and the sluice's tell.
+// The water is the top of the FLOOR plate: FLOOR_Y down to the pit's lane floor.
+const RIVER_FROM = 8300;
+function waterBand(st, camX) {
+  const mid = camX + W / 2;
+  const pit = (st.pits || []).find((q) => mid >= q.x0 - 200 && mid < q.x1 + 200);
+  return pit ? { y: FLOOR_Y, h: pit.y - FLOOR_Y } : null;
+}
+function dirtyDelhiWater(ctx, camX, st) {
+  const t = G.rawTime;
+  const d = dusk(camX);
+  if (camX < 5200 && d < 0.05) {
+    // heat shimmer: the far road, in slices, each a little out of true
+    const floorImg = ASSETS[st.floorKey];
+    if (floorImg) {
+      const fw = st.floorW, fs = artScale(floorImg);
+      const off = ((Math.round(camX) % fw) + fw) % fw;
+      for (let y = FLOOR_Y; y < FLOOR_Y + 14; y += 2) {
+        const wob = Math.sin(t * 0.11 + y * 0.9) * (1.1 - (y - FLOOR_Y) * 0.07);
+        ctx.save();
+        ctx.beginPath(); ctx.rect(0, y, W, 2); ctx.clip();
+        for (let x = -off; x < W; x += fw) ctx.drawImage(floorImg, x + wob, FLOOR_Y, floorImg.width / fs, floorImg.height / fs);
+        ctx.restore();
+      }
+    }
+    return;
+  }
+  const band = waterBand(st, camX);
+  if (!band) return;
+  const WATER_Y = band.y, WATER_H = band.h;
+  const wall = ASSETS[st.wallKey];
+  // the wall plane, mirrored into the water in slices that drift out of register
+  if (wall) {
+    const ww = wall.width / artScale(wall), wh = wall.height / artScale(wall);
+    const off = ((Math.round(camX) % ww) + ww) % ww;
+    for (let y = WATER_Y; y < WATER_Y + WATER_H; y += 2) {
+      const k = (y - WATER_Y) / WATER_H;
+      const wob = Math.sin(t * 0.06 + y * 0.9) * (0.5 + k * 1.4);
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, y, W, 2); ctx.clip();
+      ctx.globalAlpha = 0.28 - k * 0.2;
+      ctx.translate(wob, WATER_Y * 2);
+      ctx.scale(1, -1);
+      for (let x = -off; x < W; x += ww) ctx.drawImage(wall, x, 0, ww, wh);
+      ctx.restore();
+    }
+  }
+  // what floats past: three things, y-sorted by nothing because the water is behind the lane
+  for (const d of (st.debris || [])) {
+    const img = ASSETS['amb_debris_' + d.kind];
+    if (!img) continue;
+    const drift = d.kind === 'scooter' ? 0 : 0.08;
+    const x = d.x + (drift ? ((t * drift + d.x) % 900) - 450 : 0);
+    const sx = Math.round(x - camX);
+    if (sx < -30 || sx > W + 30) continue;
+    const bob = Math.sin(t * 0.04 + d.x) * 0.8;
+    const dy = Math.round(WATER_Y + Math.min(WATER_H - 2, d.dy || 4) + bob);
+    blit(ctx, img, sx - Math.round(frameW(img) / 2), dy - frameH(img));
+  }
+  // foam: clumps on two rates, and a slow lift and fall along the line
+  const sl = G.sluice;
+  const surge = sl ? sl.k : 0;
+  ctx.save();
+  for (let i = 0; i < 46; i++) {
+    const rate = 0.12 + (i % 3) * 0.09;
+    const fx = RIVER_FROM - 200 + ((i * 173.7 + t * rate) % (st.width - RIVER_FROM + 200));
+    const sx = fx - camX;
+    if (sx < -20 || sx > W + 20) continue;
+    const w = 3 + (i * 7) % 7 + surge * 5, h = 1 + (i % 2) * 0.6 + surge * 0.8;
+    const y = WATER_Y + 2 + (i * 11) % Math.max(2, WATER_H - 4) + Math.sin(t * 0.05 + i) * 0.8;
+    ctx.globalAlpha = 0.35 + ((i * 13) % 5) * 0.08 + surge * 0.3;
+    ctx.fillStyle = i % 4 ? '#d8dcd2' : '#b8c0b4';
+    ctx.beginPath(); ctx.ellipse(Math.round(sx), y, w, h, 0, 0, Math.PI * 2); ctx.fill();
+  }
+  // the sluice: foam piles along the lip through the tell, then a wash across the lane
+  if (sl && surge > 0) {
+    const lip = WATER_Y + WATER_H - 1;
+    ctx.globalAlpha = 0.25 + surge * 0.45;
+    ctx.fillStyle = '#e4e8e0';
+    for (let x = ((t * 1.3) % 18) - 18; x < W; x += 18) {
+      ctx.beginPath(); ctx.ellipse(x, lip - surge * 2, 9 + surge * 4, 2 + surge * 2, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    if (sl.pushing) {
+      // the wash itself: a thin sheet sliding over the stone toward the drop
+      const k = (t % 30) / 30;
+      ctx.globalAlpha = 0.18 * (1 - k);
+      ctx.fillStyle = '#c8d4d0';
+      ctx.fillRect(0, lip + k * 40, W, 5);
+    }
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+// The near side of the ring: two knots of onlookers, backs to the camera, standing on
+// the arena walls in the foreground. They walk inward with the walls, which is how the
+// squeeze is read. Drawn after the world so the fight happens behind their shoulders.
+export function drawRingCrowd(ctx, camX) {
+  if (!(G.arenaSqueeze > 1)) return;
+  const a = ASSETS.amb_crowd_a, b = ASSETS.amb_crowd_b;
+  if (!a || !b) return;
+  const lo = arenaMin() - camX, hi = arenaMax() - camX;
+  const k = clamp(G.arenaSqueeze / 40, 0, 1);
+  const wob = G.ringWobble > 0 ? Math.min(3, G.ringWobble / 12) : 0;
+  ctx.save();
+  ctx.globalAlpha = k;
+  for (const [img, edge, dir] of [[a, lo, -1], [b, hi, 1]]) {
+    const w = frameW(img), h = frameH(img);
+    // centred on the wall, feet just below the bottom of the screen, so heads and
+    // shoulders stand in the bottom 60 px and the fight reads over them
+    const x = Math.round(edge - w / 2 + dir * 10);
+    const y = Math.round(H + 26 + Math.sin(G.rawTime * 0.04 + dir) * 1.2 + (wob ? Math.sin(G.rawTime * 0.9) * wob : 0));
+    blit(ctx, img, x, y - h);
+    // and the near side is in shadow: they are between the sun and the camera
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.fillStyle = 'rgba(20,10,8,0.28)';
+    ctx.fillRect(x, y - h, w, h);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+// The chalk circle the crowd is stood around, on the walls the fight is squeezing, and
+// the far side of the ring: a line of heads on the wall plane. Procedural so it cannot
+// drift out of agreement with arenaMin/arenaMax, which is the only thing that matters.
 function drawChalkRing(ctx, camX) {
   const lo = arenaMin() - camX, hi = arenaMax() - camX;
   const cx = (lo + hi) / 2, rx = (hi - lo) / 2;
@@ -253,11 +412,15 @@ function drawChalkRing(ctx, camX) {
   ctx.ellipse(cx, 216, rx + 6, 26, 0, 0, Math.PI * 2);
   ctx.stroke();
   ctx.globalAlpha = clamp(G.arenaSqueeze / 40, 0, 1);
-  // the crowd itself: two short walls of heads, breathing slightly out of step
+  // the crowd itself: two short walls of heads, breathing slightly out of step. With
+  // the sprites in, the near side is drawRingCrowd and only the far heads stay here.
+  const sprites = ASSETS.amb_crowd_a && ASSETS.amb_crowd_b;
   for (const [edge, dir] of [[lo, -1], [hi, 1]]) {
+    if (sprites) continue;   // the near-side crowd is the ring; the far side is open street
     for (let i = 0; i < 5; i++) {
       const x = Math.round(edge + dir * (2 + i * 5));
-      const y = 214 + (i % 3) * 9 + Math.sin((G.rawTime + i * 37) * 0.05) * 0.6;
+      const y = 214 + (i % 3) * 9 + Math.sin((G.rawTime + i * 37) * 0.05) * 0.6
+        + (G.ringWobble > 0 ? Math.sin(G.rawTime * 0.9 + i) * Math.min(3, G.ringWobble / 12) : 0);
       ctx.fillStyle = i % 2 ? '#241a14' : '#1a1210';
       ctx.fillRect(x - 4, Math.round(y) - 34, 9, 34);
       ctx.fillRect(x - 3, Math.round(y) - 42, 7, 9);
@@ -267,6 +430,27 @@ function drawChalkRing(ctx, camX) {
 }
 
 // ------------------------------------------------------------- definitions
+// THE NIGHT TRAIN's plate pass: the grade sliding between areas, the sodium pools on the
+// platform, the cold blue of the AC coach, and the wall-plane pieces that move.
+function nightTrainAmbient(ctx, camX, layers) {
+  const st = G.stage;
+  const zone = areaAt(st, camX);
+  const grade = zone ? (zone.k < 0.5 ? zone.a.grade : zone.b.grade) : (st.grade || '150,170,230');
+  const gradeA = zone ? zone.a.gradeA + (zone.b.gradeA - zone.a.gradeA) * zone.k : (st.gradeA || 0.08);
+  drawTrainWallPlane(ctx, camX);
+  for (const g of (st.glows || [])) {
+    const sx = g.x - camX;
+    if (sx < -g.r * 3 || sx > W + g.r * 3) continue;
+    const grad = ctx.createRadialGradient(sx, g.y, 2, sx, g.y, g.r * 3);
+    grad.addColorStop(0, `rgba(255,150,60,${g.a})`);
+    grad.addColorStop(1, 'rgba(255,150,60,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(sx - g.r * 3, g.y - g.r * 3, g.r * 6, g.r * 6);
+  }
+  ctx.fillStyle = `rgba(${grade},${gradeA})`;
+  ctx.fillRect(0, 0, W, H);
+}
+
 export const STAGES = [
   {
     id: 'delhi', num: '1-1', name: 'DIRTY DELHI', sub: 'ACT I - THE MARKET AND THE RIVER',
@@ -299,11 +483,20 @@ export const STAGES = [
     // the plate actually paints in assets/stages/dirty_delhi/wall.png - these are
     // first-pass positions and the layer draws nothing until the art lands, so a
     // wrong one costs nothing until it has been checked in the review page.
+    // Measured off the plate at 1 plate px = 0.5 logical: the OPEN fronts only (the
+    // plate already paints the closed ones shut). x/y is the opening's top-left, w/h its
+    // size; the one shutter sprite is stretched to the opening.
     shutters: [
-      { x: 620, y: 96 }, { x: 980, y: 96 }, { x: 1420, y: 96 },
-      { x: 2180, y: 96 }, { x: 2620, y: 96 },
-      { x: 3480, y: 96 }, { x: 3960, y: 96 },
-      { x: 4400, y: 96 }, { x: 4560, y: 96 }, { x: 4720, y: 96 },
+      { x: 487, y: 88, w: 118, h: 80 },    // the spice shop
+      { x: 765, y: 98, w: 120, h: 70 },    // the tea stall
+      { x: 1520, y: 98, w: 120, h: 70 },   // the second tea stall
+      { x: 1800, y: 96, w: 120, h: 72 },   // the second spice shop
+      { x: 2400, y: 82, w: 165, h: 86 },   // the kitchen
+      { x: 2680, y: 97, w: 170, h: 71 },   // the sweet shop
+      { x: 3220, y: 96, w: 100, h: 72 },   // the copper stall
+      { x: 3440, y: 96, w: 150, h: 72 },   // the goods shop
+      { x: 3750, y: 98, w: 130, h: 70 },   // the barrel front
+      { x: 3930, y: 98, w: 110, h: 70 }, { x: 4060, y: 98, w: 100, h: 70 }, { x: 4170, y: 98, w: 90, h: 70 },
     ],
 
     // No artificial light at all in the market - that is the point of the first half.
@@ -313,7 +506,15 @@ export const STAGES = [
       10900, 11300, 11700, 12100],
     lampCol: '255,170,80', lampA: 0.02,
     rim: null, moteCount: 22, moteStyle: 'dust', grade: '255,190,110', gradeA: 0.035,
-    glows: [{ x: 6600, y: 120, r: 26, a: 0.30 }],   // the drain's one swinging bulb
+    glows: [{ x: 6600, y: 120, r: 26, a: 0.30, swing: true }],   // the drain's one swinging bulb
+    // rats at three holes on the ghat, on the lip of the lane where the wall meets it;
+    // what floats past the ghat and the pontoon
+    rats: [{ x: 8720, y: 197, dir: 1 }, { x: 9460, y: 197, dir: -1 }, { x: 10280, y: 197, dir: 1 }],
+    debris: [
+      { kind: 'bottle', x: 8900, dy: 12 }, { kind: 'garland', x: 9700, dy: 10 },
+      { kind: 'scooter', x: 10450, dy: 14 }, { kind: 'bottle', x: 11300, dy: 8 },
+      { kind: 'garland', x: 12000, dy: 7 },
+    ],
 
     props: [
       // health economy: 8 crates at +30 and 4 tables at +15 is the level's 300 hp
@@ -338,9 +539,11 @@ export const STAGES = [
       { kind: 'drum', x: 10240, y: 210 }, { kind: 'drum', x: 11360, y: 218 },
       // Langda's six awning brackets, live before his fight starts - which is a
       // secret worth having, because breaking them early shortens his wire
-      { kind: 'bracket', x: 4520, y: 150 }, { kind: 'bracket', x: 4620, y: 148 },
-      { kind: 'bracket', x: 4720, y: 152 }, { kind: 'bracket', x: 4820, y: 148 },
-      { kind: 'bracket', x: 4920, y: 150 }, { kind: 'bracket', x: 5020, y: 149 },
+      // They sit at awning height off the back lane: an air attack reaches them
+      // (player.js's airOnly rule), and they never stand in front of a fighter.
+      { kind: 'bracket', x: 4560, y: 186, z: 110 }, { kind: 'bracket', x: 4640, y: 186, z: 110 },
+      { kind: 'bracket', x: 4720, y: 186, z: 110 }, { kind: 'bracket', x: 4800, y: 186, z: 110 },
+      { kind: 'bracket', x: 4880, y: 186, z: 110 }, { kind: 'bracket', x: 4960, y: 186, z: 110 },
     ],
     // Three roosts, and nobody at all past the drain. That contrast is most of why
     // the second half lands, so the emptiness is authored rather than forgotten.
@@ -382,6 +585,97 @@ export const STAGES = [
     build: () => ({ far: buildDelhiFar(), mid: buildDelhiMid(), floor: buildDelhiFloor() }),
     ambient: dirtyDelhiAmbient,
   },
+  {
+    id: 'train', num: '1-2', name: 'THE NIGHT TRAIN', sub: 'ACT II - THE 22:40 SOUTH',
+    width: 9120,
+    // 19 screens of 480, stitched by tools/build_night_train.py. The wall plate has
+    // holes in it - every window, the open doors, the sky over the roof - and the
+    // world outside scrolls through them on the train's own clock (js/train.js).
+    wallKey: 'bg_d2_wall', floorKey: 'bg_d2_floor', floorW: 9120,
+    music: 'stage2a', musicB: 'stage2b', musicBX: ABOARD_X,
+    bossMusic: 'boss', bossMusicFinal: 'boss2', boss: 'birju',
+    introVoice: true,   // the station opening (js/story.js) has Duke's line; wave 0 stays quiet
+    skyLayers: [{ draw: drawOutside }],
+    init: initTrain,
+
+    areas: [
+      { id: 'forecourt', x1: 960, grade: '255,190,120', gradeA: 0.06 },
+      { id: 'hall', x1: 1920, grade: '200,220,255', gradeA: 0.05 },
+      { id: 'bridge', x1: 2400, grade: '120,140,200', gradeA: 0.10 },
+      { id: 'dock', x1: 3360, grade: '255,180,100', gradeA: 0.07 },
+      { id: 'platform', x1: 4800, grade: '200,210,255', gradeA: 0.06 },
+      { id: 'carriages', x1: 7680, grade: '150,170,230', gradeA: 0.10 },
+      { id: 'roof', x1: 9120, grade: '90,110,180', gradeA: 0.16 },
+    ],
+    // the footbridge: a railing at the back, and the tracks a long way below it
+    pits: [{ x0: 1920, x1: 2400, y: 200 }],
+    // the corridor is 30 px deep with a shelf of berths above it; the roof is 80,
+    // with an edge at the front and wind off the loco
+    lanes: [
+      { x0: ABOARD_X, x1: ROOF_X, top: 196, bot: 226, berth: 52 },
+      { x0: ROOF_X, x1: 9120, top: 181, bot: 261, edge: true, wind: 0.3 },
+    ],
+    // the heavy's third prop: a steel trunk on his head
+    rigs: { thela: 'thelatrunk' },
+
+    lamps: [180, 700, 1300, 1700, 2100, 2600, 3000, 3500, 3900, 4300, 4700,
+      5040, 5520, 6000, 6480, 6960, 7440],
+    lampCol: '255,200,120', lampA: 0.05,
+    rim: null, moteCount: 14, moteStyle: 'dust', grade: '150,170,230', gradeA: 0.08,
+    glows: [{ x: 6400, y: 60, r: 40, a: 0.22 }],   // the pantry's gas rings
+    shutters: null, rats: null, debris: null,
+
+    props: [
+      // the health economy: 300 hp. Five at +30, four at +15, the fridge's 1-up.
+      { kind: 'trolley', x: 300, y: 224 }, { kind: 'trunk', x: 1180, y: 214 },
+      { kind: 'trolley', x: 2900, y: 226 }, { kind: 'trunk', x: 4120, y: 212 },
+      { kind: 'trolley', x: 6180, y: 220 },
+      { kind: 'parcel', x: 2560, y: 208 }, { kind: 'parcel', x: 3050, y: 214 },
+      { kind: 'berthtable', x: 5340, y: 200 }, { kind: 'berthtable', x: 6780, y: 200 },
+      { kind: 'glasses', x: 6300, y: 222 },
+      { kind: 'urn', x: 6420, y: 200 },
+      { kind: 'fridge', x: 6100, y: 198 },
+      // one per carriage, above head height, easy to miss
+      { kind: 'chain', x: 5100, y: 198, z: 62 }, { kind: 'chain', x: 5560, y: 198, z: 62 },
+      { kind: 'chain', x: 6100, y: 198, z: 62 }, { kind: 'chain', x: 6700, y: 198, z: 62 },
+      // texture, not economy
+      { kind: 'parcel', x: 2700, y: 230 }, { kind: 'trunk', x: 3560, y: 230 },
+      { kind: 'matka', x: 4420, y: 232 },
+    ],
+    // pigeons in the girders over the platform
+    birds: [
+      { x: 3480, y: 214 }, { x: 3512, y: 222 }, { x: 3900, y: 218 }, { x: 3930, y: 228 },
+    ],
+    fg: [], ambience: [], emitters: [],
+
+    events: [
+      { x: 1250, kind: 'ticket' },        // a thumb through the grille: one ticket, south
+      { x: 2450, kind: 'trolleys' },      // the hand trucks start rolling
+      { x: 4250, kind: 'whistle' },       // the guard, and the rake creeps
+      { x: 6400, kind: 'tunnel' },        // mid-walk, nothing to fight, 200 frames of dark
+      { x: 7700, kind: 'music', slot: 'stage2b' },
+    ],
+
+    waves: [
+      // the cow is not a fighter: she is the forecourt's furniture until somebody hits her
+      { x: 380, spawns: ['gai', 'goonda', 'goonda', 'goonda', 'batta'] },
+      { x: 900, spawns: ['goonda', 'goonda', 'coolie', 'goonda', 'bandar'] },
+      { x: 1700, spawns: ['bandar', 'goonda', 'goonda', 'batta'], thief: true },
+      { x: 2700, spawns: ['thela', 'coolie', 'thela', 'goonda', 'goonda'] },
+      { x: 3800, spawns: ['gai', 'thela', 'coolie', 'cooker', 'batta', 'goonda', 'goonda', 'bandar'] },
+      // THE DEPARTURE: a situation, not a person. Ends with a running jump, or a soft fail.
+      { x: 4300, spawns: ['goonda', 'coolie', 'goonda', 'batta', 'bandar'], depart: true },
+      { x: 5000, spawns: ['goonda', 'goonda', 'goonda'] },
+      { x: 5500, spawns: ['manja', 'manja', 'coolie', 'goonda', 'goonda'] },
+      { x: 6000, spawns: ['cooker', 'manja', 'goonda'], runner: 'goonda' },
+      { x: 6600, spawns: ['thela', 'coolie', 'goonda', 'goonda', 'bandar'] },
+      { x: 7200, spawns: [], miniboss: 'tte', intro: true, camX: 7200 },
+      { x: 8000, spawns: ['goonda', 'coolie', 'goonda', 'goonda', 'bandar', 'manja', 'coolie'] },
+      { x: 8600, spawns: [], boss: true },
+    ],
+    build: () => ({ far: buildDelhiFar(), mid: buildDelhiMid(), floor: buildDelhiFloor() }),
+    ambient: nightTrainAmbient,
+  },
 ];
 
 const layerCache = {};
@@ -404,6 +698,9 @@ export function initStageObj(st) {
   // a retry or a stage change must never inherit a squeezed arena
   G.arenaSqueeze = 0;
   G.arenaSqueezeTarget = 0;
+  G.arenaRear = 0;
+  G.arenaRearTarget = 0;
+  G.train = null;
   G.runnerEscaped = false;
   G.introResume = null;
   G.sluice = null;
@@ -421,13 +718,14 @@ export function initStageObj(st) {
       tw: irand(0, 60),
     });
   }
-  G.props = (st.props || []).map((d) => createProp(d.kind, d.x, d.y));
+  G.props = (st.props || []).map((d) => createProp(d.kind, d.x, d.y, d.z));
   // lair leftovers that must not survive into a fight: its tiger, and CHAD sat down
   G.actors = [];
   G.hubSeat = 0;
   initAmbience(st);
   G.zones = [];
-  for (const w of st.waves) w.done = false;
+  for (const w of st.waves) { w.done = false; if (w.spawns0) w.spawns = [...w.spawns0]; else w.spawns0 = [...w.spawns]; }
+  if (st.init) st.init(st);
 }
 
 export function drawStage(ctx, camX) {

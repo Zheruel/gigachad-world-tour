@@ -394,9 +394,8 @@ $G $O/dredger_winch.png landscape "A rusted industrial winch drum wound with ste
 ## The entrance
 
 The production arrival uses the nineteen-frame V8 motorcycle, dismount, cigar, and guard
-sequence; smoke, exhaust, skid dust, and small particles remain procedural. It is reviewable
-frame by frame in `review-1-1.html`, which drives the production
-`drawMotorcycleArrival()` timeline. Prompt record: `assets/ai/entrance_v8/`. Builder:
+sequence; smoke, exhaust, skid dust, and small particles remain procedural. `lab.html` steps it frame by frame; the production timeline is
+`drawMotorcycleArrival()`. Prompt record: `assets/ai/entrance_v8/`. Builder:
 `tools/build_entrance_v8.py`.
 
 ## Music

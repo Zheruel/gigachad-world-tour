@@ -1,7 +1,8 @@
 # STAGE 2 — THE NIGHT TRAIN
 
-> Status: unimplemented proposal. This document describes intended content, not the
-> current runtime.
+> Status: shipped as `STAGES[1]` (`js/stages.js`, `js/train.js`, `js/train_bosses.js`).
+> The runtime is 9,120 px over 19 screens; where this document and the code disagree,
+> the code is the authority.
 
 One route, 9000 logical px, **18.75 screens**, about **15 minutes**. A station at nine in the
 evening and a sleeper heading south at midnight. The level is about *leaving*: the first third is
@@ -44,7 +45,7 @@ second of black, and the world outside starts moving.
 | 13 | 6400 | the **tunnel** hits mid-walk, with nothing to fight. 200 frames of emergency light |
 | 13–14 | 6600 | the AC coach: cold blue, curtains drawn, a family asleep who never wake. **WAVE 9** |
 | 14–15 | 7200 | the last vestibule, the door hanging open on the rushing dark. **MID-BOSS · THE TTE** |
-| 15–16 | 7600 | the ladder. Wind starts, the depth lane opens to 80 · *checkpoint* |
+| 15–16 | 7600 | the ladder, taken on a cut like the boarding: the roof starts at the camera's edge. Wind starts, the depth lane opens to 80 · *checkpoint* |
 | 16–17 | 8000 | **WAVE 10** on the roof — the same enemies, in the opposite arena, under bridges |
 | 17–18 | 8600 | **LEVEL BOSS · BIRJU, THE COUPLER**, with the loco's headlight throwing your shadow back |
 
@@ -85,6 +86,9 @@ whole job is being above the fighting lane, and a sleeper carriage has a shelf o
 | **THELA** | a **steel trunk** on his head instead of a cart; then the same man in 30 px of corridor | break the trunk — and know the spill costs you the lane |
 | **COOKER** | a station tea urn, then the pantry kettle | close the gap, and remember he vents when he dies |
 | **MANJA** *(new)* | **the upper berths** — he never comes down until you make him | jump-attack him, or wait for the drop and punish |
+| **COOLIE** *(new)* | a porter with a steel trunk on his head, on the platform and in the pantry | the slam is a green heavy: parry the arc, or step off the line |
+| **GAI** *(new)* | the platform cow, ambling the forecourt and the parcel dock; she takes no damage | leave her alone, or put a goonda behind her when she kicks |
+| **the handtruck** | a runaway parcel truck down the dock while a gate is up | jump it, or let it take the man in front of you |
 
 **The ticket.** BANDAR has spent a whole level stealing food off the floor; here he takes the one
 thing that is not on the floor. If he reaches the screen edge with it, nothing happens — no
@@ -260,9 +264,12 @@ is the entire argument for this level going second.
 5. Birju's uncouple advancing the rear wall, and the girder grab.
 6. The ticket flag carried from the footbridge to the TTE.
 
-**Checks:** `corridor-halves-the-lane`, `lurch-slides-both-sides`, `tunnel-kills-the-lights`,
-`chain-pull-brakes-the-train`, `broken-chain-disarms-it`, `departure-soft-fails`,
-`uncouple-shrinks-the-roof`, `girder-grab-is-escapable`, `ticket-carries-to-the-tte`.
+**Checks** (`/?auto=verify`, the NIGHT TRAIN block): `corridor-halves-the-lane`,
+`lurch-slides-both-sides`, `tunnel-kills-the-lights`, `chain-pull-brakes-the-train`,
+`broken-chain-disarms-it`, `manja-drops-after-three-throws`, `the-thief-takes-the-ticket`,
+`ticket-carries-to-the-tte`, `departure-soft-fails`, `running-jump-boards-the-train`,
+`the-check-revives-at-half`, `reflected-torch-blinds-him`, `uncouple-shrinks-the-roof`,
+`girder-grab-is-escapable`, `roof-edge-takes-the-helpless`, `birju-dies-over-the-side`.
 
 ## Generation prompts
 

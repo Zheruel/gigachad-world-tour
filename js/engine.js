@@ -38,6 +38,11 @@ export const G = {
   // the release for as long as it took to die.
   arenaSqueeze: 0,
   arenaSqueezeTarget: 0,
+  ringWobble: 0,        // frames the crowd around the chalk ring jumps for
+  // the rear wall alone, for Birju's uncouple: the roof gets shorter from the back
+  arenaRear: 0,
+  arenaRearTarget: 0,
+  train: null,            // THE NIGHT TRAIN's state, js/train.js; null on every other stage
   sluice: null,           // { t } once the outfall is armed, for the ghat's rhythm
   runnerEscaped: false,   // the dabbawala got away, so the next gate is two men heavier
   introResume: null,      // wave state parked across a miniboss reveal
@@ -61,6 +66,8 @@ export const G = {
   meter: 0,          // super meter 0..METER_MAX
   combo: 0,          // current hit chain
   comboT: 0,         // frames left before the chain drops
+  rank: -1,          // index into RANKS the chain last reached
+  rankT: 0,          // frames the rank word has left on the HUD
   bestCombo: 0,
   waveIndex: -1,
   waveActive: false,
@@ -148,7 +155,7 @@ export function airborne(e) {
 export const WALL_PAD = 14;
 export const SPLAT_SPEED = 1.5;   // |vx| above this splats instead of just stopping
 
-export function arenaMin() { return G.camX + WALL_PAD + (G.arenaSqueeze || 0); }
+export function arenaMin() { return G.camX + WALL_PAD + (G.arenaSqueeze || 0) + (G.arenaRear || 0); }
 export function arenaMax() { return G.camX + W - WALL_PAD - (G.arenaSqueeze || 0); }
 
 // Clamps a body inside the arena. Returns 0 for no wall contact, or -1/+1 for
@@ -179,27 +186,46 @@ export function zoneDrag(e) {
   return m;
 }
 
-// ---- the back of the lane, which on the ghat is water ----
-// FLOOR_TOP is the wall seam everywhere else. A stage can raise it over a span of x
-// with `pits: [{x0, x1, y}]`, and past that lip there is no floor.
+// ---- the depth lane ----
+// FLOOR_TOP..FLOOR_BOT everywhere by default. A stage can raise the back over a span of
+// x with `pits: [{x0, x1, y}]` (the ghat: past that lip there is no floor), or replace
+// the whole lane with `lanes: [{x0, x1, top, bot, edge}]` - the train's corridor is 30
+// px deep and its roof is 80, and `edge` marks a lane whose FRONT is a drop too.
+export function laneAt(x) {
+  const lanes = G.stage && G.stage.lanes;
+  if (lanes) for (const l of lanes) if (x >= l.x0 && x < l.x1) return l;
+  return null;
+}
 export function laneMin(x) {
+  const l = laneAt(x);
+  if (l) return l.top;
   const pits = (G.stage && G.stage.pits) || null;
   if (!pits) return FLOOR_TOP;
   for (const p of pits) if (x >= p.x0 && x < p.x1) return p.y;
   return FLOOR_TOP;
 }
+export function laneMax(x) {
+  const l = laneAt(x);
+  return l ? l.bot : FLOOR_BOT;
+}
 
 // Puts a body back on the lane and returns -1 when it went over the lip of a real
-// pit. A body on its own feet is clamped out; a body that is down, thrown or being
-// dragged goes in. That distinction is the whole design - you cannot walk into the
-// river, you can only be PUT in it. `lo > FLOOR_TOP` is the "there is water here"
-// test, so a stage with no pits behaves exactly as it always did.
+// pit at the back, +1 when it went over a lane's front edge. A body on its own feet is
+// clamped out; a body that is down, thrown or being dragged goes in. That distinction
+// is the whole design - you cannot walk into the river, you can only be PUT in it.
+// `lo > FLOOR_TOP` is the "there is water here" test, so a stage with no pits behaves
+// exactly as it always did.
 export function clampToLane(e) {
   if (e.noLane) return 0;
-  const lo = laneMin(e.x);
+  const lo = laneMin(e.x), hi = laneMax(e.x);
+  const helpless = e.state === 'down' || e.state === 'thrown' || e.state === 'grabbed';
+  if (e.y > hi) {
+    const l = laneAt(e.x);
+    e.y = hi;
+    return l && l.edge && helpless ? 1 : 0;
+  }
   if (e.y >= lo) return 0;
-  const fell = lo > FLOOR_TOP
-    && (e.state === 'down' || e.state === 'thrown' || e.state === 'grabbed');
+  const fell = lo > FLOOR_TOP && helpless;
   e.y = lo;
   return fell ? -1 : 0;
 }
@@ -213,10 +239,33 @@ export function addMeter(n) {
   G.meter = clamp(G.meter + n, 0, METER_MAX);
 }
 
+// The style ladder, DMC-style: a letter, its word, and the announcer's two takes of it
+// (audio/voice/rank_<key>_1.wav and _2). Reaching a rank says it; from B up, if the
+// announcer is missing, Duke has something to say instead.
+export const RANKS = [
+  { at: 3, letter: 'D', word: 'DISMAL', key: 'dismal', color: '#c8c0e0' },
+  { at: 6, letter: 'C', word: 'CRAZY', key: 'crazy', color: '#ffd94a' },
+  { at: 10, letter: 'B', word: 'BADASS', key: 'badass', color: '#ffb040' },
+  { at: 15, letter: 'A', word: 'APOCALYPTIC', key: 'apocalyptic', color: '#ff7a3a' },
+  { at: 22, letter: 'S', word: 'SAVAGE', key: 'savage', color: '#ff4f6a' },
+  { at: 30, letter: 'SS', word: 'SICK SKILLS', key: 'sickskills', color: '#e060ff' },
+  { at: 40, letter: 'SSS', word: 'SMOKIN\' SEXY STYLE', key: 'sss', color: '#fff2a0' },
+];
+
 // Player landed a hit: extend the combo chain, return the new count.
 export function bumpCombo() {
   G.combo++;
   G.comboT = 100;
   if (G.combo > G.bestCombo) G.bestCombo = G.combo;
+  const r = RANKS.findIndex((k) => k.at === G.combo);
+  if (r >= 0) {
+    G.rank = r; G.rankT = 90;
+    if (G.audio) {
+      const k = RANKS[r].key;
+      const said = G.audio.voiceRandom([`rank_${k}_1`, `rank_${k}_2`], 900, 0);
+      if (!said && r >= 2) G.audio.voiceRandom(DUKE_COMBO, 1600);
+    }
+  }
   return G.combo;
 }
+const DUKE_COMBO = ['duke_combo_1', 'duke_combo_2', 'duke_combo_3', 'duke_combo_4', 'duke_combo_5', 'duke_combo_6', 'duke_gotta_hurt', 'duke_look_good'];

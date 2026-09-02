@@ -1,14 +1,16 @@
 // enemies.js - the Chandni Chowk street crew: AI states, turn-taking attacks,
 // hit reactions, wall splats.
 import {
-  G, W, FLOOR_TOP, FLOOR_BOT, clamp, rand, irand, addScore, diff, clampToArena, clampToLane, laneMin, zoneDrag,
+  G, W, FLOOR_TOP, FLOOR_BOT, clamp, rand, irand, addScore, diff, clampToArena, clampToLane, laneAt, laneMin, laneMax, zoneDrag,
   airborne, juggleMul, fall, inAir,
 } from './engine.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
+import { ASSETS } from './assets.js';
 import { spawnSpark, spawnDust, impact, spawnPop } from './effects.js';
 import { hurtPlayer, grabPlayer, resolveIncomingHit } from './player.js';
-import { spawnShot, spawnZone } from './shots.js';
+import { spawnShot, spawnArc, spawnZone } from './shots.js';
 import { createProp } from './props.js';
+import { chainPulled } from './train.js';
 
 const TYPES = {
   // street thug in a vest and lungi: the baseline, comes at you in threes
@@ -46,14 +48,26 @@ const TYPES = {
   // SANDH: paws the ground at one edge, then charges one depth lane. Hittable,
   // stays down, and hurts everything it touches - which is most of the point.
   bull: { hp: 60, speed: 3.20, dmg: 18, score: 500, canGrab: false, set: 'bull', w: 90, h: 74, range: 60, shadowR: 26, poise: 9, offSlot: true, noCount: true },
+
+  // ---- THE NIGHT TRAIN ----
+  // MANJA lives on the upper berths, above the fighting lane, and throws an iron weight
+  // on a glass string. He never comes down until you make him: an air attack reaches
+  // him, and after three throws he drops on you and is a boy on the floor for a while.
+  manja: { hp: 24, speed: 1.30, dmg: 7, score: 260, canGrab: false, set: 'manja', w: 36, h: 60, range: 150, shadowR: 12, perch: true },
+  // a loose hand truck on the parcel dock's slope: the bull again, in a different coat
+  handtruck: { hp: 30, speed: 2.60, dmg: 12, score: 200, canGrab: false, set: 'handtruck', w: 40, h: 36, range: 40, shadowR: 18, poise: 6, offSlot: true, noCount: true, ram: true },
+  // the porter: a heavy on a green cue, the trunk comes off his head and down
+  coolie: { hp: 44, speed: 1.05, dmg: 13, score: 320, canGrab: false, set: 'coolie', w: 40, h: 96, range: 36, shadowR: 14, poise: 3 },
+  // the platform cow: not in the fight until you put her in it
+  gai: { hp: 9999, speed: 0.40, dmg: 14, score: 0, canGrab: false, set: 'gai', w: 108, h: 70, range: 30, shadowR: 30, offSlot: true, noCount: true, cow: true },
 };
 
 const WINDUP = { goonda: 18, batta: 28, masala: 22, bandar: 12, pehlwan: 24,
   constable: 22, operator: 25, sepoy: 24,
-  cooker: 26, thela: 30, mudlark: 20, dhobi: 26, dabbawala: 0, bull: 40 };
+  cooker: 26, thela: 30, mudlark: 20, dhobi: 26, dabbawala: 0, bull: 40, manja: 20, handtruck: 10, coolie: 24, gai: 16 };
 // frame at which an attack switches from the strike to the follow-through
 const ATK_RECOVER = { goonda: 9, batta: 14, masala: 12, bandar: 99, pehlwan: 16,
-  cooker: 20, thela: 18, mudlark: 12, dhobi: 16, bull: 12 };
+  cooker: 20, thela: 18, mudlark: 12, dhobi: 16, bull: 12, manja: 12, handtruck: 12, coolie: 16, gai: 12 };
 // below this much movement in a frame a body counts as standing still
 const MOVE_EPS = 0.12;
 const JUGGLE_CAP = 4;
@@ -61,10 +75,15 @@ const PARRY_CLASS = { goonda: 'counter', batta: 'unblockable', masala: 'reflect'
   bandar: 'counter', pehlwan: 'unblockable', constable: 'counter',
   operator: 'reflect', sepoy: 'counter',
   cooker: 'unblockable', thela: 'unblockable', mudlark: 'counter',
-  dhobi: 'unblockable', dabbawala: 'counter', bull: 'unblockable' };
+  dhobi: 'unblockable', dabbawala: 'counter', bull: 'unblockable',
+  manja: 'unblockable', handtruck: 'unblockable', coolie: 'counter', gai: 'unblockable' };
+
+// the bull and the hand truck share one behaviour: pick an edge, charge one lane
+const isRam = (e) => e.kind === 'bull' || e.ram;
 
 export function spawnEnemy(type, x, y) {
   const T = TYPES[type];
+  y = clamp(y, laneMin(x), laneMax(x));   // a spawn lands in its lane, never a frame outside it
   const scale = diff().hp * (1 + G.stageIndex * 0.15);
   const hp = Math.round(T.hp * scale);
   const e = {
@@ -79,6 +98,8 @@ export function spawnEnemy(type, x, y) {
     w: T.w, h: T.h, shadowR: T.shadowR, hitLanded: false,
     offSlot: !!T.offSlot, noCount: !!T.noCount, runner: !!T.runner,
     noLane: false, ffCd: 0, pitCd: 0, rig: null, ramGone: false,
+    ram: !!T.ram, perched: false, perchZ: 0, airOnly: false, throws: 0, throwCd: 60, groundT: 0,
+    thief: false, hasTicket: false, chainTarget: null,
     hurt(dmg, dir, heavy, launch) { hurtEnemy(e, dmg, dir, heavy, launch); },
     parried(dmg, dir) {
       hurtEnemy(e, dmg, dir, false, false);
@@ -91,8 +112,10 @@ export function spawnEnemy(type, x, y) {
   // "One heavy, four props" is this hook and nothing else: the prop is an ordinary
   // breakable in G.props, so the y-sort, the player's target list and hurtProp all
   // work on it already, and onBreak is the whole mechanic.
-  if (T.rig) {
-    e.rig = createProp(T.rig, x + e.face * 32, y + 6);
+  // the heavy's prop is the stage's to choose: a handcart, a boat pole, a steel trunk
+  const rigKind = (G.stage && G.stage.rigs && G.stage.rigs[type]) || T.rig;
+  if (rigKind) {
+    e.rig = createProp(rigKind, x + e.face * 32, y + 6);
     e.rig.onBreak = () => { e.ramGone = true; e.range = 40; };
     G.props.push(e.rig);
   }
@@ -102,11 +125,41 @@ export function spawnEnemy(type, x, y) {
     e.y = laneMin(x) - 12; e.noLane = true; e.state = 'rise'; e.t = 0;
   }
   if (T.runner) { e.state = 'runner'; e.face = 1; e.noLane = true; }
+  // The berth: the lane says how high it is. On the roof there is none, and he is a
+  // quick boy on the steel like everyone else.
+  if (T.cow) { e.state = 'graze'; e.stay = true; e.cow = true; e.face = Math.random() < 0.5 ? -1 : 1; e.grazing = true; e.grazeT = irand(60, 200); }
+  if (T.perch) {
+    const lane = laneAt(x);
+    e.perchZ = lane && lane.berth ? lane.berth : 0;
+    if (e.perchZ) perch(e);
+  }
   return e;
+}
+
+function perch(e) {
+  e.perched = true; e.airOnly = true; e.noLane = true;
+  e.z = e.perchZ; e.vz = 0; e.vx = 0;
+  e.y = laneMin(e.x) + 2;
+  e.state = 'perch'; e.t = 0; e.throws = 0; e.throwCd = irand(60, 120);
+}
+
+// Off the berth and onto the floor, where he is an ordinary boy for a while.
+function unperch(e) {
+  e.perched = false; e.airOnly = false; e.noLane = false;
+  e.groundT = 300;
 }
 
 function hurtEnemy(e, dmg, dir, heavy, launch) {
   if (e.dead || e.state === 'thrown') return;
+  if (e.cow) {
+    // she takes no damage, she takes offence: a back kick at whoever is behind her
+    e.flash = 4;
+    G.hitstop = Math.max(G.hitstop, 2);
+    if (e.state !== 'windup' && e.state !== 'attack') { e.face = dir; e.state = 'windup'; e.t = 0; G.audio.sfx('armor'); }
+    return;
+  }
+  // a hit on the berth: light ones rock him, heavy ones knock him off it
+  if (e.perched && (heavy || launch)) unperch(e);
   // Poise: heavies shrug off light hits, but the meter drains visibly so they
   // read as "still coming" instead of "ignoring you", and it breaks with a clash.
   if (e.poise > 0 && !heavy) {
@@ -124,6 +177,8 @@ function hurtEnemy(e, dmg, dir, heavy, launch) {
   if (airborne(e)) { dmg = Math.round(dmg * juggleMul(e)); e.juggle++; }
   e.hp -= dmg;
   e.flash = 5;
+  // his own voice, not every hit: a grunt on about a third of them, a scream on the KO
+  if (e.hp > 0 && e.kind !== 'prop' && Math.random() < 0.35) G.audio.sfx('ehurt' + (1 + Math.floor(Math.random() * 4)));
   if (e.hp <= 0) {
     e.dead = true;
     e.state = 'dying'; e.t = 0;
@@ -132,14 +187,21 @@ function hurtEnemy(e, dmg, dir, heavy, launch) {
     if (G.stats) G.stats.kos++;
     spawnPop(e.x, e.y - 70, '+' + e.score);
     G.audio.sfx('ko');
+    if (e.kind !== 'prop') G.audio.sfx(Math.random() < 0.5 ? 'edie1' : 'edie2');
     impact(true);
     if (G.player.grabbedBy === e) { G.player.grabbedBy = null; G.player.state = 'idle'; }
     // Enemy defeats never generate resources. Health is authored through
     // specific breakable objects, keeping stage balance deterministic.
     // The one exception is placed, not looted: the runner is carrying lunch, and
     // dropping him is a decision the wave asked you to make under a timer.
-    if (e.runner) {
+    if (e.runner && !e.hasTicket && !e.chainTarget) {
       G.pickups.push({ x: e.x, y: e.y, kind: 'tiffin', heal: 45, t: 0 });
+      G.runnerEscaped = false;
+    }
+    // the bandar that took the ticket drops it where he falls
+    if (e.hasTicket) {
+      e.hasTicket = false;
+      G.pickups.push({ x: e.x, y: e.y, kind: 'ticket', heal: 0, t: 0 });
       G.runnerEscaped = false;
     }
     // He vents when he dies, burning whatever is next to him. The zone is the
@@ -208,7 +270,7 @@ function pitFall(e) {
   e.pitCd = 24;
   e.state = 'down'; e.t = 0; e.vx = 0; e.vz = 0;
   spawnDust(e.x, e.y, 6);
-  spawnPop(e.x, e.y - 70, 'RING OUT');
+  spawnPop(e.x, e.y - 70, laneAt(e.x) && laneAt(e.x).edge ? 'OVER THE SIDE' : 'RING OUT');
   G.shake = Math.max(G.shake, 6);
   G.audio.sfx('slam');
   addScore(150);
@@ -299,7 +361,7 @@ export function updateEnemies() {
     if (e.pitCd > 0) e.pitCd--;
     if (e.rig && !e.rig.broken && e.dead) e.rig.onBreak = null;   // debris outlives its owner
     if (e.state !== 'down' && e.state !== 'thrown' && e.z <= 0) e.juggle = 0;
-    if (e.state !== 'loot' && e.state !== 'runner') e.face = p.x < e.x ? -1 : 1;
+    if (e.state !== 'loot' && e.state !== 'runner' && !e.cow) e.face = p.x < e.x ? -1 : 1;   // the cow faces where she is going
     // Wet sand slows both sides, which is the point of it. Derived from the base
     // each frame so every e.speed read downstream gets it without knowing about it.
     e.speed = e.baseSpeed * zoneDrag(e);
@@ -325,8 +387,62 @@ export function updateEnemies() {
       // He ignores you and runs for the far side. Two things happen at the end of
       // it and both are wave state: he gets away, or you get a meal.
       case 'runner': {
+        // a chain runner goes for the chain, not the edge - and pulls it
+        if (e.chainTarget) {
+          const c = e.chainTarget;
+          if (c.broken) { e.chainTarget = null; e.runner = false; e.noLane = false; e.state = 'idle'; e.atkCd = 30; break; }
+          e.face = c.x < e.x ? -1 : 1;
+          e.x += e.face * e.speed * 1.6;
+          e.y += clamp(laneMin(e.x) + 6 - e.y, -1, 1);
+          if (Math.abs(c.x - e.x) < 8) {
+            chainPulled(e.x);
+            e.chainTarget = null; e.runner = false; e.noLane = false;
+            e.state = 'idle'; e.t = 0; e.atkCd = 60;
+          }
+          break;
+        }
         e.x += e.face * e.speed;
         if (e.x > G.camX + W + 40 || e.x < G.camX - 40) { e.removeMe = true; G.runnerEscaped = true; }
+        break;
+      }
+      // MANJA on the berth: face you, throw, and after three throws come down on you
+      case 'perch': {
+        e.z = e.perchZ;
+        if (--e.throwCd <= 0 && Math.abs(p.x - e.x) < 220) {
+          if (e.throws >= 3 && Math.abs(p.x - e.x) < 90) {
+            unperch(e);
+            e.state = 'drop'; e.t = 0; e.hitLanded = false;
+            e.vx = Math.sign(p.x - e.x || 1) * 2.0; e.vz = 1.6;
+            G.audio.sfx('dash');
+          } else { e.state = 'pthrow'; e.t = 0; }
+        }
+        break;
+      }
+      case 'pthrow': {
+        e.z = e.perchZ;
+        if (e.t === 14) {
+          e.throws++;
+          spawnArc('weight', e.x + e.face * 10, e.y, e.face * 3.0, 1.0, e.dmg, null,
+            { source: e, parryClass: 'reflect', z: e.z + 30 });
+          G.audio.sfx('whiff');
+        }
+        if (e.t > 34) { e.state = 'perch'; e.t = 0; e.throwCd = irand(80, 140); }
+        break;
+      }
+      case 'drop': {
+        e.x += e.vx; e.z += e.vz; e.vz -= 0.22;
+        if (e.z <= 0) {
+          e.z = 0; e.vz = 0; e.vx = 0;
+          if (!e.hitLanded) { tryHitPlayer(e, 10, 34, true, 16, 'unblockable'); e.hitLanded = true; }
+          spawnDust(e.x, e.y, 3);
+          G.shake = Math.max(G.shake, 3);
+          e.state = 'idle'; e.t = 0; e.atkCd = irand(40, 80);
+        }
+        break;
+      }
+      case 'climb': {
+        e.z += 2;
+        if (e.z >= e.perchZ) perch(e);
         break;
       }
       // Out of the water and onto the lip. Twenty frames of visible and harmless.
@@ -353,11 +469,21 @@ export function updateEnemies() {
         }
         break;
       }
+      case 'graze': {
+        // she ambles the arena on her own clock and never looks at you
+        if (--e.grazeT <= 0) { e.grazeT = irand(90, 260); e.grazing = !e.grazing; if (!e.grazing && Math.random() < 0.5) e.face = -e.face; }
+        if (!e.grazing) {
+          e.x += e.face * e.speed;
+          if (e.x < G.camX + 50) e.face = 1; else if (e.x > G.camX + W - 50) e.face = -1;
+        }
+        break;
+      }
       case 'idle': {
         // The bull does not queue for a turn and does not orbit: he walks to whichever
         // edge is further away, locks one depth lane, and paws. Everything after that
         // is the ordinary windup -> attack chain, so he gets the red telegraph free.
-        if (e.kind === 'bull') {
+        if (e.perchZ && !e.perched && --e.groundT <= 0) { e.state = 'climb'; e.t = 0; e.noLane = true; e.airOnly = true; e.perched = true; e.y = laneMin(e.x) + 2; break; }
+        if (isRam(e)) {
           const edge = p.x > (G.camX + W / 2) ? G.camX + 24 : G.camX + W - 24;
           e.face = edge < e.x ? -1 : 1;
           e.x += Math.sign(edge - e.x) * 1.6;
@@ -368,7 +494,7 @@ export function updateEnemies() {
         // Orbit the player instead of bunching up on one spot, so a crowd
         // spreads across the arena and stays readable.
         // laneMin, not FLOOR_TOP: on the ghat the AI must never aim into the river.
-        const wantY = clamp(p.y + e.orbit * (e.kind === 'masala' || e.kind === 'operator' ? 26 : 16), laneMin(e.x), FLOOR_BOT);
+        const wantY = clamp(p.y + e.orbit * (e.kind === 'masala' || e.kind === 'operator' ? 26 : 16), laneMin(e.x), laneMax(e.x));
         e.y += clamp(wantY - e.y, -0.6, 0.6);
         if (Math.abs(e.y - wantY) < 2 && Math.random() < 0.004) e.orbit *= -1;
         const gap = Math.abs(p.x - e.x);
@@ -442,14 +568,35 @@ export function updateEnemies() {
           if (e.kind === 'pehlwan') { e.vx = e.face * 2.2; G.audio.sfx('dash'); }
           if (e.kind === 'constable') e.armor = 1;
           if (e.kind === 'thela' && !e.ramGone) { e.vx = e.face * 2.6; G.audio.sfx('dash'); }
-          if (e.kind === 'bull') { e.vx = e.face * e.speed; G.audio.sfx('dash'); }
+          if (isRam(e)) { e.vx = e.face * e.speed; G.audio.sfx('dash'); }
         } else if (e.kind === 'bull' && e.t % 6 === 0) {
           spawnDust(e.x - e.face * 26, e.y, 2);   // pawing the ground, for 40 frames
         }
         break;
       }
       case 'attack': {
-        if (e.kind === 'goonda') {
+        if (e.cow) {
+          if (e.t === 4 && !e.hitLanded) {
+            e.hitLanded = true;
+            const kx = e.x - e.face * 40;
+            if (Math.abs(p.x - kx) < 34 && Math.abs(p.y - e.y) < 16 && p.z < 22 && p.state !== 'down' && p.state !== 'getup' && !p.dying) {
+              if (!resolveIncomingHit(p, e, { parryClass: 'unblockable' })) { hurtPlayer(p, e.dmg, -e.face, true); spawnSpark(p.x, p.y - 40); }
+            }
+            for (const o of G.enemies) {
+              if (o === e || o.dead || o.cow || o.state === 'thrown') continue;
+              if (Math.abs(o.x - kx) < 34 && Math.abs(o.y - e.y) < 16 && o.z < 20) { o.hurt(e.dmg, -e.face, true, false); spawnSpark(o.x, o.y - 40); }
+            }
+            spawnDust(kx, e.y, 4); G.audio.sfx('heavy'); G.shake = Math.max(G.shake, 3);
+          }
+          if (e.t > 22) { e.state = 'graze'; e.grazing = true; e.grazeT = irand(60, 160); }
+        } else if (e.kind === 'coolie') {
+          // the trunk comes down in one arc: heavy, and the whole wind-up is the tell
+          if (e.t === 9 && !e.hitLanded) {
+            tryHitPlayer(e, e.dmg, e.range + 8, true, 14, 'counter');
+            e.hitLanded = true; G.audio.sfx('heavy'); spawnDust(e.x + e.face * 26, e.y, 3); G.shake = Math.max(G.shake, 2);
+          }
+          if (e.t > 30) { e.state = 'idle'; e.atkCd = irand(80, 140); }
+        } else if (e.kind === 'goonda' || e.kind === 'manja') {
           if (e.t === 5 && !e.hitLanded) { tryHitPlayer(e, e.dmg, 42, false); e.hitLanded = true; }
           if (e.t > 14) { e.state = 'idle'; e.atkCd = irand(50, 110); }
         } else if (e.kind === 'batta' || e.kind === 'constable' || e.kind === 'sepoy') {
@@ -472,7 +619,22 @@ export function updateEnemies() {
         } else if (e.kind === 'bandar') {
           // leaping pounce
           e.x += e.vx; e.z += e.vz; e.vz -= 0.22;
-          if (!e.hitLanded) { tryHitPlayer(e, e.dmg, 34, false, 16); if (G.hitstop > 0) e.hitLanded = true; }
+          if (!e.hitLanded) {
+            tryHitPlayer(e, e.dmg, 34, false, 16);
+            if (G.hitstop > 0) {
+              e.hitLanded = true;
+              // the thief takes the one thing that is not on the floor, and runs for it
+              if (e.thief && G.train && G.train.ticket) {
+                G.train.ticket = false; e.hasTicket = true; e.thief = false;
+                spawnPop(e.x, e.y - 60, 'THE TICKET!');
+                G.audio.sfx('blip');
+                e.z = 0; e.vz = 0; e.vx = 0;
+                e.state = 'runner'; e.runner = true; e.noLane = true;
+                e.face = p.x < e.x ? 1 : -1;
+                break;
+              }
+            }
+          }
           if (e.z <= 0) { e.z = 0; e.vz = 0; e.state = 'backoff'; e.t = 0; spawnDust(e.x, e.y, 2); }
         } else if (e.kind === 'cooker') {
           // A screaming beam down the lane. It is a sweep, not a strike, so it calls
@@ -516,7 +678,7 @@ export function updateEnemies() {
             G.audio.sfx(e.kind === 'dhobi' ? 'weapon' : 'punch');
           }
           if (e.t > (e.kind === 'dhobi' ? 30 : 20)) { e.state = 'idle'; e.atkCd = irand(60, 120); }
-        } else if (e.kind === 'bull') {
+        } else if (isRam(e)) {
           // 18 damage to anything he touches, both sides - and "both sides" is free,
           // because the charge is red and tryHitPlayer routes every red through the lane.
           e.x += e.vx;
@@ -546,7 +708,8 @@ export function updateEnemies() {
       }
       case 'hurt': {
         e.x += e.vx; e.vx *= 0.88;
-        if (e.t > 12) { e.state = 'idle'; e.atkCd = irand(30, 80); }
+        if (e.perched) { e.vx = 0; e.z = e.perchZ; }
+        if (e.t > 12) { e.state = e.perched ? 'perch' : 'idle'; e.atkCd = irand(30, 80); }
         break;
       }
       case 'stagger': {
@@ -580,7 +743,7 @@ export function updateEnemies() {
         for (const pr of G.props) {
           if (!pr.broken && Math.abs(pr.x - e.x) < 22 && Math.abs(pr.y - e.y) < 15) pr.hurt(20, Math.sign(e.vx) || 1);
         }
-        if (G.boss && !G.boss.dead && Math.abs(G.boss.x - e.x) < 28 && Math.abs(G.boss.y - e.y) < 18) {
+        if (G.boss && !G.boss.dead && G.boss.z < 30 && Math.abs(G.boss.x - e.x) < 28 && Math.abs(G.boss.y - e.y) < 18) {
           G.boss.hurt(12, Math.sign(e.vx) || 1, true, false);
           spawnSpark(G.boss.x, G.boss.y - 56);
         }
@@ -599,7 +762,11 @@ export function updateEnemies() {
       }
       case 'dying': {
         if (inAir(e) && fall(e, 0.28, 0) === 'land') spawnDust(e.x, e.y, 3);
-        if (e.t > 34) e.removeMe = true;
+        // under the TTE a fallen man stays on the floor: he is what the check is for
+        if (e.t > 34) {
+          if (G.boss && G.boss.delhi && G.boss.delhi.reviver && !G.boss.dead && !e.noCount) { e.state = 'corpse'; e.z = 0; e.vz = 0; e.vx = 0; }
+          else e.removeMe = true;
+        }
         break;
       }
     }
@@ -607,7 +774,7 @@ export function updateEnemies() {
     // separation from other enemies
     if (e.state === 'idle' || e.state === 'approach') {
       for (const o of G.enemies) {
-        if (o === e || o.dead) continue;
+        if (o === e || o.dead || o.perched) continue;
         const dx = e.x - o.x, dy = e.y - o.y;
         if (Math.abs(dx) < 19 && Math.abs(dy) < 11) {
           e.x += Math.sign(dx || rand(-1, 1)) * 0.4;
@@ -620,9 +787,9 @@ export function updateEnemies() {
     // its AI state: enemies drift in depth, back off and sway while nominally 'idle',
     // and playing the standing frame through that is what reads as sliding. Measuring
     // after the arena clamp also stops the legs cycling while walking into a wall.
-    e.y = Math.min(e.y, FLOOR_BOT);
     const wet = clampToLane(e);
-    const side = e.runner ? 0 : clampToArena(e);
+    if (e.stay && e.x < G.camX - 160) e.removeMe = true;   // the cow stays with her platform
+    const side = e.runner || e.stay ? 0 : clampToArena(e);
     e.moved = Math.hypot(e.x - x0, e.y - y0);
     e.stridePhase += e.moved;
     // wallSplat owns the x axis and pitFall the depth axis, so they can never
@@ -634,11 +801,34 @@ export function updateEnemies() {
   for (let i = G.enemies.length - 1; i >= 0; i--) if (G.enemies[i].removeMe) G.enemies.splice(i, 1);
 }
 
+// The parcel handtruck has no frame family: one prop image, rolled. It leans into its
+// run, rocks over the platform joints, and lies on its side when it is stopped.
+function drawHandtruck(ctx, e, sx, sy) {
+  const img = ASSETS.prop_handtruck;
+  const w = frameW(img), h = frameH(img);
+  const down = e.state === 'down' || e.state === 'dying' || e.state === 'thrown' || e.state === 'corpse';
+  const rolling = e.state === 'attack' || e.moved > MOVE_EPS;
+  const lean = down ? e.face * 1.35 : rolling ? e.face * 0.18 + Math.sin(G.time * 0.9) * 0.05 : e.face * 0.08;
+  ctx.save();
+  ctx.translate(sx, sy + 2);
+  ctx.rotate(lean);
+  if (e.face < 0) ctx.scale(-1, 1);
+  if (e.flash > 0) ctx.filter = 'brightness(2.2)';
+  else if (e.state === 'windup' && e.t > (WINDUP[e.kind] || 18) - 10 && ((e.t >> 1) & 1)) ctx.filter = 'brightness(1.8) sepia(1) saturate(6) hue-rotate(-35deg)';
+  blit(ctx, img, -Math.round(w / 2), -h);
+  ctx.restore();
+  if (rolling && !down && (G.time & 1)) {
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    for (let i = 0; i < 3; i++) ctx.fillRect(sx - e.face * (24 + i * 9), sy - 12 - i * 5, 7, 1);
+  }
+}
+
 export function drawEnemy(ctx, e, camX) {
   const sx = Math.round(e.x - camX), sy = Math.round(e.y - e.z);
+  if (e.kind === 'handtruck' && ASSETS.prop_handtruck) { drawHandtruck(ctx, e, sx, sy); return; }
   let name = 'idle', idx = (G.time >> 4) & 1;
   switch (e.state) {
-    case 'spawn': case 'approach': case 'backoff': case 'loot': case 'idle':
+    case 'spawn': case 'approach': case 'backoff': case 'loot': case 'idle': case 'graze':
       if (e.moved > MOVE_EPS) { name = 'walk'; idx = Math.floor(e.stridePhase / 6); }
       else { name = 'idle'; idx = (G.time >> 4) & 1; }
       break;
@@ -648,10 +838,13 @@ export function drawEnemy(ctx, e, camX) {
     case 'attack': name = 'atk'; idx = e.t < (ATK_RECOVER[e.kind] || 10) ? 1 : 2; break;
     case 'hurt': name = 'hurt'; idx = e.t < 5 ? 1 : 0; break;
     case 'stagger': name = 'hurt'; idx = (e.t >> 3) & 1; break;
-    case 'down': case 'dying': name = 'down'; break;
+    case 'down': case 'dying': case 'corpse': name = 'down'; break;
     case 'getup': name = 'getup'; break;
     case 'grabbed': name = 'hurt'; break;
     case 'thrown': name = 'down'; break;
+    case 'perch': case 'climb': name = 'perch'; idx = (G.time >> 4) & 3; break;
+    case 'pthrow': name = 'throw'; idx = e.t < 10 ? 0 : e.t < 14 ? 1 : e.t < 24 ? 2 : 3; break;
+    case 'drop': name = 'drop'; idx = e.vz > 0 ? 1 : 2; break;
   }
   if (e.state === 'dying' && ((G.time >> 1) & 1) && e.t > 10) return; // KO blink-out
   const f = getFrame(e.set, name, idx, e.face);

@@ -5,24 +5,26 @@
 //                      Break the cart and he loses the charge for good.
 //   YADAV   (boss)     corrupt inspector: lathi thrust, spinning lathi sweep,
 //                      tear gas, and a whistle that brings two goondas running.
-import { G, W, FLOOR_TOP, FLOOR_BOT, clamp, irand, addScore, diff, clampToArena, clampToLane, laneMin, fall, inAir } from './engine.js';
+import { G, W, FLOOR_TOP, FLOOR_BOT, clamp, irand, addScore, diff, clampToArena, clampToLane, laneMin, laneMax, fall, inAir } from './engine.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
 import { spawnSpark, spawnDust, spawnShock, impact, spawnPop, spawnRing } from './effects.js';
-import { hurtPlayer, grabPlayer, resolveIncomingHit } from './player.js';
+import { hurtPlayer, grabPlayer } from './player.js';
 import { spawnShot, spawnArc, spawnZone } from './shots.js';
 import { spawnEnemy } from './enemies.js';
+import { PARRY_CLASS, tryHitPlayer, blitTelegraph, drawCueMarker } from './bosslib.js';
+import { initDelhi } from './delhi_bosses.js';
+import { initTrainBoss } from './train_bosses.js';
 
 export const BOSSES = {
   // ---- DIRTY DELHI ----
-  // Their real pattern sets are built one fight at a time; until then each one is
-  // assembled from the shared library so the route is playable end to end and
-  // `every-act-has-a-boss` holds. `mini: true` is data here rather than a line in
-  // main.js's wave code, which is where it used to be set.
+  // The three Delhi fights live in js/delhi_bosses.js; the machine here only runs
+  // their shared states (grab, hurt, down, dying). `mini: true` is data here rather
+  // than a line in main.js's wave code.
   pappu: {
     name: 'USTAD PAPPU', title: 'AKHARA CHAMPION', taunt: 'THE CIRCLE IS CLOSED',
     set: 'pappu', rageSet: 'pappuRage', portrait: 'portrait_pappu',
     hp: 260, speed: 0.90, w: 62, h: 100, shadowR: 21, score: 3000, mini: true,
-    patterns: ['dashpunch', 'grab'],
+    patterns: ['charge', 'grab', 'stomp'],
     rageLine: 'MORE ROOM. LESS MERCY.',
     lines: ['NO WEAPONS', 'STAND AND FIGHT', 'THE CIRCLE HOLDS'],
   },
@@ -30,15 +32,32 @@ export const BOSSES = {
     name: 'LANGDA', title: 'THE MONKEY KING', taunt: 'THE STREET PAYS ME',
     set: 'langda', rageSet: 'langdaRage', portrait: 'portrait_langda',
     hp: 380, speed: 1.60, w: 40, h: 58, shadowR: 13, score: 4200, mini: true,
-    patterns: ['dashpunch', 'wrench', 'whistle'],
+    patterns: ['throw', 'troop', 'drop', 'snatch', 'screech', 'lunge'],
     rageLine: 'NO MORE WIRE',
     lines: ['MINE', 'ALL OF IT MINE', 'MY STREET'],
   },
+  // ---- THE NIGHT TRAIN ----
+  tte: {
+    name: 'THE TTE', title: 'TICKET EXAMINER', taunt: 'TICKET?',
+    set: 'tte', rageSet: 'tte', portrait: 'portrait_tte',
+    hp: 300, speed: 0.80, w: 44, h: 88, shadowR: 15, score: 3500, mini: true,
+    patterns: ['torch', 'ledger', 'check'],
+    rageLine: '',
+    lines: ['TICKET?', 'THIS IS NOT YOUR SEAT', 'NAME AND PNR'],
+  },
+  birju: {
+    name: 'BIRJU', title: 'THE COUPLER', taunt: 'NOWHERE TO STAND',
+    set: 'birju', rageSet: 'birju', portrait: 'portrait_birju',
+    hp: 560, speed: 1.00, w: 62, h: 104, shadowR: 22, score: 8000,
+    patterns: ['chain', 'hook', 'shoulder', 'lift', 'uncouple'],
+    rageLine: 'DUCK.',
+    lines: ['NOWHERE TO STAND', 'MIND THE GAP', 'ONE COACH LESS'],
+  },
   dredger: {
     name: 'THE DREDGER', title: 'WHAT EATS THE RIVER', taunt: 'THE RIVER IS A CONTRACT',
-    set: 'dredger', rageSet: 'dredgerLow', portrait: 'portrait_dredger',
-    hp: 520, speed: 0.70, w: 96, h: 130, shadowR: 30, score: 9000,
-    patterns: ['dashpunch', 'wrench', 'teargas', 'whistle'],
+    set: 'thekedar', rageSet: 'thekedar', portrait: 'portrait_thekedar',
+    hp: 520, speed: 0.70, w: 60, h: 66, shadowR: 28, score: 9000,
+    patterns: ['sweep', 'bucketdrop', 'hose', 'swing'],
     rageLine: 'THE ARM COMES DOWN',
     lines: ['(the winch screams)', '(chain rattle over the water)'],
   },
@@ -82,12 +101,6 @@ export const BOSSES = {
   },
 };
 
-const PARRY_CLASS = {
-  dashpunch: 'counter', lathi: 'counter', samosa: 'reflect', wrench: 'reflect', phone: 'reflect',
-  grab: 'unblockable', lathisweep: 'unblockable', teargas: 'reflect', steamjet: 'unblockable',
-  cartcharge: 'unblockable', chutney: 'hazard', whistle: 'hazard',
-};
-
 export function createBoss(key, x, y) {
   const def = BOSSES[key] || BOSSES.yadav;
   const hp = Math.round(def.hp * diff().hp * (def.mini ? 1 : 1));
@@ -98,6 +111,7 @@ export function createBoss(key, x, y) {
     dead: false, removeMe: false, flash: 0, hitLanded: false, armor: 0,
     summoned: false, holdT: 0, whistles: 0, cart: null, cartGone: false,
     posture: key === 'yadav' ? 3 : 0, maxPosture: key === 'yadav' ? 3 : 0,
+    moved: 0, poise: 0, maxPoise: 0, mashNeed: 6, slamDmg: 14, label: null, delhi: null,
     w: def.w, h: def.h, shadowR: def.shadowR, set: SPR[def.set],
     hurt(dmg, dir, heavy, launch) { hurtBoss(b, dmg, dir, heavy, launch); },
     parried(dmg, dir) {
@@ -113,10 +127,12 @@ export function createBoss(key, x, y) {
     thrown() {},
   };
   G.boss = b;
+  initDelhi(b);
+  initTrainBoss(b);
   return b;
 }
 
-function hurtBoss(b, dmg, dir, heavy, launch) {
+export function hurtBoss(b, dmg, dir, heavy, launch) {
   if (b.dead) return;
   if (b.armor > 0 && !launch) {
     b.armor--; b.flash = 4;
@@ -127,12 +143,15 @@ function hurtBoss(b, dmg, dir, heavy, launch) {
   }
   b.hp -= dmg;
   b.flash = 5;
-  if (!b.enraged && b.hp <= b.maxhp / 2) {
+  // a fight with its own module decides how it reacts to the hit; the damage stands
+  const own = b.delhi && b.delhi.onHurt && b.delhi.onHurt(b, dmg, heavy, launch);
+  if (!b.enraged && b.hp <= b.maxhp / 2 && !(b.delhi && b.delhi.noRage)) {
     b.enraged = true;
-    b.set = SPR[b.def.rageSet] || b.set;
+    if (!(b.delhi && b.delhi.noRageSet)) b.set = SPR[b.def.rageSet] || b.set;
     G.flash = 4; G.shake = 6;
-    spawnPop(b.x, b.y - b.h - 6, b.def.rageLine);
+    spawnPop(b.x, b.y - b.z - b.h - 6, b.def.rageLine);
     G.audio.sfx('enrage');
+    if (b.delhi && b.delhi.onEnrage) b.delhi.onEnrage(b);
   }
   if (b.hp <= 0) {
     b.hp = 0; b.dead = true;
@@ -141,30 +160,22 @@ function hurtBoss(b, dmg, dir, heavy, launch) {
     addScore(b.def.score);
     spawnPop(b.x, b.y - 74, '+' + b.def.score);
     G.audio.sfx('ko');
+    G.audio.sfx('bdie');
     impact(true);
     G.shake = 8;
     if (G.player.grabbedBy === b) { G.player.grabbedBy = null; G.player.state = 'idle'; }
+    if (b.delhi && b.delhi.onDeath) b.delhi.onDeath(b);
+  } else if (own) {
+    // handled
   } else if (heavy && Math.random() < 0.3) {
     b.state = 'down'; b.t = 0;
     b.vx = dir * 1.8; b.vz = 2.8; b.z = Math.max(b.z, 0.1);
     if (G.player.grabbedBy === b) { G.player.grabbedBy = null; G.player.state = 'idle'; }
+    if (b.delhi && b.delhi.onDown) b.delhi.onDown(b);
   } else if (b.state !== 'grabhold' && (!b.enraged || Math.random() < 0.5)) {
     b.state = 'hurt'; b.t = 0;
     b.vx = dir * 0.8;
   }
-}
-
-function tryHitPlayer(b, dmg, range, heavy, tol) {
-  const p = G.player;
-  if (p.state === 'down' || p.state === 'getup' || p.dying) return false;
-  if (Math.abs(p.x - (b.x + b.face * range * 0.5)) < range * 0.5 + 11 && Math.abs(p.y - b.y) < (tol || 16) && p.z < 22) {
-    if (resolveIncomingHit(p, b, { parryClass: PARRY_CLASS[b.pattern] || 'counter' })) return true;
-    hurtPlayer(p, dmg, b.face, heavy);
-    spawnSpark(p.x, p.y - 40);
-    G.audio.sfx(heavy ? 'heavy' : 'punch');
-    return true;
-  }
-  return false;
 }
 
 function pickPattern(b) {
@@ -192,7 +203,14 @@ export function updateBoss() {
   // watchdog: never let a boss sit in a passive state forever
   if (b.state === 'grabhold' && p.grabbedBy !== b) { b.state = 'idle'; b.t = 0; b.atkCd = 50; }
   if (b.state === 'down' && b.t > 240) { b.z = 0; b.vz = 0; b.vx = 0; b.state = 'idle'; b.t = 0; b.atkCd = 40; }
-  if (b.state !== 'dying' && b.state !== 'down' && b.state !== 'grabhold') b.face = p.x < b.x ? -1 : 1;
+  if (b.state !== 'dying' && b.state !== 'down' && b.state !== 'grabhold' && !(b.delhi && b.delhi.keepFace && b.delhi.keepFace(b))) b.face = p.x < b.x ? -1 : 1;
+  const px0 = b.x;
+  if (b.delhi && b.delhi.update(b)) {
+    b.moved = Math.abs(b.x - px0);
+    clampToLane(b);
+    clampToArena(b, 0);
+    return;
+  }
   const spd = b.def.speed * (b.enraged ? 1.5 : 1) * diff().aggro;
   // the cart stays parked in front of MIRCHI wherever he goes
   if (b.cart && !b.cart.broken && b.state !== 'cartcharge') {
@@ -203,7 +221,7 @@ export function updateBoss() {
 
   switch (b.state) {
     case 'idle': {
-      const wantY = clamp(p.y, laneMin(b.x), FLOOR_BOT);
+      const wantY = clamp(p.y, laneMin(b.x), laneMax(b.x));
       b.y += clamp(wantY - b.y, -spd * 0.6, spd * 0.6);
       const dx = p.x - b.x;
       if (Math.abs(dx) > 40) b.x += Math.sign(dx) * spd * 0.5;
@@ -276,16 +294,16 @@ export function updateBoss() {
         G.shake = Math.max(G.shake, 3);
         if (p.hp <= 0) p.hp = 1;
       }
-      if (p.mash >= 6 || b.hits >= 3 || b.holdT > 110) {
+      if (p.mash >= b.mashNeed || b.hits >= 3 || b.holdT > 110) {
         // release: thrown away (or shoved off if the player mashed out)
-        const escaped = p.mash >= 6;
+        const escaped = p.mash >= b.mashNeed;
         p.grabbedBy = null; p.mash = 0;
         if (escaped) {
           p.state = 'idle'; p.t = 0; p.invuln = 30;
           spawnPop(p.x, p.y - 40, 'BREAK');
           hurtBoss(b, 6, -b.face, false, false);
         } else {
-          hurtPlayer(p, 14, b.face, true, true);
+          hurtPlayer(p, b.slamDmg, b.face, true, true);
           G.audio.sfx('throw');
         }
         b.state = 'idle'; b.atkCd = irand(60, 110) * cdScale;
@@ -429,7 +447,8 @@ export function updateBoss() {
       break;
     }
   }
-  b.y = Math.min(b.y, FLOOR_BOT);
+  b.moved = Math.abs(b.x - px0);
+  b.y = Math.min(b.y, laneMax(b.x));
   clampToLane(b);   // a boss is never ringed out; it just cannot stand in the river
   clampToArena(b, 0);
 }
@@ -437,6 +456,8 @@ export function updateBoss() {
 export function drawBoss(ctx, camX) {
   const b = G.boss;
   if (!b || b.removeMe) return;
+  if (b.state === 'dying' && b.t > 20 && ((G.time >> 1) & 1)) return;
+  if (b.delhi) { b.delhi.draw(ctx, b, camX); return; }
   const sx = Math.round(b.x - camX), sy = Math.round(b.y - b.z);
   let name = 'idle', idx = (G.time >> 4) & 1;
   switch (b.state) {
@@ -459,21 +480,10 @@ export function drawBoss(ctx, camX) {
     case 'stagger': name = 'hurt'; idx = (b.t >> 3) & 1; break;
     case 'down': case 'dying': name = 'down'; break;
   }
-  if (b.state === 'dying' && b.t > 20 && ((G.time >> 1) & 1)) return;
   const f = getFrame(b.set, name, idx, b.face);
   const dx = sx - Math.round(frameW(f) / 2), dy = sy - frameH(f) + 4;
   const cue = b.state === 'windup' && b.t > 6;
-  const telegraph = (cue && ((b.t >> 1) & 1)) || b.flash > 0;
-  if (telegraph) {
-    ctx.save();
-    ctx.filter = cue && PARRY_CLASS[b.pattern] !== 'unblockable'
-      ? 'brightness(1.8) sepia(1) saturate(5) hue-rotate(70deg)'
-      : cue ? 'brightness(1.8) sepia(1) saturate(6) hue-rotate(-35deg)' : 'brightness(2.2)';
-    blit(ctx, f, dx, dy);
-    ctx.restore();
-  } else {
-    blit(ctx, f, dx, dy);
-  }
+  blitTelegraph(ctx, b, f, dx, dy, cue);
   // Rana's second phase is an Iron Asura silhouette. Two translucent secondary
   // arm pairs mirror the live attack pose without changing his collision size.
   if (b.key === 'rana' && b.enraged && b.state !== 'down' && b.state !== 'dying') {
@@ -484,18 +494,7 @@ export function drawBoss(ctx, camX) {
     blit(ctx, getFrame(b.set, name, idx + 1, -b.face), dx + b.face * 12, dy + 1);
     ctx.restore();
   }
-  if (cue) {
-    ctx.save();
-    ctx.strokeStyle = PARRY_CLASS[b.pattern] !== 'unblockable' ? '#6dff82' : '#ff4050';
-    ctx.lineWidth = 2;
-    const cy = sy - b.def.h - 8;
-    if (PARRY_CLASS[b.pattern] !== 'unblockable') {
-      ctx.beginPath(); ctx.moveTo(sx, cy - 6); ctx.lineTo(sx + 6, cy); ctx.lineTo(sx, cy + 6); ctx.lineTo(sx - 6, cy); ctx.closePath(); ctx.stroke();
-    } else {
-      ctx.beginPath(); ctx.moveTo(sx - 6, cy - 6); ctx.lineTo(sx + 6, cy + 6); ctx.moveTo(sx + 6, cy - 6); ctx.lineTo(sx - 6, cy + 6); ctx.stroke();
-    }
-    ctx.restore();
-  }
+  if (cue) drawCueMarker(ctx, b, sx, sy - b.def.h - 8);
   // spin blur on the lathi sweep
   if (b.state === 'lathisweep') {
     ctx.globalAlpha = 0.35;

@@ -6,7 +6,7 @@ import { fx } from './fx.js';
 import { spawnSteam, spawnSmoke, spawnDust } from './effects.js';
 
 const ART = {};
-const SETS = { laundry: 4, awning: 4, fan: 4, shutter: 4 };
+const SETS = { laundry: 4, awning: 4, fan: 4, shutter: 1 };
 
 export function loadAmbience() {
   return Promise.all(Object.entries(SETS).flatMap(([name, n]) => {
@@ -111,13 +111,16 @@ function drawShutters(ctx, camX) {
     const sx = Math.round(list[i].x - camX);
     const img = art[Math.min(art.length - 1, Math.floor(k[i] * (art.length - 1)))];
     if (!img) continue;
-    const w = frameW(img), h = frameH(img);
+    const w = list[i].w || frameW(img), h = list[i].h || frameH(img);
     if (sx + w < -20 || sx > W + 20) continue;
     ctx.save();
     ctx.beginPath();
     ctx.rect(sx, list[i].y, w, Math.round(h * k[i]));
     ctx.clip();
-    blit(ctx, img, sx, list[i].y);
+    ctx.drawImage(img, sx, list[i].y, w, h);
+    // the roller drum's shadow under the bottom edge as it comes down
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillRect(sx, list[i].y + Math.round(h * k[i]) - 3, w, 3);
     ctx.restore();
   }
 }

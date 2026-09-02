@@ -7,7 +7,7 @@ logical scene to a 960×540 canvas.
 The current build contains:
 
 - THE LAIR, a 1920-logical-pixel home base with interactive fixtures and ambient life;
-- one production act, DIRTY DELHI, spanning 26 screens;
+- two production stages: DIRTY DELHI (26 screens) and THE NIGHT TRAIN (19 screens);
 - CHAD’s five-hit combo, run, jump, parry/counter, juggles, wall splats, quick get-up,
   and METEOR LARIAT super;
 - a complete scripted verification suite and visual review tools.
@@ -65,7 +65,7 @@ node --check js/<changed-file>.js
 ## Visual review tools
 
 - `lab.html` — character scale, animation, stage, effects, and ambience inspection.
-- `review-1-1.html` — production review for the complete DIRTY DELHI route.
+- `assets/stages/night_train/route_preview.png` — the stitched NIGHT TRAIN route at a glance.
 - `review-lair.html` — isolated lair systems and fixtures.
 - `review-animation-pipeline.html` — frame-by-frame tiger, couch, and baitfish pipeline
   comparison.
@@ -132,13 +132,18 @@ small comparison set that still has an active review page.
   art.
 - [`CLAUDE.md`](CLAUDE.md) — concise repository rules for coding agents.
 - [`docs/README.md`](docs/README.md) — status and purpose of design documents.
-- [`docs/stage1-dirty-delhi.md`](docs/stage1-dirty-delhi.md) — production act design.
+- [`docs/stage1-dirty-delhi.md`](docs/stage1-dirty-delhi.md) — production design for Stage 1.
+- [`docs/stage2-night-train.md`](docs/stage2-night-train.md) — production design for Stage 2.
 - [`docs/india-chapter.md`](docs/india-chapter.md) — broader chapter canon and roadmap.
 
 ## Current gaps
 
-- Only Act I is in production; later act documents are proposals.
-- Most music slots are placeholders.
-- The imported SFX mapping still needs a full by-ear review in `sfxlab.html`.
+- Stages 1 and 2 are in production; Stage 3 (`docs/stage3-refund-tower.md`) is a proposal.
+- `title`, `hold`, `final` and `ending` music slots are still placeholders; both acts, the
+  lair and every boss have real tracks in `audio/`.
+- The imported SFX mapping still needs a full by-ear review in `sfxlab.html`; the enemy
+  grunts and screams (`ehurt*`, `edie*`, `bdie`) were picked from the rip's voice bank the
+  same way.
+- Voice lines and the style announcer are documented in `audio/voice/README.md`.
 - Raw AI sources are intentionally local and large. Prune them only after confirming the
   selected source and prompt are preserved.

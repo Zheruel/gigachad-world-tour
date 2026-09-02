@@ -168,6 +168,63 @@ D1_ENEMIES = {
     },
 }
 
+# ---- THE NIGHT TRAIN ----------------------------------------------------
+D2_ENEMIES = {
+    "coolie": {
+        "idle": ["coolie_idle1.png", "coolie_idle2.png", "coolie_idle3.png", "coolie_idle4.png"],
+        "walk": ["coolie_walk1.png", "coolie_walk2.png", "coolie_walk3.png", "coolie_walk4.png"],
+        "atk": ["coolie_atk1.png", "coolie_atk2.png", "coolie_atk3.png"],
+        "hurt": ["coolie_hurt1.png", "coolie_hurt2.png"],
+        "down": ["coolie_hurt3.png"],
+        "getup": ["coolie_hurt2.png"],
+    },
+    "gai": {
+        "idle": ["gai_idle1.png", "gai_idle2.png", "gai_idle3.png", "gai_idle4.png"],
+        "walk": ["gai_walk1.png", "gai_walk2.png", "gai_walk3.png", "gai_walk4.png"],
+        "atk": ["gai_kick1.png", "gai_kick2.png", "gai_kick3.png"],
+        "hurt": ["gai_hurt1.png", "gai_hurt2.png"],
+        "down": ["gai_hurt2.png"],
+    },
+    "manja": {
+        "idle": ["manja_idle1.png", "manja_idle2.png", "manja_idle3.png", "manja_idle4.png"],
+        "perch": ["manja_idle1.png", "manja_idle2.png", "manja_idle3.png", "manja_idle4.png"],
+        "walk": ["manja_walk1.png", "manja_walk2.png", "manja_walk3.png", "manja_walk4.png"],
+        "throw": ["manja_throw1.png", "manja_throw2.png", "manja_throw3.png", "manja_throw4.png"],
+        # on the ground he fights with the drop: the leap is his only strike
+        "atk": ["manja_drop1.png", "manja_drop3.png", "manja_drop4.png"],
+        "drop": ["manja_drop1.png", "manja_drop2.png", "manja_drop3.png", "manja_drop4.png"],
+        "hurt": ["manja_hurt1.png", "manja_hurt2.png"],
+        "down": ["manja_hurt3.png"],
+    },
+}
+D2_BOSSES = {
+    "tte": {
+        "idle": ["tte_idle1.png", "tte_idle2.png", "tte_idle3.png", "tte_idle4.png"],
+        "walk": ["tte_walk1.png", "tte_walk2.png", "tte_walk3.png", "tte_walk4.png"],
+        "punch": ["tte_ledger1.png", "tte_ledger2.png", "tte_ledger3.png"],
+        "ledger": ["tte_ledger1.png", "tte_ledger2.png", "tte_ledger3.png"],
+        "torch": ["tte_torch1.png", "tte_torch2.png", "tte_torch3.png", "tte_torch4.png"],
+        "grab": ["tte_stamp1.png", "tte_stamp2.png", "tte_stamp3.png"],
+        "stamp": ["tte_stamp1.png", "tte_stamp2.png", "tte_stamp3.png", "tte_stamp4.png"],
+        "slam": ["tte_stamp2.png", "tte_stamp3.png", "tte_stamp4.png"],
+        "hurt": ["tte_hurt1.png", "tte_hurt2.png"],
+        "down": ["tte_hurt3.png"],
+    },
+    "birju": {
+        "idle": ["birju_idle1.png", "birju_idle2.png", "birju_idle3.png", "birju_idle4.png"],
+        "walk": ["birju_walk1.png", "birju_walk2.png", "birju_walk3.png", "birju_walk4.png"],
+        "punch": ["birju_chain2.png", "birju_chain3.png", "birju_chain4.png"],
+        "chain": ["birju_chain1.png", "birju_chain2.png", "birju_chain3.png", "birju_chain4.png"],
+        "hook": ["birju_hook1.png", "birju_hook2.png", "birju_hook3.png", "birju_hook4.png"],
+        "charge": ["birju_charge1.png", "birju_charge2.png", "birju_charge3.png", "birju_charge4.png"],
+        "grab": ["birju_grab1.png", "birju_grab2.png", "birju_grab3.png"],
+        "slam": ["birju_grab2.png", "birju_grab3.png", "birju_grab3.png"],
+        "uncouple": ["birju_uncouple1.png", "birju_uncouple2.png", "birju_uncouple3.png"],
+        "hurt": ["birju_hurt1.png", "birju_hurt2.png"],
+        "down": ["birju_hurt3.png"],
+    },
+}
+
 # The two minibosses draw through the boss state machine, which asks for
 # idle / walk / punch / grab / slam / hurt / down.
 D1_BOSSES = {
@@ -227,7 +284,7 @@ def main():
             manifest[key] = s
     # DIRTY DELHI carries its states literally rather than through a shared template:
     # every family was generated as strips with its own pose list.
-    for key, states in {**D1_ENEMIES, **D1_BOSSES}.items():
+    for key, states in {**D1_ENEMIES, **D1_BOSSES, **D2_ENEMIES, **D2_BOSSES}.items():
         got = {state: existing(files) for state, files in states.items()}
         got = {k: v for k, v in got.items() if v}
         if got:

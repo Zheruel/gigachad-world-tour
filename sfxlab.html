@@ -32,7 +32,8 @@ number below and change that slot in <code>audio/sfx/manifest.json</code>, then 
 
 <script type="module">
 const SLOTS = ['punch','heavy','kick','whiff','land','slam','ko','throw','grab',
-  'dash','jump','pickup','blip','armor','enrage','super','phurt','weapon','go'];
+  'dash','jump','pickup','blip','armor','enrage','super','phurt','weapon','go',
+  'ehurt1','ehurt2','ehurt3','ehurt4','edie1','edie2','bdie'];
 
 const manifest = await fetch('audio/sfx/manifest.json').then(r => r.json()).catch(() => ({map:{}}));
 

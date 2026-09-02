@@ -2,7 +2,7 @@
 // the full-meter Meteor Lariat, status effects and recovery.
 import {
   G, FLOOR_TOP, FLOOR_BOT, METER_MAX, clamp, addScore, addMeter, bumpCombo, diff,
-  clampToArena, clampToLane, laneMin, zoneDrag, airborne, juggleMul, fall, inAir,
+  clampToArena, clampToLane, laneMin, laneMax, zoneDrag, airborne, juggleMul, fall, inAir,
 } from './engine.js';
 import { input } from './input.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
@@ -122,7 +122,12 @@ function playerHit(p, spec) {
     // Airborne bodies stay hittable (that is the juggle); grounded knockdowns
     // do not, so you cannot just stomp someone lying on the floor forever.
     if (e.state === 'down' && !airborne(e)) continue;
-    if (Math.abs(e.x - hx) < spec.range * 0.6 + e.w * 0.35 && Math.abs(e.y - p.y) < 16 && e.z < 34) {
+    // Something hanging above the lane is only in reach from the air: Langda on his
+    // wire needs a jump near his height, an awning bracket needs any jump under it.
+    const inReach = e.onWire ? (p.z > 8 && Math.abs(e.z - p.z) < 34)
+      : e.airOnly ? (p.z > 8 && e.z - p.z < 80)
+      : e.z < 34 || (p.z > 8 && Math.abs(e.z - p.z) < 30);
+    if (Math.abs(e.x - hx) < spec.range * 0.6 + e.w * 0.35 && Math.abs(e.y - p.y) < 16 && inReach) {
       const dealt = Math.round(spec.dmg * dmgMul(p));
       e.hurt(dealt, p.face, spec.heavy, spec.launch);
       if (spec.knock && !e.dead && e.state !== 'down' && e.state !== 'thrown') {
@@ -131,12 +136,15 @@ function playerHit(p, spec) {
       // A prop scores when it BREAKS (props.js), not per hit - otherwise the heavy bag in
       // THE LAIR, which is unbreakable and there to be mashed, walks the persisted hi-score
       // and the next act's HIT BONUS up forever.
-      if (e.kind !== 'prop') {
-        addScore(10);
-        if (G.stats) G.stats.hits++;
+      // The cow gives nothing at all: she cannot be beaten, so she cannot be farmed.
+      if (!e.cow) {
+        if (e.kind !== 'prop') {
+          addScore(10);
+          if (G.stats) G.stats.hits++;
+        }
+        addMeter(spec.heavy || spec.impactHeavy ? 6 : 4);
+        comboPop(bumpCombo(), e.x, e.y);
       }
-      addMeter(spec.heavy || spec.impactHeavy ? 6 : 4);
-      comboPop(bumpCombo(), e.x, e.y);
       heaviest = Math.max(heaviest, dealt * (airborne(e) ? juggleMul(e) : 1));
       hitAny = true;
     }
@@ -534,8 +542,8 @@ export function updatePlayer(p) {
   else if (p.runT > 0) p.runT--;
 
   // clamp to floor band + arena walls
-  p.y = Math.min(p.y, FLOOR_BOT);
-  if (clampToLane(p)) pitFallPlayer(p);
+  const over = clampToLane(p);   // clamps y to the lane itself, and reports an edge
+  if (over) pitFallPlayer(p, over);
   clampToArena(p, 0);
   // measured after the clamp: pushing into a wall must not cycle the legs
   p.moved = Math.hypot(p.x - x0, p.y - y0);
@@ -547,14 +555,16 @@ export function updatePlayer(p) {
 // near the edge is a loop you cannot climb out of, so this costs 20 hp and the dignity
 // and puts him back on the lip. It is still more than a wall splat costs, which is the
 // whole difference between a player who uses the water and one who does not.
-function pitFallPlayer(p) {
+function pitFallPlayer(p, side) {
   if (p.pitCd > 0) return;
   p.pitCd = 40;
-  spawnDust(p.x, laneMin(p.x), 8);
-  spawnRing(p.x, laneMin(p.x), '#8fd8c8');
-  spawnPop(p.x, laneMin(p.x) - 30, 'SOAKED');
+  // -1 is the back of the lane (the river); +1 is a front edge (the train roof)
+  const edge = side > 0 ? laneMax(p.x) : laneMin(p.x);
+  spawnDust(p.x, edge, 8);
+  spawnRing(p.x, edge, side > 0 ? '#c8c8d8' : '#8fd8c8');
+  spawnPop(p.x, edge - 30, side > 0 ? 'HANGING ON' : 'SOAKED');
   p.hp = Math.max(1, p.hp - Math.round(20 * diff().dmg));
-  p.y = laneMin(p.x) + 2; p.z = 0; p.vz = 0; p.vx = 0;
+  p.y = side > 0 ? edge - 2 : edge + 2; p.z = 0; p.vz = 0; p.vx = 0;
   p.invuln = 90;
   G.combo = 0;
   G.shake = Math.max(G.shake, 5);

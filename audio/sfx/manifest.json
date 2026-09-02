@@ -1,6 +1,6 @@
 {
   "source": "Streets of Rage 2 (Sega Genesis) sound effects, ripped set from The Sounds Resource asset 359 (media/assets/391/393998.zip). Used under the project's stated licence agreement for these sounds.",
-  "note": "map = game slot -> sound-test index in raw/. The rip ships numbered, not named, so these were matched by acoustic analysis (duration, attack time, spectral centroid, low/high energy split) and have NOT been verified by ear. Open sfxlab.html to audition every slot against every source sound, fix any that are wrong here, then run tools/build_sfx.sh.",
+  "note": "map = game slot -> sound-test index in raw/. The rip ships numbered, not named, so these were matched by acoustic analysis (duration, attack time, spectral centroid, low/high energy split) and have NOT been verified by ear. The V* files are the rip's voice bank: ehurt1-4 (the four short grunts V00-V03) play on an enemy taking a hit, edie1-2 (the ~1 s ones) on a KO, bdie (the long one) on a boss going down. Open sfxlab.html to audition every slot against every source sound, fix any that are wrong here, then run tools/build_sfx.sh.",
   "rawDir": "audio/sfx/raw",
   "map": {
     "punch": "02",
@@ -21,6 +21,13 @@
     "super": "44a",
     "phurt": "25",
     "weapon": "11",
-    "go": "29"
+    "go": "29",
+    "ehurt1": "V00",
+    "ehurt2": "V01",
+    "ehurt3": "V02",
+    "ehurt4": "V03",
+    "edie1": "V20",
+    "edie2": "V19",
+    "bdie": "V48"
   }
 }

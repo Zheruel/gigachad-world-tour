@@ -4,6 +4,13 @@
 let ac = null, master = null, musicGain = null, sfxGain = null;
 let unlocked = false;
 
+// The announcer and the extra Duke lines are files the game looks for and does not ship:
+// rank_* are the announcer, two takes per rank (see engine.js RANKS), duke_combo_* are picked
+// at random on a big combo, duke_ride opens THE NIGHT TRAIN, duke_game_over is the continue.
+export const VOICE_SLOTS = {
+  rank: ['dismal', 'crazy', 'badass', 'apocalyptic', 'savage', 'sickskills', 'sss'].flatMap((r) => [`rank_${r}_1`, `rank_${r}_2`]),
+  combo: ['duke_combo_1', 'duke_combo_2', 'duke_combo_3', 'duke_combo_4', 'duke_combo_5', 'duke_combo_6'],
+};
 // Real Streets of Rage 2 samples, decoded once and played through sfxGain.
 // Any slot without a file silently falls back to the synthesized version below,
 // so the game still has full audio if audio/sfx/ is missing.
@@ -14,6 +21,11 @@ const SFX_FILES = [
   'duke_back_to_work', 'duke_book_em', 'duke_hail', 'duke_look_good', 'parry',
   'entrance_engine', 'entrance_skid', 'entrance_boot', 'entrance_stand',
   'entrance_birds', 'entrance_crack',
+  // the enemies' own voices out of the same rip: a grunt on a hit, a scream on a KO
+  'ehurt1', 'ehurt2', 'ehurt3', 'ehurt4', 'edie1', 'edie2', 'bdie',
+  // Drop-in slots. Every name here is optional: a missing file is skipped by loadSFX
+  // and the caller falls through to whatever it has. audio/voice/README.md lists them.
+  ...VOICE_SLOTS.rank, ...VOICE_SLOTS.combo, 'duke_lets_rock', 'duke_ride', 'duke_game_over',
 ];
 const SFX_PATHS = {
   duke_quote: 'audio/voice/duke_out_of_gum.wav',
@@ -33,6 +45,7 @@ const SFX_PATHS = {
   entrance_birds: 'audio/sfx/entrance_birds.wav',
   entrance_crack: 'audio/sfx/entrance_crack.wav',
 };
+function isVoice(name) { return name.startsWith('duke_') || name.startsWith('rank_'); }
 const samples = {};      // name -> AudioBuffer
 let sampleBytes = null;  // name -> ArrayBuffer, fetched before the context exists
 let entranceBike = null;
@@ -40,7 +53,7 @@ let entranceBike = null;
 export async function loadSFX() {
   await Promise.all(SFX_FILES.map(async (name) => {
     try {
-      const r = await fetch(SFX_PATHS[name] || `audio/sfx/${name}.wav`, { cache: 'no-cache' });
+      const r = await fetch(SFX_PATHS[name] || `audio/${isVoice(name) ? 'voice' : 'sfx'}/${name}.wav`, { cache: 'no-cache' });
       if (!r.ok) return;
       (sampleBytes || (sampleBytes = {}))[name] = await r.arrayBuffer();
     } catch (e) { /* no sample: the synth fallback covers it */ }
@@ -127,7 +140,7 @@ let seqTimer = null, nextStepTime = 0, stepIdx = 0, song = null;
 // miniboss `boss` and the level boss's own `boss1`. A slot with neither an mp3 nor a
 // SONGS entry simply plays nothing and never appears in the jukebox, so adding names
 // breaks nothing and needs no code change when the files land.
-const SLOTS = ['lair', 'title', 'stage1a', 'stage1b', 'boss', 'boss1', 'ending'];
+const SLOTS = ['lair', 'title', 'stage1a', 'stage1b', 'boss', 'boss1', 'stage2a', 'stage2b', 'boss2', 'stage3a', 'stage3b', 'hold', 'final', 'ending'];
 const htmlTracks = Object.fromEntries(SLOTS.map((s) => [s, null]));
 
 function mf(m) { return 440 * Math.pow(2, (m - 69) / 12); } // midi -> freq
@@ -312,6 +325,33 @@ function stopChiptune() {
 // token went stale immediately pauses itself again - without that guard a
 // pending play() can resume a track we already stopped and two songs overlap.
 let currentTrack = null, playToken = 0;
+let voiceBusyUntil = 0;
+const voiceCd = {};
+
+// Pull the music under a voice line and let it back up after. The chiptune sits on
+// musicGain; a real track is an <audio> element, so its volume is stepped by a timer.
+let duckTimer = null;
+function duckMusic(seconds) {
+  const now = ac.currentTime;
+  if (musicGain) {
+    musicGain.gain.cancelScheduledValues(now);
+    musicGain.gain.setTargetAtTime(0.12, now, 0.05);
+    musicGain.gain.setTargetAtTime(0.5, now + seconds, 0.18);
+  }
+  const a = currentTrack;
+  if (!a) return;
+  if (duckTimer) { clearTimeout(duckTimer); duckTimer = null; }
+  a.volume = 0.3;
+  duckTimer = setTimeout(() => {
+    duckTimer = null;
+    let v = 0.3;
+    const up = setInterval(() => {
+      v = Math.min(0.8, v + 0.05);
+      if (currentTrack === a) a.volume = v;
+      if (v >= 0.8 || currentTrack !== a) clearInterval(up);
+    }, 40);
+  }, seconds * 1000);
+}
 
 function stopHtmlTracks() {
   playToken++;
@@ -335,10 +375,14 @@ export async function loadManifest() {
     // "silent": true means play nothing at all rather than falling back to the
     // chiptune - for when real tracks are coming but are not in yet.
     musicSilent = !!m.silent;
+    const byFile = {};
     for (const slot of SLOTS) {
       const file = m[slot];
       if (!file) continue;
+      // two slots naming one file share one element, so title -> lair keeps playing
+      if (byFile[file]) { htmlTracks[slot] = byFile[file]; continue; }
       const a = new Audio(file.includes('/') ? file : 'audio/' + file);
+      byFile[file] = a;
       a.loop = true;
       a.preload = 'auto';
       a.volume = 0.8;
@@ -387,6 +431,7 @@ export const audio = {
     }
     currentSlot = slot;
     if (!unlocked || !ac) return;
+    if (slot && htmlTracks[slot] && htmlTracks[slot] === currentTrack && !currentTrack.paused) return;
     stopChiptune();
     stopHtmlTracks();
     if (!slot) return;
@@ -394,6 +439,7 @@ export const audio = {
     if (!a) { if (audible || !musicSilent) startChiptune(slot); return; }
     const token = playToken;
     currentTrack = a;
+    a.volume = 0.8;
     a.play().then(() => {
       if (token !== playToken) { try { a.pause(); a.currentTime = 0; } catch (e) {} }
     }).catch(() => {
@@ -448,6 +494,13 @@ export const audio = {
         break;
       }
       case 'select': tone(mf(72), mf(79), 0.06, 'square', 0.2); break;
+      // the station PA: three soft bell notes before an announcement
+      case 'chime': {
+        tone(mf(79), mf(79), 0.28, 'sine', 0.22);
+        setTimeout(() => ac && tone(mf(83), mf(83), 0.28, 'sine', 0.2), 260);
+        setTimeout(() => ac && tone(mf(86), mf(86), 0.5, 'sine', 0.2), 520);
+        break;
+      }
       case 'whip': case 'weapon': noise(0.04, 0.35, 9000); tone(1800, 300, 0.09, 'sawtooth', 0.12); break;
       case 'kick': noise(0.08, 0.45, 3000); tone(180, 70, 0.10, 'square', 0.32); break;
       case 'grab': noise(0.05, 0.2, 2600); tone(260, 160, 0.08, 'square', 0.18); break;
@@ -460,15 +513,36 @@ export const audio = {
     }
     return true;
   },
-  voice(name, durationMs = 4800) {
-    if (!unlocked || !ac || !playSample(name, 1.3, true)) return false;
-    // Leave room for the line if music is enabled later; restore smoothly.
-    if (musicGain) {
-      const now = ac.currentTime;
-      musicGain.gain.cancelScheduledValues(now);
-      musicGain.gain.setTargetAtTime(0.12, now, 0.05);
-      musicGain.gain.setTargetAtTime(0.5, now + durationMs / 1000, 0.18);
-    }
+  // One line at a time. A line that arrives while another is playing is dropped unless
+  // it is marked urgent (a boss going down beats a combo callout); the busy window is the
+  // sample's own length, so a missing file never blocks anything.
+  has(name) { return !!samples[name]; },
+  voice(name, durationMs = 4800, urgent = false) {
+    if (!unlocked || !ac || !samples[name]) return false;
+    const now = ac.currentTime;
+    if (now < voiceBusyUntil && !urgent) return false;
+    if (!playSample(name, 1.3, true)) return false;
+    voiceBusyUntil = now + samples[name].duration;
+    duckMusic(durationMs / 1000);
     return true;
+  },
+  // The first of `names` that has a file, so a stage can ask for its own line and fall
+  // back to one the project ships.
+  voiceAny(names, durationMs, urgent) {
+    for (const n of names) if (samples[n]) return this.voice(n, durationMs, urgent);
+    return false;
+  },
+  // A random line out of `names`, from whichever exist, with a per-list cooldown so the
+  // combo commentary stays an event rather than a soundtrack.
+  voiceRandom(names, durationMs, cooldownS = 18) {
+    if (!ac) return false;
+    const have = names.filter((n) => samples[n]);
+    if (!have.length) return false;
+    const key = names[0];
+    const now = ac.currentTime;
+    if (now < (voiceCd[key] || 0)) return false;
+    const ok = this.voice(have[Math.floor(Math.random() * have.length)], durationMs);
+    if (ok) voiceCd[key] = now + cooldownS;
+    return ok;
   },
 };

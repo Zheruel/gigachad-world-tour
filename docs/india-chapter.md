@@ -546,5 +546,5 @@ code had dropped.
 `js/stages.js` stages and waves · `js/player.js` combat and supers · `js/enemies.js` roles and
 AI · `js/bosses.js` boss identities and the pattern library · `js/screens.js` entrance, title
 cards, boss reveals, ending · `js/audio.js` music and voice slots · `js/hub.js` the lair ·
-`lab.html` frame-by-frame review · `review-1-1.html` and `review-lair.html` production reviewers
+`lab.html` frame-by-frame review · `review-lair.html` production reviewer
 · `assets/frames/manifest.json` the sprite manifest.

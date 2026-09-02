@@ -1,5 +1,5 @@
 // hud.js - SNES-style HUD: portrait, health, lives, super meter, combo, boss bar
-import { G, W, H, METER_MAX } from './engine.js';
+import { G, W, H, METER_MAX, RANKS } from './engine.js';
 import { drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { ASSETS } from './assets.js';
 import { fx } from './fx.js';
@@ -24,6 +24,29 @@ function barFill(ctx, x, y, w, h, frac, colour, hi) {
   ctx.fillStyle = colour;
   ctx.fillRect(x, y, fw, h);
   if (hi) { ctx.fillStyle = hi; ctx.fillRect(x, y, fw, Math.max(1, (h / 3) | 0)); }
+}
+
+// The style gauge, top right under the score: the letter big, the word under it, and a
+// bar draining with the chain's timer. The letter punches in oversized on a new rank and
+// the top ranks shiver; the whole thing is the combo made into a grade, DMC-style.
+function drawStyleRank(ctx) {
+  const rk = G.rank >= 0 ? RANKS[G.rank] : null;
+  if (!rk || G.comboT <= 0) return;
+  const age = 90 - G.rankT;
+  const sc = G.rankT > 0 && age < 3 ? 5 : G.rankT > 0 && age < 6 ? 4 : 3;
+  const jit = G.rank >= 4 ? Math.round(Math.sin(G.rawTime * 1.7) * (G.rank - 3) * 0.5) : 0;
+  const right = W - 8;
+  const y0 = 44;
+  const letterW = textWidth(rk.letter, sc);
+  const col = G.rank === 6 && ((G.rawTime >> 2) & 1) ? '#ffffff' : rk.color;
+  drawTextShadow(ctx, rk.letter, right - letterW + jit, y0 - (sc - 3) * 2, col, sc, '#2a0810');
+  const wordW = textWidth(rk.word, 1);
+  drawTextShadow(ctx, rk.word, right - wordW, y0 + 5 * sc + 3, rk.color, 1);
+  // the gauge: the chain timer, in the rank's colour, with a dark trough behind it
+  const gw = Math.max(wordW, 40), gh = 3;
+  const gx = right - gw, gy = y0 + 5 * sc + 11;
+  ctx.fillStyle = '#1a1018'; ctx.fillRect(gx - 1, gy - 1, gw + 2, gh + 2);
+  ctx.fillStyle = rk.color; ctx.fillRect(gx, gy, Math.round(gw * G.comboT / 100), gh);
 }
 
 export function drawHUD(ctx) {
@@ -104,8 +127,10 @@ export function drawHUD(ctx) {
   if (G.combo >= 2) {
     const c = G.combo + ' HITS';
     const wob = Math.sin(G.rawTime * 0.4) * 1;
-    drawTextShadow(ctx, c, W / 2 - textWidth(c, 2) / 2, 36 + wob, G.combo >= 10 ? '#ff7a3a' : '#ffd94a', 2);
+    const rk = G.rank >= 0 ? RANKS[G.rank] : null;
+    drawTextShadow(ctx, c, W / 2 - textWidth(c, 2) / 2, 36 + wob, rk ? rk.color : '#ffd94a', 2);
   }
+  drawStyleRank(ctx);
 
   // GO sign
   if (G.goTimer > 0 && ((G.rawTime >> 3) & 1)) {
@@ -137,7 +162,7 @@ export function drawHUD(ctx) {
         ctx.fillStyle = '#d82838';
         ctx.fillRect(0, 60, W, 1); ctx.fillRect(0, 60 + bh - 1, W, 1);
         if (bh > 20) {
-          drawTextShadow(ctx, b.def.name, (W - textWidth(b.def.name, 2)) / 2, 64, '#d85838', 2);
+          drawTextShadow(ctx, b.label || b.def.name, (W - textWidth(b.label || b.def.name, 2)) / 2, 64, '#d85838', 2);
           drawTextShadow(ctx, b.def.title, (W - textWidth(b.def.title, 1)) / 2, 76, '#f8f0e0', 1);
         }
       }
@@ -153,8 +178,8 @@ export function drawHUD(ctx) {
       ctx.fillRect(bx2 - 19, by2 - 5, 1, 16); ctx.fillRect(bx2 - 4, by2 - 5, 1, 16);
     }
     ctx.fillStyle = 'rgba(12,8,12,0.7)';
-    ctx.fillRect(bx2 - 2, by2 - 9, textWidth(b.def.name, 1) + 4, 8);
-    drawTextShadow(ctx, b.def.name, bx2, by2 - 8, '#ff8a6a', 1);
+    ctx.fillRect(bx2 - 2, by2 - 9, textWidth(b.label || b.def.name, 1) + 4, 8);
+    drawTextShadow(ctx, b.label || b.def.name, bx2, by2 - 8, '#ff8a6a', 1);
     ctx.fillStyle = '#100a0c';
     ctx.fillRect(bx2 - 1, by2 - 1, bw2 + 2, 7);
     ctx.fillStyle = '#38141c';

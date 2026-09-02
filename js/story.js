@@ -1,10 +1,34 @@
 // story.js - authored chapter cinematics that happen in the actual level.
 import { G, W, H } from './engine.js';
-import { blit, frameW, frameH } from './sprites.js';
+import { SPR, blit, frameW, frameH, getFrame, drawTextShadow, textWidth } from './sprites.js';
 import { drawStage } from './stages.js';
+import { drawProp } from './props.js';
+import { drawTrainOverlay } from './train.js';
+import { spawnCigarSmoke, drawEffects } from './effects.js';
 import { audio } from './audio.js';
 
 export const ENTRANCE_LAST_FRAME = 840;
+export const STATION_LAST_FRAME = 430;
+
+// The act's name, punched onto the picture: four frames oversized, then it settles, then
+// the sub-line and a red rule slide out under it. Both chapter openings end on this so
+// the two acts read as one tour.
+export function drawActStamp(ctx, age, name, sub) {
+  if (age < 0) return;
+  const sc = age < 3 ? 5 : age < 6 ? 4 : 3;
+  const x = (W - textWidth(name, sc)) / 2;
+  const y = 92 - (sc - 3) * 4;
+  ctx.save();
+  if (age < 6) { ctx.globalAlpha = 0.9; }
+  ctx.fillStyle = 'rgba(6,3,8,0.55)';
+  ctx.fillRect(0, y - 8, W, 5 * sc + 34);
+  drawTextShadow(ctx, name, x, y, age < 8 ? '#fff6e0' : '#ffd94a', sc, '#3a0c10');
+  const rule = Math.min(1, Math.max(0, (age - 6) / 12));
+  ctx.fillStyle = '#d82838';
+  ctx.fillRect(Math.round(W / 2 - rule * (textWidth(name, 3) / 2 + 10)), y + 5 * sc + 6, Math.round(rule * (textWidth(name, 3) + 20)), 2);
+  if (age > 12) drawTextShadow(ctx, sub, (W - textWidth(sub, 1)) / 2, y + 5 * sc + 14, '#c8c0e0', 1);
+  ctx.restore();
+}
 
 const HERO = [];
 let enginePlayed = false;
@@ -59,6 +83,8 @@ export function resetStory() {
   quotePlayed = false;
   crackPlayed = false;
   crackSettlePlayed = false;
+  stampPlayed = false;
+  resetStation();
 }
 
 export function updateMotorcycleArrival(t) {
@@ -76,7 +102,10 @@ export function updateMotorcycleArrival(t) {
     audio.sfx('entrance_crack');
     audio.sfx('heavy');
   }
+  if (t >= STAMP_AT && !stampPlayed) { stampPlayed = true; audio.sfx('slam'); G.shake = Math.max(G.shake, 5); }
 }
+const STAMP_AT = 794;
+let stampPlayed = false;
 
 function clamp01(value) { return Math.max(0, Math.min(1, value)); }
 function smooth(value) { const u = clamp01(value); return u * u * (3 - 2 * u); }
@@ -209,6 +238,24 @@ function crackAccent(ctx, t, x, ground) {
   ctx.globalAlpha = 1;
 }
 
+// The bike's own light: a warm cone thrown up the street ahead of it, dying with the
+// engine. Two frames of white on the skid is the tyre biting.
+function headlight(ctx, t, x, ground) {
+  if (t >= 72 && t < 74) { ctx.fillStyle = 'rgba(255,250,235,0.55)'; ctx.fillRect(0, 0, W, H); }
+  if (t >= 214) return;
+  const k = t < 190 ? 1 : 1 - (t - 190) / 24;
+  const g = ctx.createLinearGradient(x + 30, 0, x + 230, 0);
+  g.addColorStop(0, `rgba(255,236,170,${0.5 * k})`);
+  g.addColorStop(1, 'rgba(255,236,170,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(x + 30, ground - 30);
+  ctx.lineTo(x + 230, ground - 92);
+  ctx.lineTo(x + 230, ground + 2);
+  ctx.closePath();
+  ctx.fill();
+}
+
 function drawFrame(ctx, frame, x, ground, yOffset = 0) {
   if (!frame) return;
   blit(ctx, frame,
@@ -298,6 +345,7 @@ export function drawMotorcycleArrival(ctx, options = {}) {
   const rig = rigPosition(t);
   const heroIndex = heroFrameFor(t);
   if (t >= 24) {
+    headlight(ctx, t, rig.x, ground);
     skidTrail(ctx, t, ground);
     drawRig(ctx, t, heroIndex, rig.x, ground, rig.y, rig.angle);
 
@@ -315,6 +363,7 @@ export function drawMotorcycleArrival(ctx, options = {}) {
     ctx.fillStyle = '#09060c';
     ctx.fillRect(0, 0, W, bar);
     ctx.fillRect(0, H - bar, W, bar);
+    if (t < 837) drawActStamp(ctx, t - STAMP_AT, G.stage.name, G.stage.sub);
   }
 
   if (options.guides) {
@@ -327,4 +376,64 @@ export function drawMotorcycleArrival(ctx, options = {}) {
     ctx.setLineDash([]);
     ctx.restore();
   }
+}
+
+// ---- THE NIGHT TRAIN: the station ----------------------------------------------
+// He walks onto platform one with nothing but a cigar. The board wakes up, the PA
+// chimes, the guard's whistle goes down the platform, and the act's name lands.
+const ST = {
+  walkTo: 150, walkEnd: 118,
+  chime: 128, board: 150, whistle: 262, stamp: 272, voice: 292,
+};
+const BOARD = 'PLATFORM 1 - THE 22:40 SOUTH - ON TIME';
+let stFlags = {};
+function resetStation() { stFlags = {}; }
+function once(key, t, at, fn) { if (t >= at && !stFlags[key]) { stFlags[key] = true; fn(); } }
+
+function stationHeroX(t) { return -34 + (ST.walkTo + 34) * smooth(Math.min(1, t / ST.walkEnd)); }
+
+export function updateStationArrival(t) {
+  const p = G.player;
+  p.x = stationHeroX(t); p.y = 218; p.face = 1;
+  if (t < ST.walkEnd && t % 26 === 8) audio.sfx('entrance_boot');
+  once('stand', t, ST.walkEnd, () => audio.sfx('entrance_stand'));
+  once('chime', t, ST.chime, () => audio.sfx('chime'));
+  once('whistle', t, ST.whistle, () => { audio.sfx('go'); });
+  once('stamp', t, ST.stamp, () => { audio.sfx('slam'); G.shake = Math.max(G.shake, 5); });
+  once('voice', t, ST.voice, () => audio.voiceAny(['duke_ride', 'duke_lets_rock', 'duke_come_get_some'], 2100));
+  if (t > ST.board && t < ST.board + BOARD.length * 2 && t % 6 === 0) audio.sfx('blip');
+  if (t > ST.walkEnd + 20 && t % 9 === 0) spawnCigarSmoke(p.x + 12, p.y - 72, 1);
+}
+
+export function drawStationArrival(ctx) {
+  const t = Math.max(0, Math.min(STATION_LAST_FRAME, G.rawTime - G.stateT));
+  const p = G.player;
+  drawStage(ctx, 0);
+  for (const pr of G.props) if (!pr.broken && pr.x < W + 40) drawProp(ctx, pr, 0);
+  // the walk, then the stand: idle frames once he is where he is going
+  const walking = t < ST.walkEnd;
+  const f = walking ? getFrame(SPR.player, 'walk', (t >> 3) & 3, 1)
+    : t < ST.walkEnd + 40 ? getFrame(SPR.player, 'idle', 0, 1)
+      : getFrame(SPR.player, 'idle_cigar', ((t - ST.walkEnd) >> 4) % 6, 1);
+  const sx = Math.round(p.x), sy = Math.round(p.y);
+  ctx.save(); ctx.globalAlpha = 0.28; ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(sx, sy, 16, 5, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  blit(ctx, f, sx - frameW(f) / 2, sy - frameH(f) + 4);
+  drawEffects(ctx, 0);
+  drawTrainOverlay(ctx, 0);
+  // the night, and the station's tubes waking one at a time
+  ctx.fillStyle = 'rgba(4,4,12,0.22)'; ctx.fillRect(0, 0, W, H);
+  if (t >= ST.chime && t < ST.chime + 14 && ((t >> 1) & 1)) { ctx.fillStyle = 'rgba(200,220,255,0.10)'; ctx.fillRect(0, 0, W, H); }
+  // the departure board, typed
+  if (t >= ST.board) {
+    const n = Math.min(BOARD.length, ((t - ST.board) / 2) | 0);
+    const shown = BOARD.slice(0, n) + (n < BOARD.length && ((t >> 2) & 1) ? '_' : '');
+    ctx.fillStyle = 'rgba(6,8,16,0.82)'; ctx.fillRect(0, 232, W, 20);
+    drawTextShadow(ctx, shown, (W - textWidth(BOARD, 1)) / 2, 238, '#ffb040', 1);
+  }
+  const bar = 18;
+  ctx.fillStyle = '#09060c';
+  ctx.fillRect(0, 0, W, bar);
+  ctx.fillRect(0, H - bar, W, bar);
+  drawActStamp(ctx, t - ST.stamp, G.stage.name, G.stage.sub);
 }

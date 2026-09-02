@@ -5,9 +5,9 @@ are longer design records and future proposals; they are not all implemented.
 
 | Document | Status | Purpose |
 |---|---|---|
-| `stage1-dirty-delhi.md` | Production design record | Detailed design and build notes for the shipped act |
+| `stage1-dirty-delhi.md` | Production design record | Detailed design and build notes for Stage 1 |
 | `india-chapter.md` | Canon and roadmap | Broader chapter rules, planned roster, and production principles |
-| `stage2-night-train.md` | Proposal | Unimplemented future act concept |
+| `stage2-night-train.md` | Production design record | Detailed design and build notes for Stage 2 |
 | `stage3-refund-tower.md` | Proposal | Unimplemented future act concept |
 
 For current setup and architecture, read `../README.md`. For current AI-assisted sprite
