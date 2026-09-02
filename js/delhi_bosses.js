@@ -133,7 +133,7 @@ const pappu = {
   onDeath(b) { G.arenaSqueezeTarget = 0; },
   frame(b) {
     switch (b.state) {
-      case 'idle': return b.moved > 0.2 ? ['walk', (G.time >> 3) & 3] : ['idle', (G.time >> 4) & 3];
+      case 'idle': return b.moved > 0.2 ? ['walk', Math.floor(b.stridePhase / 7) & 3] : ['idle', (G.time >> 4) & 3];
       case 'windup': return b.pattern === 'charge' ? ['charge', 0] : b.pattern === 'grab' ? ['grab', 0] : ['stomp', Math.min(2, b.t >> 3)];
       case 'charge': return ['charge', b.t < 10 ? 1 : 2];
       case 'recover': return [b.pattern === 'charge' ? 'charge' : 'stomp', 3];
@@ -422,7 +422,7 @@ const dredger = {
   frame(b) {
     switch (b.state) {
       case 'openter': return ['walk', (G.time >> 3) & 3];
-      case 'idle': return b.moved > 0.2 ? ['walk', (G.time >> 3) & 3] : ['idle', (G.time >> 4) & 3];
+      case 'idle': return b.moved > 0.2 ? ['walk', Math.floor(b.stridePhase / 7) & 3] : ['idle', (G.time >> 4) & 3];
       case 'windup': return ['punch', 0];
       case 'swing': return ['punch', b.t < 10 ? 1 : 2];
       case 'recover': return ['punch', 2];

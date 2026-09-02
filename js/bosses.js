@@ -103,7 +103,7 @@ export function createBoss(key, x, y) {
     dead: false, removeMe: false, flash: 0, hitLanded: false, armor: 0,
     summoned: false, holdT: 0, whistles: 0, cart: null, cartGone: false,
     posture: key === 'yadav' ? 3 : 0, maxPosture: key === 'yadav' ? 3 : 0,
-    moved: 0, poise: 0, maxPoise: 0, mashNeed: 6, slamDmg: 14, label: null, delhi: null,
+    moved: 0, stridePhase: 0, poise: 0, maxPoise: 0, mashNeed: 6, slamDmg: 14, label: null, delhi: null,
     w: def.w, h: def.h, shadowR: def.shadowR, set: SPR[def.set],
     hurt(dmg, dir, heavy, launch) { hurtBoss(b, dmg, dir, heavy, launch); },
     parried(dmg, dir) {
@@ -198,7 +198,7 @@ export function updateBoss() {
   if (b.state !== 'dying' && b.state !== 'down' && b.state !== 'grabhold' && !(b.delhi && b.delhi.keepFace && b.delhi.keepFace(b))) b.face = p.x < b.x ? -1 : 1;
   const px0 = b.x;
   if (b.delhi && b.delhi.update(b)) {
-    b.moved = Math.abs(b.x - px0);
+    b.moved = Math.abs(b.x - px0); b.stridePhase += b.moved;
     clampToLane(b);
     clampToArena(b, 0);
     return;
@@ -440,7 +440,7 @@ export function updateBoss() {
       break;
     }
   }
-  b.moved = Math.abs(b.x - px0);
+  b.moved = Math.abs(b.x - px0); b.stridePhase += b.moved;
   b.y = Math.min(b.y, laneMax(b.x));
   clampToLane(b);   // a boss is never ringed out; it just cannot stand in the river
   clampToArena(b, 0);
@@ -454,7 +454,10 @@ export function drawBoss(ctx, camX) {
   const sx = Math.round(b.x - camX), sy = Math.round(b.y - b.z);
   let name = 'idle', idx = (G.time >> 4) & 1;
   switch (b.state) {
-    case 'idle': name = 'idle'; break;
+    case 'idle':
+      if (b.moved > 0.12) { name = 'walk'; idx = Math.floor(b.stridePhase / 7); }
+      else { name = 'idle'; idx = G.time >> 4; }
+      break;
     case 'windup':
       name = { grab: 'grab', whistle: 'grab', chutney: 'slam', chilli: 'chilli',
         lathisweep: 'slam', samosa: 'punch', teargas: 'punch', cartcharge: 'charge',

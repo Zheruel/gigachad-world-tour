@@ -632,6 +632,7 @@ function update() {
     }
 
   if (G.hitstop > 0) { G.hitstop--; return false; } // input persists through hitstop (buffering)
+  if (G.slowmo > 0) { G.slowmo--; if (G.slowmo & 1) return false; }
   if (G.parrySlow > 0) {
     G.parrySlow--;
     if (G.parrySlow & 1) return false;

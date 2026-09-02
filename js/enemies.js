@@ -6,6 +6,7 @@ import {
 } from './engine.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
 import { ASSETS } from './assets.js';
+import { getAIFrame } from './aiframes.js';
 import { spawnSpark, spawnDust, impact, spawnPop } from './effects.js';
 import { hurtPlayer, grabPlayer, resolveIncomingHit } from './player.js';
 import { spawnShot, spawnArc, spawnZone } from './shots.js';
@@ -182,13 +183,18 @@ function hurtEnemy(e, dmg, dir, heavy, launch) {
   if (e.hp <= 0) {
     e.dead = true;
     e.state = 'dying'; e.t = 0;
-    e.vx = dir * 2.6; e.vz = 3.6; e.z = Math.max(e.z, 0.1);
+    e.vx = dir * 3.2; e.vz = 4.0; e.z = Math.max(e.z, 0.1);
     addScore(e.score);
     if (G.stats) G.stats.kos++;
     spawnPop(e.x, e.y - 70, '+' + e.score);
     G.audio.sfx('ko');
     if (e.kind !== 'prop') G.audio.sfx(Math.random() < 0.5 ? 'edie1' : 'edie2');
     impact(true);
+    G.hitstop = Math.max(G.hitstop, 9); G.shake = Math.max(G.shake, 7);
+    // the last man of a wave goes down in slow motion
+    if (G.waveActive && !G.spawnQueue.length && aliveEnemies() === 0 && !(G.boss && !G.boss.removeMe)) {
+      G.slowmo = 44; G.hitstop = Math.max(G.hitstop, 14);
+    }
     if (G.player.grabbedBy === e) { G.player.grabbedBy = null; G.player.state = 'idle'; }
     // Enemy defeats never generate resources. Health is authored through
     // specific breakable objects, keeping stage balance deterministic.
@@ -762,9 +768,10 @@ export function updateEnemies() {
         break;
       }
       case 'dying': {
-        if (inAir(e) && fall(e, 0.28, 0) === 'land') spawnDust(e.x, e.y, 3);
+        // one bounce off the floor, so the KO reads as a body and not a sprite
+        if (inAir(e)) { const r = fall(e, 0.28, 0.3); if (r !== 'air') spawnDust(e.x, e.y, r === 'land' ? 3 : 2); }
         // under the TTE a fallen man stays on the floor: he is what the check is for
-        if (e.t > 34) {
+        if (e.t > 40) {
           if (G.boss && G.boss.delhi && G.boss.delhi.reviver && !G.boss.dead && !e.noCount) { e.state = 'corpse'; e.z = 0; e.vz = 0; e.vx = 0; }
           else e.removeMe = true;
         }
@@ -828,26 +835,47 @@ export function drawEnemy(ctx, e, camX) {
   const sx = Math.round(e.x - camX), sy = Math.round(e.y - e.z);
   if (e.kind === 'handtruck' && ASSETS.prop_handtruck) { drawHandtruck(ctx, e, sx, sy); return; }
   let name = 'idle', idx = (G.time >> 4) & 1;
+  const k = e.kind;
   switch (e.state) {
     case 'spawn': case 'approach': case 'backoff': case 'loot': case 'idle': case 'graze':
       if (e.moved > MOVE_EPS) { name = 'walk'; idx = Math.floor(e.stridePhase / 6); }
       else { name = 'idle'; idx = (G.time >> 4) & 1; }
       break;
-    case 'grabhold': name = 'atk'; idx = 1; break;
-    case 'windup': name = 'atk'; idx = 0; break;
+    case 'runner': name = 'run'; idx = Math.floor(e.stridePhase / 5); break;
+    case 'rise': name = 'rise'; idx = Math.min(3, (e.t / 6) | 0); break;
+    case 'drag': case 'grabhold': name = 'atk'; idx = 1; break;
+    // Every family with a signature strip winds up in it: the bull paws, the cooker
+    // primes, the dhobi draws the whip back, the thela drops behind his cart.
+    case 'windup':
+      name = k === 'bull' ? 'paw' : k === 'cooker' ? 'beam' : k === 'dhobi' ? 'whip'
+        : k === 'thela' ? (e.ramGone ? 'punch' : 'ram') : 'atk';
+      idx = k === 'bull' ? (e.t >> 3) & 3 : 0;
+      break;
     // strike then follow-through, so the swing has weight instead of popping
-    case 'attack': name = 'atk'; idx = e.t < (ATK_RECOVER[e.kind] || 10) ? 1 : 2; break;
+    case 'attack':
+      if (isRam(e)) { name = 'charge'; idx = Math.floor(e.stridePhase / 7) & 3; }
+      else if (k === 'thela' && !e.ramGone) { name = 'ram'; idx = 1 + ((e.t >> 2) % 3); }
+      else if (k === 'thela') { name = 'punch'; idx = e.t < 6 ? 0 : (e.t < 14 ? 1 : 2); }
+      else if (k === 'cooker') { name = 'beam'; idx = Math.min(3, 1 + (e.t >> 3)); }
+      else if (k === 'dhobi') { name = 'whip'; idx = e.t < 8 ? 1 : (e.t < 16 ? 2 : 3); }
+      else { name = 'atk'; idx = e.t < (ATK_RECOVER[e.kind] || 10) ? 1 : 2; }
+      break;
     case 'hurt': name = 'hurt'; idx = e.t < 5 ? 1 : 0; break;
     case 'stagger': name = 'hurt'; idx = (e.t >> 3) & 1; break;
     case 'down': case 'dying': case 'corpse': name = 'down'; break;
-    case 'getup': name = 'getup'; break;
+    // a family without a getup strip rises through its hurt pose rather than
+    // snapping from the floor straight into the idle
+    case 'getup':
+      if (getAIFrame(e.set._aiKey, 'getup')) name = 'getup';
+      else { name = e.t < 7 ? 'down' : 'hurt'; idx = 0; }
+      break;
     case 'grabbed': name = 'hurt'; break;
     case 'thrown': name = 'down'; break;
     case 'perch': case 'climb': name = 'perch'; idx = (G.time >> 4) & 3; break;
     case 'pthrow': name = 'throw'; idx = e.t < 10 ? 0 : e.t < 14 ? 1 : e.t < 24 ? 2 : 3; break;
     case 'drop': name = 'drop'; idx = e.vz > 0 ? 1 : 2; break;
   }
-  if (e.state === 'dying' && ((G.time >> 1) & 1) && e.t > 10) return; // KO blink-out
+  if (e.state === 'dying' && ((G.time >> 1) & 1) && e.t > 18) return; // KO blink-out
   const f = getFrame(e.set, name, idx, e.face);
   const dx = sx - Math.round(frameW(f) / 2), dy = sy - frameH(f) + 4;
   // windup telegraph flash + damage flash

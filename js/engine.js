@@ -24,6 +24,7 @@ export const G = {
   rawTime: 0,        // frame counter (always advances, for menus/blink)
   hitstop: 0,        // frames of frozen updates
   parrySlow: 0,      // post-parry half-speed frames; sells the counter without a flash
+  slowmo: 0,         // half-speed frames after the last man of a wave drops
   shake: 0,          // screen shake magnitude
   flash: 0,          // fullscreen white impact flash frames
   fade: 0,           // 0..1 black fade overlay
