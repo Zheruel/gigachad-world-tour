@@ -763,7 +763,7 @@ function resetTank() {
   for (let i = 0; i < BAIT_N; i++) {
     bait.fish.push({ x: bait.cx + rand(-34, 34), y: bait.cy + rand(-18, 18), ox: rand(-34, 34), oy: rand(-18, 18),
       phase: rand(0, 9), rate: rand(0.008, 0.018), frame: irand(0, 3), push: 0,
-      face: 1, turn: 0, tail: rand(0, 4), variant: i % 4 === 0 ? 1 : 0 });
+      face: 1, turn: 0, vs: 0, tail: rand(0, 4), variant: i % 4 === 0 ? 1 : 0 });
   }
   for (let i = 0; i < SILT_N; i++) {
     silt.push({
@@ -944,10 +944,11 @@ function updateBait() {
   }
   for (const f of bait.fish) {
     const dx = f.x - f.prevX;
-    // A turn is a decision, not a twitch: the fish has to be clearly swimming the other
-    // way before it comes about, and then it turns through a squash over TURN_T frames
-    // rather than snapping to the mirrored sprite. Nothing flips while a turn is running.
-    const want = dx > 0.12 ? 1 : dx < -0.12 ? -1 : 0;
+    // A turn is a decision, not a twitch: facing follows a smoothed velocity, so a jitter
+    // does not flip the fish but a fish drifting the other way does come about, through a
+    // squash over TURN_T frames rather than a snap. Nothing flips while a turn is running.
+    f.vs += (dx - f.vs) * 0.1;
+    const want = f.vs > TURN_V ? 1 : f.vs < -TURN_V ? -1 : 0;
     if (f.turn > 0) f.turn--;
     else if (want && want !== f.face) { f.face = want; f.turn = TURN_T; }
     // the tail beats with the speed of the fish, stepping through 0 1 2 1 in order
@@ -956,6 +957,7 @@ function updateBait() {
   }
 }
 const TURN_T = 14;
+const TURN_V = 0.02;      // smoothed px/frame; the ball itself drifts at about 0.1
 
 // for ?auto=verify: the drag is the only thing in this room whose behaviour cannot be
 // seen in a still

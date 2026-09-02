@@ -1186,8 +1186,8 @@ if (autoMode) {
           step(1);
           tank.bait.fish.forEach((f, n) => {
             const dx = f.x - was[n];
-            // slower drift than the turn threshold keeps the old facing (hub.js), by design
-            if (Math.abs(dx) > 0.12) { moving++; if (Math.sign(dx) !== f.face) wrong++; }
+            // facing follows the smoothed velocity (hub.js), so judge it on that
+            if (Math.abs(f.vs) > 0.03) { moving++; if (Math.sign(f.vs) !== f.face) wrong++; }
             was[n] = f.x;
           });
         }
