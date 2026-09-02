@@ -44,7 +44,7 @@ Other useful modes:
 - `sfxlab.html` — audition every SFX slot against the Streets of Rage 2 rip.
 - `review-animation-pipeline.html` — tiger, couch, and fish frame review.
 
-`window.__game` exposes `start`, `stage`, `press`, `release`, `step`, `spawn`,
+`window.__game` exposes `start`, `stage`, `press`, `release`, `step`, `render`, `spawn`,
 `skipToBoss`, `hurtBoss`, `setPlayerPos`, `state`, `G`, `BOSSES`, and `STAGES`.
 
 ## Architecture rules

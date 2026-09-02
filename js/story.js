@@ -63,8 +63,8 @@ function loadFrame(path, target, index) {
 
 export function loadStory() {
   const loads = [];
-  for (let i = 0; i < 19; i++) {
-    loads.push(loadFrame(`assets/story/entrance_v8/combined_${String(i + 1).padStart(2, '0')}.png`, HERO, i));
+  for (let i = 0; i < 16; i++) {
+    loads.push(loadFrame(`assets/story/entrance_v9/combined_${String(i + 1).padStart(2, '0')}.png`, HERO, i));
   }
   return Promise.all(loads);
 }
@@ -263,26 +263,26 @@ function drawFrame(ctx, frame, x, ground, yOffset = 0) {
     Math.round(ground - frameH(frame) + yOffset));
 }
 
+// Sixteen cels registered on the front wheel (tools/build_entrance_v9.py). The three
+// foreshortened drift cels are gone: the brake is one cel plus a lean in code, so the
+// bike is the same bike from the first frame to the last.
 function heroFrameFor(t) {
-  if (t < 72) return 0;
-  if (t < 92) return 1;
-  if (t < 116) return 2;
-  if (t < 140) return 3;
-  if (t < 164) return 4;
-  if (t < 190) return 5;
-  if (t < 214) return 6;
-  if (t < 240) return 7;
-  if (t < 268) return 8;
-  if (t < 296) return 9;
-  if (t < 324) return 10;
-  if (t < 346) return 11;
-  if (t < 372) return 12;
-  if (t < 438) return 13;
-  if (t < 474) return 14;
-  if (t < 734) return 15;
-  if (t < 760) return 16;
-  if (t < 804) return 17;
-  return 18;
+  if (t < 72) return 0;      // riding
+  if (t < 164) return 1;     // braking, leaned by rigPosition
+  if (t < 190) return 2;     // stopped, boot down
+  if (t < 214) return 3;
+  if (t < 240) return 4;
+  if (t < 268) return 5;
+  if (t < 296) return 6;
+  if (t < 324) return 7;     // the leg over
+  if (t < 346) return 8;
+  if (t < 372) return 9;
+  if (t < 438) return 10;
+  if (t < 474) return 11;
+  if (t < 734) return 12;    // the long stand, the line
+  if (t < 760) return 13;
+  if (t < 804) return 14;
+  return 15;
 }
 
 function rigPosition(t) {
@@ -293,11 +293,13 @@ function rigPosition(t) {
   }
   if (t < 164) {
     const u = smooth((t - 72) / 92);
-    return { x: 176 + 40 * u, y: Math.sin(u * Math.PI) * 1.8, angle: 0 };
+    // the fork compresses: a small nose-down pitch that peaks early and eases out
+    const dip = Math.sin(Math.min(1, u * 1.6) * Math.PI) * .055;
+    return { x: 176 + 40 * u, y: Math.sin(u * Math.PI) * 1.8, angle: dip };
   }
   if (t < 190) {
     const u = smooth((t - 164) / 26);
-    return { x: 216 - 11 * u, y: Math.sin(u * Math.PI) * .55, angle: 0 };
+    return { x: 216 - 11 * u, y: Math.sin(u * Math.PI) * .55, angle: -.012 * (1 - u) };
   }
   return { x: 205, y: 0, angle: 0 };
 }

@@ -393,10 +393,13 @@ $G $O/dredger_winch.png landscape "A rusted industrial winch drum wound with ste
 
 ## The entrance
 
-The production arrival uses the nineteen-frame V8 motorcycle, dismount, cigar, and guard
-sequence; smoke, exhaust, skid dust, and small particles remain procedural. `lab.html` steps it frame by frame; the production timeline is
-`drawMotorcycleArrival()`. Prompt record: `assets/ai/entrance_v8/`. Builder:
-`tools/build_entrance_v8.py`.
+The production arrival is the sixteen-cel V9 set: the V8 cels registered on the
+motorcycle's front wheel so the bike keeps one size and one ground line, with the three
+foreshortened drift cels dropped in favour of a brake lean in code. Smoke, exhaust, skid
+dust, and small particles remain procedural. The production timeline is
+`drawMotorcycleArrival()` in `js/story.js`. Prompt record: `assets/ai/entrance_v8/`.
+Builders: `tools/build_entrance_v8.py` (the cels) then `tools/build_entrance_v9.py` (the
+registration).
 
 ## Music
 

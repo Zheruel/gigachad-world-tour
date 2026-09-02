@@ -34,7 +34,7 @@ const FLOOR_Y = 181;
 export const HUB_WIDTH = 1920;
 const WALL_BASE = 191;     // where something standing against the back wall has its feet
 const REACH = 40;          // how close you stand before a fixture is the active one
-const CEIL_MOUNT = 20;     // the window head beam, which is what the bag hangs off
+const CEIL_MOUNT = 30;     // the window head beam, which is what the bag hangs off
 
 // The plate's zones, in logical x, measured off the built plate. The room reads as
 // three places rather than a shelf of objects: THE LOUNGE (bar, tank, sofa under the
@@ -761,9 +761,9 @@ function resetTank() {
   bait.vx = 0.10; bait.vy = 0;
   bait.fish.length = 0;
   for (let i = 0; i < BAIT_N; i++) {
-    bait.fish.push({ x: bait.cx, y: bait.cy, ox: rand(-34, 34), oy: rand(-18, 18),
+    bait.fish.push({ x: bait.cx + rand(-34, 34), y: bait.cy + rand(-18, 18), ox: rand(-34, 34), oy: rand(-18, 18),
       phase: rand(0, 9), rate: rand(0.008, 0.018), frame: irand(0, 3), push: 0,
-      face: 1, variant: i % 4 === 0 ? 1 : 0 });
+      face: 1, turn: 0, tail: rand(0, 4), variant: i % 4 === 0 ? 1 : 0 });
   }
   for (let i = 0; i < SILT_N; i++) {
     silt.push({
@@ -944,12 +944,18 @@ function updateBait() {
   }
   for (const f of bait.fish) {
     const dx = f.x - f.prevX;
-    // Preserve direction through tiny sub-pixel hovering. A visible turn is allowed
-    // only when the fish really travelled far enough for the flipped silhouette to fit.
-    if (dx > 0.05) f.face = 1;
-    else if (dx < -0.05) f.face = -1;
+    // A turn is a decision, not a twitch: the fish has to be clearly swimming the other
+    // way before it comes about, and then it turns through a squash over TURN_T frames
+    // rather than snapping to the mirrored sprite. Nothing flips while a turn is running.
+    const want = dx > 0.12 ? 1 : dx < -0.12 ? -1 : 0;
+    if (f.turn > 0) f.turn--;
+    else if (want && want !== f.face) { f.face = want; f.turn = TURN_T; }
+    // the tail beats with the speed of the fish, stepping through 0 1 2 1 in order
+    f.tail += 0.05 + Math.min(0.2, Math.abs(dx) * 1.2);
+    f.frame = [0, 1, 2, 1][(f.tail | 0) & 3];
   }
 }
+const TURN_T = 14;
 
 // for ?auto=verify: the drag is the only thing in this room whose behaviour cannot be
 // seen in a still
@@ -1072,14 +1078,17 @@ function drawTank(ctx, camX) {
     const img = ASSETS[prefix + f.frame];
     if (!img) break;
     const fx = Math.round(f.x - camX), fy = Math.round(f.y + (f.variant ? 2 : 0));
-    if (f.face < 0) {
-      ctx.save();
-      ctx.scale(-1, 1);
-      blit(ctx, img, -fx - frameW(img), fy);
-      ctx.restore();
-    } else {
-      blit(ctx, img, fx, fy);
-    }
+    const w = frameW(img);
+    // mid-turn the fish is seen end-on: the sprite narrows through zero and opens out
+    // again mirrored, so the turn reads as a body rolling over instead of a flip
+    const k = f.turn > 0 ? Math.cos((1 - f.turn / TURN_T) * Math.PI) : 1;
+    const sx = f.face * (f.turn > 0 ? -k : 1);
+    if (sx === 1) { blit(ctx, img, fx, fy); continue; }
+    ctx.save();
+    ctx.translate(fx + w / 2, 0);
+    ctx.scale(Math.abs(sx) < 0.08 ? (sx < 0 ? -0.08 : 0.08) : sx, 1);
+    blit(ctx, img, -w / 2, fy);
+    ctx.restore();
   }
 
   const simg = ASSETS['lair_shark_' + shark.frame];

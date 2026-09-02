@@ -840,6 +840,7 @@ window.__game = {
   press: (a) => debugPress(a),
   release: (a) => debugRelease(a),
   stage: (i) => { resetRun(); startStage(i); setState('play'); },
+  render: () => render(),   // draw the current state now, for frame-stepping a cinematic
   skipToBoss: () => {
     if (G.state === 'title' || G.state === 'hub') startGame();
     setState('play');
@@ -1185,7 +1186,8 @@ if (autoMode) {
           step(1);
           tank.bait.fish.forEach((f, n) => {
             const dx = f.x - was[n];
-            if (Math.abs(dx) > 0.05) { moving++; if (Math.sign(dx) !== f.face) wrong++; }
+            // slower drift than the turn threshold keeps the old facing (hub.js), by design
+            if (Math.abs(dx) > 0.12) { moving++; if (Math.sign(dx) !== f.face) wrong++; }
             was[n] = f.x;
           });
         }
