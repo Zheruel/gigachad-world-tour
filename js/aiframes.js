@@ -31,12 +31,11 @@ const HEIGHTS = {
   goonda: 80, batta: 82, masala: 79, bandar: 46, pehlwan: 97,
   constable: 86, operator: 80, sepoy: 94,
   // DIRTY DELHI. These are CANVAS heights, and the canvas is sized by the family's
-  // tallest pose rather than by the body - see tools/check_cast_scale.py. So Langda's
-  // 103 is a hanging macaque with his arms fully extended; the animal himself reads at
-  // 58, which is what TYPES.langda's hitbox uses.
+  // tallest pose rather than by the body - see tools/check_cast_scale.py. So MIRCHI's
+  // 110 is the ladle held overhead; the man himself reads at 100, his hitbox height.
   cooker: 82, thela: 107, mudlark: 70, dhobi: 90, dabbawala: 89, bull: 105,
-  raja: 104, mirchi: 100, refund: 106, yadav: 108, rana: 112,
-  pappu: 104, langda: 103, dredger: 150, thekedar: 88,
+  raja: 104, mirchi: 110, refund: 106, yadav: 108, rana: 112,
+  pappu: 104, dredger: 150, thekedar: 88,
   // THE NIGHT TRAIN. Canvas heights again: MANJA's is his leap, BIRJU's the pin overhead.
   manja: 84, tte: 92, birju: 118, coolie: 120, gai: 94,   // the cow's canvas is her head thrown up; she stands at 70
 };
@@ -72,6 +71,7 @@ const NAMEMAP = {
   screech: ['screech', 'atk', 'atk1'],
   snatch: ['snatch', 'grab', 'atk'],
   swing: ['swing', 'atk', 'atk1', 'punch'],
+  chilli: ['chilli', 'punch', 'atk'],
   // THE NIGHT TRAIN
   perch: ['perch', 'idle'],
   torch: ['torch', 'atk', 'atk1'],

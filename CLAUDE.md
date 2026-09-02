@@ -113,6 +113,8 @@ production copies.
 - `tools/process_props.py` sizes props, lair fixtures and stage ambience sprites from its
   tables; `tools/gen_d1_props.sh`, `tools/gen_d1_ambience.sh` and `tools/gen_d2_props.sh`
   are their generators.
+- DIRTY DELHI cast: `tools/gen_d1_cast.sh` and `tools/gen_d1_mirchi.sh` (MIRCHI and his
+  cart) generate the sheets, `tools/process_d1_cast.sh` slices and processes them.
 - THE NIGHT TRAIN: `tools/gen_d2_plates.sh` generates the views (keyed views paint windows
   and sky chroma green), `tools/build_night_train.py` stitches them into the RGBA wall
   plate, `tools/gen_d2_cast.sh`, `tools/gen_d2_extra.sh` and `tools/process_d2_cast.sh`

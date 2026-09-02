@@ -49,7 +49,7 @@ length lives in one constant so a playtest can halve it in one edit.
 | 7–8 | 3700 | **WAVE 6** — two bats at once, and nobody to hide behind |
 | 8–9 | 4200 | **WAVE 7** — the market exam: thela, cooker, batta, goondas, bandar, and the bull |
 | 9 | 4600 | the shutters come down ahead of you, one after another. Nothing fights you |
-| 9–10 | 4700 | **MID-BOSS · LANGDA, THE MONKEY KING** |
+| 9–10 | 4700 | **MID-BOSS · MIRCHI, THE CHAAT KING** |
 | 10–17 | 5000 | **the drain** — no enemies, 40 seconds, everything changes · *checkpoint* |
 | 17–18 | 8500 | **WAVE 8** — goondas and the first mudlark, the river only a rumour |
 | 18–19 | 9100 | **WAVE 9** — mudlarks in numbers, among the chemical barrels |
@@ -67,12 +67,9 @@ Six types, three of them already built, and each one answers a different questio
 half uses four; the ghat adds the mudlark. Nothing new arrives after x 8500, so the second half
 is about *applying* the roster rather than learning it — what changes there is the ground.
 
-**The jump attack is taught by the boss, not by an enemy.** An earlier draft had a kite boy on
-the awnings whose whole job was being above the lane, and he earned two waves out of twelve for a
-full sprite family. Langda lives on those awnings instead, and jumping him off one is one of the
-three ways to reach him — the verb gets taught by the thing you remember rather than by a
-character who leaves and never comes back. (The kite boy is not wasted: he is native to stage 2's
-upper berths, where he recurs across a whole level.)
+**Nothing lives above the lane here.** An earlier draft had a kite boy on the awnings whose whole
+job was being above the lane, and he earned two waves out of twelve for a full sprite family. He
+is native to stage 2's upper berths instead, where he recurs across a whole level.
 
 | | Role | hp | dmg | speed | Telegraph | The answer |
 |---|---|---|---|---|---|---|
@@ -137,40 +134,30 @@ does not flinch, so trading loses and you have to actually parry.
 At half health he throws the first man out of the ring and the crowd widens it by 60 px. **The
 reward for progress is space**, which is the resource the fight has been denying you.
 
-## MID-BOSS — LANGDA, THE MONKEY KING
+## MID-BOSS — MIRCHI, THE CHAAT KING
 
-A one-eyed rhesus macaque the size of a child, half a hand missing, a stolen brass fare meter on
-a string round his neck. He runs the wires over the goods market and takes a cut of the whole
-street in fruit. Everyone knows him; nobody will touch him.
+A fat, sweating chaat-wala in a stained vest and a checked lungi, a steel ladle in his fist and a
+cart he loves more than his customers. He has the best pitch on the street because nobody else
+is allowed one. Everything he sells is too hot, and he sells it anyway.
 
-**He does not stand and trade, and that is the point.** The first real boss of the game is
-deliberately not a man who walks at you, so the player cannot learn *boss = mash in front of it*
-as their opening lesson.
+**He fights from behind the cart.** The cart is a real breakable prop that follows him around,
+so the fight is about the furniture: get through it, or get round it.
 
 | Pattern | Class | What it does |
 |---|---|---|
-| the drop | green, counterable | he falls on you from the wire feet-first — the only time he is at your height |
-| the snatch | grab | he takes a pickup off the floor, or **a full segment of your meter**, and goes back up |
-| the troop call | summon | two bandars in off the awnings, on a timer, forever |
-| thrown junk | green, reflectable | bricks, tiles and a hubcap from up on the wire |
-| the screech | red | a full-lane shriek that staggers everything on the ground, his own troop included |
+| the samosa | green, reflectable | a burning samosa lobbed at your feet that bursts into a patch of fire |
+| the ladle | green | a scoop of chutney onto the floor where you stand: a poison puddle that lingers |
+| chilli powder | red | a fistful in your face at close range, blinding. Jump it or change lane |
+| the cart shove | red | he runs the cart across the lane. **Break the cart and he never does it again** |
+| the grab | grab | a bear hug over the counter |
 
-**Three ways to reach him**, and finding them is the fight: counter the drop (generous window,
-enormous punish), jump-attack him on a low awning, or **break the awning brackets** — six of
-them along the arena, each one shortening the wire he can run.
+**The cart is the fight.** Sixty hit points of steel and awning standing between you and him,
+shoved at you every few seconds. Smash it and the shove is gone for good, he is left in the open,
+and the second half is a big soft man with a ladle. Leave it standing and every exchange is
+across a moving wall.
 
-**What he steals is what makes it.** A meter segment, visible on the string, won back by putting
-him on the floor. Nothing else in the game takes a resource and lets you take it back by hand.
-
-**At 50 % he runs out of wire.** Brackets down, troop dead, and the last third is a small furious
-animal in an open street with nowhere to go — the only stretch where mashing is right, and it is
-the reward for the two minutes before it.
-
-> **Guard: he must come down on a timer whatever the player does.** A boss that will not hold
-> still is exactly the design that reads brilliantly on paper and infuriates in play. If a player
-> never works out the brackets, the fight still has to resolve — so the drop fires every ~9
-> seconds regardless, and everything clever the player does only makes it happen sooner and hurt
-> more. **The skill expresses itself in the rate, never in whether the fight is winnable.**
+**At 50 % he goes extra spicy.** Two samosas a throw, the powder more often, and the cart shove
+faster. The rage line is on the card.
 
 ## LEVEL BOSS — THE DREDGER
 
@@ -220,7 +207,7 @@ Twelve gates and three boss-grade fights across fifteen minutes: something new e
 | 5 | 3150 | cooker ×2, thela, goonda | can you kill something in the right place |
 | 6 | 3700 | batta ×2, cooker, bandar | two red arcs, and no crowd to bait them into |
 | 7 | 4200 | thela, cooker, batta, goonda ×2, bandar + **the bull** | all of it |
-| — | 4700 | **LANGDA** | can you fight something that will not hold still |
+| — | 4700 | **MIRCHI** | can you fight through the furniture |
 | 8 | 8500 | goonda ×2, mudlark | meet the water |
 | 9 | 9100 | mudlark ×2, goonda ×2, among the barrels | terrain you make yourself |
 | 10 | 10200 | thela, goonda ×2, mudlark, **the dhobi** | poise, on a slope, in a slick |
@@ -243,7 +230,7 @@ reads the street is rewarded for that and not for grinding.
 | **chemical drum** | 18 | nothing — **bursts into a 12 s poison slick** | ×6 along the bank; terrain you place yourself |
 | **mithai box** | 10 | **1-UP** — the only one in the level | x 2500, one lane back, behind a stall you have to break |
 | thela's cart / pole | 30 | nothing — deletes his ram, leaves cover | walks in on the heavy |
-| awning brackets ×6 | 15 | nothing — shortens Langda's wire | mid-boss arena |
+| Mirchi's cart | 60 | nothing — deletes his cart shove | mid-boss arena |
 | dhobi's slab | 40 | nothing — deletes his charged whip | the ghat |
 | winch / counterweight / cab glass | 80 / 50 / — | nothing — each one changes the boss | boss arena |
 
@@ -273,7 +260,7 @@ using as a weapon.
 ## How long, and where the checkpoints go
 
 Walking is 1.38 px/frame — 82.8 px/s — so 12480 px is **two and a half minutes** of pure traversal, forty seconds of which is the drain. The
-length is combat: twelve waves at 20–35 s each, plus 60 s of Pappu, 110 s of Langda and 120 s of
+length is combat: twelve waves at 20–35 s each, plus 60 s of Pappu, 90 s of Mirchi and 120 s of
 the dredger. **~15 minutes** for a competent first run, 10–11 for a practised one.
 
 **Three checkpoints — Pappu, the drain, the pontoon** — so nothing costs more than about four
@@ -318,14 +305,14 @@ dogs. The act's own track is 132 BPM, Koshiro-lineage FM over a Delhi percussion
 **Art — seven sprite families and a machine, and that is the whole budget:**
 
 1. **USTAD PAPPU** — idle, walk, charge, grab, slam, stomp, hurt, down.
-2. **LANGDA** — idle, hang, drop, screech, snatch, throw, hurt, down.
+2. **MIRCHI** — idle, walk, ladle, throw, chilli, shove, hurt, down. Plus the cart, whole and wrecked.
 3. **THE DREDGER** — props: bucket, winch, counterweight, cab. Plus the **operator**: idle,
    swing, hurt, down. Nothing else.
 4. **COOKER**, **THELA**, **MUDLARK** — idle, walk, attack, hurt, down, plus one signature each
    (beam, ram, rise-and-grab). THELA gets two props and one rig.
 5. **THE DHOBI** — elite, so no intro art: idle, walk, whip, grab, hurt, down.
 6. **SANDH the bull** — walk, paw, charge, hurt, down. **The dabbawala** — run and drop.
-7. Props: mithai box, shutter, chemical drum + burst, awning bracket + broken, beached boat.
+7. Props: mithai box, shutter, chemical drum + burst, beached boat.
 
 **Code**
 
@@ -336,15 +323,15 @@ dogs. The act's own track is 132 BPM, Koshiro-lineage FM over a Delhi percussion
 4. **Arena overrides** — the chalk circle squeeze. The same feature the train roof and the tower
    lobby need later, so build it properly once.
 5. Shutters as a stage layer keyed off `G.locked`.
-6. Langda's wire: perch states, six breakable brackets, the stolen meter segment, and the
-   guaranteed drop timer.
+6. Mirchi's cart: a prop that follows its owner, the shove that carries it, and the flag that
+   deletes the shove when it breaks.
 7. The water edge as a pit — wall-splat code with a different outcome — and the sluice push.
 8. The dredger rig: crane arm, bucket, three breakables, the crew spawner and the phase-two
    operator.
 
 **Checks** (`?auto=verify`): `bull-hurts-both-sides`, `cooker-vent-hits-neighbours`,
 `thela-loses-ram-with-cart`, `circle-shrinks-arena`, `shutters-follow-the-gate`,
-`langda-drops-the-meter-segment`, `langda-always-drops-eventually`,
+`mirchi-loses-the-charge-with-the-cart`, `mirchi-never-charges-without-it`,
 `dredger-arm-drops-with-counterweight`, `dredger-always-has-crew`, `water-edge-kills`,
 `one-up-exists-once`.
 
@@ -370,17 +357,12 @@ $G $O/bg_d1_floor_market.png landscape "seamless horizontally tileable top-down 
 $G $O/bg_d1_floor_river.png landscape "seamless horizontally tileable top-down slightly angled view of wet silted stone ghat steps and cracked concrete at a river edge, black river mud, white chemical foam scum along one edge, plastic litter trodden into the silt, puddles reflecting orange sodium light, no people, 32-bit arcade game floor texture in the style of Streets of Rage 4, richly detailed pixel art, no text, no watermark"
 ```
 
-**LANGDA** is an animal, so the face is the whole risk — a round symmetrical muzzle at 60 px
-reads as a plush toy, which is the trap the lair's sabretooth fell into three times. Three-quarter
-head, heavy brow, one eye milky, mouth open on teeth.
+**MIRCHI** is generated by `tools/gen_d1_mirchi.sh`: one reference, seven strips (idle, walk,
+ladle, throw, chilli, shove, hurt) conditioned on it, and the cart as a separate prop so the
+figure sheets stay clean. The shove strip comes back small because he is bent double over the
+bar; `tools/process_d1_cast.sh` scales it up before processing.
 
 ```bash
-LANGDA="A large one eyed rhesus macaque the size of a small child, mangy grey brown fur, a pink scarred face, one eye milky and half shut, a heavy brow ridge, teeth bared, half of one hand missing, a battered brass taxi fare meter hung round his neck on a filthy string, seen in three quarter view so the muzzle reads"
-
-$G $O/langda_idle.png landscape "$LANGDA, a 4 pose idle loop read left to right, crouched on all fours with his weight forward and his head up. Pose 1: at rest. Pose 2: shoulders rising on an inhale. Pose 3: at the top of the inhale. Pose 4: lowering. His hands and feet stay in exactly the same four places in every pose. $SHEET"
-$G $O/langda_drop.png landscape "$LANGDA, a 4 pose drop attack read left to right. Pose 1: hanging by one long arm from an unseen wire, body stretched out and down. Pose 2: released, arms over his head, legs tucked, falling. Pose 3: both feet driven down and forward, body arched, arms flung back. Pose 4: landed in a deep crouch, knuckles down, head up and snarling. $SHEET"
-$G $O/langda_screech.png landscape "$LANGDA, a 4 pose screech read left to right. Pose 1: crouched with the head down. Pose 2: head coming up, mouth opening. Pose 3: reared back on his haunches, chest out, mouth stretched wide on all his teeth, both arms thrown out sideways. Pose 4: holding the shriek, body shaking, slightly lower. His feet stay planted. $SHEET"
-
 PAPPU="A huge oiled Indian akhara wrestler in his forties wearing only a red langot, shaved head, thick handlebar moustache, a sacred thread across his chest, mud on his shoulders and knees, enormous arms, bare feet"
 $G $O/pappu_idle.png landscape "$PAPPU, a 4 pose idle loop read left to right, stood square with both hands open at chest height. Pose 1: at rest. Pose 2: chest rising. Pose 3: at the top of the inhale. Pose 4: lowering. Feet, legs and hips IDENTICAL in all four. $SHEET"
 
@@ -412,7 +394,7 @@ notice that the river feels like the market's consequence.
 the loudest thing in a beat 'em up and it is free.
 
 The shared `boss` theme lives here too, because this level needs it first. It plays for **Pappu
-and Langda** — and for every miniboss and mid-boss in the chapter — which is what makes it mean
+and Mirchi** — and for every miniboss and mid-boss in the chapter — which is what makes it mean
 something when the dredger arrives and a different tune starts.
 
 `boss1` is that different tune: **GUTTER GHAT escalated**, the same falling hook at boss tempo

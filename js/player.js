@@ -106,7 +106,7 @@ export function poisonPlayer(p, frames) {
 
 // ---- hit detection -----------------------------------------------------
 function hitTargets() {
-  const t = [...G.enemies, ...G.props];
+  const t = [...G.enemies, ...G.props.filter((pr) => !pr.decor)];
   if (G.boss && !G.boss.dead) t.push(G.boss);
   return t;
 }
@@ -122,10 +122,9 @@ function playerHit(p, spec) {
     // Airborne bodies stay hittable (that is the juggle); grounded knockdowns
     // do not, so you cannot just stomp someone lying on the floor forever.
     if (e.state === 'down' && !airborne(e)) continue;
-    // Something hanging above the lane is only in reach from the air: Langda on his
-    // wire needs a jump near his height, an awning bracket needs any jump under it.
-    const inReach = e.onWire ? (p.z > 8 && Math.abs(e.z - p.z) < 34)
-      : e.airOnly ? (p.z > 8 && e.z - p.z < 80)
+    // Something hanging above the lane (the train's emergency chain) is only in reach
+    // from the air: any jump under it.
+    const inReach = e.airOnly ? (p.z > 8 && e.z - p.z < 80)
       : e.z < 34 || (p.z > 8 && Math.abs(e.z - p.z) < 30);
     if (Math.abs(e.x - hx) < spec.range * 0.6 + e.w * 0.35 && Math.abs(e.y - p.y) < 16 && inReach) {
       const dealt = Math.round(spec.dmg * dmgMul(p));
@@ -152,11 +151,9 @@ function playerHit(p, spec) {
   if (hitAny) {
     spawnSpark(p.x + p.face * spec.range * 0.7, p.y - 48);
     impact(spec.heavy || spec.impactHeavy, heaviest);
-    G.audio.sfx(spec.heavy || spec.impactHeavy ? 'heavy' : 'punch');
+    G.audio.sfx(spec.sound || (spec.heavy || spec.impactHeavy ? 'heavy' : 'punch'));
     p.hitConfirm = true;
     if (spec.heavy || spec.impactHeavy) reactStage(hx, spec.heavy ? 1 : 0.55);
-  } else {
-    G.audio.sfx('whiff');
   }
   return hitAny;
 }
@@ -184,7 +181,7 @@ function comboPop(n, x, y) {
   for (const [need, label] of RANKS) {
     if (n === need) {
       spawnPop(x, y - 56, label);
-      G.audio.sfx('pickup');
+      G.audio.sfx('blip');
     }
   }
 }
@@ -252,7 +249,8 @@ export function resolveIncomingHit(p, attacker, spec = {}) {
   spawnPop(p.x, p.y - 104, 'PARRY');
   addMeter(10);
   G.audio.sfx('parry');
-  if (parryClass === 'counter' && attacker && attacker.parried) attacker.parried(7, p.face);
+  // the counter's damage lands here, so its impact sounds here
+  if (parryClass === 'counter' && attacker && attacker.parried) { attacker.parried(7, p.face); G.audio.sfx('heavy'); }
   return true;
 }
 
@@ -289,7 +287,7 @@ export function updatePlayer(p) {
     case 'idle': case 'walk': case 'run': {
       const ax = input.axisX(), ay = input.axisY();
       if (input.pressed('super')) { startSuper(p); break; }
-      if (input.held('parry')) { setState(p, 'parry'); p.invuln = 0; G.audio.sfx('whiff'); break; }
+      if (input.held('parry')) { setState(p, 'parry'); p.invuln = 0; G.audio.sfx('armor'); break; }
       if (input.pressed('dashL') || input.pressed('dashR')) {
         p.face = input.pressed('dashL') ? -1 : 1;
         setState(p, 'dash'); p.vx = p.face * 3.2;
@@ -377,10 +375,7 @@ export function updatePlayer(p) {
     case 'tackle': {
       p.x += p.vx; p.vx *= 0.94;
       if (!p.hitDone) {
-        if (playerHit(p, { dmg: 11, range: 46, heavy: true, launch: false })) {
-          p.hitDone = true;
-          G.audio.sfx('weapon');
-        }
+        if (playerHit(p, { dmg: 11, range: 46, heavy: true, launch: false })) p.hitDone = true;
       }
       if (G.time % 4 === 0) spawnDust(p.x - p.face * 8, p.y, 1);
       if (p.t > 22 || Math.abs(p.vx) < 0.9) { p.vx = 0; p.runT = 0; setState(p, 'idle'); }
@@ -403,7 +398,7 @@ export function updatePlayer(p) {
       p.x += ax * 1.4 + p.face * 0.9;
       p.z += p.vz; p.vz -= 0.28;
       if (!p.hitDone) {
-        if (playerHit(p, { dmg: 10, range: 46, heavy: true, launch: true })) G.audio.sfx('kick');
+        playerHit(p, { dmg: 10, range: 46, heavy: true, launch: true, sound: 'kick' });
         p.hitDone = true;
       }
       if (p.z <= 0) { p.z = 0; p.vz = 0; setState(p, 'idle'); spawnDust(p.x, p.y, 2); G.audio.sfx('land'); }
@@ -412,8 +407,9 @@ export function updatePlayer(p) {
     case 'attack': {
       const route = COMBO_FLOW;
       const c = route[Math.min(p.combo, route.length - 1)];
-      // step into the punch, on the way to contact
+      // step into the punch, on the way to contact; the swing sounds as it starts
       comboMotion(p, c);
+      if (p.t === 1) G.audio.sfx('whiff');
       if (p.t >= c.hitAt && !p.hitDone) { playerHit(p, c); p.hitDone = true; }
       // buffer the next hit from the moment the strike starts
       if (input.pressed('attack') && p.t >= 2) {
@@ -443,7 +439,7 @@ export function updatePlayer(p) {
     case 'parry': {
       // Hold to maintain the stance. Releasing creates a short vulnerable
       // recovery, so an obviously early release can still be punished.
-      if (!input.held('parry')) setState(p, 'parry_recover');
+      if (!input.held('parry')) { setState(p, 'parry_recover'); G.audio.sfx('whiff'); }
       break;
     }
     case 'parry_recover': {
@@ -456,7 +452,6 @@ export function updatePlayer(p) {
         if (e && !e.dead) {
           p.face = e.x < p.x ? -1 : 1;
           spawnSpark(e.x, e.y - Math.min(56, e.h * 0.6));
-          G.audio.sfx('heavy');
         }
       }
       if (p.t >= 6 && input.held('parry')) { setState(p, 'parry'); break; }
@@ -518,7 +513,7 @@ export function updatePlayer(p) {
       if (inAir(p)) {
         const r = fall(p);
         if (r === 'bounce') { spawnDust(p.x, p.y, 3); G.shake = Math.max(G.shake, 3); G.audio.sfx('land'); }
-        else if (r === 'land') { spawnDust(p.x, p.y, 3); p.groundT = 0; }
+        else if (r === 'land') { spawnDust(p.x, p.y, 3); p.groundT = 0; G.audio.sfx('land'); }
       } else if (!p.dying) {
         p.groundT++;
         if ((p.quickGetup && p.groundT > 2) || p.groundT > 26) {

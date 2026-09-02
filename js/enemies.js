@@ -316,13 +316,14 @@ export function tryHitLane(src, dmg, range, heavy, tol) {
     }
   }
   for (const pr of G.props) {
-    if (pr.broken || pr === src.rig) continue;
+    if (pr.broken || pr.decor || pr === src.rig) continue;
     if (Math.abs(pr.x - cx) < halfW && Math.abs(pr.y - src.y) < (tol || 15)) pr.hurt(dmg, face || 1);
   }
   return hit;
 }
 
-function tryHitPlayer(e, dmg, range, heavy, tol, parryClass = PARRY_CLASS[e.kind]) {
+// `sound` names the impact for a hit; the default is the plain punch/heavy pair.
+function tryHitPlayer(e, dmg, range, heavy, tol, parryClass = PARRY_CLASS[e.kind], sound) {
   const p = G.player;
   if (parryClass === 'unblockable') tryHitLane(e, dmg, range, heavy, tol);
   if (p.state === 'down' || p.state === 'getup' || p.dying) return;
@@ -330,7 +331,7 @@ function tryHitPlayer(e, dmg, range, heavy, tol, parryClass = PARRY_CLASS[e.kind
     if (resolveIncomingHit(p, e, { parryClass })) return true;
     hurtPlayer(p, dmg, e.face, heavy);
     spawnSpark(p.x, p.y - 48);
-    G.audio.sfx(heavy ? 'heavy' : 'punch');
+    G.audio.sfx(sound || (heavy ? 'heavy' : 'punch'));
     return true;
   }
   return false;
@@ -564,6 +565,7 @@ export function updateEnemies() {
       case 'windup': {
         if (e.t >= (WINDUP[e.kind] || 18)) {
           e.state = 'attack'; e.t = 0; e.hitLanded = false;
+          G.audio.sfx('whiff');   // the swing itself; contact adds the impact
           if (e.kind === 'bandar') { e.vx = e.face * 3.6; e.vz = 3.0; e.z = 0.1; G.audio.sfx('dash'); }
           if (e.kind === 'pehlwan') { e.vx = e.face * 2.2; G.audio.sfx('dash'); }
           if (e.kind === 'constable') e.armor = 1;
@@ -593,7 +595,7 @@ export function updateEnemies() {
           // the trunk comes down in one arc: heavy, and the whole wind-up is the tell
           if (e.t === 9 && !e.hitLanded) {
             tryHitPlayer(e, e.dmg, e.range + 8, true, 14, 'counter');
-            e.hitLanded = true; G.audio.sfx('heavy'); spawnDust(e.x + e.face * 26, e.y, 3); G.shake = Math.max(G.shake, 2);
+            e.hitLanded = true; spawnDust(e.x + e.face * 26, e.y, 3); G.shake = Math.max(G.shake, 2);
           }
           if (e.t > 30) { e.state = 'idle'; e.atkCd = irand(80, 140); }
         } else if (e.kind === 'goonda' || e.kind === 'manja') {
@@ -603,8 +605,8 @@ export function updateEnemies() {
           // big cricket bat arc: slow, telegraphed, knocks you flat
           const red = e.kind === 'batta' || (e.kind === 'sepoy' && e.hp < e.maxhp / 2);
           if (e.t === 8 && !e.hitLanded) {
-            tryHitPlayer(e, e.dmg, e.range + 10, red, 14, red ? 'unblockable' : 'counter');
-            e.hitLanded = true; G.audio.sfx(red ? 'heavy' : 'weapon');
+            tryHitPlayer(e, e.dmg, e.range + 10, red, 14, red ? 'unblockable' : 'counter', red ? 'heavy' : 'weapon');
+            e.hitLanded = true;
           }
           if (e.t > 26) { e.state = 'idle'; e.atkCd = irand(70, 130); }
         } else if (e.kind === 'masala' || e.kind === 'operator') {
@@ -674,8 +676,7 @@ export function updateEnemies() {
               G.audio.sfx('throw');
               break;
             }
-            tryHitPlayer(e, e.dmg, reach, e.kind === 'dhobi', 15);
-            G.audio.sfx(e.kind === 'dhobi' ? 'weapon' : 'punch');
+            tryHitPlayer(e, e.dmg, reach, e.kind === 'dhobi', 15, undefined, e.kind === 'dhobi' ? 'weapon' : 'punch');
           }
           if (e.t > (e.kind === 'dhobi' ? 30 : 20)) { e.state = 'idle'; e.atkCd = irand(60, 120); }
         } else if (isRam(e)) {
@@ -720,8 +721,8 @@ export function updateEnemies() {
       case 'down': {
         if (inAir(e)) {
           const r = fall(e);
-          if (r === 'bounce') spawnDust(e.x, e.y, 2);
-          else if (r === 'land') { spawnDust(e.x, e.y, 3); G.shake = Math.max(G.shake, 2); }
+          if (r === 'bounce') { spawnDust(e.x, e.y, 2); G.audio.sfx('land'); }
+          else if (r === 'land') { spawnDust(e.x, e.y, 3); G.shake = Math.max(G.shake, 2); G.audio.sfx('land'); }
         } else if (e.t > 45) { e.state = 'getup'; e.t = 0; }
         break;
       }
@@ -741,7 +742,7 @@ export function updateEnemies() {
           }
         }
         for (const pr of G.props) {
-          if (!pr.broken && Math.abs(pr.x - e.x) < 22 && Math.abs(pr.y - e.y) < 15) pr.hurt(20, Math.sign(e.vx) || 1);
+          if (!pr.broken && !pr.decor && Math.abs(pr.x - e.x) < 22 && Math.abs(pr.y - e.y) < 15) pr.hurt(20, Math.sign(e.vx) || 1);
         }
         if (G.boss && !G.boss.dead && G.boss.z < 30 && Math.abs(G.boss.x - e.x) < 28 && Math.abs(G.boss.y - e.y) < 18) {
           G.boss.hurt(12, Math.sign(e.vx) || 1, true, false);

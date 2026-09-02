@@ -22,8 +22,6 @@ $G $O/drum_b.png   square "A burst blue steel chemical drum split open lying on 
 $G $O/mithai.png   square "A small cardboard Indian sweet box with a red and gold printed lid, tied with string, a corner torn showing orange and yellow mithai sweets inside, $S" &
 wait
 $G $O/mithai_b.png square "A crushed cardboard sweet box flattened on the ground with orange and yellow Indian mithai sweets scattered around it, $S" &
-$G $O/bracket.png  square "A short rusted iron awning bracket: a right angled strut of riveted iron with a bolt plate at one end and a loop at the other holding a sagging black electrical cable, seen from the side, $S" &
-$G $O/bracket_b.png square "A snapped rusted iron awning bracket, the strut broken off at the bolt plate, a torn black electrical cable dangling loose from the loop, $S" &
 wait
 $G $O/thelapole.png   landscape "A long wooden boat punting pole lying horizontally, dark waterlogged wood, an iron ferrule on one end, wrapped rope grip, weed caught on it, dim sodium orange dusk light, $S" &
 $G $O/thelapole_b.png landscape "A long wooden boat punting pole snapped into two splintered halves lying flat on the ground, $N" &

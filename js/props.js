@@ -14,6 +14,9 @@ export const PROP_TYPES = {
   tyres: { hp: 26, w: 32, h: 34, shadowR: 15, score: 50, drop: null, debris: ['#2a2a2e', '#3c3c42', '#18181c'] },
   table: { hp: 18, w: 44, h: 30, shadowR: 20, score: 40, drop: 'plate', debris: ['#8a6a3a', '#c0a068', '#5a4426'] },
   sign: { hp: 14, w: 40, h: 22, shadowR: 0, score: 60, drop: null, debris: ['#c02a2a', '#f0c040', '#f8f0e0'] },
+  // CHAD's bike, parked where the arrival leaves it. `decor` keeps it out of every
+  // target list: it y-sorts with the world but nobody can hit it.
+  bike: { hp: 1, w: 120, h: 44, shadowR: 44, score: 0, drop: null, decor: true, debris: [] },
   cart: { hp: 45, w: 58, h: 44, shadowR: 26, score: 150, drop: 'shake', debris: ['#c08a3a', '#8a5a20', '#d8d0b8'] },
   // the dojo heavy bag. js/hub.js builds it with its own hurt() so it never breaks;
   // this entry exists for the footprint and so tools/process_props.py can size the art.
@@ -27,8 +30,9 @@ export const PROP_TYPES = {
   // places it and both sides can be pushed into it
   drum: { hp: 18, w: 30, h: 40, shadowR: 14, score: 60, drop: null, art: 'tyres',
     burst: { kind: 'chutney', r: 30, life: 720 }, debris: ['#2a6a9a', '#4a8aba', '#d8d0b0'] },
-  // six along Langda's arena, each one shortening the wire he can run
-  bracket: { hp: 15, w: 24, h: 18, shadowR: 0, score: 80, drop: null, art: 'sign', airOnly: true, debris: ['#5a5a62', '#8a8a92', '#3a3a42'] },
+  // MIRCHI's chaat cart: he fights from behind it and shoves it at you. Break it and
+  // the charge is gone for the rest of the fight.
+  mirchicart: { hp: 60, w: 70, h: 56, shadowR: 30, score: 300, drop: null, debris: ['#c8c8d0', '#d8302a', '#e8b040'] },
   // the heavy's prop: a handcart in the market, a boat pole on the ghat
   thelacart: { hp: 30, w: 54, h: 40, shadowR: 24, score: 120, drop: null, art: 'cart', debris: ['#c08a3a', '#8a5a20', '#d8d0b8'] },
   thelapole: { hp: 30, w: 70, h: 14, shadowR: 10, score: 120, drop: null, art: 'sign', debris: ['#a8804a', '#6a4a24', '#d0b888'] },
@@ -221,7 +225,7 @@ export function createProp(kind, x, y, z) {
     kind: 'prop', prop: kind, x, y, z: z || 0, vx: 0, vz: 0,
     hp: T.hp, maxhp: T.hp, w: T.w, h: T.h, shadowR: T.shadowR,
     broken: false, dead: false, t: 0, flash: 0, shakeT: 0,
-    state: 'idle', face: 1, airOnly: !!T.airOnly,
+    state: 'idle', face: 1, airOnly: !!T.airOnly, decor: !!T.decor,
     hurt(dmg, dir) { hurtProp(pr, dmg, dir); },
     thrown() {},
   };
@@ -229,7 +233,7 @@ export function createProp(kind, x, y, z) {
 }
 
 function hurtProp(pr, dmg, dir) {
-  if (pr.broken) return;
+  if (pr.broken || pr.decor) return;
   pr.hp -= dmg;
   pr.flash = 5;
   pr.shakeT = 8;

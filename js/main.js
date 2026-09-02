@@ -11,7 +11,7 @@ import { loadFG, drawFG } from './fg.js';
 import { createPlayer, updatePlayer, drawPlayer, hurtPlayer } from './player.js';
 import { spawnEnemy, updateEnemies, drawEnemy, aliveEnemies } from './enemies.js';
 import { createBoss, updateBoss, drawBoss, BOSSES } from './bosses.js';
-import { drawDelhiWallPlane, delhiIntro } from './delhi_bosses.js';
+import { delhiIntro } from './delhi_bosses.js';
 import { updateTrain, drawTrainOverlay, startDeparture, startTunnel, chainFor, chainBroken, doorX, ABOARD_X, ROOF_X } from './train.js';
 import { updateShots, drawShots, drawZones, spawnShot, spawnZone } from './shots.js';
 import { updateProps, drawProp, PROP_TYPES } from './props.js';
@@ -21,7 +21,7 @@ import { drawTitle, drawIntro, drawBossIntro, drawClear, drawOver, drawEnding } 
 import { audio, loadManifest, loadSFX } from './audio.js';
 import { loadAssets } from './assets.js';
 import { loadAIFrames } from './aiframes.js';
-import { ENTRANCE_LAST_FRAME, STATION_LAST_FRAME, loadStory, resetStory, updateMotorcycleArrival, drawMotorcycleArrival, updateStationArrival, drawStationArrival } from './story.js';
+import { ENTRANCE_LAST_FRAME, STATION_LAST_FRAME, loadStory, resetStory, updateMotorcycleArrival, finishMotorcycleArrival, drawMotorcycleArrival, updateStationArrival, drawStationArrival } from './story.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -66,7 +66,21 @@ function persist() {
 // ---- state transitions ----
 function setState(s) {
   if (s === 'clear') clearSaved = false;   // one save per arrival at the tally
+  G.transition = null;   // a direct change of scene cancels a cut that was on its way
   G.state = s; G.stateT = G.rawTime;
+}
+
+// Every change of scene goes out through black: the picture darkens over `dur`
+// frames with the world frozen, `then` builds the next scene, and G.fade brings it up.
+// One owner of the cut, so no state has to know how another one starts.
+function transitionTo(then, dur = 26) {
+  if (G.transition) return;
+  G.transition = { t: 0, dur, then };
+}
+
+function goTitle() {
+  audio.fadeMusic(0.4);
+  transitionTo(() => { setState('title'); audio.music('title'); }, 24);
 }
 
 function resetRun() {
@@ -254,7 +268,9 @@ function updateWaves() {
         setState('bossintro');
         G.fade = 0.85;
         G.shake = 6;
-        audio.music(null);
+        audio.sfx('enrage');
+        // the theme starts ON the reveal, not after the card
+        audio.music(G.stage.bossMusicFinal || G.stage.bossMusic);
         if (G.stage.boss === 'refund') audio.voice('duke_back_to_work', 1800);
       } else {
         next.done = true;
@@ -288,7 +304,7 @@ function updateWaves() {
           if (next.miniboss === 'mirchi') {
             // his cart is a real breakable prop - smash it and he loses the charge
             // slightly nearer the camera than he is, so he reads as standing behind it
-            b.cart = createProp('cart', b.x - 34, b.y + 7);
+            b.cart = createProp('mirchicart', b.x - 34, b.y + 7);
             b.cart.onBreak = () => { b.cartGone = true; };
             G.props.push(b.cart);
           }
@@ -362,7 +378,7 @@ function updatePickups() {
       if (life) {
         G.lives++;
         spawnPop(pk.x, pk.y - 24, '1UP');
-        audio.sfx('enrage');
+        audio.jingle('oneup');
         addScore(2000);
       } else {
         p.hp = Math.min(p.maxhp, p.hp + pk.heal);
@@ -391,8 +407,9 @@ function checkPlayerDeath() {
       p.state = 'dead';
       G.continueT = 9 * 60 + 59;
       setState('over');
-      audio.voice('duke_game_over', 2400, true);
       audio.music(null);
+      audio.jingle('gameover');
+      audio.voice('duke_game_over', 2400, true);
       persist();
     }
   }
@@ -425,9 +442,8 @@ function checkBossClear() {
     addScore(G.lives * 500 + G.bestCombo * 25);
     G.player.state = 'victory';
     setState('clear');
-    // the lair's track, started here so it carries through the tally and into the hub
-    // without restarting - audio.music() is a no-op when the slot is already playing
-    audio.music(G.stageIndex >= STAGES.length - 1 ? null : (G.hubTrack || HUB_STAGE.music));
+    audio.music(null);
+    audio.jingle('clear');
     persist();
   }
 }
@@ -438,9 +454,19 @@ function update() {
   G.rawTime++;
   pollGamepad();
   if (G.fade > 0) G.fade = Math.max(0, G.fade - 0.06);
+  if (G.transition) {
+    const tr = G.transition;
+    if (++tr.t >= tr.dur) { G.transition = null; tr.then(); G.fade = 1; }
+    return;
+  }
 
   if (G.state === 'title') {
-    if (input.pressed('attack') || input.pressed('pause')) { audio.unlock(); enterHub(true); }
+    if (input.pressed('attack') || input.pressed('pause')) {
+      audio.unlock();
+      audio.sfx('blip');
+      audio.fadeMusic(0.4);
+      transitionTo(() => enterHub(true), 24);
+    }
     return;
   }
   if (G.state === 'hub') {
@@ -458,7 +484,7 @@ function update() {
     // toggle the pause on every single frame it was held.
     // BACKSPACE from the pause screen, which is the only place the overlay offers it
     if (G.paused) {
-      if (input.pressed('back')) { G.paused = false; audio.setPaused(false); setState('title'); G.fade = 1; }
+      if (input.pressed('back')) { G.paused = false; audio.setPaused(false); audio.sfx('blip'); goTitle(); }
       return;
     }
     G.time++;
@@ -469,7 +495,7 @@ function update() {
     G.camX = clamp(G.player.x - W / 2, 0, G.camMax);
     const panelOpen = !!G.hubPanel;
     // BACKSPACE backs out of a panel or leaves the room for the title; ESC pauses
-    if (!panelOpen && !G.hubSeat && input.pressed('back')) { setState('title'); G.fade = 1; return; }
+    if (!panelOpen && !G.hubSeat && input.pressed('back')) { audio.sfx('blip'); goTitle(); return; }
     const pick = updateHub();
     // A panel owns the buttons while it is up, and keeps them until they are let go.
     // Without the latch, C to back out also throws a parry whose recovery eats the
@@ -481,7 +507,12 @@ function update() {
     updateEffects();
     updateMotes();
     updateAmbience();
-    if (pick >= 0) { G.meter = hubMeter; startStage(pick); }
+    if (pick >= 0) {
+      // the launch: a sting, the room's track down, black, then the act's arrival
+      audio.sfx('go');
+      audio.fadeMusic(0.5);
+      transitionTo(() => { G.meter = hubMeter; startStage(pick); }, 34);
+    }
     return;
   }
   if (G.state === 'intro') {
@@ -492,10 +523,10 @@ function update() {
     const introLife = G.stageIndex === 0 ? ENTRANCE_LAST_FRAME : station ? STATION_LAST_FRAME : 130;
     if (G.rawTime - G.stateT > introLife || input.pressed('attack')) {
       if (station) { updateStationArrival(STATION_LAST_FRAME); G.effects.length = 0; }
-      // Skipping the arrival has to stop the motorcycle, which loops. updateMotorcycleArrival
-      // only cut it at frame 214 and is never called again once the state leaves `intro`, so
-      // pressing Z early left the engine running under the stage, the tally and THE LAIR.
-      audio.stopEntranceBike();
+      // Skipping has to land on the same picture as finishing: the man standing by the
+      // parked bike, engine off (it loops, and nothing else ever stops it).
+      if (G.stageIndex === 0) finishMotorcycleArrival();
+      else audio.stopEntranceBike();
       setState('play'); G.fade = 1;
     }
     return;
@@ -544,17 +575,15 @@ function update() {
       G.actBest[G.stageIndex] = Math.max(G.actBest[G.stageIndex] || 0, G.score);
       persist();
     }
-    if (G.rawTime - G.stateT > 160 && input.pressed('attack')) {
-      // The ENDING belongs to the act that is the finale, not to whichever act happens to
-      // be last in the array while the tour is being built one act at a time. Without the
-      // flag, cutting the game back to a single act made clearing it end the game - and
-      // took the lair's whole relic loop with it, since you never came home.
-      if (!STAGES[G.stageIndex].final) {
-        enterHub(false);   // back to the lair with the next act unlocked
-      } else {
-        setState('ending');
-        audio.music('ending');
-      }
+    if (G.rawTime - G.stateT > 150 && input.pressed('attack')) {
+      audio.sfx('blip');
+      // The tally promises the next act, so the next act is what comes: straight on,
+      // the arcade way. The lair is home after the tour's last act. The ENDING belongs
+      // to the act flagged as the finale, not to whichever act is last in the array.
+      const st = STAGES[G.stageIndex];
+      if (st.final) transitionTo(() => { setState('ending'); audio.music('ending'); }, 30);
+      else if (G.stageIndex + 1 < STAGES.length) transitionTo(() => startStage(G.stageIndex + 1), 30);
+      else transitionTo(() => enterHub(false), 30);
     }
     return;
   }
@@ -577,13 +606,16 @@ function update() {
       p.y = 211; p.z = 0; p.vx = 0; p.vz = 0;
       p.state = 'getup'; p.t = 0; p.invuln = 120;
       G.meter = METER_MAX / 2;
-      setState('play');
-      audio.music(G.boss && !G.boss.dead
-        ? (G.boss.mini ? G.stage.bossMusic : (G.stage.bossMusicFinal || G.stage.bossMusic))
-        : stageTrack());
+      audio.sfx('blip');
+      transitionTo(() => {
+        setState('play');
+        audio.music(G.boss && !G.boss.dead
+          ? (G.boss.mini ? G.stage.bossMusic : (G.stage.bossMusicFinal || G.stage.bossMusic))
+          : stageTrack());
+      }, 20);
       return;
     }
-    if (G.continueT <= 0) enterHub(true);
+    if (G.continueT <= 0) goTitle();   // the clock ran out: the attract loop, not the lounge
     return;
   }
 
@@ -595,7 +627,7 @@ function update() {
   }
     // BACKSPACE from the pause screen, which is the only place the overlay offers it
     if (G.paused) {
-      if (input.pressed('back')) { G.paused = false; audio.setPaused(false); setState('title'); G.fade = 1; }
+      if (input.pressed('back')) { G.paused = false; audio.setPaused(false); audio.sfx('blip'); goTitle(); }
       return;
     }
 
@@ -665,6 +697,7 @@ function render() {
       if (G.stageIndex === 0) drawMotorcycleArrival(ctx);
       else if (G.stage.id === 'train') drawStationArrival(ctx);
       else drawIntro(ctx);
+      if (G.rawTime - G.stateT > 90 && ((G.rawTime >> 5) & 1)) drawTextShadow(ctx, 'Z: SKIP', W - textWidth('Z: SKIP', 1) - 8, H - 12, '#a89ab8', 1);
       break;
     case 'bossintro': drawBossIntro(ctx, G.camX); break;
     case 'clear':
@@ -731,12 +764,15 @@ function render() {
     ctx.fillStyle = `rgba(0,0,0,${G.fade})`;
     ctx.fillRect(0, 0, W, H);
   }
+  if (G.transition) {
+    ctx.setTransform(RS, 0, 0, RS, 0, 0);
+    ctx.fillStyle = `rgba(0,0,0,${Math.min(1, G.transition.t / G.transition.dur)})`;
+    ctx.fillRect(0, 0, W, H);
+  }
 }
 
 function drawWorld(ctx) {
   const camX = G.camX;
-  // wall-plane fight furniture (Langda's wire) sits behind every world actor
-  drawDelhiWallPlane(ctx, camX);
   // lingering floor hazards go under everything else
   drawZones(ctx, camX);
   drawRagnarokGround(ctx, camX);
@@ -827,6 +863,7 @@ loadSave();
 Promise.all([loadAssets(), loadAIFrames(), loadSFX(), loadFX(), loadFG(), loadAmbience(), loadStory()]).then(() => {
   initStage(0); // build background layers + motes so the title can scroll them
   setState('title');
+  audio.music('title');   // pending until the first key unlocks audio
   requestAnimationFrame(frame);
   runAuto();
 });
@@ -1261,7 +1298,7 @@ if (autoMode) {
       G.unlockedStage = 0;
       at('map'); tap('use');
       t('hub-map-opens-on-newest', G.hubAct === 0);
-      tap('attack');
+      tap('attack'); step(40);   // through the cut to black
       t('hub-starts-act', G.state === 'intro' && G.stageIndex === 0);
 
       enterHub(true);
@@ -1284,7 +1321,7 @@ if (autoMode) {
         t('hub-unpauses', !G.paused && G.time > frozenT);
       }
       G.hubSel = null; step(2);
-      tap('back');
+      tap('back'); step(30);
       t('hub-leaves-on-back', G.state === 'title');
 
       setState('title');
@@ -1556,7 +1593,6 @@ if (autoMode) {
           : PROP_TYPES[d.kind].drop === 'plate' ? 15 : 0), 0);
         t('placed-healing-is-300', heal === 300);
         t('one-up-is-placed-once', st.props.filter((d) => d.kind === 'mithai').length === 1);
-        t('langda-has-six-brackets', st.props.filter((d) => d.kind === 'bracket').length === 6);
         // Nobody lives past the drain, and that emptiness is authored rather than
         // forgotten - it is most of why the second half lands.
         t('the-river-is-unpopulated', st.birds.every((b) => b.x < wire.x1));
@@ -1608,24 +1644,16 @@ if (autoMode) {
         t('pappu-enrage-widens-the-ring', G.arenaSqueezeTarget === 58);
         b.hurt(9999, 1, true, true); step(140);
         t('pappu-death-releases-the-ring', G.boss === null && G.arenaSqueezeTarget === 0);
-        // LANGDA: the wire, the timer, the meter
-        b = jump('langda');
-        t('langda-starts-on-the-wire', !!b && b.onWire === true && b.z > 10 && b.state === 'wire');
-        let dropped = false;
-        for (let i = 0; i < 700 && !dropped; i++) { step(1); dropped = b.state === 'drop'; }
-        t('langda-always-drops-eventually', dropped);
-        while (b.z > 0 || b.state === 'drop' || b.state === 'land') step(1);
-        G.meter = 50; b.stolen = 0; b.state = 'snatch'; b.t = 9; b.hitLanded = false;
-        G.player.x = b.x + b.face * 10; G.player.y = b.y; G.player.z = 0; G.player.state = 'idle'; G.player.invuln = 0; G.player.hp = 100;
-        step(2);
-        const afterSnatch = G.meter;
-        t('langda-snatches-a-meter-segment', afterSnatch <= 30 && b.stolen === 25);
-        b.hurt(b.maxhp / 2 + 1, 1, false, false); step(2);
-        t('langda-enrage-breaks-the-brackets',
-          b.wireGone === true && G.props.filter((q) => q.prop === 'bracket' && !q.broken).length === 0);
-        b.hurt(9999, 1, true, true); step(2);
-        t('langda-death-returns-the-meter', G.meter === afterSnatch + 25 && b.stolen === 0);
-        step(140);
+        // MIRCHI: the cart is the fight
+        b = jump('mirchi');
+        t('mirchi-arrives-with-his-cart', !!b && !!b.cart && G.props.includes(b.cart) && b.cartGone === false);
+        b.cart.hurt(9999, 1); step(2);
+        t('mirchi-loses-the-charge-with-the-cart', b.cartGone === true && b.cart.broken === true);
+        let charged = false;
+        G.player.x = b.x - 200; G.player.y = b.y; G.player.z = 0; G.player.state = 'idle'; G.player.invuln = 0; G.player.hp = 100;
+        for (let i = 0; i < 600; i++) { step(1); if (b.state === 'cartcharge') charged = true; if (b.dead) break; }
+        t('mirchi-never-charges-without-it', !charged);
+        b.hurt(9999, 1, true, true); step(140);
         // THE DREDGER: the bucket, the crew, the cab, the winch, the man
         b = jump('dredger');
         t('dredger-rests-out-of-reach', !!b && b.phase === 'machine' && b.z >= 60);
@@ -2032,8 +2060,10 @@ if (autoMode) {
       G.enemies.length = 0; G.spawnQueue = [];
       step(140);
       t('act1-clear', G.state === 'clear');
-      step(200); debugPress('attack'); step(4); debugRelease('attack');
-      t('clear-returns-to-hub', G.state === 'hub');
+      step(200); debugPress('attack'); step(4); debugRelease('attack'); step(36);
+      // the tally goes straight on to the next act, the arcade way; home is after the last
+      t('clear-goes-to-next-act', G.state === 'intro' && G.stageIndex === 1);
+      G.stageIndex = 0; enterHub(false);
       t('clear-brings-home-a-relic', G.hubRelicKey === STAGES[0].boss && G.hubRelicT > 0);
       // Clearing an act is the one thing that writes the save, so this is the point at
       // which "the jukebox is not persisted" is testable against a save THIS build wrote.

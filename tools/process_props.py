@@ -88,7 +88,8 @@ D1_SRC = "assets/ai/d1props/"
 D1 = {
     "drum": (30, 40),
     "mithai": (26, 20),
-    "bracket": (24, 18),
+    # MIRCHI's chaat cart, from tools/gen_d1_mirchi.sh: PROP_TYPES.mirchicart
+    "mirchicart": (70, 56),
     "thelapole": (84, 14),
     "dhobislab": (46, 18),
     # the bucket IS the boss's body in js/delhi_bosses.js: 96 tall including the chain stub,
@@ -121,11 +122,11 @@ D1_OUT = {
 D1_NO_BROKEN = {"dredger_bucket", "dredger_bucket_open", "hose_nozzle", "shutter",
                 "crowd_a_key", "crowd_b_key", "rat", "debris_bottle", "debris_garland", "debris_scooter"}
 # How tall the broken state is, as a fraction of the whole prop. The default 0.45 is
-# rubble on the floor; a snapped bracket stays bolted to the wall at full size, and the
-# wrecked winch is still most of a winch.
+# rubble on the floor; the wrecked winch is still most of a winch, and the tipped cart
+# still has its wheels in the air.
 # long flat things are sized by WIDTH: a punting pole scaled to 14 tall came out 167 long
 D1_BY_WIDTH = {"thelapole", "dhobislab"}
-D1_BROKEN_H = {"bracket": 1.0, "dredger_winch": 0.85, "drum": 0.6, "thelapole": 0.9, "dhobislab": 0.7, "mithai": 0.5}
+D1_BROKEN_H = {"mirchicart": 0.7, "dredger_winch": 0.85, "drum": 0.6, "thelapole": 0.9, "dhobislab": 0.7, "mithai": 0.5}
 # THE NIGHT TRAIN: props from tools/gen_d2_props.sh, plus the rake, the family and the
 # pigeons for the wall plane (assets/ambience/).
 D2_SRC = "assets/ai/d2props/"

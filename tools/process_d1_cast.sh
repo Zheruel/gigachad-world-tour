@@ -24,10 +24,18 @@ slice pappu_idle    pappu_idle   4 ; slice pappu_walk   pappu_walk   4
 slice pappu_charge  pappu_charge 4 ; slice pappu_grab   pappu_grab   3
 slice pappu_stomp   pappu_stomp  4 ; slice pappu_hurt   pappu_hurt   3
 
-slice langda_idle   langda_idle  4 ; slice langda_hang  langda_hang  3
-slice langda_drop   langda_drop  4 ; slice langda_screech langda_screech 4
-slice langda_snatch langda_snatch 3; slice langda_throw langda_throw 3
-slice langda_hurt   langda_hurt  3
+# MIRCHI's sheets come from tools/gen_d1_mirchi.sh. His shove strip comes back at about
+# 0.8x the family's scale (he is bent double over the bar): bring it up before processing.
+slice mirchi_idle   mirchi_idle  4 ; slice mirchi_walk   mirchi_walk  4
+slice mirchi_ladle  mirchi_ladle 4 ; slice mirchi_throw  mirchi_throw 3
+slice mirchi_chilli mirchi_chilli 4; slice mirchi_shove  mirchi_shove 4
+slice mirchi_hurt   mirchi_hurt  3
+$PY - <<'PYEOF'
+from PIL import Image
+for i in range(1, 5):
+    p = f"assets/ai/d1frames/mirchi_shove{i}.png"; im = Image.open(p)
+    im.resize((round(im.width * 1.22), round(im.height * 1.22)), Image.LANCZOS).save(p)
+PYEOF
 
 slice cooker_idle   cooker_idle  4 ; slice cooker_walk   cooker_walk  4
 slice cooker_beam   cooker_beam  4 ; slice cooker_hurt   cooker_hurt  3
@@ -60,11 +68,10 @@ proc() {  # proc <char> <height> <fill> <ref>
 
 # Every one of these came out of `check_cast_scale.py <char> --ref <pose> --body <N>`,
 # which measures the tallest pose the family actually has and solves for the canvas
-# that fits it. Hand-picked numbers had three families clamped: Langda hangs at 1.78x
-# his crouched idle, the thela's overhand punch at 1.17x, and the bull REARS when he
-# is hit at 1.42x his walk. Re-run the checker after regenerating any strip.
+# that fits it. Hand-picked numbers had families clamped: the thela's overhand punch
+# at 1.17x, and the bull REARS when he is hit at 1.42x his walk. Re-run the checker after regenerating any strip.
 proc pappu     208 0.961 idle1
-proc langda    206 0.563 idle1     # canvas is the HANG, not the crouched idle
+proc mirchi    220 0.912 idle1     # canvas is the overhead ladle
 proc cooker    164 1.000 idle1
 proc thela     214 0.857 idle1     # canvas is the overhand punch
 proc mudlark   140 1.000 idle1

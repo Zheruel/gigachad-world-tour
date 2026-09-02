@@ -537,13 +537,6 @@ export const STAGES = [
       { kind: 'drum', x: 9020, y: 212 }, { kind: 'drum', x: 9160, y: 224 },
       { kind: 'drum', x: 9290, y: 206 }, { kind: 'drum', x: 10080, y: 220 },
       { kind: 'drum', x: 10240, y: 210 }, { kind: 'drum', x: 11360, y: 218 },
-      // Langda's six awning brackets, live before his fight starts - which is a
-      // secret worth having, because breaking them early shortens his wire
-      // They sit at awning height off the back lane: an air attack reaches them
-      // (player.js's airOnly rule), and they never stand in front of a fighter.
-      { kind: 'bracket', x: 4560, y: 186, z: 110 }, { kind: 'bracket', x: 4640, y: 186, z: 110 },
-      { kind: 'bracket', x: 4720, y: 186, z: 110 }, { kind: 'bracket', x: 4800, y: 186, z: 110 },
-      { kind: 'bracket', x: 4880, y: 186, z: 110 }, { kind: 'bracket', x: 4960, y: 186, z: 110 },
     ],
     // Three roosts, and nobody at all past the drain. That contrast is most of why
     // the second half lands, so the emptiness is authored rather than forgotten.
@@ -574,7 +567,7 @@ export const STAGES = [
       { x: 3150, spawns: ['cooker', 'cooker', 'thela', 'goonda'] },
       { x: 3700, spawns: ['batta', 'batta', 'cooker', 'bandar'] },
       { x: 4200, spawns: ['thela', 'cooker', 'batta', 'goonda', 'goonda', 'bandar'], bull: true },
-      { x: 4700, spawns: [], miniboss: 'langda', intro: true, camX: 4520 },
+      { x: 4700, spawns: [], miniboss: 'mirchi', intro: true, camX: 4520 },
       { x: 8500, spawns: ['goonda', 'goonda', 'mudlark'] },
       { x: 9100, spawns: ['mudlark', 'mudlark', 'goonda', 'goonda'] },
       { x: 10200, spawns: ['thela', 'goonda', 'goonda', 'mudlark', 'dhobi'] },

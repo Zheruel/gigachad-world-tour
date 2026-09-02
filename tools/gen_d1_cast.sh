@@ -8,7 +8,7 @@
 # Every family gets its own reference portrait first, passed as the last argument to
 # every strip, so the likeness holds across eight separate generations.
 #
-# Usage: tools/gen_d1_cast.sh [refs|pappu|langda|cooker|thela|mudlark|dhobi|beasts|thekedar|all]
+# Usage: tools/gen_d1_cast.sh [refs|pappu|cooker|thela|mudlark|dhobi|beasts|thekedar|all]
 set -uo pipefail
 cd /Users/tinzeljar/Documents/gachi
 G=tools/gen_codex.sh
@@ -24,7 +24,6 @@ REF="a character reference sheet for a 32-bit arcade beat em up game: one single
 # ---- descriptions --------------------------------------------------------
 PAPPU="A huge oiled Indian akhara wrestler in his forties wearing only a red langot loincloth, shaved head, thick black handlebar moustache, a sacred thread across his bare chest, wet mud smeared on his shoulders and knees, enormous arms and a heavy gut, bare feet"
 
-LANGDA="A large one eyed rhesus macaque the size of a small child, mangy grey brown fur, a pink scarred face, one eye milky and half shut, a heavy brow ridge over deep set eyes, teeth bared in a snarl curled higher on one side, half of one hand missing, a battered brass taxi fare meter hung round his neck on a filthy string. His head is always seen in three quarter view so the muzzle reads as a snout and never as a flat round face"
 
 COOKER="A wiry Indian street cook in his thirties in a filthy sweat stained vest and checked lungi, a rag knotted round his head, burn scars up both forearms, carrying a battered aluminium pressure cooker by its handle with a screaming steam whistle on top and a rubber hose taped to its side"
 
@@ -42,7 +41,6 @@ THEKEDAR="A thin nervous Indian man in his fifties in a filthy checked shirt and
 
 refs() {
 $G $O/ref_pappu.png portrait "$PAPPU, $REF" &
-$G $O/ref_langda.png portrait "$LANGDA, seen standing upright on his hind legs, $REF" &
 $G $O/ref_cooker.png portrait "$COOKER, $REF" &
 wait
 $G $O/ref_thela.png portrait "$THELA, $REF" &
@@ -65,21 +63,6 @@ wait
 $G $O/pappu_grab.png landscape "$PAPPU, a 3 pose bear hug grab read left to right. Pose 1: both arms thrown wide and open, chest forward. Pose 2: arms closing in front of him around an unseen body, hands nearly meeting. Pose 3: arms locked together and crushing inward, back arched, head thrown back. $SHEET" "$R" &
 $G $O/pappu_stomp.png landscape "$PAPPU, a 4 pose ground stomp read left to right. Pose 1: crouched with both fists drawn back at his waist. Pose 2: rising, one knee lifted high to his chest. Pose 3: at full height with the knee at its highest and both fists above his head. Pose 4: the raised foot slammed flat to the ground, knees bent, both fists driven straight down at his sides. $SHEET" "$R" &
 $G $O/pappu_hurt.png landscape "$PAPPU, a 3 pose sequence read left to right. Pose 1: head snapped back and to one side, both arms flung out, torso twisted away from an unseen punch. Pose 2: doubled forward over his stomach, arms in. Pose 3: fallen flat on his back on the ground, arms and legs sprawled, seen from the side. $SHEET" "$R" &
-wait
-}
-
-# ---- LANGDA: he does not stand and trade, and that is the point ----------
-langda() {
-R=$O/ref_langda.png
-$G $O/langda_idle.png landscape "$LANGDA, a 4 pose idle loop read left to right, crouched on all fours with his weight forward and his head up. Pose 1: at rest. Pose 2: shoulders rising on an inhale. Pose 3: at the top of the inhale. Pose 4: lowering. His hands and feet stay in exactly the same four places in every pose. $SHEET" "$R" &
-$G $O/langda_hang.png landscape "$LANGDA, a 3 pose sequence hanging from an unseen overhead wire read left to right, only his hands at the top of the image gripping nothing visible. Pose 1: hanging by both long arms, body straight down, legs tucked. Pose 2: swinging forward, one arm released and reaching ahead. Pose 3: hanging by one arm, body turned, looking down over his shoulder. $SHEET" "$R" &
-$G $O/langda_drop.png landscape "$LANGDA, a 4 pose falling drop attack read left to right. Pose 1: hanging by one long arm from an unseen wire, body stretched out and down. Pose 2: released, arms above his head, legs tucked, falling. Pose 3: both feet driven down and forward ahead of him, body arched back, arms flung behind. Pose 4: landed in a deep crouch, knuckles down on the ground, head up and snarling. $SHEET" "$R" &
-wait
-$G $O/langda_screech.png landscape "$LANGDA, a 4 pose screech read left to right. Pose 1: crouched low with the head down. Pose 2: head coming up, mouth opening. Pose 3: reared back on his haunches, chest out, mouth stretched wide on all his teeth, both arms thrown out sideways. Pose 4: holding the shriek, body shaking, slightly lower. His feet stay planted in the same place in all four. $SHEET" "$R" &
-$G $O/langda_snatch.png landscape "$LANGDA, a 3 pose snatch read left to right. Pose 1: crouched with one long arm reaching down and forward, fingers spread. Pose 2: the hand closed into a fist, arm bent, drawing back toward his chest. Pose 3: turned away with the fist clutched to his chest, looking back over his shoulder, one arm raised above him as if about to climb. $SHEET" "$R" &
-$G $O/langda_throw.png landscape "$LANGDA, a 3 pose overarm throw read left to right, holding a broken brick. Pose 1: crouched with the brick drawn back behind his head in one hand. Pose 2: arm swung forward over the top, brick still in the hand at the front of the arc. Pose 3: the throwing arm fully extended forward and empty, the hand open, no brick anywhere. $SHEET" "$R" &
-wait
-$G $O/langda_hurt.png landscape "$LANGDA, a 3 pose sequence read left to right. Pose 1: head snapped back and away, both arms flung out, recoiling from an unseen punch. Pose 2: curled forward over himself, arms in tight. Pose 3: lying flat on his side on the ground, limbs limp, seen from the side. $SHEET" "$R" &
 wait
 }
 
@@ -155,9 +138,9 @@ wait
 
 case "$WHAT" in
   refs) refs;;
-  pappu) pappu;; langda) langda;; cooker) cooker;; thela) thela;;
+  pappu) pappu;; cooker) cooker;; thela) thela;;
   mudlark) mudlark;; dhobi) dhobi;; beasts) beasts;; thekedar) thekedar;;
-  all) refs; pappu; langda; cooker; thela; mudlark; dhobi; beasts; thekedar;;
+  all) refs; pappu; cooker; thela; mudlark; dhobi; beasts; thekedar;;
 esac
 
 echo "=== $WHAT done ==="

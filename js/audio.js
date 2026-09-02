@@ -353,6 +353,46 @@ function duckMusic(seconds) {
   }, seconds * 1000);
 }
 
+// A transition's fade: the music down over `seconds` and then gone, so the next
+// state starts from silence rather than from a cut mid-bar.
+let fadeTimer = null;
+function fadeMusic(seconds) {
+  if (!ac) return;
+  const now = ac.currentTime;
+  if (musicGain) {
+    musicGain.gain.cancelScheduledValues(now);
+    musicGain.gain.setTargetAtTime(0.0001, now, seconds / 3);
+  }
+  const a = currentTrack;
+  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  if (a) {
+    const v0 = a.volume, steps = Math.max(1, Math.round(seconds * 25));
+    let n = 0;
+    fadeTimer = setInterval(() => {
+      n++;
+      if (currentTrack === a) a.volume = Math.max(0, v0 * (1 - n / steps));
+      if (n >= steps || currentTrack !== a) { clearInterval(fadeTimer); fadeTimer = null; }
+    }, 40);
+  }
+}
+
+// The short authored stings the game grammar needs and the rip does not have: the act
+// cleared, the run over, a life gained. Notes are scheduled on the context clock.
+const JINGLES = {
+  clear: [[72, 0, .12], [76, .12, .12], [79, .24, .12], [84, .36, .3], [83, .7, .1], [84, .82, .5]],
+  gameover: [[64, 0, .35], [63, .35, .35], [62, .7, .35], [55, 1.05, .9]],
+  oneup: [[76, 0, .07], [79, .07, .07], [84, .14, .07], [88, .21, .22]],
+};
+function jingle(name) {
+  const notes = JINGLES[name];
+  if (!notes || !ac) return;
+  const at = ac.currentTime + 0.02;
+  for (const [midi, off, dur] of notes) {
+    tone(mf(midi), mf(midi), dur, 'square', 0.22, at + off);
+    tone(mf(midi - 12), mf(midi - 12), dur, 'triangle', 0.18, at + off);
+  }
+}
+
 function stopHtmlTracks() {
   playToken++;
   currentTrack = null;
@@ -402,6 +442,8 @@ export const audio = {
     if (currentSlot) this.music(currentSlot, true);
   },
   startEntranceBike,
+  fadeMusic(seconds) { if (unlocked) fadeMusic(seconds); },
+  jingle(name) { if (unlocked) jingle(name); },
   stopEntranceBike,
   // A real pause. Suspending the context stops the chiptune's scheduled notes and every
   // synthesised effect dead in the same instant; the HTML track is paused separately
@@ -434,6 +476,8 @@ export const audio = {
     if (slot && htmlTracks[slot] && htmlTracks[slot] === currentTrack && !currentTrack.paused) return;
     stopChiptune();
     stopHtmlTracks();
+    if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+    if (musicGain) { musicGain.gain.cancelScheduledValues(ac.currentTime); musicGain.gain.setValueAtTime(0.5, ac.currentTime); }
     if (!slot) return;
     const a = htmlTracks[slot];
     if (!a) { if (audible || !musicSilent) startChiptune(slot); return; }

@@ -2,12 +2,15 @@
 """Register the entrance cels on the motorcycle.
 
 The V8 cels came from two sheets and every cell drew the bike at its own size and
-height: the wheelbase wanders between 90 and 104 px and the ground line was taken from
-whatever touched the canvas bottom, so the bike floats in the standing cels. The rider
-is the only thing that is supposed to change, so the bike is the register: every cel is
-scaled so its front wheel has one radius and moved so that wheel sits on one spot.
+height, so the bike is the register: every cel is scaled so its front wheel has one
+radius, moved so that wheel sits on one spot, and stretched about it so the rear tyre
+sits on one spot too. Only the three riding cels ship (RIDE): the arrival swaps the
+rider for the game's own CHAD under a dust burst, so no dismount cels are needed. The
+rest are still registered because the reference cel's rear tyre is the template, and
+they land on the contact sheet for review.
 
 Reads assets/story/entrance_v8/combined_*.png, writes assets/story/entrance_v9/.
+tools/build_entrance_bike.py adds the parked bike on the same register.
 """
 
 from pathlib import Path
@@ -25,6 +28,7 @@ REAR_X = 70                 # where the rear tyre starts; the short-wheelbase sh
 REAR_TMPL = (138, 184, 70, 120)   # y0, y1, x0, x1 of the reference rear tyre after registration
 # the drift cels foreshorten the bike toward camera; the lean is done in code instead
 DROP = {3, 4, 5}
+RIDE = (1, 2, 6)            # cruising, braking, settling: the cels that ship
 
 
 def gray(img):
@@ -92,41 +96,62 @@ def register_rear(canvas, tmpl):
     return out
 
 
+def load_frames():
+    return [Image.open(SRC / f"combined_{i:02}.png").convert("RGBA") for i in range(1, 20)]
+
+
+def front_template(frames):
+    g_ref, _ = gray(frames[REF - 1])
+    return g_ref[128:184, 165:222]
+
+
+SCALES = [round(0.85 + 0.025 * k, 3) for k in range(17)]
+
+
+def register_front(fr, tmpl, scales=SCALES, label=""):
+    """The cel scaled and placed so its front tyre sits at (WHEEL_X, WHEEL_BOTTOM)."""
+    c, scale, cx, ybot = front_wheel(fr, tmpl, scales)
+    print(f"{label:>2} match={c:.2f} scale={scale:.3f} wheel=({cx},{ybot})")
+    w, h = fr.size
+    rig = fr.resize((round(w * scale), round(h * scale)), Image.Resampling.LANCZOS)
+    rig = rig.filter(ImageFilter.UnsharpMask(radius=.4, percent=40, threshold=2))
+    canvas = Image.new("RGBA", CANVAS, (0, 0, 0, 0))
+    dx = WHEEL_X - cx
+    dy = WHEEL_BOTTOM - ybot
+    canvas.alpha_composite(rig, (dx, dy)) if dx >= 0 and dy >= 0 else canvas.paste(rig, (dx, dy), rig)
+    return canvas
+
+
+def rear_template(frames, tmpl):
+    g_reg, _ = gray(register_front(frames[REF - 1], tmpl, label="ref"))
+    return g_reg[REAR_TMPL[0]:REAR_TMPL[1], REAR_TMPL[2]:REAR_TMPL[3]]
+
+
 def build():
     OUT.mkdir(parents=True, exist_ok=True)
-    frames = [Image.open(SRC / f"combined_{i:02}.png").convert("RGBA") for i in range(1, 20)]
-    g_ref, _ = gray(frames[REF - 1])
-    tmpl = g_ref[128:184, 165:222]
-    scales = [round(0.85 + 0.025 * k, 3) for k in range(17)]
-
+    frames = load_frames()
+    tmpl = front_template(frames)
+    rear_tmpl = rear_template(frames, tmpl)
     out = []
     for i, fr in enumerate(frames, 1):
         if i in DROP:
             continue
-        c, scale, cx, ybot = front_wheel(fr, tmpl, scales)
-        print(f"{i:2} match={c:.2f} scale={scale:.3f} wheel=({cx},{ybot})")
-        w, h = fr.size
-        rig = fr.resize((round(w * scale), round(h * scale)), Image.Resampling.LANCZOS)
-        rig = rig.filter(ImageFilter.UnsharpMask(radius=.4, percent=40, threshold=2))
-        canvas = Image.new("RGBA", CANVAS, (0, 0, 0, 0))
-        dx = WHEEL_X - cx
-        dy = WHEEL_BOTTOM - ybot
-        canvas.alpha_composite(rig, (dx, dy)) if dx >= 0 and dy >= 0 else canvas.paste(rig, (dx, dy), rig)
-        out.append(canvas)
-        if i == REF:
-            g_reg, _ = gray(canvas)
-            rear_tmpl = g_reg[REAR_TMPL[0]:REAR_TMPL[1], REAR_TMPL[2]:REAR_TMPL[3]]
-    out = [register_rear(c, rear_tmpl) for c in out]
+        out.append(register_rear(register_front(fr, tmpl, label=str(i)), rear_tmpl))
 
-    for n, fr in enumerate(out, 1):
-        fr.save(OUT / f"combined_{n:02}.png", optimize=True)
+    kept = [i for i in range(1, len(frames) + 1) if i not in DROP]
+    for n, src_index in enumerate(kept, 1):
+        path = OUT / f"combined_{n:02}.png"
+        if src_index in RIDE:
+            out[n - 1].save(path, optimize=True)
+        elif path.exists():
+            path.unlink()
     cols = 4
     rows = (len(out) + cols - 1) // cols
     sheet = Image.new("RGBA", (CANVAS[0] * cols, CANVAS[1] * rows), (21, 17, 25, 255))
     for n, fr in enumerate(out):
         sheet.alpha_composite(fr, ((n % cols) * CANVAS[0], (n // cols) * CANVAS[1]))
     sheet.save(OUT / "contact_sheet.png", optimize=True)
-    print(f"wrote {len(out)} cels to {OUT}")
+    print(f"wrote {len(RIDE)} riding cels and the contact sheet to {OUT}")
 
 
 if __name__ == "__main__":

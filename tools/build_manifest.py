@@ -239,20 +239,19 @@ D1_BOSSES = {
         "hurt": ["pappu_hurt1.png", "pappu_hurt2.png"],
         "down": ["pappu_hurt3.png"],
     },
-    "langda": {
-        "idle": ["langda_idle1.png", "langda_idle2.png", "langda_idle3.png", "langda_idle4.png"],
-        # he runs a wire rather than walking, so "walk" is the hang
-        "walk": ["langda_hang1.png", "langda_hang2.png", "langda_hang3.png"],
-        "hang": ["langda_hang1.png", "langda_hang2.png", "langda_hang3.png"],
-        "punch": ["langda_drop2.png", "langda_drop3.png", "langda_drop4.png"],
-        "drop": ["langda_drop1.png", "langda_drop2.png", "langda_drop3.png", "langda_drop4.png"],
-        "grab": ["langda_snatch1.png", "langda_snatch2.png", "langda_snatch3.png"],
-        "snatch": ["langda_snatch1.png", "langda_snatch2.png", "langda_snatch3.png"],
-        "slam": ["langda_screech2.png", "langda_screech3.png", "langda_screech4.png"],
-        "screech": ["langda_screech1.png", "langda_screech2.png", "langda_screech3.png", "langda_screech4.png"],
-        "throw": ["langda_throw1.png", "langda_throw2.png", "langda_throw3.png"],
-        "hurt": ["langda_hurt1.png", "langda_hurt2.png"],
-        "down": ["langda_hurt3.png"],
+    "mirchi": {
+        "idle": ["mirchi_idle1.png", "mirchi_idle2.png", "mirchi_idle3.png", "mirchi_idle4.png"],
+        "walk": ["mirchi_walk1.png", "mirchi_walk2.png", "mirchi_walk3.png", "mirchi_walk4.png"],
+        # the samosa lob
+        "punch": ["mirchi_throw1.png", "mirchi_throw2.png", "mirchi_throw3.png"],
+        # the chutney ladle: overhead, swing, low, recover
+        "slam": ["mirchi_ladle1.png", "mirchi_ladle2.png", "mirchi_ladle3.png", "mirchi_ladle4.png"],
+        "chilli": ["mirchi_chilli1.png", "mirchi_chilli2.png", "mirchi_chilli3.png", "mirchi_chilli4.png"],
+        # the cart shove, and the same reach for the grab
+        "charge": ["mirchi_shove1.png", "mirchi_shove2.png", "mirchi_shove3.png", "mirchi_shove4.png"],
+        "grab": ["mirchi_shove1.png", "mirchi_shove4.png", "mirchi_shove4.png"],
+        "hurt": ["mirchi_hurt1.png", "mirchi_hurt2.png"],
+        "down": ["mirchi_hurt3.png"],
     },
 }
 

@@ -184,7 +184,9 @@ export function drawHUD(ctx) {
     ctx.fillRect(bx2 - 1, by2 - 1, bw2 + 2, 7);
     ctx.fillStyle = '#38141c';
     ctx.fillRect(bx2, by2, bw2, 5);
-    const w = Math.round(bw2 * b.hp / b.maxhp);
+    // the bar fills on across the reveal, the arcade way, instead of arriving full
+    const fill = G.state === 'bossintro' ? Math.min(1, Math.max(0, (G.rawTime - G.stateT - 40) / 70)) : 1;
+    const w = Math.round(bw2 * fill * b.hp / b.maxhp);
     ctx.fillStyle = b.enraged ? '#ff5a3a' : '#b8202e';
     ctx.fillRect(bx2, by2, w, 5);
     ctx.fillStyle = '#ff9a8a';

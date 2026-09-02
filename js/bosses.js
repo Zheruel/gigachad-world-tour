@@ -1,7 +1,7 @@
 // bosses.js - the Chandni Chowk bosses. One shared state machine, a shared
 // pattern library, and a per-boss pattern list + tuning.
 //   MIRCHI  (mid-boss) the Chaat King: fights from behind his cart - burning
-//                      samosas, a poison chutney puddle, a pressure-cooker jet.
+//                      samosas, a poison chutney puddle, a fistful of chilli powder.
 //                      Break the cart and he loses the charge for good.
 //   YADAV   (boss)     corrupt inspector: lathi thrust, spinning lathi sweep,
 //                      tear gas, and a whistle that brings two goondas running.
@@ -27,14 +27,6 @@ export const BOSSES = {
     patterns: ['charge', 'grab', 'stomp'],
     rageLine: 'MORE ROOM. LESS MERCY.',
     lines: ['NO WEAPONS', 'STAND AND FIGHT', 'THE CIRCLE HOLDS'],
-  },
-  langda: {
-    name: 'LANGDA', title: 'THE MONKEY KING', taunt: 'THE STREET PAYS ME',
-    set: 'langda', rageSet: 'langdaRage', portrait: 'portrait_langda',
-    hp: 380, speed: 1.60, w: 40, h: 58, shadowR: 13, score: 4200, mini: true,
-    patterns: ['throw', 'troop', 'drop', 'snatch', 'screech', 'lunge'],
-    rageLine: 'NO MORE WIRE',
-    lines: ['MINE', 'ALL OF IT MINE', 'MY STREET'],
   },
   // ---- THE NIGHT TRAIN ----
   tte: {
@@ -71,8 +63,8 @@ export const BOSSES = {
   mirchi: {
     name: 'MIRCHI', title: 'THE CHAAT KING', taunt: 'FRESH! VERY FRESH!',
     set: 'mirchi', rageSet: 'mirchiRage', portrait: 'portrait_mirchi',
-    hp: 320, speed: 0.82, w: 62, h: 100, shadowR: 20, score: 3500, cart: true,
-    patterns: ['samosa', 'chutney', 'steamjet', 'cartcharge', 'grab'],
+    hp: 320, speed: 0.82, w: 62, h: 100, shadowR: 20, score: 3500, cart: true, mini: true,
+    patterns: ['samosa', 'chutney', 'chilli', 'cartcharge', 'grab'],
     rageLine: 'YOU WANT EXTRA SPICY',
     lines: ['FRESH! VERY FRESH!', 'NO REFUND', 'ONE PLATE ONLY', 'IS GOOD FOR STOMACH'],
   },
@@ -186,7 +178,7 @@ function pickPattern(b) {
     if (p === 'cartcharge') return !b.cartGone && d > 60;
     if (p === 'samosa' || p === 'teargas' || p === 'wrench' || p === 'phone') return d > 70;
     if (p === 'chutney') return d > 40;
-    if (p === 'steamjet') return d < 90;
+    if (p === 'chilli') return d < 90;
     if (p === 'lathisweep') return d < 90;
     if (p === 'lathi') return d > 40;
     return true;
@@ -239,7 +231,7 @@ export function updateBoss() {
       break;
     }
     case 'windup': {
-      const wind = { samosa: 20, wrench: 22, phone: 20, chutney: 22, steamjet: 26, cartcharge: 32, whistle: 24, lathi: 18, lathisweep: 20, teargas: 22 }[b.pattern] || 16;
+      const wind = { samosa: 20, wrench: 22, phone: 20, chutney: 22, chilli: 18, cartcharge: 32, whistle: 24, lathi: 18, lathisweep: 20, teargas: 22 }[b.pattern] || 16;
       if (b.t >= wind) {
         b.state = b.pattern; b.t = 0; b.hitLanded = false;
         switch (b.pattern) {
@@ -342,16 +334,17 @@ export function updateBoss() {
       if (b.t > 30) { b.state = 'idle'; b.atkCd = irand(70, 120) * cdScale; }
       break;
     }
-    case 'steamjet': {
-      // pressure cooker: a short cone straight ahead. Change depth lane to dodge.
-      if (b.t < 26 && b.t % 4 === 0) {
-        spawnShot('steam', b.x + b.face * (18 + b.t), b.y, b.face * 1.2, 0);
-        if (Math.abs(p.x - b.x) < 78 && Math.sign(p.x - b.x) === b.face &&
-            Math.abs(p.y - b.y) < 13 && p.z < 20) {
-          hurtPlayer(p, 5, b.face, false);
+    case 'chilli': {
+      // a fistful of chilli powder flung in your face: short, unblockable, blinding.
+      // It hangs at head height, so a jump or a lane change clears it.
+      if (b.t === 8) {
+        for (let i = 0; i < 3; i++) {
+          const s = spawnShot('powder', b.x + b.face * 14, b.y, b.face * (1.3 + i * 0.7), 6, { source: b });
+          s.life = 32;
         }
+        G.audio.sfx('whiff');
       }
-      if (b.t > 40) { b.state = 'idle'; b.atkCd = irand(70, 120) * cdScale; }
+      if (b.t > 30) { b.state = 'idle'; b.atkCd = irand(60, 110) * cdScale; }
       break;
     }
     case 'cartcharge': {
@@ -463,19 +456,19 @@ export function drawBoss(ctx, camX) {
   switch (b.state) {
     case 'idle': name = 'idle'; break;
     case 'windup':
-      name = { grab: 'grab', whistle: 'grab', chutney: 'slam', steamjet: 'slam',
-        lathisweep: 'slam', samosa: 'punch', teargas: 'punch', cartcharge: 'walk',
+      name = { grab: 'grab', whistle: 'grab', chutney: 'slam', chilli: 'chilli',
+        lathisweep: 'slam', samosa: 'punch', teargas: 'punch', cartcharge: 'charge',
         lathi: 'punch' }[b.pattern] || 'punch';
       idx = 0; break;
     case 'dashpunch': name = 'punch'; idx = b.punchN === 0 ? 0 : (b.t < 8 ? 1 : 2); break;
     case 'grab': case 'grabhold': case 'whistle': name = 'grab'; break;
     case 'samosa': case 'teargas': name = 'punch'; idx = b.t < 6 ? 0 : (b.t < 18 ? 1 : 2); break;
     case 'chutney': name = 'slam'; idx = b.t < 8 ? 0 : (b.t < 20 ? 1 : 2); break;
-    case 'steamjet': name = 'slam'; idx = 1; break;
-    case 'cartcharge': name = 'walk'; idx = (G.time >> 2) & 1; break;
+    case 'chilli': name = 'chilli'; idx = b.t < 8 ? 1 : (b.t < 18 ? 2 : 3); break;
+    case 'cartcharge': name = 'charge'; idx = 1 + ((G.time >> 2) & 1); break;
     case 'lathi': name = 'punch'; idx = b.t < 8 ? 0 : (b.t < 20 ? 1 : 2); break;
     case 'lathisweep': name = 'slam'; idx = b.t < 6 ? 0 : ((b.t >> 2) % 2 ? 1 : 2); break;
-    case 'recover': name = 'slam'; idx = 1; break;
+    case 'recover': name = b.pattern === 'cartcharge' ? 'charge' : 'slam'; idx = b.pattern === 'cartcharge' ? 3 : 1; break;
     case 'hurt': name = 'hurt'; idx = b.t < 5 ? 1 : 0; break;
     case 'stagger': name = 'hurt'; idx = (b.t >> 3) & 1; break;
     case 'down': case 'dying': name = 'down'; break;

@@ -4,7 +4,6 @@ import { SPR, drawText, drawTextShadow, textWidth, getFrame, blit, frameW, frame
 import { drawStage, drawRingCrowd, STAGES } from './stages.js';
 import { ASSETS } from './assets.js';
 import { drawProp } from './props.js';
-import { drawDelhiWallPlane } from './delhi_bosses.js';
 import { drawTrainOverlay } from './train.js';
 
 function center(str, scale) { return (W - textWidth(str, scale)) / 2; }
@@ -117,7 +116,6 @@ export function drawBossIntro(ctx, camX) {
   if (b.delhi) {
     // The Delhi fights draw themselves: the reveal is the mechanic arriving - the
     // crowd closing, the wire, the bucket coming down out of the dark.
-    drawDelhiWallPlane(ctx, camX);
     for (const pr of G.props) if (!pr.broken && pr.x > camX - 40 && pr.x < camX + W + 40) drawProp(ctx, pr, camX);
     b.delhi.draw(ctx, b, camX);
     if (b.key === 'pappu') {
@@ -144,11 +142,11 @@ export function drawBossIntro(ctx, camX) {
       ctx.fillStyle = 'rgba(6,8,18,0.84)'; ctx.fillRect(0, 202, W, 68);
       drawTextShadow(ctx, 'NOWHERE TO STAND. NOWHERE TO GO.', center('NOWHERE TO STAND. NOWHERE TO GO.', 1), 214, '#c8d0e8', 1);
       drawTextShadow(ctx, 'BIRJU - THE COUPLER', center('BIRJU - THE COUPLER', 2), 232, '#ffb860', 2);
-    } else if (b.key === 'langda') {
-      if (t > 30 && t < 40) { ctx.fillStyle = 'rgba(255,240,200,0.18)'; ctx.fillRect(0, 0, W, H); }
-      ctx.fillStyle = 'rgba(12,10,20,0.84)'; ctx.fillRect(0, 202, W, 68);
-      drawTextShadow(ctx, 'THE STREET PAYS HIM. SO WILL YOU.', center('THE STREET PAYS HIM. SO WILL YOU.', 1), 214, '#d0c8e8', 1);
-      drawTextShadow(ctx, 'LANGDA - THE MONKEY KING', center('LANGDA - THE MONKEY KING', 2), 232, '#ffd075', 2);
+    } else if (b.key === 'mirchi') {
+      if (t > 30 && t < 40) { ctx.fillStyle = 'rgba(255,200,120,0.2)'; ctx.fillRect(0, 0, W, H); }
+      ctx.fillStyle = 'rgba(20,8,6,0.84)'; ctx.fillRect(0, 202, W, 68);
+      drawTextShadow(ctx, 'ONE PLATE. NO REFUND.', center('ONE PLATE. NO REFUND.', 1), 214, '#f0d0b0', 1);
+      drawTextShadow(ctx, 'MIRCHI - THE CHAAT KING', center('MIRCHI - THE CHAAT KING', 2), 232, '#ff7040', 2);
     } else {
       // the dredger's floodlight snaps on with the winch
       if (t > 50) { ctx.fillStyle = `rgba(255,240,200,${t < 58 ? 0.3 : 0.06})`; ctx.fillRect(0, 0, W, H); }
@@ -243,9 +241,11 @@ export function drawBossIntro(ctx, camX) {
 }
 
 export function drawClear(ctx) {
-  ctx.fillStyle = 'rgba(10,6,10,0.78)';
-  ctx.fillRect(0, 0, W, H);
   const t = G.rawTime - G.stateT;
+  // the arena dims over the boss he just put down; nothing slams in
+  ctx.fillStyle = `rgba(10,6,10,${0.78 * Math.min(1, t / 24)})`;
+  ctx.fillRect(0, 0, W, H);
+  if (t < 12) return;
   drawTextShadow(ctx, 'STAGE CLEAR', center('STAGE CLEAR', 3), 32, '#ffd94a', 3);
   const cleared = G.stage ? G.stage.name : '';
   drawTextShadow(ctx, cleared, center(cleared, 1), 56, '#c8c0e0', 1);
@@ -260,7 +260,7 @@ export function drawClear(ctx) {
     ['LIFE BONUS', st.bonus],
     ['TOTAL', G.score],
   ];
-  const shown = Math.min(lines.length, 1 + (t / 26 | 0));
+  const shown = Math.min(lines.length, 1 + ((t - 12) / 26 | 0));
   for (let i = 0; i < shown; i++) {
     const [label, val] = lines[i];
     drawTextShadow(ctx, label, 150, y, i === lines.length - 1 ? '#ffd94a' : '#c8c0e0', 1);
@@ -353,8 +353,10 @@ export function endRank() {
 }
 
 export function drawOver(ctx) {
-  ctx.fillStyle = 'rgba(10,4,8,0.85)';
+  const t = G.rawTime - G.stateT;
+  ctx.fillStyle = `rgba(10,4,8,${0.85 * Math.min(1, t / 40)})`;
   ctx.fillRect(0, 0, W, H);
+  if (t < 30) return;
   drawTextShadow(ctx, 'GAME OVER', center('GAME OVER', 4), 88, '#d82838', 4);
   const n = Math.ceil(G.continueT / 60);
   drawTextShadow(ctx, 'CONTINUE? ' + n, center('CONTINUE? 9', 2), 144, '#f8f0e0', 2);
