@@ -432,7 +432,7 @@ function timeline(seq) {
     }
   }
   else if (seq === 'meteor_lariat') {
-    for (let t2 = 0; t2 <= 70; t2++) out.push({ ...ragnarokPose(t2), tag: 'METEOR LARIAT' });
+    for (let t2 = 0; t2 <= 100; t2++) out.push({ ...ragnarokPose(t2), tag: 'BOXING RUSH' });
   }
   else if (seq === 'chain') {
     idleFor(30); locoFor(48, 'walk', WALK_STRIDE, 1.38);

@@ -5,6 +5,7 @@ const pressedThisFrame = Object.create(null);
 const releasedThisFrame = Object.create(null);
 const lastTap = { left: -999, right: -999 }; // frame of last tap for double-tap dash
 let frame = 0;
+let pointerPress = null;
 
 const KEYMAP = {
   ArrowLeft: 'left', KeyA: 'left',
@@ -48,6 +49,11 @@ function press(a) {
 }
 
 export function initInput() {
+  window.addEventListener('pointerdown', e => {
+    if (e.target.id !== 'game' || e.button !== 0) return;
+    const rect = e.target.getBoundingClientRect();
+    pointerPress = { x: (e.clientX - rect.left) / rect.width, y: (e.clientY - rect.top) / rect.height };
+  });
   window.addEventListener('keydown', (e) => {
     const a = KEYMAP[e.code];
     if (!a) return;
@@ -98,6 +104,7 @@ export function pollGamepad() {
 
 // Called once per fixed update, AFTER all game logic has read input.
 export function endFrameInput() {
+  pointerPress = null;
   for (const k in pressedThisFrame) pressedThisFrame[k] = false;
   for (const k in releasedThisFrame) releasedThisFrame[k] = false;
   frame++;
@@ -106,6 +113,7 @@ export function endFrameInput() {
 function isHeld(a) { return !!keyHeld[a] || !!padHeld[a]; }
 
 export const input = {
+  pointerPressed: () => pointerPress,
   held: isHeld,
   pressed: (a) => !!pressedThisFrame[a],
   count: (a) => pressedThisFrame[a] || 0,
@@ -117,3 +125,10 @@ export const input = {
 // Debug/test hook: simulate keys (used by window.__game for headless tests)
 export function debugPress(a) { press(a); keyHeld[a] = true; }
 export function debugRelease(a) { keyHeld[a] = false; }
+
+// Review tools reset double-tap history when rebuilding a scene from frame zero.
+export function debugResetInput() {
+  for (const table of [keyHeld, padHeld, pressedThisFrame, releasedThisFrame])
+    for (const key in table) delete table[key];
+  lastTap.left = lastTap.right = -999; frame = 0; pointerPress = null;
+}

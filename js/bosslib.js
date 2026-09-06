@@ -9,7 +9,7 @@ import { hurtPlayer, resolveIncomingHit } from './player.js';
 // green counter | green reflect | red unblockable | hazard
 export const PARRY_CLASS = {
   dashpunch: 'counter', lathi: 'counter', samosa: 'reflect', wrench: 'reflect', phone: 'reflect',
-  grab: 'unblockable', lathisweep: 'unblockable', teargas: 'reflect', steamjet: 'unblockable',
+  reach: 'unblockable', grab: 'unblockable', lathisweep: 'unblockable', teargas: 'reflect', steamjet: 'unblockable',
   cartcharge: 'unblockable', chutney: 'hazard', whistle: 'hazard',
   // DIRTY DELHI
   charge: 'counter', stomp: 'unblockable',
@@ -31,7 +31,7 @@ export function tryHitPlayer(b, dmg, range, heavy, tol, parryClass) {
   const p = G.player;
   if (p.state === 'down' || p.state === 'getup' || p.dying) return false;
   if (Math.abs(p.x - (b.x + b.face * range * 0.5)) < range * 0.5 + 11 && Math.abs(p.y - b.y) < (tol || 16) && p.z < 22) {
-    if (resolveIncomingHit(p, b, { parryClass: parryClass || PARRY_CLASS[b.pattern] || 'counter' })) return true;
+    if (resolveIncomingHit(p, b, { parryClass: parryClass || PARRY_CLASS[b.pattern] || 'counter', dmg, dir:b.face, heavy })) return true;
     hurtPlayer(p, dmg, b.face, heavy);
     spawnSpark(p.x, p.y - 40);
     G.audio.sfx(heavy ? 'heavy' : 'punch');

@@ -1,99 +1,44 @@
 #!/usr/bin/env python3
-"""Audit runtime asset references and tracked binary duplication.
-
-This is read-only. It catches missing runtime PNGs, unregistered lair assets, and
-superseded paths that should not return. Exact duplicate groups are reported for review
-rather than failed because a small number are intentional comparison fixtures.
-"""
-from __future__ import annotations
-
-import hashlib
-import re
-import subprocess
+"""Audit runtime loader paths, module imports, production sources and dead art."""
+import ast,hashlib,json,sys,re
 from collections import defaultdict
 from pathlib import Path
-
-
-ROOT = Path(__file__).resolve().parents[1]
-ASSET_REGISTRY = ROOT / "js/assets.js"
-OPTIONAL_RUNTIME = {"assets/ending_art.png"}  # Procedural ending is the fallback.
-STALE_PATH_PARTS = (
-    "assets/experiments/entrance_continuity/",
-    "assets/story/entrance_v2/",
-    "assets/story/entrance_v3/",
-    "assets/story/entrance_v4/",
-    "assets/story/entrance_v5/",
-    "assets/story/entrance_v6/",
-)
-
-
-def tracked_files() -> list[str]:
-    result = subprocess.run(
-        ["git", "ls-files", "-z"], cwd=ROOT, check=True, capture_output=True
-    )
-    return [item.decode() for item in result.stdout.split(b"\0") if item]
-
-
-def runtime_assets() -> list[str]:
-    return re.findall(r"['\"](assets/[^'\"]+)['\"]", ASSET_REGISTRY.read_text())
-
-
-def digest(path: Path) -> str:
-    value = hashlib.sha256()
-    with path.open("rb") as source:
-        for block in iter(lambda: source.read(1024 * 1024), b""):
-            value.update(block)
-    return value.hexdigest()
-
-
-def main() -> int:
-    tracked = tracked_files()
-    failures: list[str] = []
-
-    registered = set(runtime_assets())
-    missing = sorted(path for path in registered if not (ROOT / path).is_file())
-    required_missing = [path for path in missing if path not in OPTIONAL_RUNTIME]
-    failures.extend(f"missing runtime asset: {path}" for path in required_missing)
-
-    lair_files = {
-        path.relative_to(ROOT).as_posix()
-        for path in (ROOT / "assets/lair").glob("*")
-        if path.is_file()
-    }
-    failures.extend(
-        f"unregistered lair asset: {path}" for path in sorted(lair_files - registered)
-    )
-
-    stale = sorted(path for path in tracked if path.startswith(STALE_PATH_PARTS))
-    failures.extend(f"superseded tracked path: {path}" for path in stale)
-
-    binary_paths = [
-        ROOT / path for path in tracked
-        if path.startswith("assets/") and (ROOT / path).is_file()
-    ]
-    groups: dict[tuple[int, str], list[Path]] = defaultdict(list)
-    for path in binary_paths:
-        size = path.stat().st_size
-        if size:
-            groups[(size, digest(path))].append(path)
-    duplicates = [paths for paths in groups.values() if len(paths) > 1]
-    duplicate_bytes = sum((len(paths) - 1) * paths[0].stat().st_size for paths in duplicates)
-
-    print(f"runtime registry: {len(registered)} paths")
-    print(f"optional missing fallbacks: {len(missing) - len(required_missing)}")
-    print(f"tracked asset files: {len(binary_paths)}")
-    print(f"exact duplicate groups: {len(duplicates)} ({duplicate_bytes / 1024 / 1024:.2f} MiB)")
-    print("duplicate groups are informational; comparison and production copies may be intentional")
-
-    if failures:
-        print("\nFAIL")
-        for failure in failures:
-            print(f"- {failure}")
-        return 1
-
-    print("PASS: repository asset contracts")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'tools/verification'))
+from asset_inventory import runtime_assets
+OPTIONAL={'assets/ending_art.png', 'assets/frames/crowd.json'}
+def main():
+    paths=runtime_assets(); failures=[]
+    for name in sorted(paths):
+        if not (ROOT/name).is_file() and name not in OPTIONAL:failures.append('missing loader asset: '+name)
+    for p in (ROOT/'js').glob('*.js'):
+        for dep in re.findall(r"(?:from\s*|import\s*)['\"](\.[^'\"]+)['\"]",p.read_text()):
+            if not (p.parent/dep).is_file():failures.append(f'missing module: {p.name} -> {dep}')
+    for directory in ['lair','travel','ui','story/motorcycle','stages/night_train/rebuild']:
+        for p in (ROOT/'assets'/directory).rglob('*.png'):
+            if p.relative_to(ROOT).as_posix() not in paths:failures.append('unregistered runtime art: '+str(p.relative_to(ROOT)))
+    for p in (ROOT/'tools').rglob('*.py'):
+        for dep in re.findall(r'^from (\w+) import',p.read_text(),re.M):
+            if dep.startswith(('build_','process_','slice_')) and not (ROOT/'tools/production'/f'{dep}.py').is_file():failures.append(f'missing pipeline module: {p.name} -> {dep}')
+    for name in ['build_dirty_delhi.py']:
+        p=ROOT/'tools/production'/name
+        source=re.search(r'SOURCE = ROOT / "([^"]+)"',p.read_text()).group(1)
+        tree=ast.parse(p.read_text())
+        views=next(ast.literal_eval(n.value) for n in tree.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='VIEWS' for t in n.targets))
+        for view in views:
+            if not (ROOT/source/view[0]).is_file():failures.append(f'missing stage source: {source}/{view[0]}')
+    rebuild=ROOT/'assets/sources/production/stages/night_train/rebuild'
+    for name in ['general_windows','vista_rural_industry','vista_industry_river','pantry_cook','station_tea','platform_empty','join_yard_hall','join_hall_platform','vestibule','chad_board','locomotive','yard_booth','hall','platform','general','sleeper','pantry','ac','private','private_damaged','roof','rural','industry','river','rural_near','industry_near','river_near','chad_cinema','chad_entry','hatch_open','ticket_clerk','ticket_scanner','passengers','props','train_exterior','explosion','vikram_actions','seth_intro','office_clear','office_desk','office_chair','conductor_intro','finale_charge','finale_gear','finale_early_damage','finale_passenger_damage','finale_private_shell','finale_cigar','finale_dynamite','finale_smoke','finale_environment','finale_approach','finale_approach_clouds','finale_car','finale_roll','finale_walk','office','conductor_performance','conductor_office','gangway','tough_performance','bruiser_performance','runner_performance','ambusher_performance','heavy_performance','heavy_unarmed_performance','guard_performance','vikram','vikram_roof','tough_gait','bruiser_gait','runner_gait','ambusher_gait','heavy_gait','heavy_unarmed_gait','guard_gait','tough_recovery','bruiser_recovery','runner_recovery','ambusher_recovery','heavy_recovery','heavy_unarmed_recovery','guard_recovery','conductor_recovery','vikram_recovery','vikram_roof_recovery','conductor_contact','vikram_contact','vikram_roof_contact','bruiser_passing','conductor_passing','vikram_passing','vikram_roof_passing','ambusher_special_recovery']:
+        if not (rebuild/(name+'.png')).is_file():failures.append('missing rebuild source: '+name)
+    bank=json.loads((ROOT/'audio/sfx/manifest.json').read_text())
+    for sample in bank['map'].values():
+        if not (ROOT/bank['rawDir']/(sample+'.wav')).is_file():failures.append('missing original SFX sample: '+sample)
+    files=[ROOT/n for n in paths if (ROOT/n).is_file() and n.endswith('.png')]
+    groups=defaultdict(list)
+    for p in files:groups[hashlib.sha256(p.read_bytes()).hexdigest()].append(p)
+    duplicates=[v for v in groups.values() if len(v)>1]
+    print(f'Runtime assets checked: {len(paths)}; duplicate runtime groups: {len(duplicates)}')
+    for error in failures:print('FAIL:',error)
+    if not failures:print('PASS: runtime loaders, module imports and asset registration')
+    return bool(failures)
+if __name__=='__main__':sys.exit(main())

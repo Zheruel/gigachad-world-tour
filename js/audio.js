@@ -4,7 +4,7 @@
 let ac = null, master = null, musicGain = null, sfxGain = null;
 let unlocked = false;
 
-// The announcer and the extra Duke lines are files the game looks for and does not ship:
+// Rank announcements and Duke cues keep stable IDs; explicit paths preserve the original performances:
 // rank_* are the announcer, two takes per rank (see engine.js RANKS), duke_combo_* are picked
 // at random on a big combo, duke_ride opens THE NIGHT TRAIN, duke_game_over is the continue.
 export const VOICE_SLOTS = {
@@ -15,28 +15,45 @@ export const VOICE_SLOTS = {
 // Any slot without a file silently falls back to the synthesized version below,
 // so the game still has full audio if audio/sfx/ is missing.
 const SFX_FILES = [
+  'duke_bring_it_on','duke_bring_pain','duke_train_nowhere','duke_blow_joint','duke_getting_off','duke_rest_pieces','train_blast','train_approach','train_brake','charge_arm','remote_click',
+  'room_shaker','room_page','room_pen','room_stamp','room_glass','room_chair',
   'punch', 'heavy', 'kick', 'whiff', 'land', 'slam', 'ko', 'throw', 'grab',
   'dash', 'jump', 'pickup', 'blip', 'armor', 'enrage', 'super', 'phurt',
-  'weapon', 'go', 'duke_quote', 'duke_come_get_some', 'duke_gotta_hurt',
+  'pistol', 'conductor_whistle', 'weapon', 'go', 'duke_quote', 'duke_come_get_some', 'duke_gotta_hurt',
   'duke_back_to_work', 'duke_book_em', 'duke_hail', 'duke_look_good', 'parry',
   'entrance_engine', 'entrance_skid', 'entrance_boot', 'entrance_stand',
   'entrance_birds', 'entrance_crack',
   // the enemies' own voices out of the same rip: a grunt on a hit, a scream on a KO
   'ehurt1', 'ehurt2', 'ehurt3', 'ehurt4', 'edie1', 'edie2', 'bdie',
   // Drop-in slots. Every name here is optional: a missing file is skipped by loadSFX
-  // and the caller falls through to whatever it has. audio/voice/README.md lists them.
+  // and the caller falls through to whatever it has.
   ...VOICE_SLOTS.rank, ...VOICE_SLOTS.combo, 'duke_lets_rock', 'duke_ride', 'duke_game_over',
 ];
 const SFX_PATHS = {
-  duke_quote: 'audio/voice/duke_out_of_gum.wav',
-  duke_come_get_some: 'audio/voice/duke_come_get_some.wav',
-  duke_gotta_hurt: 'audio/voice/duke_gotta_hurt.wav',
-  duke_back_to_work: 'audio/voice/duke_back_to_work.wav',
-  duke_book_em: 'audio/voice/duke_book_em.wav',
-  duke_hail: 'audio/voice/duke_hail.wav',
+  duke_bring_it_on: 'audio/voice/duke/combat/bring_it_on.mp3',
+  duke_bring_pain: 'audio/voice/duke/combat/bring_the_pain.mp3',
+  duke_ride: 'audio/voice/duke/entrances/looks_like_i_m_going_for_a_ride_game_take.wav',
+  duke_lets_rock: 'audio/voice/duke/entrances/let_s_rock_game_take.wav',
+  duke_game_over: 'audio/voice/duke/victory/game_over_game_take.wav',
+  duke_combo_6: 'audio/voice/duke/combat/looks_like_i_tattooed_your_face_with_my_fist_game_take.wav',
+  duke_combo_5: 'audio/voice/duke/combat/eat_that_game_take.wav',
+  duke_combo_4: 'audio/voice/duke/reactions/holy_cow_game_take.wav',
+  duke_combo_3: 'audio/voice/duke/victory/bitchin_game_take.wav',
+  duke_combo_2: 'audio/voice/duke/victory/damn_i_m_good_game_take.wav',
+  duke_combo_1: 'audio/voice/duke/reactions/groovy_game_take.wav',
+  duke_getting_off: 'audio/voice/duke/reactions/looks_like_i_m_gettin_off_here.mp3',
+  duke_rest_pieces: 'audio/voice/duke/explosions/rest_in_pieces.mp3',
+  duke_train_nowhere: 'audio/voice/duke/reactions/this_train_is_goin_nowhere_fast.mp3',
+  duke_blow_joint: 'audio/voice/duke/explosions/time_to_blow_this_joint.mp3',
+  duke_quote: 'audio/voice/duke/entrances/it_s_time_to_kick_ass_and_chew_bubble_gum_and_i_m_all_out_of_gum_game_take.wav',
+  duke_come_get_some: 'audio/voice/duke/combat/come_get_some_game_take.wav',
+  duke_gotta_hurt: 'audio/voice/duke/reactions/ooh_that_s_gotta_hurt_game_take.wav',
+  duke_back_to_work: 'audio/voice/duke/reactions/get_back_to_work_you_slacker_game_take.wav',
+  duke_book_em: 'audio/voice/duke/victory/mmm_book_em_dan_o_game_take.wav',
+  duke_hail: 'audio/voice/duke/victory/hail_to_the_king_baby_game_take.wav',
   // the mirror. Missing files are skipped silently by loadSFX, so the flex just plays no
   // line until this one is dropped in - nothing else has to change.
-  duke_look_good: 'audio/voice/duke_look_good.wav',
+  duke_look_good: 'audio/voice/duke/victory/damn_i_m_looking_good_game_take.wav',
   parry: 'audio/sfx/parry.wav',
   entrance_engine: 'audio/sfx/entrance_engine.wav',
   entrance_skid: 'audio/sfx/entrance_skid.wav',
@@ -49,6 +66,55 @@ function isVoice(name) { return name.startsWith('duke_') || name.startsWith('ran
 const samples = {};      // name -> AudioBuffer
 let sampleBytes = null;  // name -> ArrayBuffer, fetched before the context exists
 let entranceBike = null;
+let travelSound = null;
+
+const roomSources = new Set();
+function stopRoomAudio() {
+  for (const node of roomSources) {try {node.stop();} catch (_) {} node.disconnect();}
+  roomSources.clear();
+}
+function roomSample(name,volume=1,maxDuration=Infinity) {
+  if(!ac||!unlocked||!samples[name])return false;
+  const node=ac.createBufferSource(),gain=ac.createGain();node.buffer=samples[name];gain.gain.value=volume;
+  node.connect(gain);gain.connect(sfxGain);roomSources.add(node);
+  node.start();
+  if(maxDuration<node.buffer.duration) {
+    const end=ac.currentTime+maxDuration;
+    gain.gain.setValueAtTime(volume,Math.max(ac.currentTime,end-.015));
+    gain.gain.linearRampToValueAtTime(0,end);node.stop(end);
+  }
+  node.onended=()=>{roomSources.delete(node);node.disconnect();gain.disconnect();};
+  return true;
+}
+
+function stopTravel() {
+  if (!travelSound) return;
+  for (const node of travelSound.sources) { try { node.stop(); } catch (_) { /* already stopped */ } node.disconnect(); }
+  travelSound.gain.disconnect();
+  travelSound = null;
+}
+
+function travelLoop(kind) {
+  stopTravel();
+  if (!ac || !unlocked) return;
+  const gain = ac.createGain(); gain.gain.value = kind === 'elevator' ? .045 : .07;
+  gain.connect(sfxGain);
+  const sources = [];
+  if(kind==='street'||kind==='airport') {
+    gain.gain.value=kind==='airport'?.017:.024;
+    const buffer=ac.createBuffer(1,ac.sampleRate*4,ac.sampleRate),data=buffer.getChannelData(0);let last=0;
+    for(let i=0;i<data.length;i++){last=(last+(Math.random()*2-1)*.03)/1.03;data[i]=last*3;}
+    const node=ac.createBufferSource();node.buffer=buffer;node.loop=true;node.connect(gain);node.start();sources.push(node);
+    travelSound={sources,gain};return;
+  }
+  for (const multiple of [1, 1.012, 2]) {
+    const oscillator = ac.createOscillator();
+    oscillator.type = kind === 'jet' ? 'sawtooth' : 'triangle';
+    oscillator.frequency.value = (kind === 'elevator' ? 47 : kind === 'car' ? 83 : 38) * multiple;
+    oscillator.connect(gain); oscillator.start(); sources.push(oscillator);
+  }
+  travelSound = { sources, gain };
+}
 
 export async function loadSFX() {
   await Promise.all(SFX_FILES.map(async (name) => {
@@ -72,6 +138,8 @@ function decodeSamples() {
   }
 }
 
+const activeSamples=new Set();
+function stopSamples(){for(const node of activeSamples){try{node.stop();}catch(_){}node.disconnect();}activeSamples.clear();voiceBusyUntil=0;}
 function playSample(name, vol, stablePitch = false) {
   const buf = samples[name];
   if (!buf) return false;
@@ -82,6 +150,7 @@ function playSample(name, vol, stablePitch = false) {
   src.playbackRate.value = stablePitch ? 1 : 0.97 + Math.random() * 0.06;
   g.gain.value = vol === undefined ? 1 : vol;
   src.connect(g); g.connect(sfxGain);
+  activeSamples.add(src);src.onended=()=>{activeSamples.delete(src);src.disconnect();g.disconnect();};
   src.start();
   return true;
 }
@@ -140,7 +209,7 @@ let seqTimer = null, nextStepTime = 0, stepIdx = 0, song = null;
 // miniboss `boss` and the level boss's own `boss1`. A slot with neither an mp3 nor a
 // SONGS entry simply plays nothing and never appears in the jukebox, so adding names
 // breaks nothing and needs no code change when the files land.
-const SLOTS = ['lair', 'title', 'stage1a', 'stage1b', 'boss', 'boss1', 'stage2a', 'stage2b', 'boss2', 'stage3a', 'stage3b', 'hold', 'final', 'ending'];
+const SLOTS = ['lair', 'lobby', 'title', 'stage1a', 'stage1b', 'boss', 'boss1', 'stage2a', 'stage2b', 'boss2', 'stage3a', 'stage3b', 'hold', 'final', 'ending'];
 const htmlTracks = Object.fromEntries(SLOTS.map((s) => [s, null]));
 
 function mf(m) { return 440 * Math.pow(2, (m - 69) / 12); } // midi -> freq
@@ -327,6 +396,7 @@ function stopChiptune() {
 let currentTrack = null, playToken = 0;
 let voiceBusyUntil = 0;
 const voiceCd = {};
+const voiceLast = {};
 
 // Pull the music under a voice line and let it back up after. The chiptune sits on
 // musicGain; a real track is an <audio> element, so its volume is stepped by a timer.
@@ -433,6 +503,61 @@ export async function loadManifest() {
 }
 
 export const audio = {
+  trainSfx(kind) {
+    if(!ac||!unlocked)return;
+    const whistle=kind==='whistle',dur=whistle?1.1:.22,buffer=ac.createBuffer(1,Math.ceil(ac.sampleRate*dur),ac.sampleRate),data=buffer.getChannelData(0);
+    let low=0;
+    for(let i=0;i<data.length;i++){const t=i/ac.sampleRate,p=t/dur;low=.82*low+.18*(Math.random()*2-1);const env=whistle?Math.min(1,p*14)*Math.min(1,(1-p)*7):Math.exp(-p*8);data[i]=env*(whistle?(Math.sin(t*2*Math.PI*392)+.5*Math.sin(t*2*Math.PI*523))*.13+low*.12:low*.28+Math.sin(t*2*Math.PI*64)*.15);}
+    const node=ac.createBufferSource(),gain=ac.createGain();node.buffer=buffer;gain.gain.value=whistle?.3:.22;node.connect(gain);gain.connect(sfxGain);roomSources.add(node);node.start();node.onended=()=>{roomSources.delete(node);node.disconnect();gain.disconnect();};
+  },
+  stopSamples,
+  snapshot:()=>({music:currentSlot,samples:activeSamples.size,roomSources:roomSources.size,travel:!!travelSound}),
+  stopRoomAudio,
+  roomSfx(name,volume=.6,maxDuration=Infinity) { return roomSample(name,volume,maxDuration); },
+  travelLoop,
+  stopTravel,
+  streetMusic(amount) {
+    if(currentTrack)currentTrack.volume=Math.max(0,Math.min(.8,amount));
+    if(ac&&musicGain)musicGain.gain.setValueAtTime(amount*.5,ac.currentTime);
+  },
+  jetEngine(speed) {
+    if(!ac||!travelSound)return;
+    travelSound.sources.forEach((node,i)=>{if(node.frequency)node.frequency.setTargetAtTime((32+speed*30)*[1,1.012,2][i],ac.currentTime,.1);});
+    travelSound.gain.gain.setTargetAtTime(.018+speed*.035,ac.currentTime,.1);
+  },
+  streetEngine(speed) {
+    if(!ac||!travelSound)return;
+    travelSound.sources.forEach((node,i)=>{if(node.frequency)node.frequency.setTargetAtTime((62+speed*64)*[1,1.012,2][i],ac.currentTime,.08);});
+    travelSound.gain.gain.setTargetAtTime(.035+speed*.045,ac.currentTime,.08);
+  },
+  streetSfx(kind) {
+    if(!ac||!unlocked)return;
+    const durations={handle:.09,hinge:.35,car_close:.22,ignition:.65,hotel_open:.5,hotel_close:.3,traffic:1.4};
+    const dur=durations[kind]||.15,buffer=ac.createBuffer(1,Math.ceil(ac.sampleRate*dur),ac.sampleRate),data=buffer.getChannelData(0);
+    let smooth=0;
+    for(let i=0;i<data.length;i++){
+      const t=i/ac.sampleRate,p=t/dur; smooth=.93*smooth+.07*(Math.random()*2-1);
+      const envelope=kind==='traffic'?Math.sin(p*Math.PI):Math.exp(-p*6);
+      const motor=kind==='ignition'?Math.sin(t*440)*(.4+.6*Math.sin(t*63)**2):kind.includes('close')?Math.sin(t*2*Math.PI*(90-40*p))*.6:0;
+      data[i]=(smooth+motor)*envelope;
+    }
+    const node=ac.createBufferSource(),gain=ac.createGain();node.buffer=buffer;gain.gain.value=kind==='traffic'?.15:kind==='car_close'?.5:.3;
+    node.connect(gain);gain.connect(sfxGain);roomSources.add(node);node.start();node.onended=()=>{roomSources.delete(node);node.disconnect();gain.disconnect();};
+  },
+  destinationSelected() {
+    if (!ac || !unlocked) return;
+    // A distinct glassy confirmation, independent of optional sampled SFX.
+    for (const [i, hz] of [659.25, 830.61, 987.77].entries()) {
+      const at = ac.currentTime + i * .105;
+      tone(hz, hz, .42, 'sine', .17, at, sfxGain);
+      tone(hz * 2, hz * 2, .14, 'sine', .035, at, sfxGain);
+    }
+  },
+  travelChime() {
+    if (!ac || !unlocked) return;
+    tone(880, 880, .4, 'sine', .16, ac.currentTime, sfxGain);
+    tone(660, 660, .6, 'sine', .12, ac.currentTime + .19, sfxGain);
+  },
   unlock() {
     if (unlocked) return;
     unlocked = true;
@@ -471,6 +596,7 @@ export const audio = {
       if (currentTrack && currentTrack.paused) currentTrack.play().catch(() => {});
       return;
     }
+    stopRoomAudio();
     currentSlot = slot;
     if (!unlocked || !ac) return;
     if (slot && htmlTracks[slot] && htmlTracks[slot] === currentTrack && !currentTrack.paused) return;
@@ -578,15 +704,17 @@ export const audio = {
   },
   // A random line out of `names`, from whichever exist, with a per-list cooldown so the
   // combo commentary stays an event rather than a soundtrack.
-  voiceRandom(names, durationMs, cooldownS = 18) {
+  voiceRandom(names, durationMs, cooldownS = 18, avoidRepeat = false) {
     if (!ac) return false;
     const have = names.filter((n) => samples[n]);
     if (!have.length) return false;
     const key = names[0];
     const now = ac.currentTime;
     if (now < (voiceCd[key] || 0)) return false;
-    const ok = this.voice(have[Math.floor(Math.random() * have.length)], durationMs);
-    if (ok) voiceCd[key] = now + cooldownS;
+    const choices=avoidRepeat&&have.length>1?have.filter(n=>n!==voiceLast[key]):have;
+    const selected=choices[Math.floor(Math.random()*choices.length)];
+    const ok = this.voice(selected, durationMs);
+    if (ok) {voiceCd[key] = now + cooldownS;voiceLast[key]=selected;}
     return ok;
   },
 };

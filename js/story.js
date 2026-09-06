@@ -1,14 +1,17 @@
+import { drawContactShadow } from './contact_shadow.js';
+import { drawDisplayTitle } from './display_type.js';
 // story.js - authored chapter cinematics that happen in the actual level.
 import { G, W, H } from './engine.js';
 import { SPR, blit, frameW, frameH, getFrame, drawTextShadow, textWidth } from './sprites.js';
 import { drawStage } from './stages.js';
 import { drawProp, createProp } from './props.js';
-import { drawTrainOverlay } from './train.js';
+import { drawTrainHeroPose, drawTrainEntryPose, drawTicketScanner, drawTicketPanels, drawTrainOverlay } from './train.js';
+import { drawDialogue, updateDialogue } from './room_dialogue.js';
 import { spawnCigarSmoke, drawEffects } from './effects.js';
 import { drawPlayer, IDLES } from './player.js';
 import { audio } from './audio.js';
 
-export const STATION_LAST_FRAME = 430;
+export const STATION_LAST_FRAME = 480;
 
 // The act's name, punched onto the picture: four frames oversized, then it settles, then
 // the sub-line and a red rule slide out under it. Both chapter openings end on this so
@@ -16,17 +19,16 @@ export const STATION_LAST_FRAME = 430;
 export function drawActStamp(ctx, age, name, sub) {
   if (age < 0) return;
   const sc = age < 3 ? 5 : age < 6 ? 4 : 3;
-  const x = (W - textWidth(name, sc)) / 2;
   const y = 92 - (sc - 3) * 4;
   ctx.save();
   if (age < 6) { ctx.globalAlpha = 0.9; }
   ctx.fillStyle = 'rgba(6,3,8,0.55)';
-  ctx.fillRect(0, y - 8, W, 5 * sc + 34);
-  drawTextShadow(ctx, name, x, y, age < 8 ? '#fff6e0' : '#ffd94a', sc, '#3a0c10');
+  ctx.fillRect(0, y - 8, W, 8 * sc + 34);
+  const heading=drawDisplayTitle(ctx,name,W/2,y,{height:sc*9,maxWidth:420});
   const rule = Math.min(1, Math.max(0, (age - 6) / 12));
   ctx.fillStyle = '#d82838';
-  ctx.fillRect(Math.round(W / 2 - rule * (textWidth(name, 3) / 2 + 10)), y + 5 * sc + 6, Math.round(rule * (textWidth(name, 3) + 20)), 2);
-  if (age > 12) drawTextShadow(ctx, sub, (W - textWidth(sub, 1)) / 2, y + 5 * sc + 14, '#c8c0e0', 1);
+  ctx.fillRect(Math.round(W/2-rule*(heading.width/2+10)),y+heading.height+5,Math.round(rule*(heading.width+20)),2);
+  if (age > 12) drawTextShadow(ctx, sub, (W - textWidth(sub, 1)) / 2, y+heading.height+13, '#c8c0e0', 1);
   ctx.restore();
 }
 
@@ -56,9 +58,9 @@ function loadFrame(path, onload) {
 export function loadStory() {
   const loads = [];
   for (let i = 0; i < RIDE_CELS; i++) {
-    loads.push(loadFrame(`assets/story/entrance_v9/combined_${String(i + 1).padStart(2, '0')}.png`, (c) => { HERO[i] = c; }));
+    loads.push(loadFrame(`assets/story/motorcycle/combined_${String(i + 1).padStart(2, '0')}.png`, (c) => { HERO[i] = c; }));
   }
-  loads.push(loadFrame('assets/story/entrance_v9/bike.png', (c) => { BIKE = c; }));
+  loads.push(loadFrame('assets/story/motorcycle/bike.png', (c) => { BIKE = c; }));
   return Promise.all(loads);
 }
 
@@ -429,23 +431,32 @@ export function drawMotorcycleArrival(ctx, options = {}) {
 }
 
 // ---- THE NIGHT TRAIN: the station ----------------------------------------------
-// He walks onto platform one with nothing but a cigar. The board wakes up, the PA
-// chimes, the guard's whistle goes down the platform, and the act's name lands.
+// The clerk demands a ticket. CHAD answers with his shoulder; the announcement,
+// title impact and existing Duke line punctuate the ruined barrier.
 const ST = {
-  walkTo: 150, walkEnd: 118,
-  chime: 128, board: 150, whistle: 262, stamp: 272, voice: 292,
+  walkTo: 380, walkEnd: 280,
+  chime: 230, board: 240, whistle: 326, stamp: 336, voice: 352,
 };
-const BOARD = 'PLATFORM 1 - THE 22:40 SOUTH - ON TIME';
+const BOARD = 'PLATFORM 1 - NIGHT SERVICE TO DELHI';
 let stFlags = {};
 function resetStation() { stFlags = {}; }
 function once(key, t, at, fn) { if (t >= at && !stFlags[key]) { stFlags[key] = true; fn(); } }
 
-function stationHeroX(t) { return -34 + (ST.walkTo + 34) * smooth(Math.min(1, t / ST.walkEnd)); }
+// Follow the gateway's depth axis first; the right turn happens on the station
+// side of the threshold, after the full body has cleared the scanner.
+export function stationEntryPosition(t) {
+ const x=t<222?270:270+110*smooth((t-222)/58);
+ const y=t<60?190+12*smooth(t/60):t<123?202:t<174?202+21*smooth((t-123)/51):t<222?223:223-5*smooth((t-222)/58);
+ return {x,y};
+}
 
 export function updateStationArrival(t) {
   const p = G.player;
-  p.x = stationHeroX(t); p.y = 218; p.face = 1;
-  if (t < ST.walkEnd && t % 26 === 8) audio.sfx('entrance_boot');
+  Object.assign(p,stationEntryPosition(t)); p.face = 1;
+  if(t>=55&&t<117)updateDialogue('TICKET FIRST.',t-55);
+  once('charge',t,123,()=>audio.sfx('dash'));
+  once('barrier',t,143,()=>{audio.sfx('heavy');audio.sfx('slam');G.shake=9;});
+  if ((t<60||(t>=123&&t<174)||(t>=222&&t<ST.walkEnd)) && t % 26 === 8) audio.sfx('entrance_boot');
   once('stand', t, ST.walkEnd, () => audio.sfx('entrance_stand'));
   once('chime', t, ST.chime, () => audio.sfx('chime'));
   once('whistle', t, ST.whistle, () => { audio.sfx('go'); });
@@ -460,17 +471,28 @@ export function drawStationArrival(ctx) {
   const p = G.player;
   drawStage(ctx, 0);
   for (const pr of G.props) if (!pr.broken && pr.x < W + 40) drawProp(ctx, pr, 0);
-  // the walk, then the stand: idle frames once he is where he is going
-  const walking = t < ST.walkEnd;
-  const f = walking ? getFrame(SPR.player, 'walk', (t >> 3) & 3, 1)
-    : t < ST.walkEnd + 40 ? getFrame(SPR.player, 'idle', 0, 1)
-      : getFrame(SPR.player, 'idle_cigar', ((t - ST.walkEnd) >> 4) % 6, 1);
-  const sx = Math.round(p.x), sy = Math.round(p.y);
-  ctx.save(); ctx.globalAlpha = 0.28; ctx.fillStyle = '#000';
-  ctx.beginPath(); ctx.ellipse(sx, sy, 16, 5, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-  blit(ctx, f, sx - frameW(f) / 2, sy - frameH(f) + 4);
+  if(t<75){
+    ctx.save();ctx.globalAlpha=(1-t/75)*.20;ctx.fillStyle='#b8c3d6';
+    for(let i=0;i<22;i++)ctx.fillRect(202+(i*19+t*.4)%132,207-(i*7+t*.22)%34,12+i%9,2+i%3);
+    ctx.restore();
+  }
+  const entry=t<60?Math.floor(t/12)%2:t<108?2:t<135?3:t<174?4:t<206?5:t<222?6:-1;
+  const pose=t>=222&&t<ST.walkEnd?Math.floor((t-222)/8)%4:t>=ST.walkEnd&&t<305?6:t>=305&&t<330?7:-1;
+  if(t>=169)drawTicketScanner(ctx,t);
+  if(entry>=0)drawTrainEntryPose(ctx,entry,Math.round(p.x),Math.round(p.y));
+  else if(pose>=0)drawTrainHeroPose(ctx,pose,Math.round(p.x),Math.round(p.y));
+  else {const f=getFrame(SPR.player,'idle',Math.floor(t/10),1);blit(ctx,f,p.x-frameW(f)/2,p.y-frameH(f)+4);}
+  // Until impact the upright bars are in front of CHAD, not behind his body.
+  if(t<169)drawTicketScanner(ctx,t);
+  drawTicketPanels(ctx,t);
   drawEffects(ctx, 0);
   drawTrainOverlay(ctx, 0);
+  if(t>=143&&t<165){
+    const age=t-143;ctx.save();ctx.globalAlpha=(1-age/22)*.7;ctx.fillStyle='#d8a45b';
+    for(let i=0;i<8;i++)ctx.fillRect(275+(i%2?1:-1)*(39+age*.5),169+(i*7)%25+age*.35,1,1);
+    ctx.restore();
+  }
+  if(t>=55&&t<123)drawDialogue(ctx,{text:'TICKET FIRST.',speaker:'TICKET CLERK',x:96,bottom:128,age:t-55,remaining:123-t,width:135});
   // the night, and the station's tubes waking one at a time
   ctx.fillStyle = 'rgba(4,4,12,0.22)'; ctx.fillRect(0, 0, W, H);
   if (t >= ST.chime && t < ST.chime + 14 && ((t >> 1) & 1)) { ctx.fillStyle = 'rgba(200,220,255,0.10)'; ctx.fillRect(0, 0, W, H); }

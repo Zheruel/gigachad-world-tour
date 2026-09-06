@@ -117,7 +117,7 @@ const PLATES = [
 
 const AUDIO = [
   ['audio/neon_shadows.mp3', 'NEON SHADOWS', 'The lair\'s own music slot, so the hub scores itself without the title screen losing its chiptune.'],
-  ['audio/voice/duke_look_good.wav', 'Mirror flex', 'Fired by the FLEX fixture. A missing wav is skipped by loadSFX and the flex simply plays no line.'],
+  ['audio/voice/duke/victory/damn_i_m_looking_good_game_take.wav', 'Mirror flex', 'Fired by the FLEX fixture. A missing wav is skipped by loadSFX and the flex simply plays no line.'],
   ['audio/sfx/armor.wav', 'Bag impact', 'Every hit on the heavy bag.'],
   ['audio/sfx/blip.wav', 'Fixture blip', 'Sitting down, pouring one, standing back up, opening a panel.'],
   ['audio/sfx/super.wav', 'RAGNAROK', 'The meter earned on the bag is spendable in the room; it scatters the tiger.'],

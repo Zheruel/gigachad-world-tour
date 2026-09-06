@@ -15,6 +15,9 @@
   .src  { color:#8a8078; float:right; }
   h2 { font-size:13px; color:#d85838; margin:26px 0 8px; letter-spacing:1px; }
   code { background:#241c18; padding:1px 5px; border-radius:3px; color:#c8c0a8; }
+  input, select { background:#241c18;color:#e8e0d0;border:1px solid #4a3c30;padding:9px;margin:0 10px 12px 0;font:inherit; }
+  .quote { display:block;color:#ffd94a; }
+  .details { display:block;color:#9a9088;font-size:11px;margin-top:5px; }
 </style>
 </head>
 <body>
@@ -22,38 +25,67 @@
 <p>Top row: what the game currently plays for each slot. Bottom: every sound in the
 Streets of Rage 2 rip, by its sound-test number. If a slot sounds wrong, find a better
 number below and change that slot in <code>audio/sfx/manifest.json</code>, then re-run
-<code>tools/build_sfx.sh</code>.</p>
+<code>tools/production/build_sfx.sh</code>.</p>
 
 <h2>GAME SLOTS</h2>
 <div class="grid" id="slots"></div>
+
+<h2>DUKE VOICE LIBRARY</h2>
+<p>All Duke recordings in one collection. Search by quote, game cue or intended use. Original game takes retain their existing sound. Only one preview plays at a time.</p>
+<label>Search <input id="dukeSearch" type="search" placeholder="Quote or intended use"></label>
+<label>Category <select id="dukeCategory"><option value="">All categories</option></select></label>
+<button id="stopPreview" type="button">Stop preview</button>
+<p id="dukeStatus" role="status"></p>
+<div class="grid" id="dukeClips"></div>
 
 <h2>ALL SOURCE SOUNDS</h2>
 <div class="grid" id="all"></div>
 
 <script type="module">
-const SLOTS = ['punch','heavy','kick','whiff','land','slam','ko','throw','grab',
-  'dash','jump','pickup','blip','armor','enrage','super','phurt','weapon','go',
-  'ehurt1','ehurt2','ehurt3','ehurt4','edie1','edie2','bdie'];
-
 const manifest = await fetch('audio/sfx/manifest.json').then(r => r.json()).catch(() => ({map:{}}));
 
 function button(parent, label, sub, url) {
   const b = document.createElement('button');
   b.innerHTML = `<span class="slot">${label}</span><span class="src">${sub}</span>`;
-  b.onclick = () => { const a = new Audio(url); a.volume = 0.9; a.play(); };
+  b.onclick = () => { if(activeAudio){activeAudio.pause();activeAudio.currentTime=0;} const a = activeAudio = new Audio(url); a.volume = 0.7; a.play().catch(()=>{b.title='Sample unavailable';}); };
   parent.appendChild(b);
 }
 
 const slots = document.getElementById('slots');
-for (const s of SLOTS) button(slots, s, manifest.map?.[s] ?? '?', `audio/sfx/${s}.wav`);
+for (const s of Object.keys(manifest.map||{})) button(slots, s, manifest.map?.[s] ?? '?', `audio/sfx/${s}.wav`);
 
 // the raw rip lives outside the shipped build; point at wherever you extracted it
 const all = document.getElementById('all');
-const RAW = manifest.rawDir || 'audio/sfx/raw';
-const nums = [...Array(50).keys()].map(n => String(n).padStart(2,'0'))
-  .filter(n => n !== '19' && n !== '21' && n !== '44')
-  .concat(['19, 21','44a','44b']);
-for (const n of nums) button(all, n, '', `${RAW}/${n}.wav`);
+for(const [s,recipe] of Object.entries({...manifest.composites,...manifest.generated})) button(slots,s,recipe.label||'Designed effect',`audio/sfx/${s}.wav`);
+const RAW = manifest.rawDir || 'audio/sources/streets_of_rage_2';
+let activeAudio;
+const stopPreview=()=>{if(activeAudio){activeAudio.pause();activeAudio.currentTime=0;activeAudio=null;}};
+document.getElementById('stopPreview').onclick=stopPreview;
+window.addEventListener('pagehide',stopPreview);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPreview();});
+const dukeCatalog=await fetch('audio/voice/duke/catalog.json').then(r=>r.json()).catch(()=>({clips:[]}));
+const dukeSearch=document.getElementById('dukeSearch'),dukeCategory=document.getElementById('dukeCategory');
+for(const category of [...new Set(dukeCatalog.clips.map(c=>c.category))]){
+  const option=document.createElement('option');option.value=category;option.textContent=category;dukeCategory.append(option);
+}
+function renderDuke(){
+  const grid=document.getElementById('dukeClips');grid.replaceChildren();
+  const matches=dukeCatalog.clips.filter(c=>(!dukeCategory.value||c.category===dukeCategory.value)&&`${c.transcript} ${c.suggestedUse} ${c.sourceFilename} ${(c.legacySlots||[]).join(" ")}`.toLowerCase().includes(dukeSearch.value.toLowerCase()));
+  for(const clip of matches){
+    const b=document.createElement('button');b.type='button';
+    const quote=document.createElement('span');quote.className='quote';quote.textContent=clip.transcript;
+    const details=document.createElement('span');details.className='details';details.textContent=`${clip.category} · ${clip.duration.toFixed(2)}s · ${clip.legacySlots?.length?'original game take':'archive selection'}`;
+    b.append(quote,details);b.title=`${clip.suggestedUse}\nSource: ${clip.sourceFilename}\nTranscript: ${clip.transcriptProvenance==='whisper-local'?'local Whisper large-v3':'archive filename'}.`;
+    b.onclick=()=>{stopPreview();activeAudio=new Audio(`audio/voice/duke/${clip.file}`);activeAudio.volume=.7;activeAudio.play().catch(()=>{b.title='Sample unavailable';});};grid.append(b);
+  }
+  document.getElementById('dukeStatus').textContent=`${matches.length} of ${dukeCatalog.clips.length} Duke recordings. Original game takes use local Whisper transcripts; archive selections use pack labels.`;
+}
+dukeSearch.oninput=renderDuke;dukeCategory.onchange=renderDuke;renderDuke();
+
+const search=document.createElement('input');search.placeholder='Filter by role, source ID or voice';search.style.cssText='padding:10px;width:320px;margin:12px 0';all.before(search);
+const status=document.createElement('p');status.textContent=`${manifest.catalog?.length||0} local samples. Role labels are provisional; original sound names are not yet ear-verified.`;all.before(status);
+function renderBank(){all.replaceChildren();for(const item of manifest.catalog||[]){if(!`${item.id} ${item.label} ${item.bank}`.toLowerCase().includes(search.value.toLowerCase()))continue;button(all,item.label,`${item.id} · ${item.bank} · ${item.seconds}s · unverified`,`${RAW}/${encodeURIComponent(item.file)}`);}}
+search.oninput=renderBank;renderBank();
 </script>
 </body>
 </html>

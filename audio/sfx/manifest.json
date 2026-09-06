@@ -1,7 +1,7 @@
 {
   "source": "Streets of Rage 2 (Sega Genesis) sound effects, ripped set from The Sounds Resource asset 359 (media/assets/391/393998.zip). Used under the project's stated licence agreement for these sounds.",
-  "note": "map = game slot -> sound-test index in raw/. The rip ships numbered, not named, so these were matched by acoustic analysis (duration, attack time, spectral centroid, low/high energy split) and have NOT been verified by ear. The V* files are the rip's voice bank: ehurt1-4 (the four short grunts V00-V03) play on an enemy taking a hit, edie1-2 (the ~1 s ones) on a KO, bdie (the long one) on a boss going down. Open sfxlab.html to audition every slot against every source sound, fix any that are wrong here, then run tools/build_sfx.sh.",
-  "rawDir": "audio/sfx/raw",
+  "note": "All local WAV files are catalogued, including the voice bank. Role labels describe current game assignments, not verified original SOR2 names. verifiedByEar remains false until auditioned and confirmed. Use sfxlab.html to compare sources; rebuild runtime files with tools/production/build_sfx.sh after changing map.",
+  "rawDir": "audio/sources/streets_of_rage_2",
   "map": {
     "punch": "02",
     "heavy": "05",
@@ -18,7 +18,7 @@
     "blip": "48",
     "armor": "15",
     "enrage": "26",
-    "super": "44a",
+    "super": "26",
     "phurt": "25",
     "weapon": "11",
     "go": "29",
@@ -29,5 +29,1141 @@
     "edie1": "V20",
     "edie2": "V19",
     "bdie": "V48"
+  },
+  "catalog": [
+    {
+      "id": "00",
+      "file": "00.wav",
+      "bank": "effect",
+      "seconds": 0.229,
+      "roles": [
+        "kick"
+      ],
+      "label": "kick",
+      "verifiedByEar": false
+    },
+    {
+      "id": "01",
+      "file": "01.wav",
+      "bank": "effect",
+      "seconds": 0.329,
+      "roles": [],
+      "label": "Unassigned source 01",
+      "verifiedByEar": false
+    },
+    {
+      "id": "02",
+      "file": "02.wav",
+      "bank": "effect",
+      "seconds": 0.099,
+      "roles": [
+        "punch"
+      ],
+      "label": "punch",
+      "verifiedByEar": false
+    },
+    {
+      "id": "03",
+      "file": "03.wav",
+      "bank": "effect",
+      "seconds": 0.345,
+      "roles": [],
+      "label": "Unassigned source 03",
+      "verifiedByEar": false
+    },
+    {
+      "id": "04",
+      "file": "04.wav",
+      "bank": "effect",
+      "seconds": 0.17,
+      "roles": [
+        "whiff"
+      ],
+      "label": "whiff",
+      "verifiedByEar": false
+    },
+    {
+      "id": "05",
+      "file": "05.wav",
+      "bank": "effect",
+      "seconds": 0.446,
+      "roles": [
+        "heavy"
+      ],
+      "label": "heavy",
+      "verifiedByEar": false
+    },
+    {
+      "id": "06",
+      "file": "06.wav",
+      "bank": "effect",
+      "seconds": 0.674,
+      "roles": [],
+      "label": "Unassigned source 06",
+      "verifiedByEar": false
+    },
+    {
+      "id": "07",
+      "file": "07.wav",
+      "bank": "effect",
+      "seconds": 0.351,
+      "roles": [],
+      "label": "Unassigned source 07",
+      "verifiedByEar": false
+    },
+    {
+      "id": "08",
+      "file": "08.wav",
+      "bank": "effect",
+      "seconds": 1.653,
+      "roles": [],
+      "label": "Unassigned source 08",
+      "verifiedByEar": false
+    },
+    {
+      "id": "09",
+      "file": "09.wav",
+      "bank": "effect",
+      "seconds": 1.07,
+      "roles": [],
+      "label": "Unassigned source 09",
+      "verifiedByEar": false
+    },
+    {
+      "id": "10",
+      "file": "10.wav",
+      "bank": "effect",
+      "seconds": 0.301,
+      "roles": [],
+      "label": "Unassigned source 10",
+      "verifiedByEar": false
+    },
+    {
+      "id": "11",
+      "file": "11.wav",
+      "bank": "effect",
+      "seconds": 0.408,
+      "roles": [
+        "weapon"
+      ],
+      "label": "weapon",
+      "verifiedByEar": false
+    },
+    {
+      "id": "12",
+      "file": "12.wav",
+      "bank": "effect",
+      "seconds": 1.615,
+      "roles": [],
+      "label": "Unassigned source 12",
+      "verifiedByEar": false
+    },
+    {
+      "id": "13",
+      "file": "13.wav",
+      "bank": "effect",
+      "seconds": 0.312,
+      "roles": [
+        "throw"
+      ],
+      "label": "throw",
+      "verifiedByEar": false
+    },
+    {
+      "id": "14",
+      "file": "14.wav",
+      "bank": "effect",
+      "seconds": 1.335,
+      "roles": [],
+      "label": "Unassigned source 14",
+      "verifiedByEar": false
+    },
+    {
+      "id": "15",
+      "file": "15.wav",
+      "bank": "effect",
+      "seconds": 0.218,
+      "roles": [
+        "armor"
+      ],
+      "label": "armor",
+      "verifiedByEar": false
+    },
+    {
+      "id": "16",
+      "file": "16.wav",
+      "bank": "effect",
+      "seconds": 1.578,
+      "roles": [
+        "ko"
+      ],
+      "label": "ko",
+      "verifiedByEar": false
+    },
+    {
+      "id": "17",
+      "file": "17.wav",
+      "bank": "effect",
+      "seconds": 0.999,
+      "roles": [],
+      "label": "Unassigned source 17",
+      "verifiedByEar": false
+    },
+    {
+      "id": "18",
+      "file": "18.wav",
+      "bank": "effect",
+      "seconds": 0.723,
+      "roles": [],
+      "label": "Unassigned source 18",
+      "verifiedByEar": false
+    },
+    {
+      "id": "19, 21",
+      "file": "19, 21.wav",
+      "bank": "effect",
+      "seconds": 0.943,
+      "roles": [],
+      "label": "Unassigned source 19, 21",
+      "verifiedByEar": false
+    },
+    {
+      "id": "20",
+      "file": "20.wav",
+      "bank": "effect",
+      "seconds": 1.144,
+      "roles": [],
+      "label": "Unassigned source 20",
+      "verifiedByEar": false
+    },
+    {
+      "id": "22",
+      "file": "22.wav",
+      "bank": "effect",
+      "seconds": 0.624,
+      "roles": [
+        "grab"
+      ],
+      "label": "grab",
+      "verifiedByEar": false
+    },
+    {
+      "id": "23",
+      "file": "23.wav",
+      "bank": "effect",
+      "seconds": 0.102,
+      "roles": [
+        "jump"
+      ],
+      "label": "jump",
+      "verifiedByEar": false
+    },
+    {
+      "id": "24",
+      "file": "24.wav",
+      "bank": "effect",
+      "seconds": 1.175,
+      "roles": [],
+      "label": "Unassigned source 24",
+      "verifiedByEar": false
+    },
+    {
+      "id": "25",
+      "file": "25.wav",
+      "bank": "effect",
+      "seconds": 0.488,
+      "roles": [
+        "phurt"
+      ],
+      "label": "phurt",
+      "verifiedByEar": false
+    },
+    {
+      "id": "26",
+      "file": "26.wav",
+      "bank": "effect",
+      "seconds": 1.099,
+      "roles": [
+        "enrage",
+        "super"
+      ],
+      "label": "enrage / super",
+      "verifiedByEar": false
+    },
+    {
+      "id": "27",
+      "file": "27.wav",
+      "bank": "effect",
+      "seconds": 1.377,
+      "roles": [],
+      "label": "Unassigned source 27",
+      "verifiedByEar": false
+    },
+    {
+      "id": "28",
+      "file": "28.wav",
+      "bank": "effect",
+      "seconds": 1.009,
+      "roles": [],
+      "label": "Unassigned source 28",
+      "verifiedByEar": false
+    },
+    {
+      "id": "29",
+      "file": "29.wav",
+      "bank": "effect",
+      "seconds": 0.554,
+      "roles": [
+        "go"
+      ],
+      "label": "go",
+      "verifiedByEar": false
+    },
+    {
+      "id": "30",
+      "file": "30.wav",
+      "bank": "effect",
+      "seconds": 0.848,
+      "roles": [],
+      "label": "Unassigned source 30",
+      "verifiedByEar": false
+    },
+    {
+      "id": "31",
+      "file": "31.wav",
+      "bank": "effect",
+      "seconds": 0.459,
+      "roles": [
+        "slam"
+      ],
+      "label": "slam",
+      "verifiedByEar": false
+    },
+    {
+      "id": "32",
+      "file": "32.wav",
+      "bank": "effect",
+      "seconds": 0.351,
+      "roles": [
+        "land"
+      ],
+      "label": "land",
+      "verifiedByEar": false
+    },
+    {
+      "id": "33",
+      "file": "33.wav",
+      "bank": "effect",
+      "seconds": 1.103,
+      "roles": [],
+      "label": "Unassigned source 33",
+      "verifiedByEar": false
+    },
+    {
+      "id": "34",
+      "file": "34.wav",
+      "bank": "effect",
+      "seconds": 1.07,
+      "roles": [],
+      "label": "Unassigned source 34",
+      "verifiedByEar": false
+    },
+    {
+      "id": "35",
+      "file": "35.wav",
+      "bank": "effect",
+      "seconds": 0.99,
+      "roles": [],
+      "label": "Unassigned source 35",
+      "verifiedByEar": false
+    },
+    {
+      "id": "36",
+      "file": "36.wav",
+      "bank": "effect",
+      "seconds": 0.554,
+      "roles": [],
+      "label": "Unassigned source 36",
+      "verifiedByEar": false
+    },
+    {
+      "id": "37",
+      "file": "37.wav",
+      "bank": "effect",
+      "seconds": 0.15,
+      "roles": [
+        "pickup"
+      ],
+      "label": "pickup",
+      "verifiedByEar": false
+    },
+    {
+      "id": "38",
+      "file": "38.wav",
+      "bank": "effect",
+      "seconds": 0.95,
+      "roles": [],
+      "label": "Unassigned source 38",
+      "verifiedByEar": false
+    },
+    {
+      "id": "39",
+      "file": "39.wav",
+      "bank": "effect",
+      "seconds": 0.821,
+      "roles": [],
+      "label": "Unassigned source 39",
+      "verifiedByEar": false
+    },
+    {
+      "id": "40",
+      "file": "40.wav",
+      "bank": "effect",
+      "seconds": 4.046,
+      "roles": [],
+      "label": "Unassigned source 40",
+      "verifiedByEar": false
+    },
+    {
+      "id": "41",
+      "file": "41.wav",
+      "bank": "effect",
+      "seconds": 0.912,
+      "roles": [],
+      "label": "Unassigned source 41",
+      "verifiedByEar": false
+    },
+    {
+      "id": "42",
+      "file": "42.wav",
+      "bank": "effect",
+      "seconds": 2.54,
+      "roles": [],
+      "label": "Unassigned source 42",
+      "verifiedByEar": false
+    },
+    {
+      "id": "43",
+      "file": "43.wav",
+      "bank": "effect",
+      "seconds": 0.779,
+      "roles": [],
+      "label": "Unassigned source 43",
+      "verifiedByEar": false
+    },
+    {
+      "id": "44a",
+      "file": "44a.wav",
+      "bank": "effect",
+      "seconds": 2.612,
+      "roles": [],
+      "label": "Unassigned source 44a",
+      "verifiedByEar": false
+    },
+    {
+      "id": "44b",
+      "file": "44b.wav",
+      "bank": "effect",
+      "seconds": 4.651,
+      "roles": [],
+      "label": "Unassigned source 44b",
+      "verifiedByEar": false
+    },
+    {
+      "id": "45",
+      "file": "45.wav",
+      "bank": "effect",
+      "seconds": 2.252,
+      "roles": [],
+      "label": "Unassigned source 45",
+      "verifiedByEar": false
+    },
+    {
+      "id": "46",
+      "file": "46.wav",
+      "bank": "effect",
+      "seconds": 0.931,
+      "roles": [],
+      "label": "Unassigned source 46",
+      "verifiedByEar": false
+    },
+    {
+      "id": "47",
+      "file": "47.wav",
+      "bank": "effect",
+      "seconds": 0.985,
+      "roles": [],
+      "label": "Unassigned source 47",
+      "verifiedByEar": false
+    },
+    {
+      "id": "48",
+      "file": "48.wav",
+      "bank": "effect",
+      "seconds": 0.64,
+      "roles": [
+        "blip"
+      ],
+      "label": "blip",
+      "verifiedByEar": false
+    },
+    {
+      "id": "49",
+      "file": "49.wav",
+      "bank": "effect",
+      "seconds": 0.431,
+      "roles": [
+        "dash"
+      ],
+      "label": "dash",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V00",
+      "file": "V00.wav",
+      "bank": "voice",
+      "seconds": 0.382,
+      "roles": [
+        "ehurt1"
+      ],
+      "label": "ehurt1",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V01",
+      "file": "V01.wav",
+      "bank": "voice",
+      "seconds": 0.409,
+      "roles": [
+        "ehurt2"
+      ],
+      "label": "ehurt2",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V02",
+      "file": "V02.wav",
+      "bank": "voice",
+      "seconds": 0.438,
+      "roles": [
+        "ehurt3"
+      ],
+      "label": "ehurt3",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V03",
+      "file": "V03.wav",
+      "bank": "voice",
+      "seconds": 0.494,
+      "roles": [
+        "ehurt4"
+      ],
+      "label": "ehurt4",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V04",
+      "file": "V04.wav",
+      "bank": "voice",
+      "seconds": 0.658,
+      "roles": [],
+      "label": "Unassigned source V04",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V05",
+      "file": "V05.wav",
+      "bank": "voice",
+      "seconds": 0.802,
+      "roles": [],
+      "label": "Unassigned source V05",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V06",
+      "file": "V06.wav",
+      "bank": "voice",
+      "seconds": 0.612,
+      "roles": [],
+      "label": "Unassigned source V06",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V07",
+      "file": "V07.wav",
+      "bank": "voice",
+      "seconds": 0.509,
+      "roles": [],
+      "label": "Unassigned source V07",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V08",
+      "file": "V08.wav",
+      "bank": "voice",
+      "seconds": 0.402,
+      "roles": [],
+      "label": "Unassigned source V08",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V09",
+      "file": "V09.wav",
+      "bank": "voice",
+      "seconds": 0.304,
+      "roles": [],
+      "label": "Unassigned source V09",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V10",
+      "file": "V10.wav",
+      "bank": "voice",
+      "seconds": 0.937,
+      "roles": [],
+      "label": "Unassigned source V10",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V11",
+      "file": "V11.wav",
+      "bank": "voice",
+      "seconds": 0.952,
+      "roles": [],
+      "label": "Unassigned source V11",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V12",
+      "file": "V12.wav",
+      "bank": "voice",
+      "seconds": 0.401,
+      "roles": [],
+      "label": "Unassigned source V12",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V13",
+      "file": "V13.wav",
+      "bank": "voice",
+      "seconds": 0.216,
+      "roles": [],
+      "label": "Unassigned source V13",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V14",
+      "file": "V14.wav",
+      "bank": "voice",
+      "seconds": 0.47,
+      "roles": [],
+      "label": "Unassigned source V14",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V15",
+      "file": "V15.wav",
+      "bank": "voice",
+      "seconds": 0.598,
+      "roles": [],
+      "label": "Unassigned source V15",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V16",
+      "file": "V16.wav",
+      "bank": "voice",
+      "seconds": 0.212,
+      "roles": [],
+      "label": "Unassigned source V16",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V17",
+      "file": "V17.wav",
+      "bank": "voice",
+      "seconds": 0.679,
+      "roles": [],
+      "label": "Unassigned source V17",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V18",
+      "file": "V18.wav",
+      "bank": "voice",
+      "seconds": 0.9,
+      "roles": [],
+      "label": "Unassigned source V18",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V19",
+      "file": "V19.wav",
+      "bank": "voice",
+      "seconds": 0.984,
+      "roles": [
+        "edie2"
+      ],
+      "label": "edie2",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V20",
+      "file": "V20.wav",
+      "bank": "voice",
+      "seconds": 1.179,
+      "roles": [
+        "edie1"
+      ],
+      "label": "edie1",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V21",
+      "file": "V21.wav",
+      "bank": "voice",
+      "seconds": 0.48,
+      "roles": [],
+      "label": "Unassigned source V21",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V22",
+      "file": "V22.wav",
+      "bank": "voice",
+      "seconds": 1.096,
+      "roles": [],
+      "label": "Unassigned source V22",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V23",
+      "file": "V23.wav",
+      "bank": "voice",
+      "seconds": 1.026,
+      "roles": [],
+      "label": "Unassigned source V23",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V24",
+      "file": "V24.wav",
+      "bank": "voice",
+      "seconds": 0.506,
+      "roles": [],
+      "label": "Unassigned source V24",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V25",
+      "file": "V25.wav",
+      "bank": "voice",
+      "seconds": 0.679,
+      "roles": [],
+      "label": "Unassigned source V25",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V26",
+      "file": "V26.wav",
+      "bank": "voice",
+      "seconds": 0.433,
+      "roles": [],
+      "label": "Unassigned source V26",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V27",
+      "file": "V27.wav",
+      "bank": "voice",
+      "seconds": 0.291,
+      "roles": [],
+      "label": "Unassigned source V27",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V28",
+      "file": "V28.wav",
+      "bank": "voice",
+      "seconds": 0.473,
+      "roles": [],
+      "label": "Unassigned source V28",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V29",
+      "file": "V29.wav",
+      "bank": "voice",
+      "seconds": 0.775,
+      "roles": [],
+      "label": "Unassigned source V29",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V30",
+      "file": "V30.wav",
+      "bank": "voice",
+      "seconds": 0.383,
+      "roles": [],
+      "label": "Unassigned source V30",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V31",
+      "file": "V31.wav",
+      "bank": "voice",
+      "seconds": 0.834,
+      "roles": [],
+      "label": "Unassigned source V31",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V32",
+      "file": "V32.wav",
+      "bank": "voice",
+      "seconds": 0.42,
+      "roles": [],
+      "label": "Unassigned source V32",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V33",
+      "file": "V33.wav",
+      "bank": "voice",
+      "seconds": 1.055,
+      "roles": [],
+      "label": "Unassigned source V33",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V34",
+      "file": "V34.wav",
+      "bank": "voice",
+      "seconds": 0.41,
+      "roles": [],
+      "label": "Unassigned source V34",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V35",
+      "file": "V35.wav",
+      "bank": "voice",
+      "seconds": 0.65,
+      "roles": [],
+      "label": "Unassigned source V35",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V36",
+      "file": "V36.wav",
+      "bank": "voice",
+      "seconds": 0.323,
+      "roles": [],
+      "label": "Unassigned source V36",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V37",
+      "file": "V37.wav",
+      "bank": "voice",
+      "seconds": 0.948,
+      "roles": [],
+      "label": "Unassigned source V37",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V38",
+      "file": "V38.wav",
+      "bank": "voice",
+      "seconds": 0.777,
+      "roles": [],
+      "label": "Unassigned source V38",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V39",
+      "file": "V39.wav",
+      "bank": "voice",
+      "seconds": 0.33,
+      "roles": [],
+      "label": "Unassigned source V39",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V40",
+      "file": "V40.wav",
+      "bank": "voice",
+      "seconds": 0.988,
+      "roles": [],
+      "label": "Unassigned source V40",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V41",
+      "file": "V41.wav",
+      "bank": "voice",
+      "seconds": 0.951,
+      "roles": [],
+      "label": "Unassigned source V41",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V42",
+      "file": "V42.wav",
+      "bank": "voice",
+      "seconds": 1.148,
+      "roles": [],
+      "label": "Unassigned source V42",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V43",
+      "file": "V43.wav",
+      "bank": "voice",
+      "seconds": 0.372,
+      "roles": [],
+      "label": "Unassigned source V43",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V44",
+      "file": "V44.wav",
+      "bank": "voice",
+      "seconds": 0.37,
+      "roles": [],
+      "label": "Unassigned source V44",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V45",
+      "file": "V45.wav",
+      "bank": "voice",
+      "seconds": 1.359,
+      "roles": [],
+      "label": "Unassigned source V45",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V46",
+      "file": "V46.wav",
+      "bank": "voice",
+      "seconds": 1.236,
+      "roles": [],
+      "label": "Unassigned source V46",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V47",
+      "file": "V47.wav",
+      "bank": "voice",
+      "seconds": 0.577,
+      "roles": [],
+      "label": "Unassigned source V47",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V48",
+      "file": "V48.wav",
+      "bank": "voice",
+      "seconds": 1.962,
+      "roles": [
+        "bdie"
+      ],
+      "label": "bdie",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V49",
+      "file": "V49.wav",
+      "bank": "voice",
+      "seconds": 1.095,
+      "roles": [],
+      "label": "Unassigned source V49",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V50",
+      "file": "V50.wav",
+      "bank": "voice",
+      "seconds": 0.384,
+      "roles": [],
+      "label": "Unassigned source V50",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V51",
+      "file": "V51.wav",
+      "bank": "voice",
+      "seconds": 0.339,
+      "roles": [],
+      "label": "Unassigned source V51",
+      "verifiedByEar": false
+    },
+    {
+      "id": "V52",
+      "file": "V52.wav",
+      "bank": "voice",
+      "seconds": 0.643,
+      "roles": [],
+      "label": "Unassigned source V52",
+      "verifiedByEar": false
+    }
+  ],
+  "finaleAssignments": {
+    "armor": "coupling and loose metal",
+    "entrance_crack": "panel break and debris",
+    "jump": "takeoff",
+    "land": "boot contact",
+    "phurt": "quiet roll contact",
+    "entrance_boot": "boot settle and rise",
+    "heavy": "first carriage blast",
+    "slam": "main destruction impact",
+    "train_blast": "layered roof rupture"
+  },
+  "sequenceAssignments": {
+    "nightTrainFinale": {
+      "braking": {
+        "slot": "train_brake",
+        "source": "synthesized railway friction",
+        "verifiedByEar": false,
+        "tick": 182,
+        "durationTicks": 358
+      },
+      "arming": {
+        "slot": "charge_arm",
+        "source": "synthesized fictional device Foley",
+        "verifiedByEar": false
+      },
+      "remote": {
+        "slot": "remote_click",
+        "source": "synthesized switch Foley",
+        "verifiedByEar": false
+      },
+      "touchdown": {
+        "slot": "land",
+        "source": "32",
+        "verifiedByEar": false
+      },
+      "majorBlasts": {
+        "slots": [
+          "heavy",
+          "slam",
+          "train_blast"
+        ],
+        "sources": [
+          "05",
+          "31",
+          "31 + 05 delayed 80 ms"
+        ],
+        "ticks": [
+          732,
+          780,
+          834,
+          894,
+          960,
+          1026,
+          1098,
+          1170
+        ],
+        "verifiedByEar": false
+      },
+      "debris": {
+        "slots": [
+          "entrance_crack",
+          "entrance_boot"
+        ],
+        "ticks": [
+          720,
+          745,
+          770,
+          795,
+          820,
+          845,
+          870,
+          895,
+          920,
+          945,
+          970,
+          995,
+          1020,
+          1045,
+          1070,
+          1095,
+          1120,
+          1145,
+          1170,
+          1195
+        ],
+        "verifiedByEar": false
+      },
+      "quotes": {
+        "slots": [
+          "duke_getting_off",
+          "duke_rest_pieces"
+        ],
+        "ticks": [
+          188,
+          604
+        ],
+        "catalog": "audio/voice/duke/catalog.json",
+        "transcriptCheck": "Local faster-whisper large-v3 confirms both selected lines.",
+        "verifiedByEar": false
+      },
+      "rolling": {
+        "slot": "train_approach",
+        "tick": 1,
+        "durationTicks": 539,
+        "source": "synthesized speed-matched rolling and air movement",
+        "verifiedByEar": false
+      }
+    },
+    "conductorIntro": {
+      "paper": "room_page",
+      "chair": "room_chair",
+      "footsteps": "entrance_boot",
+      "note": "Paper and chair are synthesized Foley; timing tested, listening approval pending."
+    }
+  },
+  "composites": {
+    "train_blast": {
+      "inputs": [
+        {
+          "source": "31",
+          "delayMs": 0,
+          "volume": 0.8
+        },
+        {
+          "source": "05",
+          "delayMs": 80,
+          "volume": 0.65
+        }
+      ]
+    },
+    "pistol": {
+      "inputs": [
+        {
+          "source": "02",
+          "delayMs": 0,
+          "volume": 0.9,
+          "filter": "asetrate=33075,aresample=22050,highpass=f=1100,atrim=duration=0.085"
+        },
+        {
+          "source": "31",
+          "delayMs": 8,
+          "volume": 0.35,
+          "filter": "lowpass=f=1600,atrim=duration=0.12,afade=t=out:st=0.025:d=0.095"
+        }
+      ],
+      "label": "Short dry pistol report; processed impact and low body",
+      "verifiedByEar": false
+    }
+  },
+  "generated": {
+    "conductor_whistle": {
+      "recipe": "tools/production/build_boss_audio.py",
+      "label": "Two short hand-whistle breaths",
+      "verifiedByEar": false
+    }
   }
 }

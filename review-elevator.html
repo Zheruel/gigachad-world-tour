@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penthouse, elevator & lobby review</title>
+<style>
+  :root { color-scheme: dark; font: 14px system-ui; background: #101119; color: #e8ded1; }
+  body { max-width: 1120px; margin: 24px auto; padding: 0 20px; }
+  h1 { font-size: 22px; margin-bottom: 6px; } p { color: #bcb5ae; }
+  .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 14px 0; }
+  button, select { background: #282632; border: 1px solid #665640; color: #ffe0a5; padding: 9px 13px; border-radius: 4px; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 2px solid #ffdc83; }
+  input[type=range] { flex: 1; min-width: 240px; accent-color: #ffc776; }
+  output { min-width: 175px; font-variant-numeric: tabular-nums; }
+  iframe { display: block; border: 1px solid #65543d; width: 960px; height: 540px; max-width: 100%; background: black; }
+  .small { width: 480px; height: 270px; }
+  #status { min-height: 22px; color: #a5decf; }
+</style>
+<h1>World tour scene review</h1>
+<p>Choose a space, inspect animation frames, or take control with normal game inputs. The game’s actual renderer and assets are shown below.</p>
+<div class="controls">
+  <button id="map">Select India at the map</button><button id="door">Inspect doorway</button>
+  <button id="penthouse">Penthouse</button><button id="bed">Penthouse conversation</button><button id="lobby">Lobby</button><button id="reception">Reception desk</button><button id="bar">Bar</button><button id="porter">Bellboy</button><button id="arrival">Lobby arrival</button><button id="exit">Street door</button><button id="waiting">Elevator buttons</button><button id="curb">Hotel exterior</button><button id="boarding">Car boarding</button><button id="drive">Drive</button><button id="ride">Inspect descent</button><button id="explore">Take control</button><button id="scale">View at 1×</button>
+</div>
+<div class="controls"><label>Airport scene <select id="airport-scene"><option value="">Choose a chapter…</option><option value="apron-arrival">Apron arrival</option><option value="apron">Walk to jet</option><option value="jet-board">Boarding stairs</option><option value="takeoff">Takeoff</option><option value="flight">City & mountains</option><option value="india-approach">India approach</option><option value="landing">Touchdown</option><option value="disembark">Disembark</option><option value="papers">Papers encounter</option><option value="arrival-exit">Arrival exit</option></select></label></div>
+<div class="controls">
+  <button data-step="-30">−30</button><button data-step="-1">−1 frame</button>
+  <button id="play">Play</button><button data-step="1">+1 frame</button><button data-step="30">+30</button>
+  <input id="timeline" aria-label="Descent frame" type="range" min="1" max="779" value="1">
+  <output id="readout">Loading artwork…</output>
+</div>
+<div class="controls">
+  <label for="motion">CHAD</label><select id="motion"><option value="idle">Standing</option><option value="walk">Walking back and forth</option><option value="left">Left cabin wall</option><option value="right">Right cabin wall</option></select>
+  <label for="activity">Lobby routine</label><select id="activity"><option value="">Choose a moment…</option><option value="bar:60">Polish glass</option><option value="bar:430">Pour drink</option><option value="bar:755">Shake cocktail</option><option value="bar:1050">Serve drink</option><option value="bar:1200">Move along bar</option><option value="reception:450">Butler stamps ledger</option><option value="reception:275">Butler turns a page</option></select>
+  <label><input type="checkbox" id="street-architecture" checked> Architecture</label><label><input type="checkbox" id="street-actors" checked> NPCs</label><label><input type="checkbox" id="street-effects" checked> Effects</label><button id="save">Save current frame</button>
+</div>
+<p id="status" role="status">Arrows / WASD: move · X / K: jump · double-tap left/right: dash · Z / J: attack · F / E: interact · click the right elevator buttons.</p>
+<iframe id="preview" title="Live game scene" src="./?auto=travel-elevator&amp;t=1"></iframe>
+<script type="module" src="tools/verification/elevator_review.js"></script>
+</html>

@@ -1,514 +1,270 @@
-// train.js - THE NIGHT TRAIN's moving parts. The station's departure, the world outside
-// the windows on its own clock, the lurch, the tunnel and the bridges, the emergency
-// chain, the roof's wind, and the ticket. Everything here reads and writes G.train;
-// the stage entry in stages.js is the data and this is the machine.
-import { G, W, H, FLOOR_TOP, clamp, laneAt, laneMin, laneMax, arenaMin, arenaMax } from './engine.js';
-import { ASSETS } from './assets.js';
-import { blit, frameW, frameH, artScale } from './sprites.js';
-import { spawnPop, spawnDust, spawnSpark } from './effects.js';
-import { hurtPlayer } from './player.js';
+// Fresh Night Train route. Simulation owns every timer; rendering never mutates it.
+import {G,W,H,clamp} from './engine.js';
+import {ASSETS} from './assets.js';
+import {input} from './input.js';
+import {drawTextShadow,textWidth,SPR,getFrame,blit,frameW,frameH} from './sprites.js';
+import {createProp} from './props.js';
+import {hurtPlayer,ragnarokPose} from './player.js';
+import {drawFinale,updateFinale} from './train_finale.js';
+import {drawTrainVista,updateTrainVista,resetTrainVista} from './train_vistas.js';
+import {drawDirectionArrow} from './direction_arrow.js';
+export const ABOARD_X=2880,ROOF_X=8160,BERTH_Z=115,ROOF_TRANSITION_TICKS=420;
+export const TRAIN_AREAS=[['yard',0,960],['hall',960,1920],['platform',1920,2880],['general',2880,3840],['sleeper',3840,5280],['pantry',5280,5760],['office',5760,6240],['ac',6240,7200],['private',7200,8160],['roof',8160,9120]];
 
-// Where the route changes its rules, in logical px. The stage entry agrees with these.
-export const ABOARD_X = 4800;     // the cut: platform to vestibule
-export const ROOF_X = 7680;       // the ladder: corridor to roof
-export const RAKE_FROM = 3360;    // the rake stands from here along platform 1
-export const RAKE_TO = 4800;
-// The rake sprite is two coaches with one open door: the door sits 72% along it, and
-// its bogies sink RAKE_SINK px below the platform edge (the wall band clips them).
-const DOOR_FRAC = 0.72;
-const RAKE_SINK = 72;
-function rakeW() { const r = ASSETS.amb_rake; return r ? frameW(r) : 388; }
-export function doorOff() { return Math.round(rakeW() * DOOR_FRAC); }
-export const BERTH_Z = 52;        // the upper berths MANJA perches on
-const TUNNEL_T = 200, BRIDGE_T = 130, LURCH_T = 50, BRAKE_T = 50;
+export function trainArea(x){return TRAIN_AREAS.find(a=>x<a[2])||TRAIN_AREAS.at(-1);}
+export function initTrain(){G.train={t:0,motionT:0,distance:0,aboard:false,climbed:false,cinematic:null,endingDone:false,checkpoint:0,checkpointScore:G.score,gate:true,sway:0,steam:0,roofTell:0,scene:0,claimedLives:[],arrival:-1,vistaX:0,vistaTarget:0};}
+const ease=n=>{n=clamp(n,0,1);return n*n*(3-2*n);};
+function position(x,y=218){Object.assign(G.player,{x,y,z:0,vz:0,vx:0,state:'idle',t:0,face:1,grabbedBy:null,invuln:90,guardWindow:0,counterT:0,attackFamilies:[],grabTarget:null,specialTarget:null,superT:0});}
+function clearArena(){G.enemies=[];G.shots=[];G.zones=[];G.spawnQueue=[];G.waveActive=false;G.locked=false;G.arenaSqueeze=G.arenaSqueezeTarget=0;}
+export function restoreTrainCheckpoint(){
+ if(!G.train)return;const tr=G.train,x=tr.checkpoint;clearArena();G.boss=null;tr.cinematic=null;tr.endingDone=false;tr.climbed=false;tr.knockoutBody=false;tr.retryBoss=x>=7950;tr.aboard=x>=ABOARD_X;tr.gate=true;
+ G.camX=G.camLock=x>=7950?7680:x;position(x>=7950?7950:x+60);G.player.hp=G.player.maxhp;G.player.dying=false;G.score=tr.checkpointScore;
+ for(const w of G.stage.waves)w.done=w.x<x;
+ G.waveIndex=G.stage.waves.findLastIndex(w=>w.x<x);
+ G.props=G.stage.props.map(d=>createProp(d.kind,d.x,d.y,d.z));
+ for(const pr of G.props)if(pr.x<x||tr.claimedLives.includes(pr.x)){pr.broken=true;pr.hp=0;}
+ G.pickups=[];G.effects=[];G.combo=0;G.comboT=0;G.meter=0;tr.scene=x>=7200?2:x>=4320?1:0;
+ tr.vistaX=tr.vistaTarget=vistaTargetFor(x);tr.motionT=tr.vistaX/.12;resetTrainVista(tr,x);
+ G.audio.music(x>=ABOARD_X?G.stage.musicB:G.stage.music);
 
-// The rake stands so that one door is 50 px inside the arena the departure gate will
-// lock: the camera is forward-only, so where it stops when the gate trips is known.
-function rakeStart(st) {
-  const gate = (st.waves || []).find((w) => w.depart);
-  const gateX = gate ? gate.x : 4300;
-  return gateX - 255 + 14 + 50 - doorOff();
 }
+export function vistaTargetFor(x){return clamp((x-ABOARD_X)/(ROOF_X-ABOARD_X)*2400,0,2400);}
+function checkpoint(x){if(G.train.checkpoint<x){G.train.checkpoint=x;G.train.checkpointScore=G.score;}}
+export function startTrainCinematic(kind){if(G.train.cinematic)return;if(kind==='escape'){G.audio.stopSamples?.();G.audio.stopRoomAudio?.();}G.train.cinematic={kind,t:0,fromX:G.player.x,fromY:G.player.y,fromCam:G.camX,fromBossX:G.boss?.x,fromBossY:G.boss?.y};G.player.grabbedBy=null;G.player.z=0;G.shots=[];G.zones=[];if(kind!=='escape')G.audio.sfx(kind==='boarding'?'go':'heavy');}
+export function updateTrainMotion(){const tr=G.train;if(!tr?.aboard||tr.endingDone||tr.cinematic?.kind==='escape')return;tr.distance+=2.6;tr.motionT++;updateTrainVista(tr,G.stage.waves,tr.checkpoint);if(tr.motionT%24===0)G.audio.trainSfx?.('roll');}
+export function updateTrain(){
+ const tr=G.train;if(!tr)return false;tr.t++;
+ if(tr.endingDone)return false;
+ if(!input.held('use'))tr.gate=false;
+ const c=tr.cinematic;
+ if(c){
+  c.t++;if(G.shake>0){G.shake*=.86;if(G.shake<.2)G.shake=0;}if(G.flash>0)G.flash--;
+  if(c.kind==='boarding'){
+   if(c.t===24)G.audio.sfx('entrance_boot');
+   if(c.t===52||c.t===76)G.audio.sfx('entrance_boot');
+   if(c.t===106)G.audio.sfx('slam');
+   if(c.t>=120){clearArena();tr.aboard=true;tr.cinematic=null;G.camX=ABOARD_X;position(ABOARD_X+60);checkpoint(ABOARD_X);G.audio.music(G.stage.musicB);G.audio.trainSfx?.('whistle');}
+  }else if(c.kind==='roof'){
+   if([80,105,260,288,330].includes(c.t))G.audio.sfx('entrance_boot');
+   if(c.t===155)G.audio.voice('duke_come_get_some',1800,true);
+   if(c.t>=ROOF_TRANSITION_TICKS){tr.cinematic=null;tr.climbed=true;G.camX=G.camLock=ROOF_X;position(ROOF_X+105);G.locked=true;if(G.boss){Object.assign(G.boss,{x:ROOF_X+850,y:218,z:0,state:'idle',t:0,atkCd:90,trainWaiting:true,roofGuardsSpawned:false});}}
+  }else if(c.kind==='knockout'){
+   if([24,32,40,48,60,76].includes(c.t)){G.audio.sfx(c.t===76?'slam':'punch');G.shake=c.t===76?5:2;}
+   if(c.t===105)G.audio.voice('duke_game_over',1700,true);
+   if(c.t>=216){tr.cinematic=null;startTrainCinematic('escape');}
+  }else if(c.kind==='escape'){
+   if(updateFinale(c)){tr.endingDone=true;position(ROOF_X+180);G.fade=0;G.shake=0;G.flash=0;if(G.boss)G.boss.t=71;}
 
-export function initTrain(st) {
-  G.train = {
-    t: 0, speed: 0, aboard: false, cut: 0,
-    rakeX: rakeStart(st), rakeV: 0, departure: null, softFail: false, pendingSpawns: null,
-    ticket: false, ticketWas: false,
-    lurch: 0, lurchDir: 1, lurchCd: 900, swing: 0,
-    tunnel: 0, tunnelCd: 0,
-    bridge: 0, bridgeCd: 0, bridgeHit: false, bridgesArmed: false,
-    brake: 0, chainBroken: false, chainsPulled: 0, climbed: false, cutLabel: 'ABOARD',
-    goods: 0, goodsCd: 1500, station: 0, stationCd: 2400,
-    bridgeEvery: 0, detached: null,
-    blind: 0,
-    outsideW: 0,
-  };
+  }
+  return true;
+ }
+ if(!tr.aboard){
+  const stationClear=G.waveIndex>=3&&!G.locked&&!G.waveActive&&!G.spawnQueue.length&&!G.enemies.some(e=>!e.dead&&!e.noCount);
+  if(tr.arrival<0&&stationClear&&G.player.x>=2420){tr.arrival=0;tr.gate=true;G.audio.trainSfx?.('whistle');}
+  else if(tr.arrival>=0&&tr.arrival<240){tr.arrival++;if(tr.arrival===225)G.audio.sfx('land');if(tr.arrival===240)tr.gate=true;}
+  G.player.x=Math.min(G.player.x,2810);
+  if(stationClear&&tr.arrival>=240&&Math.abs(G.player.x-2715)<55&&!tr.gate&&input.pressed('use')&&G.player.z===0){startTrainCinematic('boarding');return true;}
+ }
+ if(tr.aboard){
+
+  tr.scene=Math.max(tr.scene,G.player.x>=7200?2:G.player.x>=4320?1:0);
+  tr.sway=0;
+
+  if(G.player.x>=6240&&!G.locked)checkpoint(6240);
+  if(G.player.x>=7200&&!G.locked)checkpoint(7200);
+  if(G.player.x>=8160&&!tr.climbed)G.player.x=8150;
+  const pantry=G.player.x>=5280&&G.player.x<6240;
+  tr.steam=pantry?tr.t%480:0;
+  if(pantry&&tr.steam===390){
+   G.audio.sfx('whiff');
+   const inSteam=a=>[5490,5820].some(x=>Math.abs(a.x-x)<44)&&Math.abs(a.y-198)<15&&a.z<16;
+   if(inSteam(G.player))hurtPlayer(G.player,8,1,false);
+   for(const e of G.enemies)if(!e.dead&&inSteam(e))e.hurt(8,1,false,false);
+  }
+  tr.roofTell=tr.climbed?tr.t%660:0;
+  if(tr.climbed&&tr.roofTell===600){G.audio.sfx('heavy');if(G.player.y<203&&G.player.z<12)hurtPlayer(G.player,10,-1,true);}
+ }
+ return false;
 }
-
-// ---- the departure -------------------------------------------------------
-// A situation, not a person. The whistle goes, the rake creeps and then runs, and the
-// only way onto it is a running jump into the open door while the wave is still on you.
-export function startDeparture() {
-  const tr = G.train;
-  tr.departure = { t: 0 };
-  tr.rakeV = 0.4;
-  G.audio.sfx('go');
-  spawnPop(G.camX + W / 2, 84, 'THE 22:40 IS LEAVING');
+function image(ctx,key,x,y,w,h){const im=ASSETS['nr_'+key];if(im)ctx.drawImage(im,Math.round(x),Math.round(y),w,h);}
+function sprite(ctx,key,frame,x,y,w,h,cw=256,ch=224){const im=ASSETS['nr_'+key];if(!im)return false;ctx.drawImage(im,frame*cw,0,cw,ch,Math.round(x-w/2),Math.round(y-h),w,h);return true;}
+export function drawTrainHeroPose(ctx,frame,x,y){if(!sprite(ctx,'chad_cinema',frame,x,y,112,112,224,224)){const f=getFrame(SPR.player,'idle',0,1);blit(ctx,f,x-frameW(f)/2,y-frameH(f)+4);}}
+export function drawTrainEntryPose(ctx,frame,x,y){if(!sprite(ctx,'chad_entry',frame,x,y,112,112,224,224))drawTrainHeroPose(ctx,0,x,y);}
+export function drawTicketClerk(ctx,t,camX=0){
+ const state=t<55?0:t<112?1:t<206?2:3;
+ ctx.save();ctx.beginPath();ctx.rect(49-camX,126,91,38);ctx.clip();
+ sprite(ctx,'ticket_clerk',state,96-camX,168,80,56,160,112);ctx.restore();
 }
-
-export function doorX() {
-  const w = rakeW();
-  let x = G.train.rakeX + doorOff();
-  while (x < arenaMin() + 20) x += w;
-  return x;
+export function drawTicketScanner(ctx,t,camX=0){
+ const state=t<143?0:t<151?1:2;
+ sprite(ctx,'ticket_scanner',state,275-camX,207,140,80,280,160);
 }
-
-function updateDeparture() {
-  const tr = G.train, p = G.player;
-  const d = tr.departure;
-  if (!d) return;
-  d.t++;
-  if (d.t > 60) tr.rakeV = Math.min(3.4, tr.rakeV + 0.004);
-  tr.rakeX += tr.rakeV;
-  if (d.t % 40 === 0 && tr.rakeV < 2) G.audio.sfx('armor');
-  const dx = doorX();
-  // the jump: airborne, over the door, and going the right way
-  if (p.state === 'jump' && p.z > 8 && Math.abs(p.x - dx) < 26 && !p.grabbedBy) { boardTrain(false); return; }
-  // the platform runs out: the door leaves the arena and you catch the guard's van
-  if (dx > arenaMax() + 40) boardTrain(true);
+export function drawTicketPanels(ctx,t){
+ if(t<151||t>=199)return;
+ const age=t-151;
+ for(const side of [-1,1]){
+  ctx.save();ctx.translate(Math.round(275+side*(17+age*2.1)),Math.round(177-age*1.6+age*age*.072));
+  ctx.rotate(side*age*.075);ctx.globalAlpha=Math.min(1,(199-t)/8);
+  sprite(ctx,'ticket_scanner',side<0?3:4,0,40,140,80,280,160);ctx.restore();
+ }
 }
-
-export function boardTrain(soft) {
-  const tr = G.train, p = G.player;
-  tr.departure = null;
-  tr.aboard = true;
-  tr.softFail = soft;
-  tr.cutLabel = soft ? "THE GUARD'S VAN. ONE COACH BACK." : 'ABOARD';
-  tr.cut = 60;
-  tr.t = 0;
-  tr.speed = 0;
-  G.enemies = [];
-  G.shots = [];
-  G.zones = [];
-  G.pickups = G.pickups.filter((pk) => pk.x >= ABOARD_X);
-  G.spawnQueue = [];
-  G.waveActive = false;
-  G.locked = false;
-  G.arenaSqueezeTarget = 0;
-  // the departure gate is done with, whichever way it ended
-  for (const w of G.stage.waves) if (w.depart) w.done = true;
-  G.camX = ABOARD_X;
-  p.x = ABOARD_X + 40; p.y = 211; p.z = 0; p.vz = 0; p.vx = 0; p.grabbedBy = null;
-  p.state = 'idle'; p.t = 0; p.invuln = 60;
-  tr.lurchCd = 700;
-  tr.tunnelCd = 0;
-  tr.goodsCd = 1500;
-  tr.stationCd = 2200;
-  G.audio.sfx(soft ? 'slam' : 'land');
+export function drawOutside(ctx,camX){drawTrainVista(ctx,G.train);
 }
-
-// The ladder at the end of the AC coach. The corridor ends and the roof begins on a
-// cut, like the boarding: nobody walks from a lit corridor onto a roof in one step.
-export function climbRoof() {
-  const tr = G.train, p = G.player;
-  tr.climbed = true;
-  tr.cut = 40;
-  tr.cutLabel = 'THE ROOF. KEEP LOW.';
-  G.enemies = [];
-  G.shots = [];
-  G.zones = [];
-  G.spawnQueue = [];
-  G.waveActive = false;
-  G.locked = false;
-  G.camX = ROOF_X;
-  p.x = ROOF_X + 60; p.y = 221; p.z = 0; p.vz = 0; p.vx = 0; p.grabbedBy = null;
-  p.state = 'idle'; p.t = 0; p.invuln = 60;
-  tr.lurchCd = Math.max(tr.lurchCd, 400);
-  tr.bridgeCd = 360;   // the first girder comes early, while the lesson is cheap
-  G.audio.sfx('land');
-}
-
-// ---- the chain -----------------------------------------------------------
-// A runner reaching it brakes the train: everyone slides forward and goes down, and the
-// next gate's men arrive now instead of later. Breaking any chain disarms all of them.
-export function chainFor(x) {
-  if (G.train.chainBroken) return null;
-  let best = null;
-  for (const pr of G.props) {
-    if (pr.prop !== 'chain' || pr.broken) continue;
-    if (pr.x < arenaMin() - 10 || pr.x > arenaMax() + 10) continue;
-    if (!best || Math.abs(pr.x - x) < Math.abs(best.x - x)) best = pr;
-  }
-  return best;
-}
-
-export function chainPulled(x) {
-  const tr = G.train;
-  tr.brake = BRAKE_T;
-  tr.chainsPulled++;
-  spawnPop(x, 120, 'CHAIN PULLED');
-  G.audio.sfx('heavy');
-  G.shake = Math.max(G.shake, 8);
-  const waves = G.stage.waves;
-  const nx = waves[G.waveIndex + 1];
-  if (nx && nx.spawns && nx.spawns.length && !nx.miniboss && !nx.boss && !nx.depart) {
-    G.spawnQueue.push(...nx.spawns);
-    nx.spawns = [];
-  }
-}
-
-export function chainBroken() {
-  G.train.chainBroken = true;
-  spawnPop(G.camX + W / 2, 100, 'NO MORE STOPS');
-  for (const e of G.enemies) if (e.chainTarget) { e.chainTarget = null; e.runner = false; e.noLane = false; e.state = 'idle'; e.atkCd = 30; }
-}
-
-// ---- the tunnel and the bridges -----------------------------------------
-export function startTunnel() {
-  const tr = G.train;
-  if (tr.tunnel > 0) return;
-  tr.tunnel = TUNNEL_T;
-  G.audio.sfx('enrage');
-  G.shake = Math.max(G.shake, 3);
-}
-
-export function startBridge() {
-  const tr = G.train;
-  if (tr.bridge > 0) return;
-  tr.bridge = BRIDGE_T;
-  tr.bridgeHit = false;
-}
-
-// The girder crosses the roof at head height. Anything lifted off the roof - a jump, a
-// perch, a man held upright - is what it takes with it. Feet on the steel are safe.
-function girderPass() {
-  const tr = G.train, p = G.player;
-  const lifted = (e) => e.z > 14 || e.perched;
-  const onRoof = G.camX >= ROOF_X - 40;
-  if (!onRoof) return;
-  if (lifted(p) && p.state !== 'down' && !p.dying) {
-    if (p.grabbedBy) { p.grabbedBy.girdered = true; p.grabbedBy = null; }
-    hurtPlayer(p, 40, -1, true);
-    p.vx = 0; p.vz = 2; p.y = laneMax(p.x) - 4;
-    spawnPop(p.x, p.y - 90, 'GIRDER');
-    G.shake = Math.max(G.shake, 10);
-    G.audio.sfx('slam');
-  }
-  for (const e of G.enemies) {
-    if (e.dead || !lifted(e)) continue;
-    e.perched = false; e.z = Math.max(e.z, 0.1);
-    e.hurt(30, -1, true, true);
-    spawnSpark(e.x, e.y - 60);
-  }
-  const b = G.boss;
-  if (b && !b.dead && b.z > 14) { b.hurt(20, -1, true, false); }
-}
-
-// ---- per-frame ----------------------------------------------------------
-// Returns true while the cut holds the world still.
-export function updateTrain() {
-  const tr = G.train;
-  if (!tr) return false;
-  if (tr.cut > 0) {
-    tr.cut--;
-    if (tr.cut === 0) {
-      spawnPop(G.player.x + 40, 96, tr.cutLabel);
-      if (tr.softFail) tr.pendingSpawns = ['goonda', 'goonda'];   // main.js spawns them: this module must not import enemies.js
-    }
-    return true;
-  }
-  updateDeparture();
-  if (!tr.aboard) return false;
-  const p = G.player;
-  if (!tr.climbed && p.x >= ROOF_X - 40 && !G.locked && !G.boss && p.z <= 0 && !p.grabbedBy) { climbRoof(); return true; }
-  // the train gets up to speed out of the platform, and the outside runs on it
-  tr.speed = Math.min(3.2, tr.speed + 0.012);
-  tr.t += tr.speed;
-  if (tr.blind > 0) tr.blind--;
-
-  // what passes the windows, on its own clock
-  if (tr.goods > 0) { tr.goods--; if (tr.goods % 9 === 0) G.shake = Math.max(G.shake, 1); }
-  else if (--tr.goodsCd <= 0) { tr.goods = 180; tr.goodsCd = 3600; G.audio.sfx('heavy'); G.shake = Math.max(G.shake, 4); }
-  if (tr.station > 0) tr.station--;
-  else if (--tr.stationCd <= 0) { tr.station = 90; tr.stationCd = 2600; }
-
-  if (tr.tunnel > 0) tr.tunnel--;
-  const onRoof = G.camX >= ROOF_X - 40;
-  // bridges: rare on the corridor for the strobe, regular on the roof for the girder
-  if (tr.bridge > 0) {
-    tr.bridge--;
-    if (tr.bridge === 70) G.audio.sfx('blip');
-    if (tr.bridge === 40 && !tr.bridgeHit) { tr.bridgeHit = true; girderPass(); }
-  } else if (tr.bridgesArmed || onRoof) {
-    if (tr.bridgeCd <= 0) tr.bridgeCd = tr.bridgeEvery || (onRoof ? 900 : 1600);
-    if (--tr.bridgeCd <= 0) startBridge();
-  }
-
-  // the lurch: the scenery swings first, then the glasses, then you
-  if (!onRoof) {
-    if (tr.lurch > 0) {
-      tr.lurch--;
-      const dy = tr.lurchDir * 0.55;
-      const slide = (e) => { if (!e.noLane && e.z <= 0 && e.state !== 'dying') e.y += dy; };
-      if (p.z <= 0 && !p.grabbedBy) p.y += dy;
-      for (const e of G.enemies) slide(e);
-      if (G.boss && !G.boss.removeMe && !G.boss.perched) slide(G.boss);
-      if (tr.lurch === 0) tr.lurchCd = 700 + Math.random() * 500;
-    } else if (--tr.lurchCd <= 0) {
-      tr.lurch = LURCH_T; tr.lurchDir = Math.random() < 0.5 ? -1 : 1; tr.swing = 0;
-      G.audio.sfx('armor');
-    }
-    // the tell: hanging things reach full swing 60 frames before the floor moves
-    const tell = tr.lurchCd < 60 && tr.lurch === 0;
-    tr.swing += clamp((tell || tr.lurch > 0 ? 1 : 0) - tr.swing, -0.03, 0.05);
-  }
-
-  // the brake: everyone forward, then everyone down
-  if (tr.brake > 0) {
-    tr.brake--;
-    const k = tr.brake > 20 ? 1.6 : 0.6;
-    if (p.z <= 0 && !p.grabbedBy && p.state !== 'down') p.x += k;
-    for (const e of G.enemies) if (!e.dead && e.z <= 0 && !e.chainTarget) e.x += k;
-    if (G.boss && !G.boss.removeMe && !G.boss.perched) G.boss.x += k * 0.5;
-    if (tr.brake === 0) {
-      hurtPlayer(p, 3, 1, true);
-      for (const e of G.enemies) {
-        if (e.dead || e.perched || e.state === 'thrown') continue;
-        e.state = 'down'; e.t = 0; e.vx = 1.2; e.vz = 1.5; e.z = Math.max(e.z, 0.1);
-      }
-      G.shake = Math.max(G.shake, 6);
-      G.audio.sfx('slam');
-    }
-  }
-
-  // the roof: wind off the front, rearward, on anything with its feet down
-  const lane = laneAt(p.x);
-  if (lane && lane.wind) {
-    if (p.z <= 0 && !p.grabbedBy && p.state !== 'down' && p.state !== 'special') p.x -= lane.wind;
-    for (const e of G.enemies) if (!e.dead && e.z <= 0 && !e.perched && !e.noLane) e.x -= lane.wind * 0.7;
-  }
-  return false;
-}
-
-// ---- drawing -------------------------------------------------------------
-// The world outside, behind the plate. It shows only through what the stitcher keyed
-// out: the carriage windows, the open doors, the sky over the roof. It scrolls on the
-// train's clock, not the camera's - the camera moving along the corridor is you walking
-// down a train, and the fields going past is the train.
-export function drawOutside(ctx, camX) {
-  const tr = G.train;
-  if (!tr || camX < ABOARD_X - 480) return;
-  const img = ASSETS.bg_d2_outside;
-  const roof = camX >= ROOF_X - 480;
-  ctx.save();
-  // sky, then whatever the tile has, then the events over it
-  ctx.fillStyle = tr.tunnel > 0 ? '#050508' : '#070a18';
-  ctx.fillRect(0, 0, W, FLOOR_TOP + (roof ? 0 : 60));
-  if (tr.tunnel > 0) {
-    // tunnel lamps streaming past
-    const off = (tr.t * 2.2) % 96;
-    ctx.fillStyle = '#c8a850';
-    for (let x = -off; x < W; x += 96) ctx.fillRect(Math.round(x), 70, 3, 6);
-    ctx.restore();
-    return;
-  }
-  if (roof) {
-    // the glow the roof throws up into the night, the same on every screen
-    const g = ctx.createLinearGradient(0, 96, 0, 156);
-    g.addColorStop(0, 'rgba(70,66,92,0)');
-    g.addColorStop(1, 'rgba(70,66,92,0.55)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 96, W, 60);
-  }
-  if (img) {
-    const sw = img.width / artScale(img), sh = img.height / artScale(img);
-    tr.outsideW = sw;
-    // two depths of the same tile: the far one slow, the near one at the train's speed
-    for (const [par, dy, a] of [[0.35, -6, 0.55], [1, 0, 1]]) {
-      const off = ((Math.round(tr.t * par) % sw) + sw) % sw;
-      ctx.globalAlpha = a;
-      for (let x = -off; x < W; x += sw) ctx.drawImage(img, x, dy, sw, sh);
-    }
-    ctx.globalAlpha = 1;
-  }
-  // the platform sliding away, for the first seconds after the cut
-  // (it accelerates away, and is drawn until its far end has left the screen)
-  const platX = 480 - tr.t * 1.6 - tr.t * tr.t * 0.0012;
-  if (platX + 900 > 0 && !roof) {
-    ctx.fillStyle = '#2a2418';
-    ctx.fillRect(platX, 128, 900, 62);
-    ctx.fillStyle = '#e0b060';
-    for (let x = platX; x < platX + 900; x += 120) { ctx.fillRect(x, 88, 3, 40); ctx.fillRect(x - 10, 84, 24, 4); }
-  }
-  // a station gone in a second and a half
-  if (tr.station > 0) {
-    const k = tr.station / 90;
-    const x0 = W - (1 - k) * (W + 700);
-    ctx.fillStyle = '#3a3020';
-    ctx.fillRect(x0, 90, 700, 100);
-    ctx.fillStyle = '#ffd890';
-    for (let x = x0 + 10; x < x0 + 700; x += 44) ctx.fillRect(x, 108, 20, 14);
-    ctx.fillStyle = 'rgba(255,220,150,0.18)';
-    ctx.fillRect(0, 0, W, FLOOR_TOP);
-  }
-  // a goods train filling every window
-  if (tr.goods > 0) {
-    const off = (tr.t * 2.6) % 150;
-    for (let x = -off - 150; x < W; x += 150) {
-      ctx.fillStyle = '#1a1612';
-      ctx.fillRect(Math.round(x), 40, 136, 150);
-      ctx.fillStyle = '#3a3028';
-      ctx.fillRect(Math.round(x) + 6, 52, 124, 6);
-    }
-  }
-  // the girder bridge: posts, and the light on the horizon before it
-  if (tr.bridge > 0) {
-    if (tr.bridge > 70) {
-      const k = (BRIDGE_T - tr.bridge) / 60;
-      ctx.fillStyle = `rgba(255,240,200,${0.5 + k * 0.5})`;
-      ctx.beginPath(); ctx.arc(W - 30 - k * 60, 60, 2 + k * 5, 0, Math.PI * 2); ctx.fill();
-    } else {
-      const off = (tr.t * 3) % 60;
-      ctx.fillStyle = '#20221e';
-      for (let x = -off; x < W; x += 60) ctx.fillRect(Math.round(x), 0, 14, FLOOR_TOP + 60);
-      ctx.fillRect(0, 20, W, 8);
-    }
-  }
+export function drawTrainScene(ctx,camX){
+ if(G.train?.review?.art===false){ctx.fillStyle='#18202b';ctx.fillRect(0,0,W,H);return;}
+ drawOutside(ctx,camX);
+ for(const [key,start,end]of TRAIN_AREAS){
+  if(end<camX||start>camX+W)continue;
+  ctx.save();ctx.beginPath();ctx.rect(start-camX,0,end-start,H);ctx.clip();
+  const artKey=key==='private'&&G.boss?.key==='vikram'&&G.boss.hp<G.boss.maxhp*.8&&ASSETS.nr_private_damaged?'private_damaged':key;
+  const im=ASSETS['nr_'+artKey];
+  const plateWidth=['pantry','office'].includes(key)?480:960;
+  if(im&&G.train?.review?.interior!==false){for(let x=start,i=0;x<end;x+=plateWidth,i++){ctx.save();if(i%2){ctx.translate(2*(x-camX)+plateWidth,0);ctx.scale(-1,1);}image(ctx,artKey,x-camX,0,plateWidth,H);ctx.restore();}}
+  else{ctx.fillStyle='#171c29';ctx.fillRect(start-camX,181,end-start,89);}
   ctx.restore();
+ }
+ for(const [x,key]of [[960,'join_yard_hall'],[1920,'join_hall_platform']])if(x+240>camX&&x-240<camX+W)image(ctx,key,x-240-camX,0,480,270);
+ for(const x of [3840,5280,5760,6240,7200])if(x+44>camX&&x-44<camX+W&&G.train?.review?.interior!==false){
+  ctx.save();ctx.beginPath();ctx.rect(x-44-camX,0,88,185);ctx.clip();
+  drawOutside(ctx,camX);ctx.restore();image(ctx,'gangway',x-44-camX,0,88,H);
+ }
+ if(camX+W>1920&&camX<2880&&G.train?.review?.interior!==false)drawPlatformTrain(ctx,camX);
+ drawTrainWallPlane(ctx,camX);
 }
-
-// Wall-plane pieces that have to move or breathe: the rake standing at platform 1,
-// the hanging straps that telegraph the lurch, the family asleep in the AC coach.
-export function drawTrainWallPlane(ctx, camX) {
-  const tr = G.train;
-  if (!tr) return;
-  const rake = ASSETS.amb_rake;
-  if (rake && !tr.aboard && camX < ABOARD_X + 60) {
-    const w = frameW(rake), h = frameH(rake);
-    const y = FLOOR_TOP - h + RAKE_SINK;
-    ctx.save();
-    ctx.beginPath(); ctx.rect(Math.max(0, RAKE_FROM - camX), 0, W, FLOOR_TOP); ctx.clip();
-    for (let x = tr.rakeX; x < RAKE_TO + w + 400; x += w) {
-      const sx = Math.round(x - camX);
-      if (sx + w < -10 || sx > W + 10) continue;
-      blit(ctx, rake, sx, y);
-    }
-    ctx.restore();
-    // the departure's one tell before the wheels turn: the door lamp
-    if (tr.departure) {
-      const dx = Math.round(doorX() - camX);
-      ctx.fillStyle = `rgba(255,220,120,${0.35 + 0.25 * Math.sin(G.rawTime * 0.3)})`;
-      ctx.fillRect(dx - 14, 30, 28, 4);
-    }
-  }
-  if (tr.aboard && camX < ROOF_X) {
-    // grab straps and a plastic bag on a hook, one shared sine, one phase each
-    const amp = 2 + tr.swing * 9;
-    ctx.fillStyle = '#c8b898';
-    for (let x = Math.floor(camX / 96) * 96; x < camX + W + 96; x += 96) {
-      const ph = (x / 96) * 0.9;
-      const dx = Math.sin(G.rawTime * 0.07 + ph) * amp;
-      const sx = Math.round(x - camX + 48);
-      ctx.fillRect(sx, 22, 2, 6);
-      ctx.fillRect(Math.round(sx + dx * 0.5), 28, 2, 10);
-      ctx.fillRect(Math.round(sx + dx - 3), 38, 8, 5);
-    }
-    const fam = ASSETS.amb_family;
-    if (fam) {
-      const fx = 6900 - camX;
-      if (fx > -140 && fx < W) {
-        const breathe = 1 + Math.sin(G.rawTime * 0.03) * 0.012;
-        const w = frameW(fam), h = frameH(fam);
-        ctx.save();
-        ctx.translate(Math.round(fx), 92);
-        ctx.scale(1, breathe);
-        blit(ctx, fam, 0, -h);
-        ctx.restore();
-      }
-    }
-    // someone's phone, two berths down, one carriage only
-    const ph = 5520 - camX;
-    if (ph > -20 && ph < W) {
-      ctx.fillStyle = `rgba(120,180,255,${0.25 + 0.2 * Math.sin(G.rawTime * 0.5)})`;
-      ctx.fillRect(Math.round(ph), 84, 10, 7);
-    }
-  }
+export function drawConductorDesk(ctx,camX){
+ if(G.train?.review?.conductorDesk===false)return;
+ const desk=ASSETS.nr_office_desk;if(desk)ctx.drawImage(desk,5985-camX,116,155,78);
 }
+export function drawTrainWallPlane(ctx,camX){
+ const tr=G.train;if(!tr)return;
+ if(tr.climbed)image(ctx,'hatch_open',ROOF_X+65-camX,165,80,50);
+ if(tr.review?.npc===false)return;
+ if(camX<6240&&camX+W>5900){
+  const chair=ASSETS.nr_office_chair;
+  const chairT=G.boss?.def?.set==='nr_conductor'?(G.boss.introT||0):G.stage.waves.find(w=>w.miniboss==='conductor')?.done?100:0;
+  const chairPush=4*clamp((chairT-60)/40,0,1);
+  if(chair)ctx.drawImage(chair,6065-camX-24+chairPush,94,48,76);
+  if(!G.boss&&!G.stage.waves.find(w=>w.miniboss==='conductor')?.done&&tr.review?.conductorActor!==false){
+   const im=ASSETS.nr_conductor_intro;if(im){ctx.save();ctx.translate(6065-camX,170);ctx.scale(-1,1);ctx.drawImage(im,0,0,320,240,-80,-116.5,160,120);ctx.restore();}
+  }
+  drawConductorDesk(ctx,camX);
+ }
+ // Actor sheets are seated/wiping performances, grounded behind the combat plane.
+ for(const [x,row,y]of [[3170,0,201],[4235,1,190]]){
+  if(x<camX-80||x>camX+W+80)continue;
+  const clock=(tr.t+row*91)%360,pose=clock<220?0:clock<260?1:clock<310?2:3;
+  ctx.save();
+  if(row===0)sprite(ctx,'passenger_seated',pose,x-camX,y,92,92,224,224);else sprite(ctx,'passengers',row*4+pose,x-camX,y,78,91,224,256);ctx.restore();
+ }
+ // The cook stands inside the recessed galley; the front serving ledge occludes his lower torso.
+ if(camX<5590&&camX+W>5450){
+  const cycle=tr.t%540,nearFight=G.enemies.some(e=>!e.dead&&Math.abs(e.x-5510)<190);
+  const pose=nearFight?7:cycle<240?[0,1,2,3,2,1][Math.floor(cycle/12)%6]:cycle<420?4+Math.floor(cycle/18)%2:6;
+  sprite(ctx,'pantry_cook',pose,5510-camX,129,56,56,192,192);
+  const counter=ASSETS.nr_pantry;if(counter)ctx.drawImage(counter,300,254,320,106,5430-camX,127,160,53);
+ }
+ if(camX<550){
+  const t=G.state==='intro'?G.rawTime-G.stateT:tr.t,cycle=t%720;
+  const pose=cycle<260?0:cycle<420?1:cycle<510?2:3;
+  sprite(ctx,'station_tea',pose,425-camX,218,92,92,256,256);
+  if(tr.review?.fx!==false){
+   ctx.save();ctx.fillStyle='#ceb795';
+   for(let i=0;i<9;i++){const age=(t*.35+i*4)%32;ctx.globalAlpha=(1-age/32)*.22;ctx.fillRect(Math.round(416-camX+Math.sin(age*.16+i)*3),Math.round(168-age),2,3);}
+   ctx.fillStyle='#eac778';ctx.globalAlpha=.5;
+   for(const [x,y]of [[178,128],[361,128],[392,159]])for(let i=0;i<3;i++)ctx.fillRect(Math.round(x-camX+Math.sin(t*.023+i*2)*7),Math.round(y+Math.cos(t*.031+i)*5),1,1);
+   ctx.restore();
+  }
+ }
+ if(camX<400){
+  drawTicketClerk(ctx,G.state==='intro'?G.rawTime-G.stateT:480,camX);
+  if(G.state!=='intro')drawTicketScanner(ctx,480,camX);
+ }
 
-// After the world: the tunnel's dark, the bridge's strobe, the torch, the cut.
-export function drawTrainOverlay(ctx, camX) {
-  const tr = G.train;
-  if (!tr) return;
-  if (tr.tunnel > 0 && tr.aboard) {
-    const k = Math.min(1, tr.tunnel / 20, (TUNNEL_T - tr.tunnel) / 12);
-    ctx.fillStyle = `rgba(3,3,10,${0.74 * k})`;
-    ctx.fillRect(0, 0, W, H);
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    for (let x = Math.floor(camX / 240) * 240 + 120; x < camX + W + 240; x += 240) {
-      const sx = x - camX;
-      const g = ctx.createRadialGradient(sx, 40, 2, sx, 40, 110);
-      g.addColorStop(0, `rgba(200,40,30,${0.30 * k})`);
-      g.addColorStop(1, 'rgba(200,40,30,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(sx - 110, 0, 220, H);
-    }
-    ctx.restore();
+}
+export function drawTrainOverlay(ctx,camX){
+ const tr=G.train;if(!tr)return;const c=tr.cinematic;
+ if(c){drawCinematic(ctx,tr,c);return;}
+ if(!tr.aboard&&tr.arrival>=240&&!G.locked){
+  drawDirectionArrow(ctx,{x:2715-camX,y:96,direction:'down',size:24,time:tr.t});
+  if(Math.abs(G.player.x-2715)<55){const s='F / LB: CLIMB ABOARD';ctx.fillStyle='#090810dc';ctx.fillRect(163,247,154,15);drawTextShadow(ctx,s,(W-textWidth(s,1))/2,252,'#ffdd94',1);}
+ }
+ if(tr.review?.fx===false)return;
+ if(tr.steam>330){
+  for(const x of [5490,5820]){
+   if(x<camX-50||x>camX+W+50)continue;
+   ctx.fillStyle=tr.steam<390?'#d99f5277':'#eee5ce88';
+   if(tr.steam<390)ctx.fillRect(x-camX-40,198,80,2);
+   for(let i=0;i<20;i++){const rise=(tr.t*2+i*11)%65,spread=(tr.steam<390?10:36);ctx.fillRect(Math.round(x-camX+Math.sin(i*3.7)*spread*(rise/65)),198-rise,2+(i%3),4);}
   }
-  if (tr.bridge > 0 && tr.bridge <= 70 && tr.aboard) {
-    // hard shadows at 6 Hz
-    if (((G.rawTime / 5) | 0) & 1) {
-      ctx.fillStyle = 'rgba(0,0,12,0.42)';
-      const off = (tr.t * 3) % 60;
-      for (let x = -off; x < W; x += 60) ctx.fillRect(Math.round(x), 0, 30, H);
-    }
-    if (camX >= ROOF_X - 40) {
-      // the girder itself: a riveted steel truss sweeping in from the front at head
-      // height, its portal frame first, then the cross-bracing streaming over
-      const k = (70 - tr.bridge) / 70;
-      const gx = W + 60 - k * (W + 200);
-      const beamY = 108, beamH = 14;
-      const x0 = Math.max(0, Math.round(gx));
-      if (x0 < W) {
-        ctx.fillStyle = '#14161b';
-        ctx.fillRect(x0, beamY, W - x0, beamH);
-        ctx.fillRect(x0, 0, W - x0, 8);
-        ctx.fillStyle = '#2e323c';
-        ctx.fillRect(x0, beamY, W - x0, 2);
-        ctx.fillRect(x0, beamY + beamH - 2, W - x0, 2);
-        ctx.strokeStyle = '#24272f'; ctx.lineWidth = 3;
-        const off = (tr.t * 6) % 48;
-        ctx.beginPath();
-        for (let x = x0 - off; x < W + 48; x += 48) {
-          ctx.moveTo(x, 8); ctx.lineTo(x + 24, beamY);
-          ctx.moveTo(x + 24, 8); ctx.lineTo(x, beamY);
-        }
-        ctx.stroke();
-        ctx.fillStyle = '#3a3e48';
-        for (let x = x0 + 6 - off; x < W; x += 16) ctx.fillRect(Math.round(x), beamY + 6, 2, 2);
-      }
-      ctx.fillStyle = '#101216';
-      ctx.fillRect(Math.round(gx), 0, 30, beamY + beamH);
-      ctx.fillStyle = 'rgba(0,0,0,0.45)';
-      ctx.fillRect(x0, beamY + beamH, W - x0, H);
-    }
+ }
+ if(tr.roofTell>540&&tr.roofTell<600){drawTextShadow(ctx,'LOW GANTRY — KEEP FORWARD',130,34,'#efc376',1);}
+ if(tr.roofTell>=596&&tr.roofTell<612){const x=W-(tr.roofTell-596)*42;ctx.fillStyle='#302725';ctx.fillRect(x,160,14,31);ctx.fillStyle='#c1a46d';ctx.fillRect(x,160,3,31);}
+}
+export function platformTrainPosition(t){return 1925+1600*(1-ease(t/240));}
+function drawPlatformTrain(ctx,camX){
+ const tr=G.train;if(tr.arrival<0)return;
+ const x=platformTrainPosition(tr.arrival)-camX;
+ ctx.save();ctx.beginPath();ctx.rect(1920-camX,0,960,H);ctx.clip();
+ const sheet=ASSETS.nr_train_exterior;
+ if(sheet){ctx.save();ctx.filter='brightness(0.78)';ctx.drawImage(sheet,0,tr.arrival>=240?224:0,1024,224,x,0,880,192.5);ctx.drawImage(sheet,0,0,1024,224,x+870,0,880,192.5);ctx.restore();}
+ image(ctx,'locomotive',x-500,43,505,142);
+ image(ctx,'platform_front',1920-camX,0,960,270);
+ if(tr.arrival>=240){
+  // Narrow steel boarding steps connect the platform lane to the raised threshold.
+  const stepX=2703-camX;ctx.fillStyle='#171c21';ctx.fillRect(stepX-13,165,3,50);ctx.fillRect(stepX+10,165,3,50);
+  for(const y of [177,193,209]){ctx.fillStyle='#11151b';ctx.fillRect(stepX-14,y,28,5);ctx.fillStyle='#62543d';ctx.fillRect(stepX-14,y,28,1);ctx.fillStyle='#30312d';ctx.fillRect(stepX-13,y+1,26,2);}
+ }
+ ctx.restore();
+}
+function drawPlatformBoarding(ctx,tr,c){
+ const t=c.t,cam=c.fromCam;
+ drawTrainScene(ctx,cam);
+ const q=ease(t/84),x=c.fromX+(2703-c.fromX)*ease(t/24);
+ const y=c.fromY+(171-c.fromY)*q;
+ const frame=t<18?0:t<36?1:t<54?2:t<72?3:t<90?4:5;
+ if(t<108){ctx.save();if(t>=84){ctx.beginPath();ctx.rect(2693-cam,38,44,140);ctx.clip();}sprite(ctx,'chad_board',frame,x-cam,y,112,120,224,240);ctx.restore();}
+ const sheet=ASSETS.nr_train_exterior;
+ if(sheet&&t>=96){ctx.save();ctx.filter='brightness(0.78)';const q=ease((t-96)/18),width=47*q;ctx.drawImage(sheet,939-width,54,width,131,1925-cam+(939-width)*880/1024,54*880/1024,width*880/1024,131*880/1024);ctx.restore();}
+ if(t>112){ctx.fillStyle=`rgba(0,0,0,${(t-112)/8})`;ctx.fillRect(0,0,W,H);}
+}
+function drawCinematic(ctx,tr,c){
+ const t=c.t;
+ if(c.kind==='boarding'){drawPlatformBoarding(ctx,tr,c);return;}
+ ctx.fillStyle='#101521';ctx.fillRect(0,0,W,H);
+ if(c.kind==='knockout'){
+  const cam=c.fromCam,by=c.fromBossY||218,bx=c.fromBossX||c.fromX+38,face=bx>=c.fromX?1:-1;
+  drawOutside(ctx,cam);image(ctx,'roof',ROOF_X-cam,0,960,270);
+  const hx=c.fromX+(bx-face*38-c.fromX)*ease(t/20),hy=c.fromY+(by-c.fromY)*ease(t/20);
+  const pose=ragnarokPose(t),hero=getFrame(SPR.player,t<100?pose.name:'idle',t<100?pose.idx:0,face);
+  blit(ctx,hero,hx-cam-frameW(hero)/2,hy-frameH(hero)+4);
+  const hit=[24,32,40,48,60,76].find(at=>t>=at&&t<at+7),victim=getFrame(SPR.nr_vikram_roof,t>=82?'down':hit!==undefined?'hurt':'idle',hit!==undefined?1:0,-face);
+  blit(ctx,victim,bx-cam+face*Math.min(26,Math.max(0,t-72)*1.3)-frameW(victim)/2,by-frameH(victim)+4);
+ }else if(c.kind==='roof'){
+  if(t<360){
+   drawOutside(ctx,7680);image(ctx,'private_damaged',-480,0,960,270);
+   if(t<180){
+    const pose=t<22?0:t<42?1:t<64?2:t<90?3:t<116?4:5;
+    const rise=t<42?0:Math.min(235,(t-42)*1.7);
+    if(!sprite(ctx,'seth_roof_climb',pose,316,218-rise,160,120,320,240)){const f=getFrame(SPR.nr_vikram,t<42?'hurt':'climb',0,1);blit(ctx,f,316-frameW(f)/2,218-rise-frameH(f));}
+   }
+   ctx.save();ctx.beginPath();ctx.rect(0,0,W,52);ctx.clip();image(ctx,'private_damaged',-480,0,960,270);ctx.restore();
+   if(t<240){const f=getFrame(SPR.player,'idle',Math.floor(t/14),1);blit(ctx,f,160-frameW(f)/2,218-frameH(f)+4);}
+   else if(t<295){const x=160+156*ease((t-240)/55),f=getFrame(SPR.player,'walk',Math.floor(t/7),1);blit(ctx,f,x-frameW(f)/2,218-frameH(f)+4);}
+   else {const pose=Math.min(3,Math.floor((t-295)/16));const handX=[101.7,99.2,97.2,95.9][pose];sprite(ctx,'chad_roof_climb',pose,332-handX+80,218-(t-295)*1.65,160,120,320,240);ctx.save();ctx.beginPath();ctx.rect(0,0,W,52);ctx.clip();image(ctx,'private_damaged',-480,0,960,270);ctx.restore();}
+   if(t>=340){ctx.fillStyle=`rgba(5,5,10,${(t-340)/20})`;ctx.fillRect(0,0,W,H);}
+  }else{
+   drawOutside(ctx,ROOF_X);image(ctx,'roof',0,0,960,270);image(ctx,'hatch_open',65,191,80,27);
+   const f=getFrame(SPR.nr_vikram_roof,'walk',Math.floor((t-360)*1.1/6),1);blit(ctx,f,335+(t-360)*1.1-frameW(f)/2,218-frameH(f)+4);
+   const pose=t<374?4:t<388?5:t<406?6:7;
+   const handY=[65.2,101.5,108.2][Math.min(2,pose-4)];
+   const footY=pose<6?211+116.5-handY:218;
+   sprite(ctx,'chad_roof_climb',pose,105,footY,160,120,320,240);
+   image(ctx,'hatch_open',65,191,80,27);
+   if(t<380){ctx.fillStyle=`rgba(5,5,10,${1-(t-360)/20})`;ctx.fillRect(0,0,W,H);}
   }
-  if (tr.blind > 0) {
-    const k = Math.min(1, tr.blind / 12);
-    ctx.fillStyle = `rgba(255,250,235,${0.86 * k})`;
-    ctx.fillRect(0, 0, W, H);
-  }
-  if (tr.ticket) {
-    // the one thing you are carrying, in the corner, no words
-    ctx.fillStyle = '#e8dcc0';
-    ctx.fillRect(W - 30, 44, 18, 10);
-    ctx.fillStyle = '#c04030';
-    ctx.fillRect(W - 27, 47, 12, 2);
-    ctx.fillRect(W - 27, 50, 8, 1);
-  }
-  if (tr.cut > 0) {
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, W, H);
-  }
+ }else{
+  drawFinale(ctx,t);
+
+ }
+ if(c.kind!=='escape'){ctx.fillStyle='#050409';ctx.fillRect(0,0,W,16);ctx.fillRect(0,254,W,16);}
 }

@@ -5,7 +5,7 @@
 import { G, W, H, clamp, rand, irand, arenaMin, arenaMax } from './engine.js';
 import { Pix, artScale, blit, frameW, frameH } from './sprites.js';
 import { ASSETS } from './assets.js';
-import { drawOutside, drawTrainWallPlane, initTrain, ROOF_X, ABOARD_X } from './train.js';
+import { drawTrainScene, initTrain, ROOF_X, ABOARD_X } from './train.js';
 import { createProp } from './props.js';
 import { initAmbience, drawAmbienceFacade, drawBirds } from './ambience.js';
 import { initCrowd, drawCrowd } from './crowd.js';
@@ -431,32 +431,36 @@ function drawChalkRing(ctx, camX) {
 }
 
 // ------------------------------------------------------------- definitions
-// THE NIGHT TRAIN's plate pass: the grade sliding between areas, the sodium pools on the
-// platform, the cold blue of the AC coach, and the wall-plane pieces that move.
-function nightTrainAmbient(ctx, camX, layers) {
-  const st = G.stage;
-  const zone = areaAt(st, camX);
-  const grade = zone ? (zone.k < 0.5 ? zone.a.grade : zone.b.grade) : (st.grade || '150,170,230');
-  const gradeA = zone ? zone.a.gradeA + (zone.b.gradeA - zone.a.gradeA) * zone.k : (st.gradeA || 0.08);
-  drawTrainWallPlane(ctx, camX);
-  for (const g of (st.glows || [])) {
-    const sx = g.x - camX;
-    if (sx < -g.r * 3 || sx > W + g.r * 3) continue;
-    const grad = ctx.createRadialGradient(sx, g.y, 2, sx, g.y, g.r * 3);
-    grad.addColorStop(0, `rgba(255,150,60,${g.a})`);
-    grad.addColorStop(1, 'rgba(255,150,60,0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(sx - g.r * 3, g.y - g.r * 3, g.r * 6, g.r * 6);
-  }
-  ctx.fillStyle = `rgba(${grade},${gradeA})`;
-  ctx.fillRect(0, 0, W, H);
-}
-
 export const STAGES = [
   {
-    id: 'delhi', num: '1-1', name: 'DIRTY DELHI', sub: 'ACT I - THE MARKET AND THE RIVER',
+    id:'train',num:'1-1',name:'THE NIGHT TRAIN',sub:'ACT I - NIGHT SERVICE TO DELHI',arrival:'station',departureRoute:'india',loadingArt:'loading_train',
+    width:9120,floorW:9120,music:'stage2a',musicB:'stage2b',musicBX:2880,bossMusic:'boss',bossMusicFinal:'boss2',boss:'vikram',introVoice:true,
+    init:initTrain,areas:[],skyLayers:[],lanes:[{x0:0,x1:2880,top:211,bot:241},{x0:2880,x1:3840,top:205,bot:241},{x0:3840,x1:5280,top:209,bot:241,berth:115},{x0:5280,x1:5760,top:194,bot:241},{x0:5760,x1:6240,top:202,bot:241},{x0:6240,x1:8160,top:202,bot:241},{x0:8160,x1:9120,top:181,bot:220}],
+    lamps:[],lampCol:'255,200,120',lampA:0,rim:null,moteCount:0,moteStyle:'dust',gradeA:0,glows:[],birds:[],fg:[],ambience:[],emitters:[],events:[],
+    props:[{kind:'nr_case',x:570,y:227},{kind:'nr_trolley',x:1270,y:222},{kind:'nr_case',x:2140,y:230},{kind:'nr_table',x:3110,y:215},{kind:'nr_case',x:3720,y:227},{kind:'nr_table',x:4560,y:212},{kind:'nr_urn',x:5490,y:203},{kind:'nr_contraband',x:6080,y:225},{kind:'nr_case',x:6760,y:226},{kind:'nr_table',x:7500,y:221},{kind:'nr_case',x:8030,y:208}],
+    waves:[
+      {x:550,spawns:['nr_tough','nr_tough','nr_tough','nr_tough','nr_tough']},
+      {x:850,spawns:['nr_tough','nr_runner','nr_tough','nr_bruiser','nr_tough','nr_runner']},
+      {x:1550,spawns:['nr_bruiser','nr_bruiser','nr_tough','nr_runner','nr_runner','nr_tough','nr_bruiser'],elite:true},
+      {x:2380,spawns:['nr_runner','nr_tough','nr_heavy','nr_tough','nr_bruiser','nr_tough','nr_runner','nr_tough']},
+      {x:3290,spawns:['nr_tough','nr_tough','nr_runner','nr_heavy','nr_tough','nr_runner','nr_tough','nr_tough']},
+      {x:4170,spawns:['nr_ambusher','nr_tough','nr_runner','nr_ambusher','nr_runner','nr_ambusher','nr_tough']},
+      {x:4890,spawns:['nr_heavy','nr_ambusher','nr_bruiser','nr_tough','nr_runner','nr_runner','nr_tough']},
+      {x:5805,spawns:['nr_guard','nr_guard'],camX:5760},
+      {x:5880,spawns:[],elite:true,miniboss:'conductor',intro:true,camX:5760},
+      {x:6520,spawns:['nr_guard','nr_guard','nr_runner','nr_tough','nr_guard','nr_runner','nr_tough']},
+      {x:6910,spawns:['nr_guard','nr_bruiser','nr_guard','nr_runner','nr_guard','nr_runner']},
+      {x:7370,spawns:['nr_guard','nr_guard','nr_heavy','nr_guard','nr_guard','nr_runner','nr_guard']},
+      {x:7760,spawns:['nr_guard','nr_guard','nr_bruiser','nr_guard','nr_guard','nr_bruiser','nr_guard']},
+      {x:7950,spawns:[],boss:true,camX:7680},
+    ],
+    build:()=>({}),ambient:()=>{},
+  },
+  {
+    id: 'delhi', num: '1-2', name: 'DIRTY DELHI', sub: 'ACT II - THE MARKET AND THE RIVER',
+    arrival: 'motorcycle',
     width: 12480,
-    // 26 screens of 480, stitched by tools/build_dirty_delhi.py. floorW equals the
+    // 26 screens of 480, stitched by tools/production/build_dirty_delhi.py. floorW equals the
     // stage width and the wall plate is exactly as wide, so NEITHER plane ever tiles -
     // get this wrong and the wall wraps or the floor gaps.
     wallKey: 'bg_d1_wall', floorKey: 'bg_d1_floor', floorW: 12480,
@@ -603,97 +607,6 @@ export const STAGES = [
     build: () => ({ far: buildDelhiFar(), mid: buildDelhiMid(), floor: buildDelhiFloor() }),
     ambient: dirtyDelhiAmbient,
   },
-  {
-    id: 'train', num: '1-2', name: 'THE NIGHT TRAIN', sub: 'ACT II - THE 22:40 SOUTH',
-    width: 9120,
-    // 19 screens of 480, stitched by tools/build_night_train.py. The wall plate has
-    // holes in it - every window, the open doors, the sky over the roof - and the
-    // world outside scrolls through them on the train's own clock (js/train.js).
-    wallKey: 'bg_d2_wall', floorKey: 'bg_d2_floor', floorW: 9120,
-    music: 'stage2a', musicB: 'stage2b', musicBX: ABOARD_X,
-    bossMusic: 'boss', bossMusicFinal: 'boss2', boss: 'birju',
-    introVoice: true,   // the station opening (js/story.js) has Duke's line; wave 0 stays quiet
-    skyLayers: [{ draw: drawOutside }],
-    init: initTrain,
-
-    areas: [
-      { id: 'forecourt', x1: 960, grade: '255,190,120', gradeA: 0.06 },
-      { id: 'hall', x1: 1920, grade: '200,220,255', gradeA: 0.05 },
-      { id: 'bridge', x1: 2400, grade: '120,140,200', gradeA: 0.10 },
-      { id: 'dock', x1: 3360, grade: '255,180,100', gradeA: 0.07 },
-      { id: 'platform', x1: 4800, grade: '200,210,255', gradeA: 0.06 },
-      { id: 'carriages', x1: 7680, grade: '150,170,230', gradeA: 0.10 },
-      { id: 'roof', x1: 9120, grade: '90,110,180', gradeA: 0.16 },
-    ],
-    // the footbridge: a railing at the back, and the tracks a long way below it
-    pits: [{ x0: 1920, x1: 2400, y: 200 }],
-    // the corridor is 30 px deep with a shelf of berths above it; the roof is 80,
-    // with an edge at the front and wind off the loco
-    lanes: [
-      { x0: ABOARD_X, x1: ROOF_X, top: 196, bot: 226, berth: 52 },
-      { x0: ROOF_X, x1: 9120, top: 181, bot: 261, edge: true, wind: 0.3 },
-    ],
-    // the heavy's third prop: a steel trunk on his head
-    rigs: { thela: 'thelatrunk' },
-
-    lamps: [180, 700, 1300, 1700, 2100, 2600, 3000, 3500, 3900, 4300, 4700,
-      5040, 5520, 6000, 6480, 6960, 7440],
-    lampCol: '255,200,120', lampA: 0.05,
-    rim: null, moteCount: 14, moteStyle: 'dust', grade: '150,170,230', gradeA: 0.08,
-    glows: [{ x: 6400, y: 60, r: 40, a: 0.22 }],   // the pantry's gas rings
-    shutters: null, rats: null, debris: null,
-
-    props: [
-      // the health economy: 300 hp. Five at +30, four at +15, the fridge's 1-up.
-      { kind: 'trolley', x: 300, y: 224 }, { kind: 'trunk', x: 1180, y: 214 },
-      { kind: 'trolley', x: 2900, y: 226 }, { kind: 'trunk', x: 4120, y: 212 },
-      { kind: 'trolley', x: 6180, y: 220 },
-      { kind: 'parcel', x: 2560, y: 208 }, { kind: 'parcel', x: 3050, y: 214 },
-      { kind: 'berthtable', x: 5340, y: 200 }, { kind: 'berthtable', x: 6780, y: 200 },
-      { kind: 'glasses', x: 6300, y: 222 },
-      { kind: 'urn', x: 6420, y: 200 },
-      { kind: 'fridge', x: 6100, y: 198 },
-      // one per carriage, above head height, easy to miss
-      { kind: 'chain', x: 5100, y: 198, z: 62 }, { kind: 'chain', x: 5560, y: 198, z: 62 },
-      { kind: 'chain', x: 6100, y: 198, z: 62 }, { kind: 'chain', x: 6700, y: 198, z: 62 },
-      // texture, not economy
-      { kind: 'parcel', x: 2700, y: 230 }, { kind: 'trunk', x: 3560, y: 230 },
-      { kind: 'matka', x: 4420, y: 232 },
-    ],
-    // pigeons in the girders over the platform
-    birds: [
-      { x: 3480, y: 214 }, { x: 3512, y: 222 }, { x: 3900, y: 218 }, { x: 3930, y: 228 },
-    ],
-    fg: [], ambience: [], emitters: [],
-
-    events: [
-      { x: 1250, kind: 'ticket' },        // a thumb through the grille: one ticket, south
-      { x: 2450, kind: 'trolleys' },      // the hand trucks start rolling
-      { x: 4250, kind: 'whistle' },       // the guard, and the rake creeps
-      { x: 6400, kind: 'tunnel' },        // mid-walk, nothing to fight, 200 frames of dark
-      { x: 7700, kind: 'music', slot: 'stage2b' },
-    ],
-
-    waves: [
-      // the cow is not a fighter: she is the forecourt's furniture until somebody hits her
-      { x: 380, spawns: ['gai', 'goonda', 'goonda', 'goonda', 'batta'] },
-      { x: 900, spawns: ['goonda', 'goonda', 'coolie', 'goonda', 'bandar'] },
-      { x: 1700, spawns: ['bandar', 'goonda', 'goonda', 'batta'], thief: true },
-      { x: 2700, spawns: ['thela', 'coolie', 'thela', 'goonda', 'goonda'] },
-      { x: 3800, spawns: ['gai', 'thela', 'coolie', 'cooker', 'batta', 'goonda', 'goonda', 'bandar'] },
-      // THE DEPARTURE: a situation, not a person. Ends with a running jump, or a soft fail.
-      { x: 4300, spawns: ['goonda', 'coolie', 'goonda', 'batta', 'bandar'], depart: true },
-      { x: 5000, spawns: ['goonda', 'goonda', 'goonda'] },
-      { x: 5500, spawns: ['manja', 'manja', 'coolie', 'goonda', 'goonda'] },
-      { x: 6000, spawns: ['cooker', 'manja', 'goonda'], runner: 'goonda' },
-      { x: 6600, spawns: ['thela', 'coolie', 'goonda', 'goonda', 'bandar'] },
-      { x: 7200, spawns: [], miniboss: 'tte', intro: true, camX: 7200 },
-      { x: 8000, spawns: ['goonda', 'coolie', 'goonda', 'goonda', 'bandar', 'manja', 'coolie'] },
-      { x: 8600, spawns: [], boss: true },
-    ],
-    build: () => ({ far: buildDelhiFar(), mid: buildDelhiMid(), floor: buildDelhiFloor() }),
-    ambient: nightTrainAmbient,
-  },
 ];
 
 const layerCache = {};
@@ -716,8 +629,6 @@ export function initStageObj(st) {
   // a retry or a stage change must never inherit a squeezed arena
   G.arenaSqueeze = 0;
   G.arenaSqueezeTarget = 0;
-  G.arenaRear = 0;
-  G.arenaRearTarget = 0;
   G.train = null;
   G.runnerEscaped = false;
   G.introResume = null;
@@ -726,6 +637,8 @@ export function initStageObj(st) {
   for (const ev of (st.events || [])) ev.done = false;
   G.waveIndex = -1;
   G.waveActive = false;
+  G.spawnQueue = [];
+  G.spawnCd = 0;
   G.goTimer = 0;
   G.motes = [];
   for (let i = 0; i < st.moteCount; i++) {
@@ -749,6 +662,7 @@ export function initStageObj(st) {
 
 export function drawStage(ctx, camX) {
   const st = G.stage || STAGES[0];
+  if(st.id==='train'){drawTrainScene(ctx,camX);return;}
   const layers = layerCache[st.id] || (layerCache[st.id] = st.build());
   const wall = ASSETS[st.wallKey];
   const floorImg = ASSETS[st.floorKey];
