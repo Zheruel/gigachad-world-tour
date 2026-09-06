@@ -18,7 +18,7 @@ export const DIFF = { dmg: 1, hp: 1, lives: 3, aggro: 1 };
 // Shared mutable game context, populated by main.js.
 // Modules import G instead of importing each other (avoids cycles).
 export const G = {
-  state: 'boot',     // boot|title|hub|intro|play|bossintro|clear|over|ending
+  state: 'boot',     // boot|welcome|title|hub|travel|loading|intro|play|bossintro|clear|over|ending
   paused: false,
   time: 0,           // frame counter (updates only when not in hitstop)
   rawTime: 0,        // frame counter (always advances, for menus/blink)
@@ -40,9 +40,6 @@ export const G = {
   arenaSqueeze: 0,
   arenaSqueezeTarget: 0,
   ringWobble: 0,        // frames the crowd around the chalk ring jumps for
-  // the rear wall alone, for Birju's uncouple: the roof gets shorter from the back
-  arenaRear: 0,
-  arenaRearTarget: 0,
   train: null,            // THE NIGHT TRAIN's state, js/train.js; null on every other stage
   sluice: null,           // { t } once the outfall is armed, for the ghat's rhythm
   runnerEscaped: false,   // the dabbawala got away, so the next gate is two men heavier
@@ -75,6 +72,8 @@ export const G = {
   stageIndex: 0,
   unlockedStage: 0,
   selectedStage: 0,
+  pendingDestination: null,
+  travel: null,
   hubSel: null,      // id of the lair fixture the player is standing at, null for none
   hubPanel: null,    // id of the fixture whose panel is open, null for none
   hubAct: 0,         // cursor within the open panel's list
@@ -156,7 +155,7 @@ export function airborne(e) {
 export const WALL_PAD = 14;
 export const SPLAT_SPEED = 1.5;   // |vx| above this splats instead of just stopping
 
-export function arenaMin() { return G.camX + WALL_PAD + (G.arenaSqueeze || 0) + (G.arenaRear || 0); }
+export function arenaMin() { return G.camX + WALL_PAD + (G.arenaSqueeze || 0); }
 export function arenaMax() { return G.camX + W - WALL_PAD - (G.arenaSqueeze || 0); }
 
 // Clamps a body inside the arena. Returns 0 for no wall contact, or -1/+1 for
@@ -226,7 +225,7 @@ export function clampToLane(e) {
     return l && l.edge && helpless ? 1 : 0;
   }
   if (e.y >= lo) return 0;
-  const fell = lo > FLOOR_TOP && helpless;
+  const fell = lo > FLOOR_TOP && helpless && G.stage?.id !== 'train';
   e.y = lo;
   return fell ? -1 : 0;
 }

@@ -14,8 +14,14 @@ import { spawnEnemy } from './enemies.js';
 import { PARRY_CLASS, tryHitPlayer, blitTelegraph, drawCueMarker } from './bosslib.js';
 import { initDelhi } from './delhi_bosses.js';
 import { initTrainBoss } from './train_bosses.js';
+import { getAIFrame } from './aiframes.js';
 
 export const BOSSES = {
+  conductor: {
+    name:'HEAD CONDUCTOR',title:'CASH ONLY',taunt:'YOUR TICKET IS NOT VALID.',
+    set:'nr_conductor',rageSet:'nr_conductor',hp:210,speed:.85,w:46,h:88,shadowR:16,score:2500,mini:true,
+    patterns:['punch','whistle'],lines:['CASH ONLY'],
+  },
   // ---- DIRTY DELHI ----
   // The three Delhi fights live in js/delhi_bosses.js; the machine here only runs
   // their shared states (grab, hurt, down, dying). `mini: true` is data here rather
@@ -29,21 +35,10 @@ export const BOSSES = {
     lines: ['NO WEAPONS', 'STAND AND FIGHT', 'THE CIRCLE HOLDS'],
   },
   // ---- THE NIGHT TRAIN ----
-  tte: {
-    name: 'THE TTE', title: 'TICKET EXAMINER', taunt: 'TICKET?',
-    set: 'tte', rageSet: 'tte', portrait: 'portrait_tte',
-    hp: 300, speed: 0.80, w: 44, h: 88, shadowR: 15, score: 3500, mini: true,
-    patterns: ['torch', 'ledger', 'check'],
-    rageLine: '',
-    lines: ['TICKET?', 'THIS IS NOT YOUR SEAT', 'NAME AND PNR'],
-  },
-  birju: {
-    name: 'BIRJU', title: 'THE COUPLER', taunt: 'NOWHERE TO STAND',
-    set: 'birju', rageSet: 'birju', portrait: 'portrait_birju',
-    hp: 560, speed: 1.00, w: 62, h: 104, shadowR: 22, score: 8000,
-    patterns: ['chain', 'hook', 'shoulder', 'lift', 'uncouple'],
-    rageLine: 'DUCK.',
-    lines: ['NOWHERE TO STAND', 'MIND THE GAP', 'ONE COACH LESS'],
+  vikram: {
+    name:'COMMISSIONER SETH', title:'THE PROCESSING FEE', taunt:'YOUR FARE DOES NOT INCLUDE MY FEE.',
+    set:'nr_vikram',rageSet:'nr_vikram_roof',hp:560,speed:.9,w:50,h:92,shadowR:17,score:8000,
+    patterns:['cane','pistol','grab'],rageLine:'TAKE IT OUTSIDE.',
   },
   dredger: {
     name: 'THE DREDGER', title: 'WHAT EATS THE RIVER', taunt: 'THE RIVER IS A CONTRACT',
@@ -106,15 +101,16 @@ export function createBoss(key, x, y) {
     moved: 0, stridePhase: 0, poise: 0, maxPoise: 0, mashNeed: 6, slamDmg: 14, label: null, delhi: null,
     w: def.w, h: def.h, shadowR: def.shadowR, set: SPR[def.set],
     hurt(dmg, dir, heavy, launch) { hurtBoss(b, dmg, dir, heavy, launch); },
+    protectedStagger: 0, superLocked: false,
+    damageGuard(amount=1) { if(!b.maxGuard||b.guard<=0)return; b.guard=Math.max(0,b.guard-amount);b.guardFlash=8;if(b.guard===0)b.breakGuard(); },
+    breakGuard() { b.guard=0;b.protectedStagger=Math.max(b.protectedStagger,90);b.state='stagger';b.t=0;b.vx=0;b.atkCd=90;G.audio.sfx('heavy');spawnPop(b.x,b.y-b.h-8,'GUARD BREAK'); },
     parried(dmg, dir) {
-      if (b.key === 'yadav' && b.posture > 1) {
-        b.posture--; b.flash = 6; b.state = 'recover'; b.t = 0; b.atkCd = 55;
-        spawnPop(b.x, b.y - b.h - 8, 'POSTURE ' + b.posture);
-      } else {
-        b.posture = b.maxPosture;
-        hurtBoss(b, b.key === 'yadav' ? dmg + 8 : dmg, dir, false, false);
-        if (!b.dead) { b.state = 'stagger'; b.t = 0; b.vx = dir * 0.5; b.atkCd = 90; }
-      }
+      if(b.key==='yadav'){b.posture--;if(b.posture<=0){b.posture=b.maxPosture;b.protectedStagger=90;}}
+      b.protectedStagger=Math.max(b.protectedStagger,45);
+      b.damageGuard(1);
+      b.parryApplying=true;hurtBoss(b,dmg,dir,false,false);b.parryApplying=false;
+      if(!b.dead){b.state='stagger';b.t=0;b.vx=0;b.atkCd=90;}
+
     },
     thrown() {},
   };
@@ -125,7 +121,9 @@ export function createBoss(key, x, y) {
 }
 
 export function hurtBoss(b, dmg, dir, heavy, launch) {
-  if (b.dead) return;
+  if (b.dead || (b.superLocked&&!b.superApplying) || (b.key === 'vikram' && G.train?.cinematic)) return;
+  if(heavy&&!b.superApplying&&!b.parryApplying&&!b.counterApplying)b.damageGuard(.35);
+  if(b.delhi?.beforeHurt&&b.delhi.beforeHurt(b,dmg,dir,heavy,launch)===false)return;
   if (b.armor > 0 && !launch) {
     b.armor--; b.flash = 4;
     b.hp -= Math.round(dmg * 0.4);
@@ -133,7 +131,7 @@ export function hurtBoss(b, dmg, dir, heavy, launch) {
     G.audio.sfx('armor');
     return;
   }
-  b.hp -= dmg;
+  b.hp -= dmg*(b.guardingHit?.2:1);
   b.flash = 5;
   // a fight with its own module decides how it reacts to the hit; the damage stands
   const own = b.delhi && b.delhi.onHurt && b.delhi.onHurt(b, dmg, heavy, launch);
@@ -145,6 +143,7 @@ export function hurtBoss(b, dmg, dir, heavy, launch) {
     G.audio.sfx('enrage');
     if (b.delhi && b.delhi.onEnrage) b.delhi.onEnrage(b);
   }
+  if(b.hp<=0&&b.superLocked){b.hp=1;b.pendingSuperDefeat=true;return;}
   if (b.hp <= 0) {
     b.hp = 0; b.dead = true;
     b.state = 'dying'; b.t = 0;
@@ -157,6 +156,8 @@ export function hurtBoss(b, dmg, dir, heavy, launch) {
     G.shake = 8;
     if (G.player.grabbedBy === b) { G.player.grabbedBy = null; G.player.state = 'idle'; }
     if (b.delhi && b.delhi.onDeath) b.delhi.onDeath(b);
+  } else if (b.protectedStagger>0 || b.superLocked) {
+    b.state='stagger'; b.vx=0;
   } else if (own) {
     // handled
   } else if (heavy && Math.random() < 0.3) {
@@ -190,15 +191,25 @@ export function updateBoss() {
   const b = G.boss;
   if (!b || b.removeMe) return;
   const p = G.player;
+  if(b.superLocked&&p.state!=='special'){b.superLocked=false;b.superApplying=false;}
+  if(b.superLocked)return;
+  if(b.pendingSuperDefeat){b.pendingSuperDefeat=false;hurtBoss(b,b.hp,p.face,true,false);return;}
+  if(b.protectedStagger>0&&!b.dead){
+    if(b.flash>0)b.flash--;if(b.guardFlash>0)b.guardFlash--;
+    b.protectedStagger--;b.state='stagger';b.t=0;b.vx=0;b.vz=0;b.z=0;
+    if(!b.protectedStagger){if(b.maxGuard&&b.guard===0)b.guard=b.maxGuard;b.state=b.delhi?'recover':'idle';b.atkCd=45;}
+    return;
+  }
   b.t++;
   if (b.flash > 0) b.flash--;
   // watchdog: never let a boss sit in a passive state forever
   if (b.state === 'grabhold' && p.grabbedBy !== b) { b.state = 'idle'; b.t = 0; b.atkCd = 50; }
   if (b.state === 'down' && b.t > 240) { b.z = 0; b.vz = 0; b.vx = 0; b.state = 'idle'; b.t = 0; b.atkCd = 40; }
   if (b.state !== 'dying' && b.state !== 'down' && b.state !== 'grabhold' && !(b.delhi && b.delhi.keepFace && b.delhi.keepFace(b))) b.face = p.x < b.x ? -1 : 1;
-  const px0 = b.x;
+  const px0 = b.x, py0 = b.y;
   if (b.delhi && b.delhi.update(b)) {
-    b.moved = Math.abs(b.x - px0); b.stridePhase += b.moved;
+    b.moved = G.stage?.id==='train'?Math.hypot(b.x-px0,b.y-py0):Math.abs(b.x-px0); b.stridePhase += b.moved;
+    if(b.trainWaiting)return;
     clampToLane(b);
     clampToArena(b, 0);
     return;
@@ -432,9 +443,12 @@ export function updateBoss() {
     case 'down': {
       if (inAir(b)) {
         if (fall(b, 0.28, 0) === 'land') { spawnDust(b.x, b.y, 4); G.shake = Math.max(G.shake, 4); }
-      } else if (b.t > 30) { b.state = 'idle'; b.atkCd = 40 * cdScale; }
+      } else if (b.t > 30) {
+        b.state=G.stage?.id==='train'&&getAIFrame(b.set._aiKey,'getup')?'getup':'idle';b.t=0;b.atkCd=40*cdScale;
+      }
       break;
     }
+    case 'getup':if(b.t>=15){b.state='idle';b.t=0;b.atkCd=40*cdScale;}break;
     case 'dying': {
       if (inAir(b) && fall(b, 0.28, 0) === 'land') { spawnShock(b.x, b.y); G.shake = 6; }
       break;

@@ -191,25 +191,31 @@ export function drawHUD(ctx) {
     ctx.fillRect(bx2, by2, w, 5);
     ctx.fillStyle = '#ff9a8a';
     ctx.fillRect(bx2, by2, w, 1);
+    if(b.maxGuard){
+      ctx.fillStyle='#151018';ctx.fillRect(bx2-1,by2+7,bw2+2,5);
+      ctx.fillStyle=b.protectedStagger?'#ffda7a':'#be9751';
+      const guardFill=b.guard>0?b.guard/b.maxGuard:Math.min(1,(b.protectedStagger||0)/90);
+      ctx.fillRect(bx2,by2+8,Math.round(bw2*guardFill),3);
+      ctx.fillStyle='#21171a';for(let n=1;n<3;n++)ctx.fillRect(bx2+Math.round(bw2*n/3),by2+8,1,3);
+    }
   }
 }
 
 export function drawPause(ctx) {
-  ctx.fillStyle = 'rgba(0,0,0,0.6)';
-  ctx.fillRect(0, 0, W, H);
-  drawTextShadow(ctx, 'PAUSE', W / 2 - textWidth('PAUSE', 2) / 2, 100, '#f8f0e0', 2);
-  const lines = [
-    'Z COMBO   X JUMP   HOLD C PARRY',
-    'SPACE RAGNAROK (FULL METER)',
-    'DOUBLE TAP TO DASH, HOLD TO RUN',
-    'TAP Z AGAIN DURING EACH HIT TO CHAIN',
-    'GREEN = PARRY   RED = DODGE',
-    'TAP Z OR X WHILE DOWN TO GET UP FAST',
-    'ESC RESUME   BACKSPACE QUIT TO TITLE',
-  ];
-  let y = 130;
-  for (const l of lines) {
-    drawTextShadow(ctx, l, W / 2 - textWidth(l, 1) / 2, y, '#c8c0e0', 1);
-    y += 11;
-  }
+  ctx.fillStyle = 'rgba(5,3,10,.76)'; ctx.fillRect(0,0,W,H);
+  const gradient = ctx.createLinearGradient(0,62,0,218);
+  gradient.addColorStop(0,'#302019'); gradient.addColorStop(1,'#100d14');
+  ctx.fillStyle=gradient;ctx.fillRect(112,62,256,156);
+  ctx.strokeStyle='#b48742';ctx.lineWidth=1;ctx.strokeRect(112.5,62.5,255,155);
+  ctx.strokeStyle='#5e442c';ctx.strokeRect(116.5,66.5,247,147);
+  const text=(label,y,color,scale=1)=>drawTextShadow(ctx,label,(W-textWidth(label,scale))/2,y,color,scale);
+  text('MENU',80,'#ffe1a0',2);
+  ['RESUME','TITLE SCREEN'].forEach((label,i)=>{
+    const y=109+i*34,selected=(G.menuIndex||0)===i;
+    ctx.fillStyle=selected?'#5b3822':'#171219';ctx.fillRect(130,y,220,30);
+    if(selected){ctx.strokeStyle='#efc16e';ctx.strokeRect(130.5,y+.5,219,29);}
+    text(label,y+11,selected?'#fff0c9':'#beaa88');
+  });
+  text('ARROWS + Z / CLICK TO SELECT',188,'#b8a88d');
+  text('ESC TO RESUME',201,'#b8a88d');
 }

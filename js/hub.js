@@ -1,3 +1,7 @@
+import { drawDialogue, updateDialogue } from './room_dialogue.js';
+import { drawElevatorDoor, ELEVATOR_X, ELEVATOR_BOUNDS } from './travel.js';
+import { drawElevatorGuide } from './elevator.js';
+import { hasCleared } from './progress.js';
 // hub.js - THE LAIR: CHAD's penthouse, the room you walk around between acts. 1440
 // logical px, three screens wide, in 90s neon over old-money walnut and brass.
 //
@@ -10,13 +14,13 @@
 // none of them is a combat target; the heavy bag is an ordinary G.props entry; the
 // tiger goes on G.actors so drawWorld y-sorts him with everybody else.
 //
-// The glass is a HOLE. tools/build_lair_wide.py keys the window out of the plate, so
+// The glass is a HOLE. tools/production/build_lair_wide.py keys the window out of the plate, so
 // the city shows through it as TWO layers at different parallax - bg_lair_sky_far and
 // bg_lair_sky_near - with lairCity() painting the sun, the mast beacons, the lit
 // windows and the airship between them. Nothing behind glass could move while the view
 // was painted into the wall, and one flat layer had no depth.
 //
-// Every x below is measured off assets/bg_lair_wall.png, which tools/gen_lair_room5.sh
+// Every x below is measured off assets/lair/wall.png, which tools/production/gen_lair_room5.sh
 // generates as three panels with those zones in them by name. Regenerating the plate
 // without keeping the zones puts every fixture on the wrong bit of wall.
 import { G, W, H, METER_MAX, clamp, rand, irand } from './engine.js';
@@ -41,11 +45,11 @@ const CEIL_MOUNT = 30;     // the window head beam, which is what the bag hangs 
 // picture light), TROPHIES AND MEDIA (alcove between two media walls), THE VIEW.
 const BAR = [0, 132];
 // The lit water, not the frame. The brass surround is lair_tank_frame, a nine-slice
-// rebuilt by tools/build_lair_extras.py and blitted OVER the plate's original tank, so
+// rebuilt by tools/production/build_lair_extras.py and blitted OVER the plate's original tank, so
 // the wall behind never had to be repaired - see build_tankframe.
 const TANK = { x: 156, y: 42, w: 299, h: 112 };
 const TANK_FRAME = { x: 141, y: 27, w: 329, h: 142 };
-// ONE long trophy hall - widen_alcove in tools/build_lair_wide.py rebuilds the niche and
+// ONE long trophy hall - widen_alcove in tools/production/build_lair_wide.py rebuilds the niche and
 // the dead bay next to it as a single unit, logical 477.5-748.5 with a 13-wide frame
 // moulding at each end. Six relics across 244 leaves ~15 of air between them.
 const NICHES = [[491, 735]];
@@ -86,10 +90,11 @@ export const FIXTURES = [
   { id: 'hifi', x: 880, hint: 'SOUND TEST' },
   { id: 'bag', x: BAG_X, hint: 'WORK THE BAG', key: 'Z' },
   { id: 'mirror', x: 1372, hint: 'FLEX' },
+  { id: 'elevator', x: ELEVATOR_X, hint: 'ELEVATOR' },
 ];
 const fixtureAt = (id) => FIXTURES.find((f) => f.id === id);
 
-// The two gym stations. Each is one sprite set built by tools/build_lair_extras.py from
+// The two gym stations. Each is one sprite set built by tools/production/build_lair_extras.py from
 // a single generated strip: the rig alone, then three poses of CHAD using it. Because
 // they come off one strip they already agree on where the equipment is, so swapping
 // _empty for a pose cannot make the rig jump. Same idea as the lounge sofa, without the
@@ -154,12 +159,11 @@ const FIREPLACE = { x: 1562, y: 163 };
 const FIREBOX = [1533, 128, 59, 35];
 const FENDER = [1530, 148, 68, 20];
 const OVERMANTEL = [1528, 48, 66, 55];   // the mirror glass above it
-// One generation per pose - see the bed section in CLAUDE.md for why a strip could not
-// do this. She does not react to CHAD; she is just someone living in the room.
+// Independent idle poses, with an occasional greeting when CHAD approaches.
 export const BED_X = 1840;   // tucked into the corner, headboard end against it
 const BED = { x: BED_X, y: WALL_BASE + 2, w: 140, h: 72 };
 
-// Sprites in the wall plane. Sizes mirror LAIR in tools/process_props.py; y is the
+// Sprites in the wall plane. Sizes mirror LAIR in tools/production/process_props.py; y is the
 // bottom edge and art is centred on x.
 export const LAIR_ART = [
   // the lounge: stools at the painted bar. The cherub portrait that hung over the sofa
@@ -171,7 +175,7 @@ export const LAIR_ART = [
   { art: 'lair_bar_bottles_top', x: 60, y: 69, w: 120, h: 23 },
   { art: 'lair_bar_bottles_low', x: 60, y: 99, w: 120, h: 23 },
   { art: 'lair_bar_stools', x: 92, y: WALL_BASE, w: 46, h: 40 },
-  // Trophies. Two niches now - see clone_alcove in tools/build_lair_wide.py - with the
+  // Trophies. Two niches now - see clone_alcove in tools/production/build_lair_wide.py - with the
   // cigar cabinet built flush into the second one's base panel (482.5-591 x 147-165.5)
   // rather than standing in front of the wall. The arcade cabinet is gone: it was the
   // only injection-moulded object in a walnut room, and this bay is worth more as shelf.
@@ -221,7 +225,7 @@ export const LAIR_ART = [
   { art: 'lair_bed_nightstand', x: 1750, y: WALL_BASE, w: 33, h: 40 },   // beside the footboard
 ];
 // The lounge is a pair: the same sofa empty and with CHAD sitting in it, registered on
-// the sofa's own foot by tools/build_lair_extras.py. His boots hang below the sofa
+// the sofa's own foot by tools/production/build_lair_extras.py. His boots hang below the sofa
 // legs, which is why the canvas bottom sits a little in front of the wall base.
 const LOUNGE = { x: 290, y: WALL_BASE + 9, w: 141, h: 63 };
 // Measured from the top-left of each final registered lounge frame. The cigar travels
@@ -732,8 +736,8 @@ const shark = { x: 0, dir: 1, frame: 0, t: 0, turn: 0, puff: 0, draw: 0 };
 const bubbles = [];
 const smoke = [];
 const silt = [];
-const SCAPE_H = 92;           // lair_tankscape, sized in tools/process_props.py
-const SHARK_W = 56;           // lair_shark_*, from tools/build_lair_extras.py SHARK_H
+const SCAPE_H = 92;           // lair_tankscape, sized in tools/production/process_props.py
+const SHARK_W = 56;           // lair_shark_*, from tools/production/build_lair_extras.py SHARK_H
 // The lit end of the cigar, measured off assets/lair/shark_0.png as an offset from the
 // sprite's own top-left. The smoke has to leave the cigar, not the middle of the shark.
 const CIGAR = { x: 54, y: 27 };
@@ -1157,9 +1161,8 @@ function drawTank(ctx, camX) {
 
 
 // ------------------------------------------------------------------ the bed
-// She is not waiting for him and does not react to him - she is just someone living in
-// the room. Poses drift on their own and a line goes off now and then with a long gap
-// either side of it; a line every few seconds reads as a chatbot, not as company.
+// Poses drift on their own. Proximity greetings and occasional idle lines have
+// long gaps so the room feels inhabited without constant chatter.
 //
 // The register is the whole job here. Every line is said by someone who is already
 // impressed and would rather he came to bed than went back out - fond, unhurried,
@@ -1208,7 +1211,7 @@ function resetBed() {
   bed.lines = null;
   bed.lineT = 0;
   bed.next = irand(...LINE_GAP);
-  bed.said = -1;
+  bed.said = -1; bed.near=false; bed.nearAt=-2000; bed.nearCount=0;
 }
 
 function say() {
@@ -1221,7 +1224,14 @@ function say() {
 }
 
 function updateBed() {
-  if (bed.lineT > 0) bed.lineT--;
+  const near=Math.abs(G.player.x-(BED.x+33))<(bed.near?125:90);
+  if(near&&!bed.near&&G.time-bed.nearAt>1800) {
+    const lines=['The city can wait.','Come back to bed, Chad.','You work too hard.'];
+    const i=bed.nearCount++%lines.length;
+    hubSay(lines[i]);bed.nearAt=G.time;bed.next=irand(...LINE_GAP);
+  }
+  bed.near=near;
+  if (bed.lineT > 0) {bed.lineT--;updateDialogue(bed.line,LINE_HOLD-bed.lineT,{remaining:bed.lineT,visible:Math.abs(G.player.x-(BED.x+33))<220});}
   if (--bed.hold <= 0) {
     // a step to an adjacent pose, never a jump across the set
     bed.pose = clamp(bed.pose + (Math.random() < 0.5 ? -1 : 1), 0, BED_POSES - 1);
@@ -1235,17 +1245,9 @@ function updateBed() {
 
 const bedFrame = () => 'lair_bed_' + bed.pose;
 
-// A speech bubble in the wall plane, so CHAD passes in front of it like everything else.
-// Rounded corners, a dark rule, a dropped shadow and shaded paper: a plain white rectangle
-// reads as debug text sitting on top of the game rather than something in the room.
-//
-// Wrapped, and that is the load-bearing part. 'it is four in the morning' on one line is
-// 109 logical px of a 480 px screen, so the keep-it-on-screen clamp shoved the whole box
-// into the middle of the room with the tail stretching back to her head. Two short lines
-// sit over the pillow where they belong.
+// Compact line measurements remain available to the bedroom review tools.
+// The visible panel uses the shared brass dialogue renderer.
 const BUBBLE_W = 62;               // max text width per line
-const LINE_LEAD = 8;
-const POP = 5;                     // frames it takes to grow out of the tail
 
 function wrapText(text) {
   const words = text.split(' ');
@@ -1270,68 +1272,13 @@ function wrapText(text) {
   return lines;
 }
 
-// grow is 0..1: the balloon swells out of the tail, and the words only appear once it has
-// finished. A box that fades up at full size reads as a caption; one that pops reads as
-// someone speaking.
-function drawBubble(ctx, cx, bottom, lines, a, grow) {
-  const pad = 5;
-  const fullW = Math.max(...lines.map((l) => textWidth(l, 1))) + pad * 2;
-  const fullH = (lines.length - 1) * LINE_LEAD + 7 + pad * 2;
-  const w = Math.round(fullW * (0.4 + 0.6 * grow));
-  const h = Math.round(fullH * (0.45 + 0.55 * grow));
-  const tail = Math.round(2 + 3 * grow);
-  const x = Math.round(clamp(cx - w / 2, 3, W - w - 3)), y = Math.round(bottom - h - tail);
-  const tx = Math.round(clamp(cx, x + 6, x + w - 6));
-
-  const body = (dx, dy, col) => {
-    ctx.fillStyle = col;
-    ctx.fillRect(x + dx + 2, y + dy, w - 4, h);           // 2px round on each corner
-    ctx.fillRect(x + dx + 1, y + dy + 1, w - 2, h - 2);
-    ctx.fillRect(x + dx, y + dy + 2, w, h - 4);
-    ctx.beginPath();
-    ctx.moveTo(tx + dx - 3, y + dy + h - 1);
-    ctx.lineTo(tx + dx + 4, y + dy + h - 1);
-    ctx.lineTo(tx + dx, y + dy + h + tail);
-    ctx.closePath();
-    ctx.fill();
-  };
-
-  ctx.save();
-  ctx.globalAlpha = a * 0.35;
-  body(1, 2, '#0c0812');                                  // dropped shadow
-  ctx.globalAlpha = a;
-  body(0, 0, '#241c2e');                                  // the dark rule...
-  ctx.fillStyle = '#f8f2e2';                              // ...with the paper inside it
-  ctx.fillRect(x + 3, y + 1, w - 6, h - 2);
-  ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
-  ctx.fillRect(x + 1, y + 3, w - 2, h - 6);
-  ctx.fillStyle = '#e7dbc1';                              // lit from above, like everything else
-  ctx.fillRect(x + 3, y + h - 3, w - 6, 2);
-  ctx.beginPath();                                        // the tail's paper, one px inside the rule
-  ctx.moveTo(tx - 2, y + h - 1);
-  ctx.lineTo(tx + 3, y + h - 1);
-  ctx.lineTo(tx, y + h + tail - 2);
-  ctx.closePath();
-  ctx.fill();
-  if (grow >= 1) {
-    const ty = y + Math.round((h - (fullH - pad * 2)) / 2);
-    lines.forEach((l, i) => drawText(ctx, l, x + Math.round((w - textWidth(l, 1)) / 2),
-      ty + i * LINE_LEAD, '#2a2030', 1));
-  }
-  ctx.restore();
-}
-
 function drawBed(ctx, camX) {
   drawFixtureArt(ctx, camX, BED, artFor({ art: bedFrame(), w: BED.w, h: BED.h }));
   if (bed.lineT <= 0 || !bed.lines) return;
   const x = BED.x - camX;
   if (x < -90 || x > W + 90) return;
   const age = LINE_HOLD - bed.lineT;
-  // pops out over POP frames, holds, then fades slowly
-  const a = Math.min(1, age / 3, bed.lineT / 30);
-  const grow = Math.min(1, (age + 1) / POP);
-  // her head, not the bed's centre: measured at logical +33 from BED.x across the poses
-  drawBubble(ctx, x + 33, BED.y - BED.h + 6, bed.lines, a, grow);
+  drawDialogue(ctx,{text:bed.line,x:x+33,bottom:BED.y-BED.h+6,age,remaining:bed.lineT,width:146});
 }
 
 // ----------------------------------------------------------------- the tiger
@@ -1476,13 +1423,6 @@ function drawPet(ctx, camX) {
   // he breathes in his sleep. One pixel on a slow sine, and it is the whole difference
   // between a sleeping animal and a rug.
   const breath = tiger.state === 'lie' ? Math.round(Math.sin(tiger.t * 0.022)) : 0;
-  ctx.save();
-  ctx.globalAlpha = 0.28;
-  ctx.fillStyle = '#000';
-  ctx.beginPath();
-  ctx.ellipse(x, y, w * 0.38, 3, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
   // the art faces right, so -1 is the one that needs flipping
   if (tiger.face === -1) {
     ctx.save();
@@ -1524,6 +1464,7 @@ export function resetHub() {
   G.hubFlex = 0;
   G.hubSel = null;
   G.hubPanel = null;
+  G.departureRequested = false;
 }
 
 // Returns the global stage index the player just committed to, or -1.
@@ -1578,7 +1519,10 @@ export function updateHub() {
 
   // the bag is punched, not opened; everything else is a panel or a short action
   if (sel && sel !== 'bag' && input.pressed('use') && !G.hubFlex) {
-    if (sel === 'mirror') {
+    if (sel === 'elevator') {
+      if (G.pendingDestination !== null) G.departureRequested = true;
+      else G.audio.sfx('blip');
+    } else if (sel === 'mirror') {
       pose(96);
       G.hubFlex = 96;
       G.audio.voice('duke_look_good', 2200);
@@ -1614,6 +1558,7 @@ function pose(frames) {
 // Fixtures are wall, so this runs between drawStage and drawWorld - walk in front of
 // one and you occlude it.
 export function drawHubWall(ctx, camX) {
+  drawElevatorDoor(ctx, camX);
   drawAlcove(ctx, camX);
   drawTank(ctx, camX);
 
@@ -1653,11 +1598,6 @@ function drawFixtureArt(ctx, camX, d, img) {
   }
   if (d.y >= WALL_BASE) {
     ctx.save();
-    ctx.globalAlpha = 0.34;
-    ctx.fillStyle = '#000';
-    ctx.beginPath();
-    ctx.ellipse(x + frameW(img) / 2, d.y, frameW(img) * 0.5, 3, 0, 0, Math.PI * 2);
-    ctx.fill();
     ctx.globalAlpha = 0.10;
     ctx.translate(0, Math.round(d.y * 1.5));
     ctx.scale(1, -0.5);
@@ -1674,10 +1614,10 @@ function drawFixtureArt(ctx, camX, d, img) {
 // plate; the bays fill left to right, top down, in the order you beat them.
 // Surface y is where a relic's feet go, measured off the plate's glass shelves. The
 // tightest bay is the top one at 25 logical of headroom, which is what caps relic
-// height in tools/process_props.py.
+// height in tools/production/process_props.py.
 const beatenBosses = () => Object.keys(BOSSES)
   .map((k) => ({ k, act: STAGES.findIndex((s) => s.boss === k) }))
-  .filter((b) => b.act >= 0 && b.act < G.unlockedStage)
+  .filter((b) => b.act >= 0 && hasCleared(G, b.act))
   .sort((a, b) => a.act - b.act);
 
 function drawAlcove(ctx, camX) {
@@ -1695,16 +1635,6 @@ function drawAlcove(ctx, camX) {
     const drop = arriving ? Math.max(0, (G.hubRelicT - 108) / 42) * -22 : 0;
     const x = Math.round(sx - camX - frameW(img) / 2);
     ctx.save();
-    // A contact shadow on the glass. Without it a relic reads as pasted onto the back of
-    // the niche however exactly its feet land, because nothing else in the bay touches.
-    if (!drop) {
-      ctx.globalAlpha = 0.34;
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.ellipse(x + frameW(img) / 2, sy, frameW(img) * 0.42, 1.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    }
     if (arriving && G.hubRelicT > 100 && (G.rawTime & 2)) ctx.filter = 'brightness(2.2)';
     blit(ctx, img, x, Math.round(sy - frameH(img) + drop));
     ctx.restore();
@@ -1811,6 +1741,7 @@ function drawSelectRing(ctx, camX) {
     hifi: [880 - 26, WALL_BASE - 62, 52, 62],
     bag: [BAG_X - 15, 114, 30, 88],
     mirror: MIRROR_FRAME,
+    elevator: [ELEVATOR_BOUNDS[0] - 3, ELEVATOR_BOUNDS[1] - 3, ELEVATOR_BOUNDS[2] + 6, ELEVATOR_BOUNDS[3] + 6],
   };
   const b = boxes[G.hubSel];
   if (!b) return;
@@ -1830,6 +1761,14 @@ function upArrow(ctx, x, y, col) {
 }
 
 export function drawHubUI(ctx) {
+  drawElevatorGuide(ctx);
+  if (G.pendingDestination !== null && !G.hubPanel) {
+    const dir = G.player.x < ELEVATOR_X - 40 ? ' >' : G.player.x > ELEVATOR_X + 40 ? ' <' : '';
+    drawTextShadow(ctx, 'INDIA / TAKE THE ELEVATOR' + dir, 8, 23, '#9fe6d4', 1);
+  } else if (G.hubSel === 'elevator' && !G.hubPanel) {
+    drawTextShadow(ctx, 'SELECT A DESTINATION AT THE MAP', 8, 23, '#d5bd8b', 1);
+  }
+
   // meter earned on the bag, so the training loop has something to fill
   const mw = 120;
   ctx.fillStyle = '#100a0c';
@@ -1870,7 +1809,8 @@ export function drawHubUI(ctx) {
 
   const f = G.hubSel && fixtureAt(G.hubSel);
   if (f) {
-    const x = Math.round(f.x - G.camX);
+    const hintX = f.id === 'map' ? artAt('lair_worldmap').x : f.x;
+    const x = Math.round(hintX - G.camX);
     const bob = Math.round(Math.sin(G.rawTime * 0.12) * 2);
     const LOW = { bag: 100, lounge: 118, curl: 84, bench: 112 };
     const y = LOW[f.id] === undefined ? 26 : LOW[f.id];
@@ -1883,8 +1823,8 @@ export function drawHubUI(ctx) {
   // the room you stand in before you go anywhere, and everything in the list can be tried
   // on the spot - there is a bag to hit and a mirror to flex at.
   const foot = [
-    'ARROWS MOVE   F USE   Z PUNCH   X JUMP   HOLD C PARRY   SPACE METEOR LARIAT',
-    'DOUBLE TAP TO DASH, HOLD TO RUN   GREEN CUE: PARRY   RED CUE: EVADE',
+    'ARROWS MOVE   F USE/GRAB   Z ATTACK   X JUMP   C GUARD   SPACE SUPER',
+    'DOUBLE TAP TO DASH   TAP C ON IMPACT TO PARRY   RED CUE: EVADE',
     'TAP Z OR X WHILE DOWN TO GET UP FAST   ESC PAUSE   BACKSPACE TITLE',
   ];
   for (let i = 0; i < foot.length; i++) {

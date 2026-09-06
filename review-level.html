@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Night Train · Level card options</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#100e17;color:#f4e9d7}body{max-width:1100px;margin:0 auto;padding:24px}h1{font-size:25px;margin:0 0 8px}p{color:#bdb3a7;font-size:14px;line-height:1.5}a{color:#ffcf82}.options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}button,select{font:inherit;background:#211b23;border:1px solid #655139;color:inherit;border-radius:5px;cursor:pointer}button:hover,button[aria-pressed=true]{border-color:#ffd18a}button[aria-pressed=true]{box-shadow:0 0 0 1px #ffd18a}.option{text-align:left;padding:8px}.option canvas{width:100%;height:auto;display:block;image-rendering:pixelated;margin-bottom:8px}.option strong{font-size:14px}.toolbar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:14px 0}.toolbar button{padding:8px 13px}#stage{display:block;width:min(960px,100%);height:auto;image-rendering:pixelated;border:1px solid #665036}#stage.small{width:min(480px,100%)}h2{font-size:20px;margin-bottom:0}#status{font-size:12px}footer{margin-top:24px;font-size:13px;color:#a79a8c}@media(max-width:650px){body{padding:14px}.options{grid-template-columns:repeat(2,1fr)}}
+</style></head><body>
+<h1>The Night Train · Level card options</h1><p>Choose a composition to inspect it at game scale. The first three are the original concepts; the new set builds on Station Showdown with rougher opponents and a dirtier station.</p>
+<div class="options" id="options"></div><h2 id="name"></h2><p id="description"></p>
+<div class="toolbar"><button id="scale">View at 1×</button><label><input type="checkbox" id="ui" checked> Level title</label><label><input type="checkbox" id="ready" checked> Level ready</label><button id="save">Save this card</button></div>
+<canvas id="stage" width="960" height="540" aria-label="Level title preview"></canvas><p id="status" role="status">Loading artwork…</p>
+<footer>480 × 270 logical · 2× authored art · The game’s level card now waits for F / LB. <a href="./">Play game</a> · <a href="./review-elevator.html?scene=arrival-exit&t=1">Check cleared arrival</a></footer>
+<script type="module" src="tools/verification/level_review.js"></script></body></html>

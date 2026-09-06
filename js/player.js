@@ -1,13 +1,13 @@
 // player.js - CHAD: movement, flowing one-button combo, parry/counter,
-// the full-meter Meteor Lariat, status effects and recovery.
+// the single-target Boxing Rush, status effects and recovery.
 import {
   G, FLOOR_TOP, FLOOR_BOT, METER_MAX, clamp, addScore, addMeter, bumpCombo, diff,
   clampToArena, clampToLane, laneMin, laneMax, zoneDrag, airborne, juggleMul, fall, inAir,
 } from './engine.js';
 import { input } from './input.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
-import { spawnSpark, spawnDust, spawnRing, spawnSmoke, spawnShock,
-  spawnRagnarokImpact, impact, spawnPop } from './effects.js';
+import { spawnSpark, spawnDust, spawnRing, spawnSmoke,
+  impact, spawnPop } from './effects.js';
 import { reactStage } from './ambience.js';
 
 // keys: the frame advances each time p.t crosses one of these, so a punch reads as
@@ -34,8 +34,10 @@ export const COMBO_FLOW = [
   { name: 'combo_power_finish', frames: [0, 1, 2, 3, 4], keys: [2, 4, 6, 8], dur: 24, hitAt: 8, cancelAt: 16, dmg: 15, range: 55, heavy: true, launch: true, advance: 6.8 },
 ];
 
+export const SUPER_VOICES=['duke_bring_it_on','duke_bring_pain','duke_come_get_some','duke_lets_rock'];
+
 export const SUPER_MOVES = [
-  { id: 'meteor_lariat', name: 'METEOR LARIAT', color: '#ff9b35', dur: 70 },
+  { id: 'boxing_rush', name: 'BOXING RUSH', color: '#ff9b35', dur: 100 },
 ];
 
 // A chained attack skips its wind-up: it starts partway in so the chain reads as one
@@ -73,11 +75,11 @@ export function createPlayer() {
     state: 'idle', t: 0, combo: 0, route: 'flow',
     hitDone: false, chainQueued: false, queuedHits: 0, hitConfirm: false,
     invuln: 0, pitCd: 0,
-    grabbedBy: null, mash: 0, superT: 0,
+    grabbedBy: null, grabTarget: null, mash: 0, superT: 0,
     runT: 0, idleT: 0, idleAnim: 0, quickGetup: false, groundT: 0,
     stridePhase: 0, moved: 0, chainSkip: 0,
     blind: 0, poison: 0, poisonT: 0, parryTarget: null,
-    superMove: 0, superOverride: null, specialTarget: null, superHits: {},
+    guardWindow: 0, counterT: 0, attackFamilies: [], superMove: 0, superOverride: null, specialTarget: null, superHits: {},
     w: 55, h: 96, shadowR: 16,
   };
 }
@@ -113,22 +115,29 @@ function hitTargets() {
 
 // apply a melee hit from the player to everything in range
 function playerHit(p, spec) {
+  const empowered = p.counterT>0 && p.state==='attack';
+  if(empowered){spec={...spec,dmg:spec.dmg+4,heavy:true,impactHeavy:true};p.counterT=0;}
   const hx = p.x + p.face * spec.range * 0.6;
   let hitAny = false;
   let heaviest = 0;
   for (const e of hitTargets()) {
-    if (e.dead || e.broken) continue;
+    if (e.dead || e.broken || e.superLocked) continue;
     if (e.state === 'grabbed' || e.state === 'thrown' || e.state === 'getup') continue;
     // Airborne bodies stay hittable (that is the juggle); grounded knockdowns
     // do not, so you cannot just stomp someone lying on the floor forever.
     if (e.state === 'down' && !airborne(e)) continue;
-    // Something hanging above the lane (the train's emergency chain) is only in reach
+    // Something hanging above the lane is only in reach
     // from the air: any jump under it.
     const inReach = e.airOnly ? (p.z > 8 && e.z - p.z < 80)
       : e.z < 34 || (p.z > 8 && Math.abs(e.z - p.z) < 30);
     if (Math.abs(e.x - hx) < spec.range * 0.6 + e.w * 0.35 && Math.abs(e.y - p.y) < 16 && inReach) {
       const dealt = Math.round(spec.dmg * dmgMul(p));
+      const before=e.hp;
+      if(empowered)e.damageGuard?.(1);
+      e.counterApplying=empowered;
       e.hurt(dealt, p.face, spec.heavy, spec.launch);
+      e.counterApplying=false;
+      if(e.kind!=='prop'&&e.hp===before)continue;
       if (spec.knock && !e.dead && e.state !== 'down' && e.state !== 'thrown') {
         e.vx = p.face * spec.knock;
       }
@@ -141,7 +150,7 @@ function playerHit(p, spec) {
           addScore(10);
           if (G.stats) G.stats.hits++;
         }
-        addMeter(spec.heavy || spec.impactHeavy ? 6 : 4);
+        rewardAttack(p,empowered?'counter':spec.launch?'launcher':spec.heavy||spec.impactHeavy?'finisher':'strike',spec.heavy||spec.impactHeavy?6:4);
         comboPop(bumpCombo(), e.x, e.y);
       }
       heaviest = Math.max(heaviest, dealt * (airborne(e) ? juggleMul(e) : 1));
@@ -158,22 +167,35 @@ function playerHit(p, spec) {
   return hitAny;
 }
 
-// Radial contact used by Meteor Lariat's finishing impact.
-function radialHit(p, dmg, radius, launch) {
-  let n = 0;
-  for (const e of hitTargets()) {
-    if (e.dead || e.broken || e.state === 'thrown') continue;
-    if (Math.abs(e.x - p.x) < radius && Math.abs(e.y - p.y) < 24 && e.z < 42) {
-      e.hurt(Math.round(dmg * dmgMul(p)), e.x < p.x ? -1 : 1, true, launch);
-      spawnSpark(e.x, e.y - 48);
-      addScore(20);
-      if (G.stats) G.stats.hits++;
-      comboPop(bumpCombo(), e.x, e.y);
-      n++;
-    }
+// Meter rewards successful variety, never penalizes basic attack damage.
+export function rewardAttack(p, family, base) {
+  const history = p.attackFamilies || (p.attackFamilies = []);
+  addMeter(history.includes(family) ? base : base * 1.5);
+  history.push(family);
+  if (history.length > 3) history.shift();
+}
+
+export function releaseGrab(p) {
+  const e=p.grabTarget;
+  if(e&&!e.dead&&e.state==='grabbed'){e.state='stagger';e.protectedStagger=20;e.t=0;}
+  p.grabTarget=null;
+}
+function startGrab(p){
+  const e=G.enemies.find(e=>!e.dead&&e.canGrab&&!e.superLocked&&e.z<12&&
+    !['down','thrown','grabbed','getup'].includes(e.state)&&Math.abs(e.x-p.x)<38&&Math.abs(e.y-p.y)<16);
+  if(!e)return false;
+  p.grabTarget=e;p.face=e.x<p.x?-1:1;e.state='grabbed';e.t=0;e.vx=0;
+  setState(p,'grabbing');G.audio.sfx('grab');return true;
+}
+
+export function releaseSuper(p) {
+  const target = p.specialTarget;
+  if (target) {
+    target.superLocked = false;
+    target.superApplying = false;
+    if (!target.dead) { target.state = 'stagger'; target.t = 0; target.protectedStagger = Math.max(target.protectedStagger || 0, 45); }
   }
-  if (n) impact(true, dmg);
-  return n;
+  p.specialTarget = null;
 }
 
 const RANKS = [[5, 'NICE'], [10, 'BRUTAL'], [15, 'SAVAGE'], [20, 'WORLD CLASS'], [30, 'GIGACHAD']];
@@ -193,27 +215,20 @@ export function grabPlayer(p, holder) {
   setState(p, 'held');
 }
 
-function startSuper(p) {
-  if (G.meter < METER_MAX) {
-    G.audio.sfx('whiff');
-    spawnPop(p.x, p.y - 98, 'SUPER NOT READY');
-    return;
-  }
-  p.superMove = 0;
-  p.superOverride = null;
-  const move = SUPER_MOVES[p.superMove];
-  G.meter = 0;
-  setState(p, 'special');
-  p.invuln = move.dur + 20;
-  p.superT = 0;
-  p.superHits = {};
-  p.specialTarget = [...G.enemies, ...(G.boss && !G.boss.dead ? [G.boss] : [])]
-    .filter((e) => e && !e.dead)
-    .sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x))[0] || null;
-  if (p.specialTarget) p.face = p.specialTarget.x < p.x ? -1 : 1;
-  G.audio.sfx('super');
-  spawnRing(p.x, p.y - 24, move.color);
-  spawnDust(p.x, p.y, 4);
+export function startSuper(p) {
+  if (G.meter < METER_MAX) { G.audio.sfx('whiff'); return false; }
+  const target = [...G.enemies, ...(G.boss && !G.boss.dead ? [G.boss] : [])]
+    .filter(e => e && !e.dead && !e.superLocked && !['down','dying','thrown','grabbed','getup'].includes(e.state)
+      && Math.abs(e.x-p.x)<=96 && (e.x-p.x)*p.face>=0 && Math.abs(e.y-p.y)<=20 && e.z<12)
+    .sort((a,b)=>Math.abs(a.x-p.x)-Math.abs(b.x-p.x))[0];
+  if (!target) { G.audio.sfx('whiff'); return false; }
+  p.superMove=0; p.superOverride=null; G.meter=0;
+  setState(p,'special'); p.invuln=120; p.superT=0; p.superHits={};
+  p.specialTarget=target; p.superGuarded=!!(target.guard>0 && !(target.protectedStagger>0));
+  target.superLocked=true; target.vx=0; target.vz=0; target.z=0;
+  G.audio.sfx('super'); G.audio.voiceRandom(SUPER_VOICES,1600,8,true);
+  spawnDust(p.x,p.y,3);
+  return true;
 }
 
 function comboMotion(p, c) {
@@ -223,34 +238,42 @@ function comboMotion(p, c) {
   else if (p.t > c.cancelAt) p.x -= p.face * 0.025;
 }
 
-export function ragnarokPose(t) {
-  const cuts = [5, 11, 17, 24, 32, 40, 50];
-  let idx = 0;
-  while (idx < cuts.length && t > cuts[idx]) idx++;
-  return { name: 'meteor_lariat', idx };
+export function ragnarokPose(t,guarded=false) {
+  const poses=guarded?[[0,1],[16,0],[22,2],[28,3],[34,4],[38,6],[44,7],[49,8],[53,9],[62,10],[68,11]]:
+    [[0,1],[16,0],[22,2],[28,3],[31,5],[36,4],[39,6],[44,7],[47,2],[52,4],[58,6],[65,8],[73,9],[82,10],[92,11]];
+  let idx=0;for(const [at,pose]of poses)if(t>=at)idx=pose;
+  return {name:'boxing_rush',idx};
 }
 
-// All hostile contact funnels through here. Returning true means the attack was
-// consumed by the parry and callers must not apply damage or secondary effects.
+// True consumes a hostile contact. Projectiles inspect lastDefense to distinguish
+// an absorbed guard hit from a reflected timed parry.
 export function resolveIncomingHit(p, attacker, spec = {}) {
-  // The first simulation tick after the button press is active. Requiring a
-  // second tick made a correctly anticipated strike lose to update order.
-  const parryClass = spec.parryClass || (spec.parryable ? 'counter' : 'unblockable');
-  if (p.state !== 'parry' || !input.held('parry') ||
-      (parryClass !== 'counter' && parryClass !== 'reflect')) return false;
-  p.parryTarget = attacker || null;
-  setState(p, 'parry_counter');
-  p.invuln = 26;
-  G.hitstop = Math.max(G.hitstop, 4);
-  G.parrySlow = Math.max(G.parrySlow, 12);
-  G.shake = Math.max(G.shake, 4);
-  spawnRing(p.x + p.face * 8, p.y - 44, '#6dff82');
-  spawnSpark(p.x + p.face * 14, p.y - 50);
-  spawnPop(p.x, p.y - 104, 'PARRY');
-  addMeter(10);
-  G.audio.sfx('parry');
-  // the counter's damage lands here, so its impact sounds here
-  if (parryClass === 'counter' && attacker && attacker.parried) { attacker.parried(7, p.face); G.audio.sfx('heavy'); }
+  p.lastDefense=null;
+  const cls=spec.parryClass || (spec.parryable?'counter':'unblockable');
+  if (!['counter','reflect'].includes(cls) || !input.held('parry') ||
+      !['parry','parry_counter'].includes(p.state) || p.dying) return false;
+  const origin=spec.x ?? attacker?.x ?? (p.x+p.face);
+  if ((origin-p.x)*p.face < -4) return false;
+  if (!(p.guardWindow>0)) {
+    p.lastDefense='guard';
+    const chip=Math.ceil((spec.dmg || 0)*diff().dmg*.1);
+    p.hp=Math.max(0,p.hp-chip);
+    spawnSpark(p.x+p.face*14,p.y-50); G.audio.sfx('armor');
+    G.hitstop=Math.max(G.hitstop,2);
+    if(p.hp===0){p.dying=true;setState(p,'down');p.vz=2;p.z=.1;}
+    return true;
+  }
+  p.lastDefense='parry';p.guardWindow=0;p.counterT=60;p.parryTarget=attacker||null;
+  setState(p,'parry_counter');p.invuln=12;
+  G.hitstop=Math.max(G.hitstop,5);G.shake=Math.max(G.shake,3);
+  spawnRing(p.x+p.face*8,p.y-44,'#6dff82');spawnSpark(p.x+p.face*14,p.y-50);
+  rewardAttack(p,'parry',10);G.audio.sfx('parry');
+  if(attacker&&!attacker.dead){
+    attacker.parried?.(0,p.face);
+    attacker.protectedStagger=Math.max(attacker.protectedStagger||0,45);
+    attacker.state='stagger';attacker.t=0;attacker.vx=0;attacker.hitLanded=true;
+    if(!attacker.parried)attacker.damageGuard?.(1);
+  }
   return true;
 }
 
@@ -268,9 +291,14 @@ function tryCancel(p) {
   return false;
 }
 
-export function updatePlayer(p) {
+export function updatePlayer(p, bounds = null) {
   const x0 = p.x, y0 = p.y;
   p.t++;
+  if(!['grabbing','throwing'].includes(p.state)&&p.grabTarget)releaseGrab(p);
+  if(p.state!=='special' && p.specialTarget) releaseSuper(p);
+  if(p.guardWindow>0)p.guardWindow--;
+  if(p.counterT>0)p.counterT--;
+  if(input.pressed('parry') && !['held','down','dead','special','hurt'].includes(p.state))p.guardWindow=12;
   if (p.invuln > 0) p.invuln--;
   if (p.pitCd > 0) p.pitCd--;
   if (p.blind > 0) p.blind--;
@@ -286,6 +314,7 @@ export function updatePlayer(p) {
   switch (p.state) {
     case 'idle': case 'walk': case 'run': {
       const ax = input.axisX(), ay = input.axisY();
+      if(input.pressed('use')&&startGrab(p))break;
       if (input.pressed('super')) { startSuper(p); break; }
       if (input.held('parry')) { setState(p, 'parry'); p.invuln = 0; G.audio.sfx('armor'); break; }
       if (input.pressed('dashL') || input.pressed('dashR')) {
@@ -439,7 +468,10 @@ export function updatePlayer(p) {
     case 'parry': {
       // Hold to maintain the stance. Releasing creates a short vulnerable
       // recovery, so an obviously early release can still be punished.
-      if (!input.held('parry')) { setState(p, 'parry_recover'); G.audio.sfx('whiff'); }
+      if(input.pressed('jump')){p.vz=4.85;p.z=.1;setState(p,'jump');G.audio.sfx('jump');}
+      else if(input.pressed('dashL')||input.pressed('dashR')){p.face=input.pressed('dashL')?-1:1;setState(p,'dash');p.vx=p.face*3.2;G.audio.sfx('dash');}
+      else if(input.pressed('attack')){p.combo=0;p.queuedHits=0;setState(p,'attack');}
+      else if(!input.held('parry'))setState(p,'parry_recover');
       break;
     }
     case 'parry_recover': {
@@ -454,7 +486,7 @@ export function updatePlayer(p) {
           spawnSpark(e.x, e.y - Math.min(56, e.h * 0.6));
         }
       }
-      if (p.t >= 6 && input.held('parry')) { setState(p, 'parry'); break; }
+      if (p.t >= 6 && input.held('parry') && !input.pressed('attack')) { setState(p, 'parry'); break; }
       if (p.t >= 6 && input.pressed('attack')) {
         p.combo = 0; p.queuedHits = Math.max(0, input.count('attack') - 1); setState(p, 'attack'); break;
       }
@@ -463,35 +495,37 @@ export function updatePlayer(p) {
       break;
     }
     case 'special': {
-      p.superT++;
-      const move = SUPER_MOVES[p.superMove] || SUPER_MOVES[0];
-      const target = p.specialTarget;
-      const t = p.superT;
-      if (target && !target.dead && t < 50) {
-        const dx = target.x - p.x;
-        p.face = dx < 0 ? -1 : 1;
-        if (t > 7 && Math.abs(dx) > 25) p.x += Math.sign(dx) * Math.min(5.2, Math.abs(dx) - 24);
-        p.y += clamp(target.y - p.y, -1.4, 1.4);
-      } else if (t > 7 && t < 50) p.x += p.face * 4.2;
-      // Three readable contacts: shoulder, body hook, then the lariat. The
-      // camera never leaves gameplay and each pose has time to register.
-      for (const [at, dmg, radius] of [[18, 7, 58], [31, 10, 64], [48, 30, 150]]) {
-        if (t === at && !p.superHits[at]) {
-          p.superHits[at] = true;
-          radialHit(p, dmg, radius, at === 48);
-          spawnRing(p.x + p.face * 20, p.y - 42, at === 48 ? '#ffd56a' : '#ff8a35');
-          if (at === 48) {
-            spawnShock(p.x, p.y); spawnDust(p.x, p.y, 7);
-            spawnRagnarokImpact(p.x, p.y);   // the crater, drawn under everything by main.js
-            reactStage(p.x, 1.5); G.shake = 10; G.hitstop = Math.max(G.hitstop, 14);
-            G.audio.sfx('slam');
-          }
-        }
+      const t=++p.superT,target=p.specialTarget;
+      if(!target || target.dead){releaseSuper(p);setState(p,'idle');break;}
+      if(t<=16){p.x+=p.face*Math.min(5,Math.max(0,(target.x-p.x)*p.face-30));p.y+=clamp(target.y-p.y,-1.5,1.5);}
+      if((p.superGuarded?t>=50&&t<=54:t>=70&&t<=74))p.x+=p.face*Math.min(2.4,Math.max(0,(target.x-p.x)*p.face-18));
+      const hits=p.superGuarded?[[24,6],[40,6],[56,6]]:[[24,4],[32,4],[40,4],[48,4],[60,6],[76,14]];
+      for(const [at,dmg] of hits)if(t===at){
+        target.superApplying=true;
+        target.hurt(dmg,p.face,true,false);
+        target.superApplying=false;
+        if(!target.dead){target.state='stagger';target.t=0;target.vx=0;target.vz=0;target.z=0;}
+        spawnSpark(target.x-p.face*9,target.y-(at===76?65:45));
+        G.audio.sfx(at===76||at===56?'heavy':'punch');G.hitstop=Math.max(G.hitstop,at===76?7:3);
+        if(G.stats)G.stats.hits++;addScore(10);
+        if(p.superGuarded&&at===56)target.breakGuard?.();
       }
-      p.z = 0;
-      if (p.superT > move.dur) {
-        p.z = 0; p.specialTarget = null; setState(p, 'idle');
-      }
+      if(t>=(p.superGuarded?72:100)||target.dead){releaseSuper(p);setState(p,'idle');}
+      p.z=0;
+      break;
+    }
+    case 'grabbing': {
+      const e=p.grabTarget;
+      if(!e||e.dead||e.state!=='grabbed'){releaseGrab(p);setState(p,'idle');break;}
+      e.x=p.x+p.face*27;e.y=p.y;e.face=-p.face;
+      if(p.t>=8&&(input.pressed('attack')||input.pressed('use'))){setState(p,'throwing');}
+      else if(input.pressed('jump')||p.t>=120){releaseGrab(p);setState(p,'idle');}
+      break;
+    }
+    case 'throwing': {
+      const e=p.grabTarget;
+      if(p.t===8&&e&&!e.dead){e.thrown(p.face);p.grabTarget=null;G.audio.sfx('throw');}
+      if(p.t>=24){releaseGrab(p);setState(p,'idle');}
       break;
     }
     case 'held': {
@@ -537,9 +571,14 @@ export function updatePlayer(p) {
   else if (p.runT > 0) p.runT--;
 
   // clamp to floor band + arena walls
-  const over = clampToLane(p);   // clamps y to the lane itself, and reports an edge
-  if (over) pitFallPlayer(p, over);
-  clampToArena(p, 0);
+  if (bounds) {
+    p.x = clamp(p.x, bounds.left, bounds.right);
+    p.y = clamp(p.y, bounds.back, bounds.front);
+  } else {
+    const over = clampToLane(p);
+    if (over) pitFallPlayer(p, over);
+    clampToArena(p, 0);
+  }
   // measured after the clamp: pushing into a wall must not cycle the legs
   p.moved = Math.hypot(p.x - x0, p.y - y0);
   if (p.state === 'walk' || p.state === 'run') p.stridePhase += p.moved;
@@ -622,13 +661,15 @@ export function drawPlayer(ctx, p, camX) {
     case 'parry': name = 'parry_counter'; idx = p.t < 3 ? 0 : (p.t < 9 ? 1 : 2); break;
     case 'parry_recover': name = 'parry_counter'; idx = 2; break;
     case 'parry_counter': name = 'parry_counter'; idx = Math.min(7, 3 + ((p.t / 3) | 0)); break;
+    case 'grabbing': name='grab';break;
+    case 'throwing': name='throw';idx=p.t<8?0:1;break;
     case 'hurt': name = 'hurt'; break;
     case 'held': name = 'hurt'; break;
     case 'down': name = 'down'; break;
     case 'getup': name = 'getup'; break;
     case 'victory': name = 'victory'; break;
     case 'special': {
-      const pose = ragnarokPose(p.superT);
+      const pose = ragnarokPose(p.superT,p.superGuarded);
       name = pose.name; idx = pose.idx;
       break;
     }

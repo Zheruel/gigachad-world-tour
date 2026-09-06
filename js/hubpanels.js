@@ -1,3 +1,4 @@
+import { hasCleared } from './progress.js';
 // hubpanels.js - the screens the lair fixtures open. One panel per fixture id, all
 // driven off G.hubPanel / G.hubAct so js/hub.js only has to say which one is up.
 //
@@ -151,7 +152,8 @@ function panelFrame(ctx, title, sub, legend, scrimA) {
   ctx.fillStyle = '#d838a0';
   ctx.fillRect(0, 44, W, 1);
   ctx.fillRect(0, 226, W, 1);
-  drawTextShadow(ctx, title, (W - textWidth(title, 2)) / 2, 22, '#ffd94a', 2);
+  if(title==='WORLD TOUR')drawDisplayTitle(ctx,title,W/2,15,{height:17,maxWidth:215});
+  else drawTextShadow(ctx, title, (W - textWidth(title, 2)) / 2, 22, '#ffd94a', 2);
   if (sub) drawTextShadow(ctx, sub, (W - textWidth(sub, 1)) / 2, 35, '#8ad8ff', 1);
   if ((G.rawTime >> 4) & 1) drawTextShadow(ctx, legend, (W - textWidth(legend, 1)) / 2, 234, '#f8f0e0', 1);
 }
@@ -274,7 +276,7 @@ function drawMap(ctx) {
 // -------------------------------------------------------------- jukebox panel
 // Names for the chiptunes in js/audio.js SONGS; the slot ids are positional.
 const TRACK_NAMES = {
-  lair: 'NEON SHADOWS', title: 'ATTRACT',
+  lair: 'NEON SHADOWS', lobby: 'MARBLE LOBBY HUSTLE', title: 'ATTRACT',
   stage1a: 'CHANDNI CHOWK RUN', stage1b: 'THE RIVER ANSWERS', boss: 'NO REFUNDS', boss1: 'WHAT EATS THE RIVER',
   stage2a: 'PLATFORM ONE', stage2b: 'THE 22:40 SOUTH', boss2: 'THE COUPLER',
   ending: 'VICTORY',
@@ -332,7 +334,7 @@ function drawGallery(ctx) {
   const total = GALLERY.length * (cw + gap) - gap;
   GALLERY.forEach((entry, i) => {
     const b = BOSSES[entry.k];
-    const beat = entry.act < G.unlockedStage;
+    const beat = hasCleared(G, entry.act);
     const on = i === G.hubAct;
     const x = Math.round((W - total) / 2 + i * (cw + gap));
     ctx.fillStyle = '#05040a';
@@ -361,7 +363,7 @@ function drawGallery(ctx) {
 
   const entry = GALLERY[G.hubAct];
   const b = BOSSES[entry.k];
-  const beat = entry.act < G.unlockedStage;
+  const beat = hasCleared(G, entry.act);
   const name = beat ? b.name : 'UNKNOWN';
   drawTextShadow(ctx, name, (W - textWidth(name, 2)) / 2, 120, beat ? '#ffd94a' : '#6a6478', 2);
   const title = beat ? b.title : 'NOT YET BEATEN';
@@ -387,7 +389,7 @@ function drawGallery(ctx) {
   // Counted off actBest, which only gets an entry when an act is CLEARED. Deriving it from
   // the unlock count could never reach the last act, because unlockedStage is capped at
   // STAGES.length - 1 - a finished game read CLEARED 4/5.
-  const cleared = STAGES.filter((_, i) => (G.actBest[i] || 0) > 0).length;
+  const cleared = STAGES.filter((_, i) => hasCleared(G, i)).length;
   ctx.fillStyle = 'rgba(138,130,160,0.22)';
   ctx.fillRect(60, 204, W - 120, 1);
   const totals = [['HI-SCORE', String(G.hiscore).padStart(8, '0'), '#ffd94a'],
@@ -400,3 +402,4 @@ function drawGallery(ctx) {
     drawTextShadow(ctx, value, cx - textWidth(value, 1) / 2, 217, col, 1);
   });
 }
+import { drawDisplayTitle } from './display_type.js';

@@ -1,149 +1,25 @@
 # GIGACHAD: WORLD TOUR
 
-A browser-based 2D beat ’em up built with plain JavaScript, Canvas 2D, and ES modules.
-There is no bundler, framework, or runtime dependency. The game renders a 480×270
-logical scene to a 960×540 canvas.
-
-The current build contains:
-
-- THE LAIR, a 1920-logical-pixel home base with interactive fixtures and ambient life;
-- two production stages: DIRTY DELHI (26 screens) and THE NIGHT TRAIN (19 screens);
-- CHAD’s five-hit combo, run, jump, parry/counter, juggles, wall splats, quick get-up,
-  and METEOR LARIAT super;
-- a complete scripted verification suite and visual review tools.
-
-Future acts described in `docs/` are design proposals, not shipped content.
-
-## Run
-
-```sh
-./.venv/bin/python tools/serve.py 8001
-```
-
-Open `http://localhost:8001`. A static HTTP server is required because the game uses ES
-modules and JSON manifests. The project server disables caching and supports byte ranges
-for audio.
+A browser arcade brawler. [Play the current build](https://zheruel.github.io/gigachad-world-tour/).
 
 ## Controls
 
-| Input | Action |
-|---|---|
-| Arrows / WASD | Move, including depth lanes |
-| Double-tap left/right, then hold | Dash into a run |
-| Z / J | Attack and continue the combo |
-| X / K | Jump; attack in the air for a jump kick |
-| Hold C / L | Parry green attacks and projectiles |
-| Space / V / B | Spend full meter on METEOR LARIAT |
-| Z or X while down | Buffer a quick get-up |
-| F | Use a lair fixture |
-| P / Enter / Esc | Pause; Esc closes an open lair panel first |
+| Action | Keyboard | Standard gamepad |
+|---|---|---|
+| Move | Arrows / WASD | Stick / D-pad |
+| Attack | Z / J | A |
+| Jump | X / K | B |
+| Guard / timed parry | C / L | X |
+| Super | V / B / Space | Y |
+| Interact / grab / continue | F / E | LB |
+| Pause | Escape / P | Start |
 
-Standard gamepads are supported.
+Double-tap left or right to dash. Loading and victory cards require a fresh interaction press.
 
-## Verify
+## Local play and review
 
-The browser automation modes write their result into `document.title`.
+Serve this directory with `python3 -m http.server 8011`, then open `http://localhost:8011`. No build step is required.
 
-| URL | Purpose |
-|---|---|
-| `/?auto=verify` | Full deterministic gameplay and lair test suite |
-| `/?auto=soak` | 50,000-frame stuck-entity stress test |
-| `/?auto=bot&stage=0` | Automated full-stage balance run |
-| `/?auto=hub-lounge` | Open the lair at the couch |
-| `/?auto=play`, `combat`, `boss`, `clear`, `ending` | Screenshot/debug states |
+`review-train.html` provides deterministic scene playback, frame stepping and combat previews. `sfxlab.html` previews the sound library. Design documents live in `docs/`; production recipes and verification tools live in `tools/`.
 
-After gameplay changes, run `/?auto=verify` and confirm every title entry starts with
-`PASS:`. For JavaScript or Python changes, also run:
-
-```sh
-git diff --check
-node --check js/<changed-file>.js
-./.venv/bin/python -m py_compile tools/<changed-file>.py
-./.venv/bin/python tools/audit_repo.py
-```
-
-## Visual review tools
-
-- `lab.html` — character scale, animation, stage, effects, and ambience inspection.
-- `assets/stages/night_train/route_preview.png` — the stitched NIGHT TRAIN route at a glance.
-- `review-lair.html` — isolated lair systems and fixtures.
-- `review-animation-pipeline.html` — frame-by-frame tiger, couch, and baitfish pipeline
-  comparison.
-- `sfxlab.html` — sound-effect slot audition.
-
-The settled image-animation workflow is documented in
-[`ANIMATION_PIPELINE.md`](ANIMATION_PIPELINE.md). It supersedes the old blanket rule that
-every animation should be generated as one sheet.
-
-## Architecture
-
-The game uses a shared mutable context `G` from `js/engine.js`. Modules operate on that
-context instead of importing one another in cycles. `js/main.js` owns the fixed-step loop,
-state machine, camera, world draw order, wave gating, debug API, and verification suite.
-
-Important contracts:
-
-- World coordinates are logical pixels; authored art uses `RS = 2` device pixels per
-  logical pixel.
-- Fighters, props, and ambient actors are duck-typed and y-sorted together.
-- Missing art and audio must degrade to procedural or silent fallbacks.
-- Locomotion frames register on stable torso mass, not moving feet.
-- A multi-frame family uses one scale and one shared palette.
-- Simulation changes happen in update functions, never draw functions.
-
-### Runtime modules
-
-| File | Responsibility |
-|---|---|
-| `js/main.js` | Loop, states, waves, camera, debug and tests |
-| `js/engine.js` | Shared state, constants, arena and ballistics |
-| `js/player.js` | CHAD movement and combat state machine |
-| `js/enemies.js` | Enemy AI, damage, poise, grabs and movement |
-| `js/bosses.js` | Boss definitions and shared boss state machine |
-| `js/stages.js` | Stage definitions, plates, routes and ambience hooks |
-| `js/hub.js` | THE LAIR, fixtures, tank, couch, tiger and suite |
-| `js/hubpanels.js` | Map, trophy, and hi-fi panels |
-| `js/aiframes.js` | Processed character-frame manifest loader |
-| `js/assets.js` | Runtime PNG asset registry |
-| `js/sprites.js` | Pixel drawing, art scaling, font and fallbacks |
-| `js/props.js` | Breakables and authored pickup drops |
-| `js/shots.js` | Projectiles and persistent hazard zones |
-| `js/effects.js` | Particles, hit effects, smoke, shake and hit-stop |
-| `js/story.js` | Motorcycle arrival sequence |
-| `js/audio.js` | Music, sample slots and synthesized fallbacks |
-
-## Asset layout
-
-| Path | Status |
-|---|---|
-| `assets/`, `assets/frames/`, `assets/lair/`, `assets/stages/` | Runtime-ready, tracked assets |
-| `assets/experiments/animation_pipeline/` | Current comparison sources, outputs and metrics |
-| `assets/ai/` | Ignored raw generations; never loaded at runtime |
-| `assets/qa/` | Ignored, reproducible QA output |
-| `assets/_archive/` | Ignored local archive |
-
-Do not add generated caches or rejected iterations to runtime directories. Keep one
-selected source, the deterministic processing recipe, the final runtime output, and any
-small comparison set that still has an active review page.
-
-## Documentation
-
-- [`ANIMATION_PIPELINE.md`](ANIMATION_PIPELINE.md) — how to generate and process animated
-  art.
-- [`CLAUDE.md`](CLAUDE.md) — concise repository rules for coding agents.
-- [`docs/README.md`](docs/README.md) — status and purpose of design documents.
-- [`docs/stage1-dirty-delhi.md`](docs/stage1-dirty-delhi.md) — production design for Stage 1.
-- [`docs/stage2-night-train.md`](docs/stage2-night-train.md) — production design for Stage 2.
-- [`docs/india-chapter.md`](docs/india-chapter.md) — broader chapter canon and roadmap.
-
-## Current gaps
-
-- Stages 1 and 2 are in production; Stage 3 (`docs/stage3-refund-tower.md`) is a proposal.
-- `title`, `hold`, `final` and `ending` music slots are still placeholders; both acts, the
-  lair and every boss have real tracks in `audio/`.
-- The imported SFX mapping still needs a full by-ear review in `sfxlab.html`; the enemy
-  grunts and screams (`ehurt*`, `edie*`, `bdie`) were picked from the rip's voice bank the
-  same way.
-- Voice lines and the style announcer are documented in `audio/voice/README.md`.
-- Raw AI sources are intentionally local and large. Prune them only after confirming the
-  selected source and prompt are preserved.
+For playtest reports, include the area, controls used, steps to reproduce and a screenshot or short recording where possible.

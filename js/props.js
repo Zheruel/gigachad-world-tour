@@ -19,7 +19,7 @@ export const PROP_TYPES = {
   bike: { hp: 1, w: 120, h: 44, shadowR: 44, score: 0, drop: null, decor: true, debris: [] },
   cart: { hp: 45, w: 58, h: 44, shadowR: 26, score: 150, drop: 'shake', debris: ['#c08a3a', '#8a5a20', '#d8d0b8'] },
   // the dojo heavy bag. js/hub.js builds it with its own hurt() so it never breaks;
-  // this entry exists for the footprint and so tools/process_props.py can size the art.
+  // this entry exists for the footprint and so tools/production/process_props.py can size the art.
   bag: { hp: 9999, w: 24, h: 84, shadowR: 0, score: 0, drop: null, debris: ['#5a3a20', '#3a2414', '#8a6a44'] },
 
   // ---- DIRTY DELHI ----
@@ -42,22 +42,11 @@ export const PROP_TYPES = {
   winch: { hp: 80, w: 54, h: 40, shadowR: 22, score: 600, drop: null, art: 'cart', debris: ['#3a3a42', '#8a7a5a', '#c8b890'] },
 
   // ---- THE NIGHT TRAIN ----
-  // the health economy: trolleys and trunks at +30, parcel stacks and berth tables at +15
-  trolley: { hp: 20, w: 36, h: 40, shadowR: 16, score: 60, drop: 'shake', art: 'cart', debris: ['#8a7a5a', '#c0c0c8', '#5a4a3a'] },
-  trunk: { hp: 20, w: 38, h: 26, shadowR: 17, score: 60, drop: 'shake', art: 'crate', debris: ['#3a4a6a', '#8a8a92', '#c8b060'] },
-  parcel: { hp: 18, w: 34, h: 36, shadowR: 15, score: 40, drop: 'plate', art: 'crate', debris: ['#b09060', '#8a6a40', '#e0d0a0'] },
-  berthtable: { hp: 18, w: 30, h: 20, shadowR: 14, score: 40, drop: 'plate', art: 'table', debris: ['#6a5a4a', '#a09080', '#3a3028'] },
-  // purely for the sound
-  glasses: { hp: 12, w: 26, h: 22, shadowR: 12, score: 30, drop: null, art: 'crate', debris: ['#d8e8f0', '#a0c0d0', '#f8f8ff'] },
-  // scalds when it goes: 40 px of boiling tea either side
-  urn: { hp: 22, w: 24, h: 40, shadowR: 12, score: 80, drop: null, art: 'tyres',
-    burst: { kind: 'fire', r: 40, life: 150 }, debris: ['#c8c8d0', '#8a8a92', '#e0b060'] },
-  // the pantry's fridge, behind the counter in the far lane: the level's 1-up
-  fridge: { hp: 30, w: 30, h: 48, shadowR: 15, score: 200, drop: 'life', art: 'crate', debris: ['#e0e0e8', '#a0a0a8', '#c04040'] },
-  // one per carriage, above head height: break it and nobody stops the train again
-  chain: { hp: 10, w: 14, h: 30, shadowR: 0, score: 150, drop: null, art: 'sign', airOnly: true, debris: ['#c03030', '#8a8a92', '#5a5a62'] },
-  // the heavy's third prop: a steel trunk on his head, spilling luggage when it breaks
-  thelatrunk: { hp: 30, w: 44, h: 30, shadowR: 20, score: 120, drop: null, art: 'crate', debris: ['#3a4a6a', '#c8b060', '#e0d0c0'] },
+  nr_trolley:{hp:20,w:54,h:58,shadowR:0,score:60,drop:'shake',debris:['#987653','#62504b']},
+  nr_case:{hp:20,w:42,h:28,shadowR:0,score:60,drop:'shake',debris:['#344b64','#bc9561']},
+  nr_table:{hp:18,w:56,h:44,shadowR:0,score:40,drop:'plate',debris:['#987653','#62504b']},
+  nr_urn:{hp:22,w:28,h:48,shadowR:0,score:80,drop:null,burst:{kind:'fire',r:40,life:150},debris:['#dcbb72','#664d25']},
+  nr_contraband:{hp:28,w:44,h:30,shadowR:0,score:200,drop:'life',debris:['#344b64','#bc9561']},
 };
 
 // ---- procedural art (swapped for AI PNGs later without touching this file) --
@@ -274,6 +263,7 @@ export function updateProps() {
 }
 
 export function drawProp(ctx, pr, camX) {
+  if(pr.hidden)return;
   const f = art(pr.prop, pr.broken);
   const wob = pr.shakeT > 0 ? ((pr.t & 1) ? 1 : -1) : 0;
   const sx = Math.round(pr.x - camX) + wob, sy = Math.round(pr.y - pr.z);

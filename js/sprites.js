@@ -1,6 +1,6 @@
 // sprites.js - all art authored in code: palette, pixel painter, bitmap font,
 // parametric muscle-fighter renderer. Everything pre-rendered to offscreen canvases.
-// Character looks follow assets/ai/ref_* references (never loaded at runtime).
+// Character looks follow assets/sources/production/ref_* references (never loaded at runtime).
 import { getAIFrame } from './aiframes.js';
 import { G } from './engine.js';
 
@@ -699,7 +699,7 @@ function buildFallback() {
   F.idle_flex = F.victory; F.idle_knuckles = F.idle;
   // the authored-only combat states, which have no code drawing of their own
   F.combo_power_a = F.jab; F.combo_power_b = F.upper; F.combo_power_finish = F.upper;
-  F.parry_counter = F.jab; F.meteor_lariat = F.throw;
+  F.parry_counter = F.jab; F.meteor_lariat = F.throw; F.boxing_rush = F.jab;
   F.ragnarok_ground = F.throw; F.ragnarok_air = F.jump;
   return F;
 }
@@ -716,6 +716,15 @@ function aiSet(key) {
 
 export const SPR = {
   player: aiSet('player'),
+  nr_conductor: aiSet('nr_conductor'),
+  nr_tough: aiSet('nr_tough'),
+  nr_bruiser: aiSet('nr_bruiser'),
+  nr_runner: aiSet('nr_runner'),
+  nr_ambusher: aiSet('nr_ambusher'),
+  nr_heavy: aiSet('nr_heavy'),nr_heavy_unarmed:aiSet('nr_heavy_unarmed'),
+  nr_guard: aiSet('nr_guard'),
+  nr_vikram: aiSet('nr_vikram'),
+  nr_vikram_roof: aiSet('nr_vikram_roof'),
   goonda: aiSet('goonda'),
   batta: aiSet('batta'),
   masala: aiSet('masala'),
@@ -737,12 +746,6 @@ export const SPR = {
   dredger: aiSet('dredger'),
   dredgerLow: aiSet('dredger'),
   thekedar: aiSet('thekedar'),
-  manja: aiSet('manja'),
-  handtruck: aiSet('handtruck'),
-  coolie: aiSet('coolie'),
-  gai: aiSet('gai'),
-  tte: aiSet('tte'),
-  birju: aiSet('birju'),
   raja: aiSet('raja'),
   rajaRage: aiSet('raja'),
   refund: aiSet('refund'),

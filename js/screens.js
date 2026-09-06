@@ -1,3 +1,7 @@
+import { loadTitleMotion, drawTitleMotion } from './title_motion.js';
+import { loadDisplayType, drawDisplayTitle } from './display_type.js';
+let titleArt = null;
+export const titleReady = Promise.all([loadTitleMotion(),loadDisplayType()]).then(([art]) => { titleArt = art; });
 // screens.js - title, stage intro, boss intro, stage clear, ending, game over
 import { G, W, H } from './engine.js';
 import { SPR, drawText, drawTextShadow, textWidth, getFrame, blit, frameW, frameH } from './sprites.js';
@@ -5,6 +9,7 @@ import { drawStage, drawRingCrowd, STAGES } from './stages.js';
 import { ASSETS } from './assets.js';
 import { drawProp } from './props.js';
 import { drawTrainOverlay } from './train.js';
+import { drawDialogue } from './room_dialogue.js';
 
 function center(str, scale) { return (W - textWidth(str, scale)) / 2; }
 
@@ -35,7 +40,18 @@ function drawLogo(ctx, y0) {
   ctx.fillRect(center('WORLD TOUR', 2) + lw + 4, y0 + 34 + bob, 10, 1);
 }
 
+export function drawWelcome(ctx) {
+  ctx.fillStyle='#08060d';ctx.fillRect(0,0,W,H);
+  const text=(s,y,color,scale=1)=>drawTextShadow(ctx,s,(W-textWidth(s,scale))/2,y,color,scale);
+  text('GIGACHAD',83,'#efc775',2);
+  text('WORLD TOUR',105,'#a68b69');
+  ctx.fillStyle='#5e432c';ctx.fillRect(W/2-64,126,128,1);
+  text('PRESS ANY KEY OR BUTTON',148,'#fff0ce');
+  text('OR CLICK TO START',168,'#ad9b84');
+}
+
 export function drawTitle(ctx) {
+  if (titleArt?.cigar && titleArt?.world) { drawTitleMotion(ctx, titleArt, 'cigar', G.rawTime); return; }
   const t = G.rawTime;
   if (ASSETS.title_art) {
     const pan = Math.round(Math.sin(t * 0.012) * 4);
@@ -94,7 +110,7 @@ export function drawIntro(ctx) {
   ctx.fillRect(-bx, 160, W, 2);
   const label = 'STAGE ' + st.num;
   drawTextShadow(ctx, label, center(label, 3) + bx, 106, '#f8f0e0', 3);
-  if (t > 20) drawTextShadow(ctx, st.name, center(st.name, 2), 134, '#ffd94a', 2);
+  if (t > 20) drawDisplayTitle(ctx,st.name,W/2,131,{height:24,maxWidth:350});
   if (t > 40) drawTextShadow(ctx, st.sub, center(st.sub, 1), 168, '#686098', 1);
 }
 
@@ -123,25 +139,17 @@ export function drawBossIntro(ctx, camX) {
       ctx.fillStyle = 'rgba(30,14,6,0.84)'; ctx.fillRect(0, 202, W, 68);
       drawTextShadow(ctx, 'NO WEAPONS. NO ROOM. NO LEAVING.', center('NO WEAPONS. NO ROOM. NO LEAVING.', 1), 214, '#e8d0a0', 1);
       drawTextShadow(ctx, 'USTAD PAPPU', center('USTAD PAPPU', 2), 232, '#ffb860', 2);
-    } else if (b.key === 'tte') {
-      drawTrainOverlay(ctx, camX);
-      ctx.fillStyle = 'rgba(8,8,16,0.84)'; ctx.fillRect(0, 202, W, 68);
-      const line = G.train && G.train.ticket ? 'HE IS NOT ANGRY. HE IS THE RULES.' : 'NO TICKET. NO SEAT. NO ARGUMENT.';
-      drawTextShadow(ctx, line, center(line, 1), 214, '#d0d0e0', 1);
-      drawTextShadow(ctx, 'THE TTE', center('THE TTE', 2), 232, '#f0e8c0', 2);
-    } else if (b.key === 'birju') {
-      drawTrainOverlay(ctx, camX);
-      // the loco's headlight, throwing your shadow back down the roof
-      if (t > 50) {
-        const k = Math.min(1, (t - 50) / 30);
-        const g = ctx.createLinearGradient(W, 0, 0, 0);
-        g.addColorStop(0, `rgba(255,240,200,${0.35 * k})`);
-        g.addColorStop(1, 'rgba(255,240,200,0)');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    } else if (b.key === 'vikram') {
+      if(t>=180){
+       ctx.fillStyle='rgba(8,6,12,.9)';ctx.fillRect(0,230,W,40);
+       drawDisplayTitle(ctx,'COMMISSIONER SETH',W/2,234,{height:19,maxWidth:310});
+       drawTextShadow(ctx,'THE PROCESSING FEE',center('THE PROCESSING FEE',1),257,'#d9bc87',1);
       }
-      ctx.fillStyle = 'rgba(6,8,18,0.84)'; ctx.fillRect(0, 202, W, 68);
-      drawTextShadow(ctx, 'NOWHERE TO STAND. NOWHERE TO GO.', center('NOWHERE TO STAND. NOWHERE TO GO.', 1), 214, '#c8d0e8', 1);
-      drawTextShadow(ctx, 'BIRJU - THE COUPLER', center('BIRJU - THE COUPLER', 2), 232, '#ffb860', 2);
+      if(t>=194)drawDialogue(ctx,{text:b.def.taunt,x:b.x-camX,bottom:115,age:t-194,remaining:315-t,width:220});
+      return;
+    } else if (b.key === 'conductor') {
+      if(t>=210){drawDisplayTitle(ctx,'HEAD CONDUCTOR',W/2,244,{height:17,maxWidth:270});drawDialogue(ctx,{text:'TICKET. CASH ONLY.',x:b.x-camX,bottom:115,age:t-210,remaining:300-t,width:180});}
+      return;
     } else if (b.key === 'mirchi') {
       if (t > 30 && t < 40) { ctx.fillStyle = 'rgba(255,200,120,0.2)'; ctx.fillRect(0, 0, W, H); }
       ctx.fillStyle = 'rgba(20,8,6,0.84)'; ctx.fillRect(0, 202, W, 68);
@@ -241,14 +249,16 @@ export function drawBossIntro(ctx, camX) {
 }
 
 export function drawClear(ctx) {
-  const t = G.rawTime - G.stateT;
+  const trainClear=G.stage?.id==='train';
+  const t = G.rawTime - G.stateT - (trainClear?45:0);
+  if(t<0)return;
   // the arena dims over the boss he just put down; nothing slams in
   ctx.fillStyle = `rgba(10,6,10,${0.78 * Math.min(1, t / 24)})`;
-  ctx.fillRect(0, 0, W, H);
-  if (t < 12) return;
-  drawTextShadow(ctx, 'STAGE CLEAR', center('STAGE CLEAR', 3), 32, '#ffd94a', 3);
+  if(trainClear){ctx.fillRect(26,12,340,228);ctx.strokeStyle='#776044';ctx.strokeRect(26.5,12.5,339,227);}else ctx.fillRect(0, 0, W, H);
+  if (t < 12&&!trainClear) return;
+  drawDisplayTitle(ctx,trainClear?'CHAD WINS':'STAGE CLEAR',trainClear?196:W/2,24,{height:28,maxWidth:300});
   const cleared = G.stage ? G.stage.name : '';
-  drawTextShadow(ctx, cleared, center(cleared, 1), 56, '#c8c0e0', 1);
+  drawTextShadow(ctx, cleared, center(cleared, 1)-(trainClear?44:0), 56, '#c8c0e0', 1);
   // the tally sits over the arena he won, with him still standing in it
   if (ASSETS.portrait_chad_48) blit(ctx, ASSETS.portrait_chad_48, 46, 112);
   const st = G.clearStats || { hits: 0, kos: 0, bonus: 0, combo: 0 };
@@ -270,11 +280,11 @@ export function drawClear(ctx) {
   const last = G.stageIndex >= STAGE_COUNT - 1;
   if (t > 120 && !last) {
     const next = 'NEXT - ' + STAGE_NAMES[G.stageIndex + 1];
-    drawTextShadow(ctx, next, center(next, 1), 196, '#d85838', 1);
+    drawTextShadow(ctx, next, center(next, 1)-(trainClear?44:0), 196, '#d85838', 1);
   }
   if (t > 150 && ((G.rawTime >> 4) & 1)) {
-    const msg = last ? 'PRESS Z' : 'PRESS Z TO CONTINUE';
-    drawTextShadow(ctx, msg, center(msg, 1), 220, '#ffd94a', 1);
+    const msg = trainClear?'F / LB: CONTINUE':last ? 'PRESS Z' : 'PRESS Z TO CONTINUE';
+    drawTextShadow(ctx, msg, center(msg, 1)-(trainClear?44:0), 220, '#ffd94a', 1);
   }
 }
 
@@ -357,7 +367,7 @@ export function drawOver(ctx) {
   ctx.fillStyle = `rgba(10,4,8,${0.85 * Math.min(1, t / 40)})`;
   ctx.fillRect(0, 0, W, H);
   if (t < 30) return;
-  drawTextShadow(ctx, 'GAME OVER', center('GAME OVER', 4), 88, '#d82838', 4);
+  drawDisplayTitle(ctx,'GAME OVER',W/2,82,{height:38,maxWidth:330});
   const n = Math.ceil(G.continueT / 60);
   drawTextShadow(ctx, 'CONTINUE? ' + n, center('CONTINUE? 9', 2), 144, '#f8f0e0', 2);
   if ((G.rawTime >> 4) & 1) drawTextShadow(ctx, 'PRESS Z', center('PRESS Z', 1), 178, '#ffd94a', 1);

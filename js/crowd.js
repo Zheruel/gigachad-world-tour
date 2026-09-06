@@ -1,3 +1,4 @@
+import { drawContactShadow } from './contact_shadow.js';
 // crowd.js - background actors. The stage plates are generated deserted, so every
 // person you see on the street is one of these: a short loop placed at an authored
 // position, each running at its own rate and phase so nothing moves in lockstep.
@@ -34,7 +35,7 @@ const REACTORS = ['chai', 'spice', 'barber', 'tailor', 'fan', 'porter'];
 //          as where it stands. Only the dog, lying on the road, is read against the
 //          road; a man walking it is still silhouetted against the facade.
 //
-// tools/process_npcs.py reads this table rather than keeping its own copy, so the size
+// tools/production/process_npcs.py reads this table rather than keeping its own copy, so the size
 // the art is baked to and the size the lab checks for can never drift apart.
 export const KIND_META = {
   chai: { plane: 'facade', pose: 1.00, band: 'wall' },
@@ -245,14 +246,8 @@ export function drawCrowd(ctx, camX, plane) {
     if (sx < -160 || sx > 640) continue;
     const w = Math.round(frameW(f) * a.scale), h = Math.round(frameH(f) * a.scale);
     const dx = sx - Math.round(w / 2), dy = Math.round(a.y) - h;
-    if (a.shadow) {
-      ctx.globalAlpha = 0.26;
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.ellipse(sx, Math.round(a.y) + 1, Math.max(4, w * 0.32), 2.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    }
+    if (a.shadow && !['dog', 'cow', 'rick'].includes(a.kind))
+      drawContactShadow(ctx, sx, a.y, Math.max(6, w * .25));
     let alpha = a.alpha === undefined ? 1 : a.alpha;
     // a vendor whose shutter is coming down has gone inside: he fades with it rather
     // than standing in front of a closed roller

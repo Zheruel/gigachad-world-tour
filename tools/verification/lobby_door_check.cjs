@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=require('playwright');
+(async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});const out='/private/tmp/gachi-lobby-door';fs.mkdirSync(out,{recursive:true});
+try {const page=await browser.newPage({viewport:{width:960,height:540}});await page.goto('http://localhost:8011/?auto=travel-lobby');await page.waitForFunction(()=>window.__game?.travelReady());
+const checks=await page.evaluate(async()=>{const g=window.__game,G=g.G,{nearLobbyDoor}=await import('/js/lobby_door.js'),{porterAt,lobbyStaffAt}=await import('/js/lobby_staff.js'),checks=[];const check=(name,pass)=>checks.push({name,pass:!!pass});
+G.freezeTime=false;g.resetInput();g.travel('lobby');g.step(2);
+for(const x of [740,910]){G.travel.x=x;g.step(1);g.press('use');g.step(1);g.release('use');check(`door cannot open remotely at ${x}`,!G.travel.exiting&&!nearLobbyDoor(G.travel));}
+G.travel.x=827;g.step(1);check('prompt appears at physical doorway',nearLobbyDoor(G.travel));g.press('jump');g.step(1);g.release('jump');check('airborne cannot open door',!nearLobbyDoor(G.travel));g.step(65);
+g.press('use');g.step(1);g.release('use');check('interaction begins door animation',G.travel.exiting?.t===0);g.press('attack');g.press('right');g.step(20);check('held action cannot skip exit',G.travel.phase==='lobby'&&G.travel.exiting.t===20);
+g.press('pause');g.step(1);g.release('pause');const before=JSON.stringify(G.travel);g.step(30);check('pause freezes door and walking',JSON.stringify(G.travel)===before);g.press('pause');g.step(1);g.release('pause');g.step(110);check('exit reaches curb with gated inputs',G.travel.phase==='curb'&&G.travel.gate);
+const tr={t:0,greeted:false};const start=porterAt(tr);tr.greeted=true;tr.greetT=20;tr.t=300;const moving=porterAt(tr);tr.t=800;const waiting=porterAt(tr);tr.t=10000;check('porter delivers once then waits',start.art==='porter_idle'&&moving.task==='deliver'&&waiting.art==='porter_idle'&&waiting.x===porterAt(tr).x);
+for(const role of ['bartender']){const frames=new Set();for(let t=0;t<1500;t++){const p=lobbyStaffAt(t)[role];if(p.task==='move')frames.add(p.frame);}check(`${role} turns and uses eight walk poses`,frames.size===12);}
+return checks;});assert(checks.every(c=>c.pass),JSON.stringify(checks));
+for(const t of [0,10,25,42,65,85,105]){await page.evaluate(t=>{const g=window.__game;g.G.freezeTime=false;g.resetInput();g.travel('lobby');g.G.travel.x=827;g.step(1);g.press('use');g.step(1);g.release('use');g.step(t);g.G.fade=0;g.G.freezeTime=true;g.render();},t);await page.screenshot({path:`${out}/exit-${t}.png`});}
+await page.goto('http://localhost:8011/review-elevator.html?scene=exit&t=42');await page.waitForFunction(()=>document.querySelector('#readout').textContent.startsWith('Frame'));await page.locator('#preview').screenshot({path:`${out}/review.png`});
+console.log(JSON.stringify({checks,screenshots:out}));}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

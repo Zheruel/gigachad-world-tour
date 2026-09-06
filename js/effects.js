@@ -1,4 +1,5 @@
 // effects.js - hit sparks, dust, shockwaves, rings, steam, score popups, shake/flash
+import { ASSETS } from './assets.js';
 import { G } from './engine.js';
 import { SPR, getFrame, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { fx } from './fx.js';
@@ -146,15 +147,11 @@ export function drawEffects(ctx, camX) {
       ctx.fill();
       ctx.globalAlpha = 1;
     } else if (e.type === 'smoke' || e.type === 'cigarSmoke') {
-      const k = e.t / e.life;
-      const cigar = e.type === 'cigarSmoke';
-      ctx.globalAlpha = Math.max(0, (cigar ? 0.52 : 0.4) * (1 - k));
-      ctx.fillStyle = cigar ? '#aab3ba' : '#d8d4c8';
-      ctx.beginPath();
-      ctx.ellipse(sx, sy, (cigar ? 1.5 : 2) + k * (cigar ? 7 : 9),
-        (cigar ? 1.5 : 2) + k * (cigar ? 6 : 7), 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
+      const k=e.t/e.life,im=ASSETS.nr_finale_smoke;
+      ctx.globalAlpha=Math.max(0,.38*(1-k));
+      if(im){const frame=Math.min(5,Math.floor(k*6)),w=e.type==='cigarSmoke'?13:18,h=w*1.5;ctx.drawImage(im,frame*64,0,64,96,Math.round(sx-w/2),Math.round(sy-h+3),w,h);}
+      else{ctx.fillStyle='#a9afb3';ctx.fillRect(Math.round(sx),Math.round(sy),2,2);}
+      ctx.globalAlpha=1;
     } else if (e.type === 'debris') {
       ctx.globalAlpha = Math.max(0, 1 - Math.max(0, e.t - e.life * 0.6) / (e.life * 0.4));
       ctx.fillStyle = e.col;

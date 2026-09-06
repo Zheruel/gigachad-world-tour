@@ -49,6 +49,7 @@ export function updateShots() {
         s.vz = 0;
         if (Math.abs(tgt.x - s.x) < 8 && Math.abs((s.y - s.z) - tgt.y) < 8) {
           s.source.delhi.onReflectHit(s.source, s);
+          s.source.counterApplying=false;
           spawnDust(s.x, s.y, 3);
           G.shots.splice(i, 1);
           continue;
@@ -56,7 +57,9 @@ export function updateShots() {
       } else {
         s.y += clamp(s.source.y - s.y, -2.2, 2.2);
         if (Math.abs(s.source.x - s.x) < 20 && Math.abs(s.source.y - s.y) < 22) {
+          s.source.damageGuard?.(1);s.source.counterApplying=true;
           s.source.hurt(Math.round(s.dmg * 1.5), Math.sign(s.vx) || 1, true, false);
+          s.source.counterApplying=false;
           spawnDust(s.x, s.y, 3);
           G.shots.splice(i, 1);
           continue;
@@ -76,7 +79,8 @@ export function updateShots() {
     const hit = Math.abs(p.x - s.x) < 16 && Math.abs(p.y - s.y) < 18 &&
       Math.abs(p.z - s.z) < 24;
     if (hit && !s.reflected) {
-      if (resolveIncomingHit(p, s.source, { parryClass: s.parryClass })) {
+      if (resolveIncomingHit(p, s.source, { parryClass: s.parryClass, dmg:s.dmg, x:s.x })) {
+        if(p.lastDefense==='guard'){G.shots.splice(i,1);continue;}
         spawnDust(s.x, s.y, 3);
         s.reflected = true;
         s.burst = null;
@@ -168,7 +172,10 @@ export function drawZones(ctx, camX) {
 export function drawShots(ctx, camX) {
   for (const s of G.shots) {
     const sx = Math.round(s.x - camX), sy = Math.round(s.y - s.z);
-    if (s.kind === 'powder') {
+    if(s.kind==='bullet'){
+      ctx.fillStyle='#fff1a6';ctx.fillRect(sx-4,sy-51,8,1);
+      ctx.fillStyle='#e59c42';ctx.fillRect(sx-Math.sign(s.vx)*12,sy-51,6,1);
+    } else if (s.kind === 'powder') {
       const f = fx('powder', s.t >> 3);
       ctx.globalAlpha = clamp(1 - s.t / s.life, 0.3, 1);
       if (f) blit(ctx, f, sx - frameW(f) / 2, sy - 14 - frameH(f) / 2);

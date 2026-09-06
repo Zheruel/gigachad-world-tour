@@ -184,6 +184,20 @@
       "chad_idle_knuckles2.png",
       "chad_idle_knuckles3.png",
       "chad_idle_knuckles4.png"
+    ],
+    "boxing_rush": [
+      "chad_boxing_rush_00.png",
+      "chad_boxing_rush_01.png",
+      "chad_boxing_rush_02.png",
+      "chad_boxing_rush_03.png",
+      "chad_boxing_rush_04.png",
+      "chad_boxing_rush_05.png",
+      "chad_boxing_rush_06.png",
+      "chad_boxing_rush_07.png",
+      "chad_boxing_rush_08.png",
+      "chad_boxing_rush_09.png",
+      "chad_boxing_rush_10.png",
+      "chad_boxing_rush_11.png"
     ]
   },
   "goonda": {
@@ -743,215 +757,473 @@
       "pappu_hurt3.png"
     ]
   },
-  "coolie": {
+  "nr_tough": {
     "idle": [
-      "coolie_idle1.png",
-      "coolie_idle2.png",
-      "coolie_idle3.png",
-      "coolie_idle4.png"
+      "nr_tough/performance_0.png",
+      "nr_tough/performance_1.png"
     ],
     "walk": [
-      "coolie_walk1.png",
-      "coolie_walk2.png",
-      "coolie_walk3.png",
-      "coolie_walk4.png"
+      "nr_tough/gait_0.png",
+      "nr_tough/gait_1.png",
+      "nr_tough/gait_2.png",
+      "nr_tough/gait_3.png",
+      "nr_tough/gait_4.png",
+      "nr_tough/gait_5.png",
+      "nr_tough/gait_6.png",
+      "nr_tough/gait_7.png"
     ],
     "atk": [
-      "coolie_atk1.png",
-      "coolie_atk2.png",
-      "coolie_atk3.png"
+      "nr_tough/performance_10.png",
+      "nr_tough/performance_11.png",
+      "nr_tough/performance_12.png"
     ],
     "hurt": [
-      "coolie_hurt1.png",
-      "coolie_hurt2.png"
+      "nr_tough/performance_13.png"
     ],
     "down": [
-      "coolie_hurt3.png"
+      "nr_tough/performance_14.png"
     ],
-    "getup": [
-      "coolie_hurt2.png"
-    ]
-  },
-  "gai": {
-    "idle": [
-      "gai_idle1.png",
-      "gai_idle2.png",
-      "gai_idle3.png",
-      "gai_idle4.png"
+    "jump": [
+      "nr_tough/performance_15.png"
     ],
-    "walk": [
-      "gai_walk1.png",
-      "gai_walk2.png",
-      "gai_walk3.png",
-      "gai_walk4.png"
-    ],
-    "atk": [
-      "gai_kick1.png",
-      "gai_kick2.png",
-      "gai_kick3.png"
-    ],
-    "hurt": [
-      "gai_hurt1.png",
-      "gai_hurt2.png"
-    ],
-    "down": [
-      "gai_hurt2.png"
-    ]
-  },
-  "manja": {
-    "idle": [
-      "manja_idle1.png",
-      "manja_idle2.png",
-      "manja_idle3.png",
-      "manja_idle4.png"
+    "block": [
+      "nr_tough/performance_1.png"
     ],
     "perch": [
-      "manja_idle1.png",
-      "manja_idle2.png",
-      "manja_idle3.png",
-      "manja_idle4.png"
+      "nr_tough/performance_15.png"
+    ],
+    "getup": [
+      "nr_tough/recovery_0.png",
+      "nr_tough/recovery_1.png",
+      "nr_tough/recovery_2.png",
+      "nr_tough/recovery_3.png"
+    ]
+  },
+  "nr_bruiser": {
+    "idle": [
+      "nr_bruiser/performance_0.png",
+      "nr_bruiser/performance_1.png"
     ],
     "walk": [
-      "manja_walk1.png",
-      "manja_walk2.png",
-      "manja_walk3.png",
-      "manja_walk4.png"
-    ],
-    "throw": [
-      "manja_throw1.png",
-      "manja_throw2.png",
-      "manja_throw3.png",
-      "manja_throw4.png"
+      "nr_bruiser/gait_0.png",
+      "nr_bruiser/passing_0.png",
+      "nr_bruiser/passing_1.png",
+      "nr_bruiser/gait_3.png",
+      "nr_bruiser/gait_4.png",
+      "nr_bruiser/passing_2.png",
+      "nr_bruiser/passing_3.png",
+      "nr_bruiser/gait_7.png"
     ],
     "atk": [
-      "manja_drop1.png",
-      "manja_drop3.png",
-      "manja_drop4.png"
+      "nr_bruiser/performance_10.png",
+      "nr_bruiser/performance_11.png",
+      "nr_bruiser/performance_12.png"
+    ],
+    "hurt": [
+      "nr_bruiser/performance_13.png"
+    ],
+    "down": [
+      "nr_bruiser/performance_14.png"
+    ],
+    "jump": [
+      "nr_bruiser/performance_15.png"
+    ],
+    "block": [
+      "nr_bruiser/performance_1.png"
+    ],
+    "perch": [
+      "nr_bruiser/performance_15.png"
+    ],
+    "getup": [
+      "nr_bruiser/recovery_0.png",
+      "nr_bruiser/recovery_1.png",
+      "nr_bruiser/recovery_2.png",
+      "nr_bruiser/recovery_3.png"
+    ]
+  },
+  "nr_runner": {
+    "idle": [
+      "nr_runner/performance_0.png",
+      "nr_runner/performance_1.png"
+    ],
+    "walk": [
+      "nr_runner/gait_0.png",
+      "nr_runner/gait_1.png",
+      "nr_runner/gait_2.png",
+      "nr_runner/gait_3.png",
+      "nr_runner/gait_4.png",
+      "nr_runner/gait_5.png",
+      "nr_runner/gait_6.png",
+      "nr_runner/gait_7.png"
+    ],
+    "atk": [
+      "nr_runner/performance_10.png",
+      "nr_runner/performance_11.png",
+      "nr_runner/performance_12.png"
+    ],
+    "hurt": [
+      "nr_runner/performance_13.png"
+    ],
+    "down": [
+      "nr_runner/performance_14.png"
+    ],
+    "jump": [
+      "nr_runner/performance_15.png"
+    ],
+    "block": [
+      "nr_runner/performance_1.png"
+    ],
+    "perch": [
+      "nr_runner/performance_15.png"
+    ],
+    "getup": [
+      "nr_runner/recovery_0.png",
+      "nr_runner/recovery_1.png",
+      "nr_runner/recovery_2.png",
+      "nr_runner/recovery_3.png"
+    ]
+  },
+  "nr_ambusher": {
+    "idle": [
+      "nr_ambusher/performance_0.png",
+      "nr_ambusher/performance_1.png"
+    ],
+    "walk": [
+      "nr_ambusher/gait_0.png",
+      "nr_ambusher/gait_1.png",
+      "nr_ambusher/gait_2.png",
+      "nr_ambusher/gait_3.png",
+      "nr_ambusher/gait_4.png",
+      "nr_ambusher/gait_5.png",
+      "nr_ambusher/gait_6.png",
+      "nr_ambusher/gait_7.png"
+    ],
+    "atk": [
+      "nr_ambusher/performance_9.png",
+      "nr_ambusher/performance_10.png",
+      "nr_ambusher/performance_11.png"
+    ],
+    "hurt": [
+      "nr_ambusher/performance_12.png"
+    ],
+    "down": [
+      "nr_ambusher/performance_13.png"
+    ],
+    "jump": [
+      "nr_ambusher/performance_15.png"
+    ],
+    "block": [
+      "nr_ambusher/performance_1.png"
+    ],
+    "perch": [
+      "nr_ambusher/aerial_0.png",
+      "nr_ambusher/aerial_1.png"
+    ],
+    "getup": [
+      "nr_ambusher/recovery_0.png",
+      "nr_ambusher/recovery_1.png",
+      "nr_ambusher/recovery_2.png",
+      "nr_ambusher/recovery_3.png"
+    ],
+    "climb": [
+      "nr_ambusher/aerial_2.png",
+      "nr_ambusher/aerial_3.png"
     ],
     "drop": [
-      "manja_drop1.png",
-      "manja_drop2.png",
-      "manja_drop3.png",
-      "manja_drop4.png"
+      "nr_ambusher/aerial_4.png",
+      "nr_ambusher/aerial_4.png",
+      "nr_ambusher/aerial_5.png"
     ],
-    "hurt": [
-      "manja_hurt1.png",
-      "manja_hurt2.png"
-    ],
-    "down": [
-      "manja_hurt3.png"
+    "land": [
+      "nr_ambusher/aerial_6.png",
+      "nr_ambusher/aerial_7.png"
     ]
   },
-  "tte": {
+  "nr_heavy": {
     "idle": [
-      "tte_idle1.png",
-      "tte_idle2.png",
-      "tte_idle3.png",
-      "tte_idle4.png"
+      "nr_heavy/performance_0.png",
+      "nr_heavy/performance_1.png"
     ],
     "walk": [
-      "tte_walk1.png",
-      "tte_walk2.png",
-      "tte_walk3.png",
-      "tte_walk4.png"
+      "nr_heavy/gait_0.png",
+      "nr_heavy/gait_1.png",
+      "nr_heavy/gait_2.png",
+      "nr_heavy/gait_3.png",
+      "nr_heavy/gait_4.png",
+      "nr_heavy/gait_5.png",
+      "nr_heavy/gait_6.png",
+      "nr_heavy/gait_7.png"
     ],
-    "punch": [
-      "tte_ledger1.png",
-      "tte_ledger2.png",
-      "tte_ledger3.png"
+    "atk": [
+      "nr_heavy/performance_9.png",
+      "nr_heavy/performance_10.png",
+      "nr_heavy/performance_11.png"
     ],
-    "ledger": [
-      "tte_ledger1.png",
-      "tte_ledger2.png",
-      "tte_ledger3.png"
+    "hurt": [
+      "nr_heavy/performance_12.png"
     ],
-    "torch": [
-      "tte_torch1.png",
-      "tte_torch2.png",
-      "tte_torch3.png",
-      "tte_torch4.png"
+    "down": [
+      "nr_heavy/performance_13.png"
+    ],
+    "jump": [
+      "nr_heavy/performance_15.png"
+    ],
+    "block": [
+      "nr_heavy/performance_1.png"
+    ],
+    "perch": [
+      "nr_heavy/performance_15.png"
+    ],
+    "getup": [
+      "nr_heavy/recovery_0.png",
+      "nr_heavy/recovery_1.png",
+      "nr_heavy/recovery_2.png",
+      "nr_heavy/recovery_3.png"
+    ]
+  },
+  "nr_guard": {
+    "idle": [
+      "nr_guard/performance_0.png",
+      "nr_guard/performance_1.png"
+    ],
+    "walk": [
+      "nr_guard/gait_0.png",
+      "nr_guard/gait_1.png",
+      "nr_guard/gait_2.png",
+      "nr_guard/gait_3.png",
+      "nr_guard/gait_4.png",
+      "nr_guard/gait_5.png",
+      "nr_guard/gait_6.png",
+      "nr_guard/gait_7.png"
+    ],
+    "atk": [
+      "nr_guard/performance_10.png",
+      "nr_guard/performance_11.png",
+      "nr_guard/performance_12.png"
+    ],
+    "hurt": [
+      "nr_guard/performance_13.png"
+    ],
+    "down": [
+      "nr_guard/performance_14.png"
+    ],
+    "jump": [
+      "nr_guard/performance_15.png"
+    ],
+    "block": [
+      "nr_guard/performance_1.png"
+    ],
+    "perch": [
+      "nr_guard/performance_15.png"
+    ],
+    "getup": [
+      "nr_guard/recovery_0.png",
+      "nr_guard/recovery_1.png",
+      "nr_guard/recovery_2.png",
+      "nr_guard/recovery_3.png"
+    ]
+  },
+  "nr_vikram": {
+    "idle": [
+      "nr_vikram/0.png",
+      "nr_vikram/1.png"
+    ],
+    "walk": [
+      "nr_vikram/contact_0.png",
+      "nr_vikram/passing_0.png",
+      "nr_vikram/passing_1.png",
+      "nr_vikram/contact_1.png",
+      "nr_vikram/contact_2.png",
+      "nr_vikram/passing_2.png",
+      "nr_vikram/passing_3.png",
+      "nr_vikram/contact_3.png"
+    ],
+    "atk": [
+      "nr_vikram/6.png",
+      "nr_vikram/7.png",
+      "nr_vikram/8.png"
+    ],
+    "hurt": [
+      "nr_vikram/9.png"
+    ],
+    "down": [
+      "nr_vikram/10.png"
+    ],
+    "jump": [
+      "nr_vikram/11.png"
+    ],
+    "perch": [
+      "nr_vikram/11.png"
+    ],
+    "block": [
+      "nr_vikram/action_11.png"
+    ],
+    "pistol": [
+      "nr_vikram/action_0.png",
+      "nr_vikram/action_1.png",
+      "nr_vikram/action_2.png",
+      "nr_vikram/action_3.png",
+      "nr_vikram/action_4.png"
     ],
     "grab": [
-      "tte_stamp1.png",
-      "tte_stamp2.png",
-      "tte_stamp3.png"
+      "nr_vikram/action_5.png",
+      "nr_vikram/action_6.png",
+      "nr_vikram/action_7.png"
     ],
-    "stamp": [
-      "tte_stamp1.png",
-      "tte_stamp2.png",
-      "tte_stamp3.png",
-      "tte_stamp4.png"
+    "climb": [
+      "nr_vikram/action_8.png",
+      "nr_vikram/action_9.png"
     ],
-    "slam": [
-      "tte_stamp2.png",
-      "tte_stamp3.png",
-      "tte_stamp4.png"
-    ],
-    "hurt": [
-      "tte_hurt1.png",
-      "tte_hurt2.png"
-    ],
-    "down": [
-      "tte_hurt3.png"
+    "getup": [
+      "nr_vikram/recovery_0.png",
+      "nr_vikram/recovery_1.png",
+      "nr_vikram/recovery_2.png",
+      "nr_vikram/recovery_3.png"
     ]
   },
-  "birju": {
+  "nr_vikram_roof": {
     "idle": [
-      "birju_idle1.png",
-      "birju_idle2.png",
-      "birju_idle3.png",
-      "birju_idle4.png"
+      "nr_vikram_roof/0.png",
+      "nr_vikram_roof/1.png"
     ],
     "walk": [
-      "birju_walk1.png",
-      "birju_walk2.png",
-      "birju_walk3.png",
-      "birju_walk4.png"
+      "nr_vikram_roof/contact_0.png",
+      "nr_vikram_roof/passing_0.png",
+      "nr_vikram_roof/passing_1.png",
+      "nr_vikram_roof/contact_1.png",
+      "nr_vikram_roof/contact_2.png",
+      "nr_vikram_roof/passing_2.png",
+      "nr_vikram_roof/passing_3.png",
+      "nr_vikram_roof/contact_3.png"
     ],
-    "punch": [
-      "birju_chain2.png",
-      "birju_chain3.png",
-      "birju_chain4.png"
+    "atk": [
+      "nr_vikram_roof/6.png",
+      "nr_vikram_roof/7.png",
+      "nr_vikram_roof/8.png"
     ],
-    "chain": [
-      "birju_chain1.png",
-      "birju_chain2.png",
-      "birju_chain3.png",
-      "birju_chain4.png"
+    "hurt": [
+      "nr_vikram_roof/9.png"
     ],
-    "hook": [
-      "birju_hook1.png",
-      "birju_hook2.png",
-      "birju_hook3.png",
-      "birju_hook4.png"
+    "down": [
+      "nr_vikram_roof/10.png"
+    ],
+    "jump": [
+      "nr_vikram_roof/11.png"
+    ],
+    "perch": [
+      "nr_vikram_roof/11.png"
+    ],
+    "block": [
+      "nr_vikram_roof/6.png"
+    ],
+    "getup": [
+      "nr_vikram_roof/recovery_0.png",
+      "nr_vikram_roof/recovery_1.png",
+      "nr_vikram_roof/recovery_2.png",
+      "nr_vikram_roof/recovery_3.png"
+    ],
+    "sweep": [
+      "nr_vikram_roof/sweep_0.png",
+      "nr_vikram_roof/sweep_1.png",
+      "nr_vikram_roof/sweep_2.png"
+    ]
+  },
+  "nr_heavy_unarmed": {
+    "idle": [
+      "nr_heavy_unarmed/performance_0.png",
+      "nr_heavy_unarmed/performance_1.png"
+    ],
+    "walk": [
+      "nr_heavy_unarmed/gait_0.png",
+      "nr_heavy_unarmed/gait_1.png",
+      "nr_heavy_unarmed/gait_2.png",
+      "nr_heavy_unarmed/gait_3.png",
+      "nr_heavy_unarmed/gait_4.png",
+      "nr_heavy_unarmed/gait_5.png",
+      "nr_heavy_unarmed/gait_6.png",
+      "nr_heavy_unarmed/gait_7.png"
+    ],
+    "atk": [
+      "nr_heavy_unarmed/performance_6.png",
+      "nr_heavy_unarmed/performance_7.png",
+      "nr_heavy_unarmed/performance_8.png"
+    ],
+    "hurt": [
+      "nr_heavy_unarmed/performance_9.png"
+    ],
+    "down": [
+      "nr_heavy_unarmed/performance_10.png"
+    ],
+    "jump": [
+      "nr_heavy_unarmed/performance_11.png"
+    ],
+    "block": [
+      "nr_heavy_unarmed/performance_1.png"
+    ],
+    "perch": [
+      "nr_heavy_unarmed/performance_11.png"
+    ],
+    "getup": [
+      "nr_heavy_unarmed/recovery_0.png",
+      "nr_heavy_unarmed/recovery_1.png",
+      "nr_heavy_unarmed/recovery_2.png",
+      "nr_heavy_unarmed/recovery_3.png"
+    ]
+  },
+  "nr_conductor": {
+    "idle": [
+      "nr_conductor/performance_0.png",
+      "nr_conductor/performance_1.png"
+    ],
+    "walk": [
+      "nr_conductor/contact_0.png",
+      "nr_conductor/passing_0.png",
+      "nr_conductor/passing_1.png",
+      "nr_conductor/contact_1.png",
+      "nr_conductor/contact_2.png",
+      "nr_conductor/passing_2.png",
+      "nr_conductor/passing_3.png",
+      "nr_conductor/contact_3.png"
+    ],
+    "atk": [
+      "nr_conductor/performance_8.png",
+      "nr_conductor/performance_9.png",
+      "nr_conductor/performance_11.png"
+    ],
+    "hurt": [
+      "nr_conductor/performance_14.png"
+    ],
+    "down": [
+      "nr_conductor/performance_15.png"
+    ],
+    "jump": [
+      "nr_conductor/performance_12.png"
+    ],
+    "block": [
+      "nr_conductor/performance_2.png"
+    ],
+    "whistle": [
+      "nr_conductor/performance_3.png"
     ],
     "charge": [
-      "birju_charge1.png",
-      "birju_charge2.png",
-      "birju_charge3.png",
-      "birju_charge4.png"
+      "nr_conductor/performance_12.png",
+      "nr_conductor/performance_13.png"
     ],
-    "grab": [
-      "birju_grab1.png",
-      "birju_grab2.png",
-      "birju_grab3.png"
+    "rise": [
+      "nr_conductor/office_4.png",
+      "nr_conductor/office_5.png",
+      "nr_conductor/office_6.png"
     ],
-    "slam": [
-      "birju_grab2.png",
-      "birju_grab3.png",
-      "birju_grab3.png"
+    "getup": [
+      "nr_conductor/recovery_0.png",
+      "nr_conductor/recovery_1.png",
+      "nr_conductor/recovery_2.png",
+      "nr_conductor/recovery_3.png"
     ],
-    "uncouple": [
-      "birju_uncouple1.png",
-      "birju_uncouple2.png",
-      "birju_uncouple3.png"
-    ],
-    "hurt": [
-      "birju_hurt1.png",
-      "birju_hurt2.png"
-    ],
-    "down": [
-      "birju_hurt3.png"
+    "shield": [
+      "nr_conductor/shield_0.png",
+      "nr_conductor/shield_1.png",
+      "nr_conductor/shield_2.png"
     ]
   }
 }
