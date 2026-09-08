@@ -293,7 +293,10 @@ const dredger = {
     if (b.phase === 'machine') G.shake = Math.max(G.shake, 8);
   },
   onDeath(b) {
-    if (b.phase === 'operator') return;
+    if (b.phase === 'operator') {
+      b.finishStarted = !!G.india?.startCinematic?.('dredger-finish', b);
+      return;
+    }
     // killed as a machine: the bucket comes down for good
     b.state = 'dying'; b.vz = 0; b.vx = 0;
     if (b.z > 0) b.vz = -0.5;

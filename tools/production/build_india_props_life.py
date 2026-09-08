@@ -104,37 +104,8 @@ def life():
                 f=Image.new('RGBA',size);f.alpha_composite(Image.fromarray(a),(round(size[0]/2-anchor),size[1]-4-c.height));frames.append(clean_edge(f))
         atlas(frames,size,4,OUT/stage/('rebuild' if stage=='dirty_delhi' else '')/f'{name}.png')
 def office():
-    # 4x runtime art. A worker keeps its combat body's anatomical scale through
-    # sitting, rising and joining the aisle; the chair, not the torso, is anchored.
-    out=OUT/'refund_tower';out.mkdir(parents=True,exist_ok=True)
-    seated=[];standing=[]
-    for name,body,chairs in [
-        ('headset',342,[207,583,975,1295,145,469,852,1198]),
-        ('operator',340,[211,584,979,1300,148,468,856,1194]),
-        ('thrower',346,[213,584,979,1300,148,468,856,1194])]:
-        im=Image.open(SRC/'refund_tower/rebuild'/f'office_{name}.png')
-        # The upright actor is separate from the chair in the final source pose.
-        last=clean(im.crop((1237,512,1536,1024)))
-        lastbox=last.getbbox();scale=body/(lastbox[3]-lastbox[1])
-        for row in range(2):
-            edges=[0,380,755,1110,1536] if row else [0,390,770,1140,1536]
-            for col in range(4):
-                box=(edges[col],row*512,edges[col+1],(row+1)*512)
-                part=clean(im.crop(box));bounds=part.getbbox();part=part.crop(bounds)
-                ground=box[1]+bounds[3]
-                part=part.resize((round(part.width*scale),round(part.height*scale)),Image.Resampling.NEAREST)
-                size=(200,320) if not row else (400,440)
-                f=Image.new('RGBA',size)
-                x=round(100+(box[0]+bounds[0]-chairs[row*4+col])*scale)
-                y=size[1]-4-part.height
-                f.alpha_composite(part,(x,y));(seated if not row else standing).append(clean_edge(f))
-        if name=='headset':
-            # Keep this empty chair after the actor becomes an enemy.
-            c=clean(im.crop((780,712,930,926)));bounds=c.getbbox();c=c.crop(bounds)
-            c=c.resize((round(c.width*scale),round(c.height*scale)),Image.Resampling.NEAREST)
-            f=Image.new('RGBA',(200,200));f.alpha_composite(c,(round(100+(780+bounds[0]-852)*scale),196-c.height))
-            f.save(out/'office_chair.png')
-    atlas(seated,(200,320),4,out/'office_life.png')
-    atlas(standing,(400,440),4,out/'office_stand.png')
+    # Worker-only performances and the separate chair are registered together.
+    from build_india_workstations import actors
+    actors()
 
 if __name__=='__main__':props();life();office()

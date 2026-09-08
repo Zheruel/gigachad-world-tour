@@ -16,6 +16,7 @@ export const FILES = {
   nr_office_desk: 'assets/stages/night_train/rebuild/office_desk.png',
   nr_conductor_intro: 'assets/stages/night_train/rebuild/conductor_intro.png',
   nr_office: 'assets/stages/night_train/rebuild/office.png',
+  nr_station_life: 'assets/stages/night_train/rebuild/station_life.png',
   nr_finale_approach_sky: 'assets/stages/night_train/rebuild/finale_approach_sky.png',
   nr_finale_approach_station: 'assets/stages/night_train/rebuild/finale_approach_station.png',
   nr_finale_approach_track: 'assets/stages/night_train/rebuild/finale_approach_track.png',

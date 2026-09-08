@@ -10,6 +10,8 @@ Markets are visibly neglected: soot, peeling plaster, torn awnings, spoiled prod
 
 Locations are individually authored, connected panoramas with consistent ground and actor scale; no mirrored repetition or stretched scenery. Skyline, architecture, fixtures, civilians and foreground detail are layered. Vendors serve, porters carry goods, shoppers react and dock equipment works on staggered cycles. Keep the floor and attack tells readable.
 
+The nine-second entrance establishes deliveries, shoppers and curbside rats before two thugs demand an entry fee. CHAD braces against a loaded handcart, drives it through their improvised barricade and sends them tumbling aside. Registered pushing poses keep his hands on the handle. Broken cart, barricade and defeated attendants remain visible as the title and “Who wants some?” lead directly into the first encounter.
+
 ## Combat and bosses
 
 Fresh art families: street brawler, flanking runner, reach enforcer, cart-shield heavy, kitchen fighter and waterfront worker. Demonstrate breakable stalls/carts, kitchen pressure hazards and waterfront cargo before combining them with crowds. Keep one telegraphed bull crossing. Broken scenery persists visually while its blocking collision clears.
@@ -21,6 +23,16 @@ Replace Pappu and the old Mirchi encounter with one food-vendor boss: blockable 
 Retain the Dredger's winch, bucket, cab-glass and operator mechanics, identity and accepted machinery art. Rebuild its setting and crew, preserving environmental shortcuts and actionable phases. No empty invulnerable waiting. Verify the previously intermittent operator transition repeatedly.
 
 Reuse shared 12-tick fresh-press parries, 45-tick protected punish, 90-tick guard breaks and single-target super. No new controls. Checkpoints after the vendor and before the Dredger; boss retries use a fixed full-health, 50-meter baseline. Freeze the final victory composition, tally once and require fresh F/LB to continue to Refund Tower.
+
+## Finishers
+
+An active boxing super completes before either automatic finisher begins. Capture the actual defeat positions and previously broken props, then visibly approach the contact positions while the camera settles. Hostile attacks and hazards stop; rendering does not advance choreography or play sounds.
+
+The vendor's nine-second kitchen catastrophe opens with “Time to turn up the heat.” CHAD's combination launches him over the counter into the range. Pressure bursts, flying pots and successive stall failures leave a wreck and the defeated vendor visible. CHAD brushes himself off; control returns once with a clear route forward. His defeat reward is not awarded again by the cinematic.
+
+The Dredger's sixteen-second ending launches the operator through the cab support. The boom folds onto the engine deck amid localized explosions, hull damage and a polluted-water splash behind the dock. Previously dropped buckets, broken winches and damaged props stay broken. CHAD remains in the foreground and says “Something tells me this won't pass any safety inspections.” The final wreck and unconscious operator remain in the held victory composition.
+
+Each sequence has one selected local recording, timed against its measured length. Local Whisper transcripts and recorded game playback are available; catalog listening-verification flags remain provisional until a person auditions them. Pause suspends the choreography and music ducking; reset and quit clear speech and effects. Missing artwork cannot prevent the vendor return or level-clear handoff.
 
 ## Acceptance
 

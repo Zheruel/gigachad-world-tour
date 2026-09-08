@@ -35,6 +35,9 @@ def build():
     for i, name in enumerate(NAMES):
         route.crop((i*1620, 0, (i+1)*1620, 540)).save(OUT / f'{name}.png', optimize=True)
     print('Refund Tower: seven authored room connections')
+    # Local workstation repairs retain these exact connected panel boundaries.
+    from build_india_workstations import backgrounds
+    backgrounds()
 
 if __name__ == '__main__':
     build()

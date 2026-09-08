@@ -6,7 +6,7 @@ const crew=(...roles)=>roles.map(role=>'ic_'+role);
 // fighters remain. Individual scenes keep their first introduction compact.
 const staged=(x,groups,visibleCap=6,extra={})=>({x,spawns:groups[0],reserves:groups.slice(1),visibleCap,...extra});
 export const INDIA_STAGES=[
- {...common,id:'delhi',num:'1-2',name:'DIRTY DELHI',sub:'ACT II - THE MARKET AND THE RIVER',arrival:'market',music:'stage1a',musicB:'stage1b',musicBX:4050,bossMusic:'boss',bossMusicFinal:'boss1',boss:'dredger',introTicks:360,
+ {...common,id:'delhi',num:'1-2',name:'DIRTY DELHI',sub:'ACT II - THE MARKET AND THE RIVER',arrival:'market',introVoice:'duke_who_wants_some',music:'stage1a',musicB:'stage1b',musicBX:4050,bossMusic:'boss',bossMusicFinal:'boss1',boss:'dredger',introTicks:540,
  lanes:[{x0:0,x1:6480,top:213,bot:245}],
  props:[{kind:'ic_cart',x:460,y:227},{kind:'ic_stall',x:740,y:220},{kind:'ic_cart',x:1260,y:230},{kind:'ic_stall',x:1500,y:219},{kind:'ic_boiler',x:1910,y:218},{kind:'ic_stall',x:2210,y:219},{kind:'ic_cargo',x:4300,y:223},{kind:'ic_cargo',x:4770,y:227},{kind:'ic_cargo',x:5190,y:221},{kind:'ic_cargo',x:5550,y:232}],
  waves:[

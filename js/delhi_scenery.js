@@ -26,5 +26,5 @@ export function drawDelhiScenery(ctx, camX, assets, time = 0, ambient = true) {
   // It consequently meets the live reflection target at arena+(352,74).
   const cabin=assets.ic_delhi_dredger_cab;
   const x=6000+245-camX;
-  if(cabin && x<480 && x+166>0)ctx.drawImage(cabin,Math.round(x),38,166,174);
+  if(!assets.ic_dredger_set&&cabin && x<480 && x+166>0)ctx.drawImage(cabin,Math.round(x),38,166,174);
 }

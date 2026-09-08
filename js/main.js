@@ -1,6 +1,7 @@
 import { captureIndiaBossCheckpoint, restoreIndiaCheckpoint } from './india_checkpoints.js';
 import { queueOfficeWorker } from './india_office.js';
 import { INDIA_AREAS, updateIndia, updateIndiaIntro, drawIndiaIntro, drawIndiaCard, drawIndiaPerformance } from './india_stage.js';
+import { INDIA_FINISHERS } from './india_cinematics.js';
 import { drawContactShadow } from './contact_shadow.js';
 import { readProgress, writeProgress } from './progress.js';
 import { startElevatorRide, beginTravel, clearTravel, updateTravel, drawTravel, loadTravel, travelReady, drawTravelLoading, TRAVEL_PHASES, TRAVEL_DURATIONS } from './travel.js';
@@ -399,6 +400,8 @@ function checkPlayerDeath() {
 function checkBossClear() {
   const b = G.boss;
   if (!b || !b.dead || G.state !== 'play') return;
+  if(G.india&&(G.player.dying||G.player.hp<=0))return;
+  if(b.finishStarted&&(G.india?.cinematic||G.india?.pendingFinisher))return;
   if (b.mini) {
     if (b.t > 60) {
       G.boss = null;
@@ -407,13 +410,12 @@ function checkBossClear() {
     }
     return;
   }
-  if(b.key==='closer'&&b.finishStarted&&!G.india?.endingDone)return;
   if(b.key==='vikram'&&!G.train.endingDone){if(!G.train.cinematic)startTrainCinematic('escape');return;}
   if (b.t > 70) {
     if (!b.victoryLine) {
       b.victoryLine = true;
       // urgent: a combo callout must not swallow the act's last word
-      if (b.key === 'dredger') audio.voice('duke_gotta_hurt', 1600, true);
+      if (b.key === 'dredger'&&!b.finishStarted) audio.voice('duke_gotta_hurt', 1600, true);
       else if (b.key === 'yadav') audio.voice('duke_book_em', 1600, true);
       else if (b.key === 'rana') audio.voice('duke_hail', 1800, true);
     }
@@ -565,7 +567,7 @@ function update() {
   if (G.state === 'intro') {
     const introT = G.rawTime - G.stateT;
     const station = G.stage.id === 'train';
-    if(G.stage.chapter){updateIndiaIntro(introT);updateEffects();if(introT>=G.stage.introTicks){G.player.state='idle';G.player.invuln=90;setState('play');}return;}
+    if(G.stage.chapter){updateIndiaIntro(introT);updateEffects();if(introT>=G.stage.introTicks){G.player.state='idle';G.player.invuln=90;G.player.invulnFlashAfter=G.time+90;setState('play');}return;}
     if (G.stage.arrival === 'motorcycle') updateMotorcycleArrival(introT);
     else if (station) { updateStationArrival(introT); updateEffects(); }
     const introLife = G.stage.arrival === 'motorcycle' ? ENTRANCE_LAST_FRAME : station ? STATION_LAST_FRAME : 130;
@@ -745,7 +747,7 @@ function render() {
       break;
     case 'chapter-card':drawIndiaCard(ctx);break;
     case 'intro':
-      if(G.stage.chapter){drawIndiaIntro(ctx,G.rawTime-G.stateT);if(G.india?.review.fx!==false)drawEffects(ctx,0);break;}
+      if(G.stage.chapter){drawIndiaIntro(ctx,G.rawTime-G.stateT);if(G.india?.review.fx!==false)drawEffects(ctx,G.camX);break;}
       if (G.stage.arrival === 'motorcycle') drawMotorcycleArrival(ctx);
       else if (G.stage.id === 'train') drawStationArrival(ctx);
       else drawIntro(ctx);
@@ -759,6 +761,7 @@ function render() {
         drawWorld(ctx);
         drawFG(ctx, G.camX);
         drawTrainOverlay(ctx, G.camX);
+        if(G.stage.chapter)drawIndiaPerformance(ctx);
       }
       drawClear(ctx);
       break;
@@ -856,7 +859,7 @@ function drawWorld(ctx) {
   // scenery that draws itself - the lair's tiger - and CHAD drops out of the list while
   // he is sat on the sofa, because the seated art draws him.
   const ents = [...G.enemies, ...(G.india?.review.props===false?[]:G.props), ...G.actors];
-  if (!G.hubSeat&&!G.india?.cinematic) ents.push(G.player);
+  if (!G.hubSeat&&!G.india?.cinematic&&!G.india?.finalPose) ents.push(G.player);
   if (G.boss && !G.boss.removeMe) ents.push(G.boss);
   ents.sort((a, b) => a.y - b.y);
   const drawEnt = (e) => {
@@ -925,15 +928,18 @@ window.__game = {
     G.player.x=G.camX+150;G.player.y=236;G.india.t=t;
     if(name==='intro'){setState('intro');G.stateT=G.rawTime-t;for(let i=0;i<=t;i++){updateIndiaIntro(i);updateEffects();}}
     if(name==='card')setState('chapter-card');
-    if(['vendor','closer','dredger','finish','clear'].includes(name)){
-      const key=name==='finish'||name==='clear'?(id==='refund'?'closer':'dredger'):name;
+    if(['vendor','closer','dredger','vendor-finish','dredger-finish','closer-finish','finish','clear'].includes(name)){
+      const cinematic=name.endsWith('-finish')||name==='finish';
+      const key=name==='finish'||name==='clear'?(id==='refund'?'closer':'dredger'):name.replace('-finish','');
       G.camLock=key==='vendor'?2670:key==='closer'?5900:6000;G.camX=G.camLock;
-      G.player.x=G.camX+90;G.boss=createBoss(key,G.camX+270,226);G.locked=true;
-      if(name==='finish'){for(const p of G.props)if(p.indiaBossProp&&p.role!=='cabinet'){p.broken=p.dead=true;p.hp=0;}G.boss.phaseTwo=true;G.boss.hp=0;G.boss.dead=true;G.boss.finishStarted=G.india.startCinematic('closer-finish',G.boss);for(let i=0;i<Math.min(t,330);i++){updateIndia();updateEffects();}}
+      G.player.x=G.camX+90;G.boss=createBoss(key,G.camX+270,226);G.locked=true;G.boss.mini=key==='vendor';
+      if(cinematic||name==='clear'){
+        if(key==='dredger')G.boss.delhi.operatorPhase(G.boss);
+        G.boss.hp=0;G.boss.dead=true;G.boss.finishStarted=G.india.startCinematic(key+'-finish',G.boss);
+        const limit=INDIA_FINISHERS[key+'-finish'].ticks;
+        for(let i=0;i<Math.min(name==='clear'?limit:t,limit);i++){updateIndia();updateEffects();}
+      }
       if(name==='clear'){
-        if(id==='refund')for(const p of G.props)if(p.indiaBossProp&&p.role!=='cabinet'){p.broken=p.dead=true;p.hp=0;}
-        G.boss.hp=0;G.boss.dead=true;G.boss.removeMe=true;
-        if(id==='refund'){G.boss.finishStarted=G.india.startCinematic('closer-finish',G.boss);for(let i=0;i<330;i++){updateIndia();updateEffects();}}
         G.clearStats={hits:G.stats.hits,kos:G.stats.kos,bonus:G.lives*500,combo:G.bestCombo};setState('clear');G.stateT=G.rawTime-t;
       }
     }
@@ -1466,7 +1472,7 @@ if (autoMode) {
       startGame(STAGES.findIndex((s) => s.id === 'delhi'));
       t('delhi-loading-card', G.state === 'chapter-card');
       step(2); tap('use'); step(2); t('intro-state', G.state === 'intro');
-      step(360); t('play-state', G.state === 'play');
+      step(G.stage.introTicks+2); t('play-state', G.state === 'play');
       t('delhi-arrival', G.stage.id === 'delhi' && G.stage.arrival === 'market');
       // One act, deliberately: the rest were cut to be rebuilt one at a time. What still
       // has to hold is that every act names a boss that exists.
@@ -1688,7 +1694,7 @@ if (autoMode) {
         // and the wave it interrupted is handed back rather than lost
         t('miniboss-reveal-returns-the-wave',
           G.state === 'play' && G.waveActive === true && G.locked === true);
-        G.boss.hurt(9999, 1, true, false); step(140);
+        G.boss.hurt(9999, 1, true, false); step(600);
         t('miniboss-does-not-end-the-act', G.state === 'play' && G.boss === null);
       }
       G.enemies.length = 0; G.spawnQueue = []; G.hitstop = 0;
@@ -1714,7 +1720,7 @@ if (autoMode) {
         t('vendor-arrives-with-cart-and-valve',!!b.cart&&!!b.valve&&G.props.includes(b.station));
         b.cart.hurt(9999,1,true,true);step(2);
         t('vendor-loses-rush-permanently',b.cartGone&&b.cart.broken);
-        b.hurt(9999,1,true,true);step(140);
+        b.hurt(9999,1,true,true);step(600);
         // THE DREDGER: the bucket, the crew, the cab, the winch, the man
         b = jump('dredger');
         t('dredger-rests-out-of-reach', !!b && b.phase === 'machine' && b.z >= 60);
@@ -1925,7 +1931,7 @@ if (autoMode) {
         t('boss-dies', G.boss.dead === true);
       }
       G.enemies.length = 0; G.spawnQueue = [];
-      step(140);
+      step(1000);
       t('act1-clear', G.state === 'clear');
       step(200); debugPress('use'); step(4); debugRelease('use'); step(36);
       // the tally goes straight on to the next act, the arcade way; home is after the last

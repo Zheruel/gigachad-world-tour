@@ -1051,6 +1051,12 @@
     ],
     "stagger_polish": [
       "nr_vikram_roof/polish_2.png"
+    ],
+    "charge_polish": [
+      "nr_vikram_roof/charge_polish_0.png",
+      "nr_vikram_roof/charge_polish_1.png",
+      "nr_vikram_roof/charge_polish_2.png",
+      "nr_vikram_roof/charge_polish_3.png"
     ]
   },
   "nr_heavy_unarmed": {
@@ -1166,6 +1172,11 @@
     ],
     "guard_polish": [
       "nr_conductor/polish_3.png"
+    ],
+    "charge_polish": [
+      "nr_conductor/charge_polish_0.png",
+      "nr_conductor/charge_polish_1.png",
+      "nr_conductor/charge_polish_2.png"
     ]
   },
   "ic_brawler": {

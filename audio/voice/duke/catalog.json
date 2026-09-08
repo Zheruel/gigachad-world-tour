@@ -275,9 +275,13 @@
       "sourceFilename": "Who Wants Some 1.mp3",
       "sourceSha256": "07f2ff391ad8e4638b700026072d21720c89d5dcddc41572f19e10c638c7e0b2",
       "sha256": "daba366b834562f2f127b47d6bba112a8c0aa5039c11f492e752eb4f89fa2c64",
-      "suggestedUse": "Attack, combo or elite encounter punctuation; avoid repeating on ordinary hits.",
+      "suggestedUse": "Delhi extortion-barricade entrance after the cart impact.",
       "transcriptProvenance": "source-filename",
-      "listeningVerified": false
+      "listeningVerified": false,
+      "runtimeAliases": [
+        "duke_who_wants_some"
+      ],
+      "verificationNote": "Decoded and timed; local Whisper base.en transcript checked against source filename. Normal-speed gameplay mix recorded for audition; not human listening-verified."
     },
     {
       "id": "duke_this_is_some_serious_ass_kickin",
@@ -431,9 +435,13 @@
       "sourceFilename": "You Been Writin' Checks Your Ass Can't Cash.mp3",
       "sourceSha256": "a3f1d2eb9346ba87e262d6b565ba81e400686c54f4543b827e3cd0316da0f015",
       "sha256": "e10eaf9763871ab21d84ebde04b93fef490fac18d9ff6041cb66f6cb04945095",
-      "suggestedUse": "Boss challenge or pre-fight response.",
+      "suggestedUse": "The Closer account-closed finisher before the decisive combination.",
       "transcriptProvenance": "source-filename",
-      "listeningVerified": false
+      "listeningVerified": false,
+      "runtimeAliases": [
+        "duke_checks_cash"
+      ],
+      "verificationNote": "Decoded and timed; local Whisper base.en transcript checked against source filename. Normal-speed gameplay mix recorded for audition; not human listening-verified."
     },
     {
       "id": "duke_you_re_pissin_me_off",
@@ -704,9 +712,13 @@
       "sourceFilename": "Time to Turn Up the Heat.mp3",
       "sourceSha256": "61c66d18d75a728c2ce70a169b01114d332d4a0fbb1b47721c1ea11f8642935a",
       "sha256": "5b6dbd5594793b085bfedcafd8d08c8123827ede7ae9901eb47ff02ddb1fe5ff",
-      "suggestedUse": "Detonation, environmental destruction or wreck aftermath.",
+      "suggestedUse": "Vendor kitchen-catastrophe finisher before the combination.",
       "transcriptProvenance": "source-filename",
-      "listeningVerified": false
+      "listeningVerified": false,
+      "runtimeAliases": [
+        "duke_turn_up_heat"
+      ],
+      "verificationNote": "Decoded and timed; local Whisper base.en transcript checked against source filename. Normal-speed gameplay mix recorded for audition; not human listening-verified."
     },
     {
       "id": "duke_time_to_fumigate",
@@ -1237,9 +1249,13 @@
       "sourceFilename": "Something Tells Me This Won't Pass Any Safety Inspections.mp3",
       "sourceSha256": "68cf029c8b4376c3caa309ea24aaba74fd5d52042e1f0786378ae26e6751b022",
       "sha256": "3108a25c17aa192d176bc5af5f6e34ecf561fb43a11ce6a9834876ec5d8c90ee",
-      "suggestedUse": "Short contextual response to scenery, damage or a surprise.",
+      "suggestedUse": "Dredger wreck aftermath once the largest impacts have settled.",
       "transcriptProvenance": "source-filename",
-      "listeningVerified": false
+      "listeningVerified": false,
+      "runtimeAliases": [
+        "duke_safety_inspections"
+      ],
+      "verificationNote": "Decoded and timed; local Whisper base.en transcript checked against source filename. Normal-speed gameplay mix recorded for audition; not human listening-verified."
     },
     {
       "id": "duke_looks_like_i_m_gettin_off_here",

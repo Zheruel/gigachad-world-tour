@@ -15,6 +15,7 @@ export const VOICE_SLOTS = {
 // Any slot without a file silently falls back to the synthesized version below,
 // so the game still has full audio if audio/sfx/ is missing.
 const SFX_FILES = [
+  'duke_who_wants_some','duke_turn_up_heat','duke_safety_inspections','duke_checks_cash',
   'duke_time_to_crash_this_party','duke_terminated',
   'duke_bring_it_on','duke_bring_pain','duke_train_nowhere','duke_blow_joint','duke_getting_off','duke_rest_pieces','train_blast','train_approach','train_brake','charge_arm','remote_click',
   'room_shaker','room_page','room_pen','room_stamp','room_glass','room_chair',
@@ -31,6 +32,10 @@ const SFX_FILES = [
   ...VOICE_SLOTS.rank, ...VOICE_SLOTS.combo, 'duke_lets_rock', 'duke_ride', 'duke_game_over',
 ];
 const SFX_PATHS = {
+  duke_who_wants_some:'audio/voice/duke/combat/who_wants_some.mp3',
+  duke_turn_up_heat:'audio/voice/duke/explosions/time_to_turn_up_the_heat.mp3',
+  duke_safety_inspections:'audio/voice/duke/reactions/something_tells_me_this_won_t_pass_any_safety_inspections.mp3',
+  duke_checks_cash:'audio/voice/duke/threats/you_been_writin_checks_your_ass_can_t_cash.mp3',
   duke_time_to_crash_this_party:'audio/voice/duke/entrances/time_to_crash_this_party.mp3',
   duke_terminated:'audio/voice/duke/victory/terminated.mp3',
   duke_bring_it_on: 'audio/voice/duke/combat/bring_it_on.mp3',
@@ -76,17 +81,18 @@ function stopRoomAudio() {
   for (const node of roomSources) {try {node.stop();} catch (_) {} node.disconnect();}
   roomSources.clear();
 }
-function roomSample(name,volume=1,maxDuration=Infinity) {
+function roomSample(name,volume=1,maxDuration=Infinity,pan=0) {
   if(!ac||!unlocked||!samples[name])return false;
   const node=ac.createBufferSource(),gain=ac.createGain();node.buffer=samples[name];gain.gain.value=volume;
-  node.connect(gain);gain.connect(sfxGain);roomSources.add(node);
+  const stereo=pan&&ac.createStereoPanner?ac.createStereoPanner():null;
+  node.connect(gain);if(stereo){stereo.pan.value=Math.max(-1,Math.min(1,pan));gain.connect(stereo);stereo.connect(sfxGain);}else gain.connect(sfxGain);roomSources.add(node);
   node.start();
   if(maxDuration<node.buffer.duration) {
     const end=ac.currentTime+maxDuration;
     gain.gain.setValueAtTime(volume,Math.max(ac.currentTime,end-.015));
     gain.gain.linearRampToValueAtTime(0,end);node.stop(end);
   }
-  node.onended=()=>{roomSources.delete(node);node.disconnect();gain.disconnect();};
+  node.onended=()=>{roomSources.delete(node);node.disconnect();gain.disconnect();stereo?.disconnect();};
   return true;
 }
 
@@ -415,17 +421,16 @@ function duckMusic(seconds) {
   }
   const a = currentTrack;
   if (!a) return;
-  if (duckTimer) { clearTimeout(duckTimer); duckTimer = null; }
+  if (duckTimer) { clearInterval(duckTimer); duckTimer = null; }
   a.volume = 0.3;
-  duckTimer = setTimeout(() => {
-    duckTimer = null;
-    let v = 0.3;
-    const up = setInterval(() => {
-      v = Math.min(0.8, v + 0.05);
-      if (currentTrack === a) a.volume = v;
-      if (v >= 0.8 || currentTrack !== a) clearInterval(up);
-    }, 40);
-  }, seconds * 1000);
+  const until=now+seconds;
+  duckTimer=setInterval(()=>{
+    if(currentTrack!==a){clearInterval(duckTimer);duckTimer=null;return;}
+    // AudioContext time stops on pause; wall-clock timers must not unduck speech.
+    const elapsed=Math.max(0,ac.currentTime-until);
+    a.volume=Math.min(.8,.3+elapsed*1.25);
+    if(elapsed>=.4){clearInterval(duckTimer);duckTimer=null;}
+  },40);
 }
 
 // A transition's fade: the music down over `seconds` and then gone, so the next
@@ -519,6 +524,7 @@ export const audio = {
   snapshot:()=>({music:currentSlot,samples:activeSamples.size,voices:activeVoices.size,roomSources:roomSources.size,travel:!!travelSound}),
   stopRoomAudio,
   roomSfx(name,volume=.6,maxDuration=Infinity) { return roomSample(name,volume,maxDuration); },
+  roomSfxAt(name,volume=.6,pan=0) { return roomSample(name,volume,Infinity,pan); },
   travelLoop,
   stopTravel,
   streetMusic(amount) {

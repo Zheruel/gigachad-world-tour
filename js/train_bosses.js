@@ -111,6 +111,11 @@ const vikram={
   if(!b.roof&&(b.state==='pistol'||(wind&&b.pattern==='pistol'))){state='pistol';index=wind?(b.t<18?0:b.t<32?1:2):([6,22].some(at=>b.t>=at&&b.t<at+4)?3:b.t>=38?4:2);}
   else if(!b.roof&&(b.state==='reach'||b.state==='grabhold'||(wind&&b.pattern==='reach'))){state='grab';index=wind?0:b.state==='grabhold'?1:2;}
   if(b.roof&&(b.state==='sweep'||wind&&b.pattern==='sweep')){state='sweep';index=wind?0:b.t<24?1:2;}
+  if(b.roof&&(b.state==='charge'||wind&&b.pattern==='charge')){
+   state=authored(b,'charge_polish','atk');
+   index=state==='atk'?0:wind||b.t>=32?0:1+Math.floor(b.t/6)%3;
+   if(!wind&&b.t>=44){state=authored(b,'recover_polish','idle');index=0;}
+  }
   if(b.guardFlash>0){state=authored(b,'guard_polish','block');index=0;}
   if(b.state==='stagger'&&b.z===0){state=authored(b,'stagger_polish','hurt');index=0;}
   const f=getFrame(b.set,state,index,b.face),x=Math.round(b.x-camX),y=Math.round(b.y-b.z);
@@ -201,6 +206,10 @@ const conductor={
   }
   if(b.state==='whistle'||wind&&b.pattern==='whistle'){
    state=authored(b,'whistle_polish','whistle');index=state==='whistle'?0:wind?(b.t<26?0:1):b.t<56?1:2;
+  }
+  if(b.state==='charge'&&!b.shieldActive){
+   state=authored(b,'charge_polish','charge');index=state==='charge'?1:b.t<30?Math.floor(b.t/6)%3:0;
+   if(b.t>=42){state=authored(b,'guard_polish','idle');index=0;}
   }
   if((b.state==='recover'&&b.t<18)||(state==='idle'&&b.guard>0)){state=authored(b,'guard_polish','idle');index=0;}
   if(b.state==='stagger'&&b.z===0){state=authored(b,'stagger_polish','hurt');index=0;}

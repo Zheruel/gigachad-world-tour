@@ -656,7 +656,7 @@ export function hurtPlayer(p, dmg, dir, heavy) {
 export function drawPlayer(ctx, p, camX) {
   const sx = Math.round(p.x - camX), sy = Math.round(p.y - p.z);
   const cinematicBody = p.state === 'special' || p.state === 'parry_counter' || (p.state==='idle'&&p.boxingAfter);
-  if (p.invuln > 0 && !cinematicBody && ((G.rawTime >> 1) & 1)) return; // invincibility blink
+  if (p.invuln > 0 && !cinematicBody && !(p.invulnFlashAfter>G.time) && ((G.rawTime >> 1) & 1)) return; // invincibility blink
   let name = 'idle', idx = 0;
   switch (p.state) {
     case 'idle': name = 'idle'; idx = (G.time >> 4) % 3; break;

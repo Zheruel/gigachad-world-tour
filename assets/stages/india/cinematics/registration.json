@@ -1,0 +1,1057 @@
+{
+  "cell": [
+    256,
+    256
+  ],
+  "logicalCell": [
+    128,
+    128
+  ],
+  "columns": 4,
+  "groundAnchor": [
+    64,
+    124
+  ],
+  "sheets": {
+    "operator_limp": {
+      "path": "assets/stages/india/cinematics/operator_limp.png",
+      "rows": 2,
+      "standingHeight": 85.0,
+      "scale": 0.428212,
+      "frames": [
+        {
+          "index": 0,
+          "name": "left-contact",
+          "hip": [
+            63.97,
+            83.07
+          ],
+          "bounds": [
+            38.0,
+            38.5,
+            47.0,
+            85.5
+          ]
+        },
+        {
+          "index": 1,
+          "name": "left-weight",
+          "hip": [
+            63.94,
+            85.06
+          ],
+          "bounds": [
+            37.5,
+            39.5,
+            47.5,
+            84.5
+          ]
+        },
+        {
+          "index": 2,
+          "name": "right-pass",
+          "hip": [
+            63.76,
+            81.49
+          ],
+          "bounds": [
+            39.5,
+            37.5,
+            36.5,
+            86.5
+          ]
+        },
+        {
+          "index": 3,
+          "name": "right-reach",
+          "hip": [
+            63.78,
+            82.82
+          ],
+          "bounds": [
+            31.0,
+            39.5,
+            58.5,
+            84.5
+          ]
+        },
+        {
+          "index": 4,
+          "name": "right-contact",
+          "hip": [
+            64.18,
+            82.11
+          ],
+          "bounds": [
+            39.5,
+            38.5,
+            51.5,
+            85.5
+          ]
+        },
+        {
+          "index": 5,
+          "name": "right-weight",
+          "hip": [
+            64.03,
+            83.54
+          ],
+          "bounds": [
+            39.5,
+            39.0,
+            45.0,
+            85.0
+          ]
+        },
+        {
+          "index": 6,
+          "name": "left-pass",
+          "hip": [
+            63.84,
+            82.15
+          ],
+          "bounds": [
+            41.0,
+            39.0,
+            36.5,
+            85.0
+          ]
+        },
+        {
+          "index": 7,
+          "name": "left-reach",
+          "hip": [
+            63.79,
+            81.82
+          ],
+          "bounds": [
+            37.0,
+            39.0,
+            52.5,
+            85.0
+          ]
+        }
+      ]
+    },
+    "chad_cart_push": {
+      "path": "assets/stages/india/cinematics/chad_cart_push.png",
+      "rows": 2,
+      "standingHeight": 85.0,
+      "scale": 0.52,
+      "frames": [
+        {
+          "index": 0,
+          "name": "left-drive",
+          "hip": [
+            64.04,
+            88.36
+          ],
+          "bounds": [
+            25.0,
+            48.0,
+            84.5,
+            76.0
+          ],
+          "hand": [
+            107.98,
+            67.76
+          ]
+        },
+        {
+          "index": 1,
+          "name": "right-pass",
+          "hip": [
+            64.16,
+            86.41
+          ],
+          "bounds": [
+            52.5,
+            46.5,
+            54.0,
+            77.5
+          ],
+          "hand": [
+            105.2,
+            65.95
+          ]
+        },
+        {
+          "index": 2,
+          "name": "right-reach",
+          "hip": [
+            63.85,
+            87.43
+          ],
+          "bounds": [
+            41.0,
+            47.5,
+            68.0,
+            76.5
+          ],
+          "hand": [
+            107.71,
+            66.7
+          ]
+        },
+        {
+          "index": 3,
+          "name": "right-plant",
+          "hip": [
+            64.04,
+            88.82
+          ],
+          "bounds": [
+            23.0,
+            48.5,
+            87.5,
+            75.5
+          ],
+          "hand": [
+            109.19,
+            69.34
+          ]
+        },
+        {
+          "index": 4,
+          "name": "right-drive",
+          "hip": [
+            63.83,
+            88.74
+          ],
+          "bounds": [
+            28.0,
+            48.5,
+            82.0,
+            75.5
+          ],
+          "hand": [
+            108.69,
+            68.51
+          ]
+        },
+        {
+          "index": 5,
+          "name": "left-pass",
+          "hip": [
+            64.0,
+            86.16
+          ],
+          "bounds": [
+            52.5,
+            45.5,
+            53.5,
+            78.5
+          ],
+          "hand": [
+            104.72,
+            66.38
+          ]
+        },
+        {
+          "index": 6,
+          "name": "left-reach",
+          "hip": [
+            63.94,
+            87.44
+          ],
+          "bounds": [
+            41.5,
+            48.0,
+            68.0,
+            76.0
+          ],
+          "hand": [
+            108.21,
+            67.68
+          ]
+        },
+        {
+          "index": 7,
+          "name": "left-plant",
+          "hip": [
+            63.94,
+            88.68
+          ],
+          "bounds": [
+            26.5,
+            49.0,
+            79.5,
+            75.0
+          ],
+          "hand": [
+            104.73,
+            69.25
+          ]
+        }
+      ]
+    },
+    "chad_finishers": {
+      "path": "assets/stages/india/cinematics/chad_finishers.png",
+      "rows": 4,
+      "standingHeight": 85.0,
+      "scale": 0.7173,
+      "frames": [
+        {
+          "index": 0,
+          "name": "guard",
+          "hip": [
+            64.06,
+            86.6
+          ],
+          "bounds": [
+            46.0,
+            39.0,
+            42.0,
+            85.0
+          ],
+          "hand": [
+            70.36,
+            59.4
+          ]
+        },
+        {
+          "index": 1,
+          "name": "reach-cart",
+          "hip": [
+            63.94,
+            87.1
+          ],
+          "bounds": [
+            38.0,
+            42.0,
+            66.5,
+            82.0
+          ],
+          "hand": [
+            95.85,
+            67.42
+          ]
+        },
+        {
+          "index": 2,
+          "name": "brace-handle",
+          "hip": [
+            63.98,
+            88.22
+          ],
+          "bounds": [
+            40.0,
+            44.5,
+            61.5,
+            79.5
+          ],
+          "hand": [
+            94.12,
+            68.35
+          ]
+        },
+        {
+          "index": 3,
+          "name": "push",
+          "hip": [
+            64.15,
+            92.5
+          ],
+          "bounds": [
+            25.0,
+            49.0,
+            87.0,
+            75.0
+          ],
+          "hand": [
+            108.52,
+            68.5
+          ]
+        },
+        {
+          "index": 4,
+          "name": "drive-push",
+          "hip": [
+            63.91,
+            94.33
+          ],
+          "bounds": [
+            17.5,
+            55.0,
+            91.0,
+            69.0
+          ],
+          "hand": [
+            104.86,
+            73.63
+          ]
+        },
+        {
+          "index": 5,
+          "name": "release-push",
+          "hip": [
+            64.06,
+            88.12
+          ],
+          "bounds": [
+            42.5,
+            46.0,
+            49.0,
+            78.0
+          ],
+          "hand": [
+            82.68,
+            81.88
+          ]
+        },
+        {
+          "index": 6,
+          "name": "clinch-reach",
+          "hip": [
+            63.98,
+            88.22
+          ],
+          "bounds": [
+            35.0,
+            44.5,
+            69.0,
+            79.5
+          ],
+          "hand": [
+            98.48,
+            69.94
+          ]
+        },
+        {
+          "index": 7,
+          "name": "throw-load",
+          "hip": [
+            63.75,
+            88.22
+          ],
+          "bounds": [
+            35.0,
+            44.5,
+            57.5,
+            79.5
+          ],
+          "hand": [
+            55.12,
+            59.61
+          ]
+        },
+        {
+          "index": 8,
+          "name": "heave",
+          "hip": [
+            64.17,
+            93.4
+          ],
+          "bounds": [
+            36.5,
+            34.0,
+            61.5,
+            90.0
+          ],
+          "hand": [
+            94.92,
+            36.7
+          ]
+        },
+        {
+          "index": 9,
+          "name": "throw-follow",
+          "hip": [
+            63.78,
+            92.4
+          ],
+          "bounds": [
+            33.0,
+            45.0,
+            57.0,
+            79.0
+          ],
+          "hand": [
+            37.56,
+            60.01
+          ]
+        },
+        {
+          "index": 10,
+          "name": "body-punch",
+          "hip": [
+            63.77,
+            88.36
+          ],
+          "bounds": [
+            35.0,
+            43.0,
+            68.5,
+            81.0
+          ],
+          "hand": [
+            100.08,
+            56.77
+          ]
+        },
+        {
+          "index": 11,
+          "name": "cross",
+          "hip": [
+            63.86,
+            88.9
+          ],
+          "bounds": [
+            26.5,
+            46.0,
+            79.5,
+            78.0
+          ],
+          "hand": [
+            102.82,
+            59.26
+          ]
+        },
+        {
+          "index": 12,
+          "name": "elbow",
+          "hip": [
+            64.22,
+            89.2
+          ],
+          "bounds": [
+            40.5,
+            37.0,
+            46.5,
+            87.0
+          ],
+          "hand": [
+            58.17,
+            42.22
+          ]
+        },
+        {
+          "index": 13,
+          "name": "shoulder-drive",
+          "hip": [
+            64.2,
+            91.83
+          ],
+          "bounds": [
+            36.0,
+            52.5,
+            60.0,
+            71.5
+          ],
+          "hand": [
+            88.2,
+            76.81
+          ]
+        },
+        {
+          "index": 14,
+          "name": "dust-shoulder",
+          "hip": [
+            63.84,
+            85.08
+          ],
+          "bounds": [
+            44.0,
+            37.5,
+            40.5,
+            86.5
+          ],
+          "hand": [
+            61.82,
+            53.94
+          ]
+        },
+        {
+          "index": 15,
+          "name": "victory",
+          "hip": [
+            64.22,
+            85.75
+          ],
+          "bounds": [
+            45.5,
+            39.0,
+            39.0,
+            85.0
+          ],
+          "hand": [
+            72.02,
+            87.45
+          ]
+        }
+      ]
+    },
+    "vendor_finish": {
+      "path": "assets/stages/india/cinematics/vendor_finish.png",
+      "rows": 3,
+      "standingHeight": 95.0,
+      "scale": 0.671378,
+      "frames": [
+        {
+          "index": 0,
+          "name": "stagger",
+          "hip": [
+            63.92,
+            80.58
+          ],
+          "bounds": [
+            33.5,
+            27.5,
+            58.5,
+            96.5
+          ]
+        },
+        {
+          "index": 1,
+          "name": "body-hit",
+          "hip": [
+            64.25,
+            83.92
+          ],
+          "bounds": [
+            35.0,
+            40.5,
+            58.5,
+            83.5
+          ]
+        },
+        {
+          "index": 2,
+          "name": "head-hit",
+          "hip": [
+            64.24,
+            82.83
+          ],
+          "bounds": [
+            27.0,
+            34.5,
+            76.0,
+            89.5
+          ]
+        },
+        {
+          "index": 3,
+          "name": "collar-react",
+          "hip": [
+            64.0,
+            81.25
+          ],
+          "bounds": [
+            35.0,
+            29.0,
+            58.0,
+            95.0
+          ]
+        },
+        {
+          "index": 4,
+          "name": "lift",
+          "hip": [
+            63.92,
+            86.2
+          ],
+          "bounds": [
+            11.0,
+            40.0,
+            94.5,
+            84.0
+          ]
+        },
+        {
+          "index": 5,
+          "name": "flight",
+          "hip": [
+            63.86,
+            100.63
+          ],
+          "bounds": [
+            8.0,
+            62.5,
+            114.0,
+            61.5
+          ]
+        },
+        {
+          "index": 6,
+          "name": "curl",
+          "hip": [
+            64.19,
+            87.25
+          ],
+          "bounds": [
+            32.0,
+            49.0,
+            68.5,
+            75.0
+          ]
+        },
+        {
+          "index": 7,
+          "name": "counter-impact",
+          "hip": [
+            64.12,
+            99.75
+          ],
+          "bounds": [
+            13.0,
+            75.5,
+            106.5,
+            48.5
+          ]
+        },
+        {
+          "index": 8,
+          "name": "tumble",
+          "hip": [
+            64.16,
+            92.64
+          ],
+          "bounds": [
+            25.0,
+            60.0,
+            89.0,
+            64.0
+          ]
+        },
+        {
+          "index": 9,
+          "name": "ground-impact",
+          "hip": [
+            63.83,
+            99.58
+          ],
+          "bounds": [
+            19.5,
+            68.5,
+            98.5,
+            55.5
+          ]
+        },
+        {
+          "index": 10,
+          "name": "slump",
+          "hip": [
+            62.59,
+            99.68
+          ],
+          "bounds": [
+            22.5,
+            60.0,
+            105.5,
+            64.0
+          ]
+        },
+        {
+          "index": 11,
+          "name": "sprawl",
+          "hip": [
+            54.84,
+            106.62
+          ],
+          "bounds": [
+            4.0,
+            84.5,
+            124.0,
+            39.5
+          ]
+        }
+      ]
+    },
+    "operator_finish": {
+      "path": "assets/stages/india/cinematics/operator_finish.png",
+      "rows": 2,
+      "standingHeight": 85.0,
+      "scale": 0.453939,
+      "frames": [
+        {
+          "index": 0,
+          "name": "stagger",
+          "hip": [
+            64.12,
+            84.4
+          ],
+          "bounds": [
+            45.0,
+            36.0,
+            42.5,
+            88.0
+          ]
+        },
+        {
+          "index": 1,
+          "name": "body-hit",
+          "hip": [
+            64.08,
+            87.96
+          ],
+          "bounds": [
+            34.0,
+            56.0,
+            47.0,
+            68.0
+          ]
+        },
+        {
+          "index": 2,
+          "name": "head-hit",
+          "hip": [
+            64.08,
+            85.46
+          ],
+          "bounds": [
+            42.0,
+            42.0,
+            69.0,
+            82.0
+          ]
+        },
+        {
+          "index": 3,
+          "name": "collar-crouch",
+          "hip": [
+            63.84,
+            94.76
+          ],
+          "bounds": [
+            44.5,
+            56.0,
+            36.5,
+            68.0
+          ]
+        },
+        {
+          "index": 4,
+          "name": "lift",
+          "hip": [
+            64.07,
+            92.51
+          ],
+          "bounds": [
+            27.5,
+            57.0,
+            69.0,
+            67.0
+          ]
+        },
+        {
+          "index": 5,
+          "name": "flight",
+          "hip": [
+            63.96,
+            111.3
+          ],
+          "bounds": [
+            15.0,
+            85.5,
+            102.0,
+            38.5
+          ]
+        },
+        {
+          "index": 6,
+          "name": "tumble",
+          "hip": [
+            64.24,
+            95.2
+          ],
+          "bounds": [
+            38.5,
+            60.0,
+            71.5,
+            64.0
+          ]
+        },
+        {
+          "index": 7,
+          "name": "sprawl",
+          "hip": [
+            63.83,
+            111.35
+          ],
+          "bounds": [
+            24.5,
+            96.5,
+            103.5,
+            27.5
+          ]
+        }
+      ]
+    },
+    "closer_cascade": {
+      "path": "assets/stages/india/cinematics/closer_cascade.png",
+      "rows": 3,
+      "standingHeight": 90.0,
+      "scale": 0.604027,
+      "frames": [
+        {
+          "index": 0,
+          "name": "stagger",
+          "hip": [
+            63.75,
+            79.9
+          ],
+          "bounds": [
+            36.0,
+            34.0,
+            55.5,
+            90.0
+          ]
+        },
+        {
+          "index": 1,
+          "name": "body-hit",
+          "hip": [
+            64.1,
+            87.0
+          ],
+          "bounds": [
+            41.0,
+            48.5,
+            55.0,
+            75.5
+          ]
+        },
+        {
+          "index": 2,
+          "name": "head-hit",
+          "hip": [
+            64.25,
+            79.38
+          ],
+          "bounds": [
+            33.5,
+            36.5,
+            71.5,
+            87.5
+          ]
+        },
+        {
+          "index": 3,
+          "name": "collar-react",
+          "hip": [
+            64.0,
+            81.91
+          ],
+          "bounds": [
+            42.0,
+            32.5,
+            44.0,
+            91.5
+          ]
+        },
+        {
+          "index": 4,
+          "name": "lift",
+          "hip": [
+            64.18,
+            94.53
+          ],
+          "bounds": [
+            27.5,
+            58.5,
+            65.5,
+            65.5
+          ]
+        },
+        {
+          "index": 5,
+          "name": "flight",
+          "hip": [
+            63.98,
+            97.82
+          ],
+          "bounds": [
+            16.5,
+            64.5,
+            105.5,
+            59.5
+          ]
+        },
+        {
+          "index": 6,
+          "name": "curl",
+          "hip": [
+            64.23,
+            95.68
+          ],
+          "bounds": [
+            41.0,
+            65.0,
+            50.5,
+            59.0
+          ]
+        },
+        {
+          "index": 7,
+          "name": "desk-impact",
+          "hip": [
+            63.91,
+            96.97
+          ],
+          "bounds": [
+            39.0,
+            71.0,
+            53.0,
+            53.0
+          ]
+        },
+        {
+          "index": 8,
+          "name": "tumble",
+          "hip": [
+            64.22,
+            98.1
+          ],
+          "bounds": [
+            33.5,
+            54.0,
+            64.0,
+            70.0
+          ]
+        },
+        {
+          "index": 9,
+          "name": "ground-impact",
+          "hip": [
+            63.88,
+            102.68
+          ],
+          "bounds": [
+            34.0,
+            83.0,
+            83.0,
+            41.0
+          ]
+        },
+        {
+          "index": 10,
+          "name": "slump",
+          "hip": [
+            63.77,
+            102.34
+          ],
+          "bounds": [
+            33.0,
+            67.0,
+            90.5,
+            57.0
+          ]
+        },
+        {
+          "index": 11,
+          "name": "sprawl",
+          "hip": [
+            56.33,
+            111.75
+          ],
+          "bounds": [
+            10.5,
+            99.0,
+            117.5,
+            25.0
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,4 +1,4 @@
-"""Register selected wall-breach and finishing poses at a single physical scale."""
+"""Register selected wall-breach poses at a single physical scale."""
 from pathlib import Path
 import numpy as np
 from PIL import Image
@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[2]
 SOURCE=ROOT/'assets/sources/production/stages/refund_tower/rebuild'
 OUT=ROOT/'assets/stages/refund_tower'
 def build():
- for name in ['breach','finish']:
+ for name in ['breach']:
   cells=extract(Image.open(SOURCE/f'{name}.png'),4)
   assert set(cells)==set(range(16)),(name,sorted(cells))
   # Upright references determine ONE scale for the whole performance, including crouches.

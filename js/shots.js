@@ -35,9 +35,12 @@ export function spawnZone(kind, x, y, r, life, opts) {
 }
 
 export function updateShots() {
-  const p = G.player;
-  for (let i = G.shots.length - 1; i >= 0; i--) {
-    const s = G.shots[i];
+  const p = G.player, shots = G.shots;
+  // A reflected lethal hit can enter a cinematic and replace the projectile list.
+  // Finish this collision only; never process or splice its replacement.
+  for (let i = shots.length - 1; i >= 0 && shots === G.shots; i--) {
+    const s = shots[i];
+    if (!s) break;
     s.t++;
     s.x += s.vx;
     if (s.reflected && s.source && !s.source.dead) {
@@ -52,7 +55,7 @@ export function updateShots() {
           s.source.delhi.onReflectHit(s.source, s);
           s.source.counterApplying=false;
           spawnDust(s.x, s.y, 3);
-          G.shots.splice(i, 1);
+          shots.splice(i, 1);
           continue;
         }
       } else {
@@ -62,7 +65,7 @@ export function updateShots() {
           s.source.hurt(Math.round(s.dmg * 1.5), Math.sign(s.vx) || 1, true, false);
           s.source.counterApplying=false;
           spawnDust(s.x, s.y, 3);
-          G.shots.splice(i, 1);
+          shots.splice(i, 1);
           continue;
         }
       }
@@ -73,7 +76,7 @@ export function updateShots() {
     if (s.z < 0) {
       if (s.burst) spawnZone(s.burst, s.x, s.y, 22, 240);
       spawnDust(s.x, s.y, 2);
-      G.shots.splice(i, 1);
+      shots.splice(i, 1);
       continue;
     }
 
@@ -81,7 +84,7 @@ export function updateShots() {
       Math.abs(p.z - s.z) < 24;
     if (hit && !s.reflected) {
       if (resolveIncomingHit(p, s.source, { parryClass: s.parryClass, dmg:s.dmg, x:s.x })) {
-        if(p.lastDefense==='guard'){G.shots.splice(i,1);continue;}
+        if(p.lastDefense==='guard'){shots.splice(i,1);continue;}
         spawnDust(s.x, s.y, 3);
         s.reflected = true;
         s.burst = null;
@@ -90,14 +93,14 @@ export function updateShots() {
         s.t = 0;
         continue;
       }
-      if (s.onHit) { s.onHit(s); G.shots.splice(i, 1); continue; }   // the source decides what a catch means
+      if (s.onHit) { s.onHit(s); shots.splice(i, 1); continue; }   // the source decides what a catch means
       hurtPlayer(p, s.dmg, Math.sign(s.vx) || 1, s.kind !== 'powder');
       if (s.kind === 'powder') blindPlayer(p, 50);
       if (s.burst) spawnZone(s.burst, s.x, s.y, 18, 160);
-      G.shots.splice(i, 1);
+      shots.splice(i, 1);
       continue;
     }
-    if (s.t > s.life || s.x < G.camX - 40 || s.x > G.camX + W + 40) G.shots.splice(i, 1);
+    if (s.t > s.life || s.x < G.camX - 40 || s.x > G.camX + W + 40) shots.splice(i, 1);
   }
 
   for (let i = G.zones.length - 1; i >= 0; i--) {

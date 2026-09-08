@@ -8,16 +8,18 @@ import {hurtPlayer,ragnarokPose} from './player.js';
 import {drawFinale,updateFinale} from './train_finale.js';
 import {drawTrainVista,updateTrainVista,resetTrainVista} from './train_vistas.js';
 import {drawDirectionArrow} from './direction_arrow.js';
+import {initTrainLife,updateTrainLife,drawTrainLife} from './train_life.js';
 export const ABOARD_X=2880,ROOF_X=8160,BERTH_Z=115,ROOF_TRANSITION_TICKS=420;
 export const TRAIN_AREAS=[['yard',0,960],['hall',960,1920],['platform',1920,2880],['general',2880,3840],['sleeper',3840,5280],['pantry',5280,5760],['office',5760,6240],['ac',6240,7200],['private',7200,8160],['roof',8160,9120]];
 
 export function trainArea(x){return TRAIN_AREAS.find(a=>x<a[2])||TRAIN_AREAS.at(-1);}
-export function initTrain(){G.train={t:0,motionT:0,distance:0,aboard:false,climbed:false,cinematic:null,endingDone:false,checkpoint:0,checkpointScore:G.score,gate:true,sway:0,steam:0,roofTell:0,scene:0,claimedLives:[],arrival:-1,vistaX:0,vistaTarget:0,passengerReactions:[{t:-1,ready:0},{t:-1,ready:0}]};}
+export function initTrain(){G.train={t:0,motionT:0,distance:0,aboard:false,climbed:false,cinematic:null,endingDone:false,checkpoint:0,checkpointScore:G.score,gate:true,sway:0,steam:0,roofTell:0,scene:0,claimedLives:[],arrival:-1,vistaX:0,vistaTarget:0,passengerReactions:[{t:-1,ready:0},{t:-1,ready:0}]};initTrainLife(G.train);}
 const ease=n=>{n=clamp(n,0,1);return n*n*(3-2*n);};
 function position(x,y=218){Object.assign(G.player,{x,y,z:0,vz:0,vx:0,state:'idle',t:0,face:1,grabbedBy:null,invuln:90,guardWindow:0,counterT:0,attackFamilies:[],grabTarget:null,specialTarget:null,superT:0});}
 function clearArena(){G.enemies=[];G.shots=[];G.zones=[];G.spawnQueue=[];G.waveActive=false;G.locked=false;G.arenaSqueeze=G.arenaSqueezeTarget=0;}
 export function restoreTrainCheckpoint(){
  if(!G.train)return;const tr=G.train,x=tr.checkpoint;clearArena();G.boss=null;tr.cinematic=null;tr.endingDone=false;tr.climbed=false;tr.knockoutBody=false;tr.passengerReactions=[{t:-1,ready:0},{t:-1,ready:0}];tr.retryBoss=x>=7950;tr.aboard=x>=ABOARD_X;tr.gate=true;
+ initTrainLife(tr);
  G.camX=G.camLock=x>=7950?7680:x;position(x>=7950?7950:x+60);G.player.hp=G.player.maxhp;G.player.dying=false;G.score=tr.checkpointScore;
  for(const w of G.stage.waves)w.done=w.x<x;
  G.waveIndex=G.stage.waves.findLastIndex(w=>w.x<x);
@@ -45,7 +47,7 @@ function updatePassengerReactions(tr){
  }
 }
 export function updateTrain(){
- const tr=G.train;if(!tr)return false;tr.t++;updatePassengerReactions(tr);
+ const tr=G.train;if(!tr)return false;tr.t++;updatePassengerReactions(tr);updateTrainLife(tr);
  if(tr.endingDone)return false;
  if(!input.held('use'))tr.gate=false;
  const c=tr.cinematic;
@@ -149,6 +151,7 @@ export function drawConductorDesk(ctx,camX){
 }
 export function drawTrainWallPlane(ctx,camX){
  const tr=G.train;if(!tr)return;
+ drawTrainLife(ctx,tr,camX);
  if(tr.climbed)image(ctx,'hatch_open',ROOF_X+65-camX,165,80,50);
  if(tr.review?.fx!==false&&tr.review?.interior!==false&&tr.aboard&&!tr.cinematic){
   // Rotating blade shadows stay inside the authored general-coach fan cages.

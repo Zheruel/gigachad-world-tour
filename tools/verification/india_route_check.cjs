@@ -86,7 +86,7 @@ const { chromium } = require('playwright');
       check('train victory hands off into silent Delhi card', G.stage.id === 'delhi' && G.state === 'chapter-card' && G.audio.snapshot().music === null);
 
       game.indiaScene('delhi', 'dredger'); G.boss.hurt(9999, 1, true, false); G.boss.hurt(9999, 1, true, false); G.hitstop = 0;
-      game.press('use'); game.step(280);
+      game.press('use'); game.step(1250);
       check('Delhi victory waits despite held confirmation', G.state === 'clear');
       const score = G.score; game.press('attack'); game.step(60); game.release('attack');
       check('attack cannot confirm or reaward Delhi victory', G.state === 'clear' && G.score === score);
@@ -97,7 +97,7 @@ const { chromium } = require('playwright');
       check('Closer knockout begins the stage ending', G.india.cinematic?.kind === 'closer-finish');
       const cineT = G.india.cinematic.t; G.paused = true; game.step(40);
       check('Closer finishing sequence pauses', G.india.cinematic.t === cineT); G.paused = false;
-      game.press('use'); game.step(540);
+      game.press('use'); game.step(1100);
       check('Closer ending reaches held chapter victory', G.state === 'clear' && G.india.endingDone);
       const finalScore = G.score; game.step(300);
       check('chapter victory holds and scores only once', G.state === 'clear' && G.score === finalScore);

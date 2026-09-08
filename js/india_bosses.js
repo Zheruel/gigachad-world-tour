@@ -313,7 +313,7 @@ const vendor = {
   },
   onDeath(b) {
     b.pressureT = 0; b.valveActive = false; b.valve.decor = true;
-    if (!b.cart.broken) b.cart.hurt(b.cart.hp, b.face, true, true);
+    b.finishStarted = !!G.india?.startCinematic?.('vendor-finish', b);
   },
   draw(ctx, b, camX) {
     // The floor marker establishes the locked lane before pressure releases.

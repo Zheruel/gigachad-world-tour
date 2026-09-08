@@ -21,10 +21,10 @@ function save(point) {
   s.retryPoint = {
     ...point, score: G.score, bestCombo: G.bestCombo,
     stats: { ...G.stats }, time: s.t,
-    wallBroken: s.wallBroken, bullDone: s.bullDone,
+    wallBroken: s.wallBroken, bullDone: s.bullDone, marketBroken:s.marketBroken, damage:{...s.damage}, finishersDone:[...(s.finishersDone||[])], completedScenes:{...s.completedScenes},
     cues: [...s.cues], recoveryWaves: [...(s.recoveryWaves || [])],
     props: G.props.filter(p => !p.indiaBossProp).map(p => ({
-      kind: p.prop, x: p.x, y: p.y, z: p.z, hp: p.hp, broken: p.broken, dead: p.dead,
+      kind: p.prop, x: p.x, y: p.y, z: p.z, hp: p.hp, broken: p.broken, dead: p.dead, decor:p.decor,
     })),
   };
   s.checkpoint = point.at;
@@ -78,7 +78,7 @@ export function restoreIndiaCheckpoint() {
   G.stage.events?.forEach(event => { event.done = event.x <= saved.x; });
   G.props = saved.props.map(data => {
     const p = createProp(data.kind, data.x, data.y, data.z);
-    Object.assign(p, { hp: data.hp, broken: data.broken, dead: data.dead });
+    Object.assign(p, { hp: data.hp, broken: data.broken, dead: data.dead, decor:data.decor });
     return p;
   });
   G.score = saved.score; G.stats = { ...saved.stats }; G.bestCombo = saved.bestCombo;
@@ -88,7 +88,8 @@ export function restoreIndiaCheckpoint() {
   Object.assign(G.player, { x: clamp(saved.x, G.camX + 14, G.camX + W - 14),
     y: clamp(236, laneMin(saved.x), laneMax(saved.x)), hp: G.player.maxhp,
     state: 'idle', dying: false, invuln: 90, face: 1 });
-  s.cinematic = null; s.endingDone = false; s.displayBroken = false;
+  s.cinematic=null;s.pendingFinisher=null;s.endingDone=false;s.finalPose=null;s.displayBroken=false;
+  s.marketBroken=saved.marketBroken;s.damage={...saved.damage};s.finishersDone=new Set(saved.finishersDone);s.completedScenes={...saved.completedScenes};
   s.office=null;s.pendingEntries=0;s.defeated=null;s.reserveWave=-1;s.reserveIndex=0;
   s.wallCracked=false;
   s.t = saved.time; s.cues = new Set(saved.cues);

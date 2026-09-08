@@ -54,10 +54,18 @@ def audit_sources(failures):
         if not (delhi_source/name).is_file():failures.append('missing Delhi production source: '+name)
     refund_source=PRODUCTION_SOURCES/'stages/refund_tower/rebuild'
     refund_names=['office','annex','calling','calling_east','servers','records','executive','closer']
-    selected=[f'{name}.png' for name in refund_names]+['loading.png','breach.png','finish.png','projectiles.png']
+    selected=[f'{name}.png' for name in refund_names]+['loading.png','breach.png','projectiles.png']
     selected += [f'joins/{left}_{right}.png' for left,right in zip(refund_names,refund_names[1:])]
     for name in selected:
         if not (refund_source/name).is_file():failures.append('missing Refund production source: '+name)
+    for stage,names in {
+        'dirty_delhi/cinematics':['chad_finishers','chad_cart_push','vendor_finish','operator_finish','operator_limp','market_set','kitchen_set','dredger_set','river_splash'],
+        'refund_tower/cinematics':['closer_cascade','success_set'],
+        'refund_tower/rebuild/workstations':['headset','operator','thrower','chair','office_clear','annex_clear','calling_clear','calling_east_clear','office_reference','annex_reference','calling_reference','calling_east_reference'],
+        'night_train/rebuild':['station_life','conductor_charge','seth_charge'],
+    }.items():
+        for name in names:
+            if not (PRODUCTION_SOURCES/'stages'/stage/(name+'.png')).is_file():failures.append('missing presentation source: '+stage+'/'+name)
     rebuild=PRODUCTION_SOURCES/'stages/night_train/rebuild'
     for name in ['general_windows','vista_rural_industry','vista_industry_river','pantry_cook','station_tea','platform_empty','join_yard_hall','join_hall_platform','vestibule','chad_board','locomotive','yard_booth','hall','platform','general','sleeper','pantry','ac','private','private_damaged','roof','rural','industry','river','rural_near','industry_near','river_near','chad_cinema','chad_entry','hatch_open','ticket_clerk','ticket_scanner','passengers','props','train_exterior','explosion','vikram_actions','seth_intro','office_clear','office_desk','office_chair','conductor_intro','finale_charge','finale_gear','finale_early_damage','finale_passenger_damage','finale_private_shell','finale_cigar','finale_dynamite','finale_smoke','finale_environment','finale_approach','finale_approach_clouds','finale_car','finale_roll','finale_walk','office','conductor_performance','conductor_office','gangway','tough_performance','bruiser_performance','runner_performance','ambusher_performance','heavy_performance','heavy_unarmed_performance','guard_performance','vikram','vikram_roof','tough_gait','bruiser_gait','runner_gait','ambusher_gait','heavy_gait','heavy_unarmed_gait','guard_gait','tough_recovery','bruiser_recovery','runner_recovery','ambusher_recovery','heavy_recovery','heavy_unarmed_recovery','guard_recovery','conductor_recovery','vikram_recovery','vikram_roof_recovery','conductor_contact','vikram_contact','vikram_roof_contact','bruiser_passing','conductor_passing','vikram_passing','vikram_roof_passing','ambusher_special_recovery']:
         if not (rebuild/(name+'.png')).is_file():failures.append('missing rebuild source: '+name)

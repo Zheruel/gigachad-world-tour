@@ -10,6 +10,8 @@ Cramped offices (two encounters) → main calling floors (four encounters) → s
 
 The ordinary route contains 106 fighters across eleven staged encounters, including two short elite groups. Reserves enter after the preceding queue finishes and at most two live or entering workers remain. Seated workers reserve a slot while standing and walking into the aisle; gates wait for those entries to finish.
 
+All twelve occupied stations across the four calling-office areas use one separate chair, repaired background artwork and worker-only animation. Keyboard, hips and feet register to the workstation. A continuous 70-tick rise, chair clearance and aisle entry preserves the original activation and encounter counts; the same chair remains after the worker leaves. The explorer can isolate workers and chairs.
+
 ## Cast and destruction
 
 Six fresh families: headset brawler, quick flanking operator, reflectable equipment thrower, defensive security enforcer, cabinet-shield heavy and team lead with interruptible coordination calls. Reuse shared controls, protected parries, guard breaks and single-target super.
@@ -22,7 +24,9 @@ A charismatic, physically dangerous scam owner in an expensive shirt, gold watch
 
 Starting health is 600. Protected parries and guard breaks retain their full openings; attacks during guard cannot reset recovery indefinitely or bypass defence by overlapping his centre. The damaged character family has its own locomotion, attack and reaction poses.
 
-A dedicated CHAD finishing combination drives him through an oversized success display. Screens go dead, phones fall silent and paper settles. Freeze the victory composition, tally score once, wait for fresh F/LB, then enter the chapter conclusion. Checkpoints at servers and before the executive boss; retries use full health and 50 meter.
+A fourteen-second automatic “account closed” finisher waits for any active super to finish. CHAD approaches the staggered Closer and says “You been writin' checks your ass can't cash.” A dedicated combination drives him through the executive desk and oversized success display. Its structure buckles, screens fail in sequence and cash, trophies and paperwork fall. Already broken furniture stays broken, and The Closer remains visibly defeated among the wreckage. CHAD settles into the frozen victory composition; tally score once, wait for fresh F/LB, then enter the chapter conclusion. Checkpoints at servers and before the executive boss; retries use full health and 50 meter.
+
+The measured local recording sets the pre-contact timing; its catalog listening-verification flag remains provisional. Updates own sounds, damage and choreography. Pause, quit, missing assets and repeated playback preserve the existing one-time clear flow. The wall-breach entrance is unchanged.
 
 ## Integration and acceptance
 
