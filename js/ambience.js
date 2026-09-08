@@ -100,7 +100,7 @@ function drawShutters(ctx, camX) {
   const list = G.stage.shutters;
   const art = ART.shutter;
   // A shutter has to hang in a shopfront opening the plate actually paints, and those
-  // x's are measured off assets/stages/dirty_delhi/wall.png rather than guessed. Until
+  // x's are measured off the active stage's authored panorama rather than guessed. Until
   // the art and the measurements exist it draws NOTHING: a grey rectangle floating in
   // mid-air is worse than an absent effect, and "everything degrades to a fallback"
   // has to mean degrading to nothing when nothing is the honest answer.

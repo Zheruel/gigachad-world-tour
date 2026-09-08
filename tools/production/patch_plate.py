@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Blend an inpainted crop back into a stage plate.
 
-The generator reproduces a crop with one thing removed (tools/production/gen_d1_props.sh inpaint);
+The selected inpaint source reproduces a crop with one object removed;
 it is close but not pixel-identical, so only the masked region is taken from it, feathered,
 and the rest of the plate stays exactly as it was. Usage:
 

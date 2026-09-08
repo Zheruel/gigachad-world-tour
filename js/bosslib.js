@@ -2,9 +2,9 @@
 // player hit test, friendly fire on reds, and the telegraph tint. bosses.js and the
 // per-act boss modules both import from here, so neither has to import the other.
 import { G } from './engine.js';
-import { blit } from './sprites.js';
+import { blit, getFrame, frameW, frameH } from './sprites.js';
 import { spawnSpark } from './effects.js';
-import { hurtPlayer, resolveIncomingHit } from './player.js';
+import { hurtPlayer, resolveIncomingHit, boxingVictimPose } from './player.js';
 
 // green counter | green reflect | red unblockable | hazard
 export const PARRY_CLASS = {
@@ -16,6 +16,9 @@ export const PARRY_CLASS = {
   drop: 'counter', snatch: 'unblockable', screech: 'unblockable', throw: 'reflect',
   troop: 'hazard', lunge: 'counter',
   sweep: 'unblockable', bucketdrop: 'unblockable', hose: 'reflect', swing: 'counter',
+  // Replacement India encounters; their ordinary rushes remain parryable.
+  ladle: 'counter', utensil: 'reflect', rush: 'counter', valve: 'unblockable',
+  boxing: 'counter', handset: 'reflect', shove: 'counter', call: 'hazard',
   // THE NIGHT TRAIN
   torch: 'reflect', ledger: 'counter', check: 'hazard',
   chain: 'counter', hook: 'unblockable', shoulder: 'unblockable', lift: 'unblockable', uncouple: 'hazard',
@@ -57,6 +60,14 @@ export function hitEnemiesNear(x, y, rx, ry, dmg, dir, heavy, skip) {
 // The telegraph: green for something you can parry, red for something you must move
 // from, white on a hit. `cue` is true during the wind-up.
 export function blitTelegraph(ctx, b, f, dx, dy, cue) {
+  const boxing=boxingVictimPose(b);
+  if(boxing){
+    const cx=dx+frameW(f)/2,cy=dy+frameH(f)-4;
+    const hit=getFrame(b.set,boxing.name,boxing.idx,b.face);
+    ctx.save();ctx.translate(cx+boxing.dx,cy+boxing.dy-40);ctx.rotate(boxing.angle);
+    if(boxing.flash)ctx.filter='brightness(1.7)';
+    blit(ctx,hit,-frameW(hit)/2,40-frameH(hit)+4);ctx.restore();return;
+  }
   const telegraph = (cue && ((b.t >> 1) & 1)) || b.flash > 0;
   if (!telegraph) { blit(ctx, f, dx, dy); return; }
   ctx.save();

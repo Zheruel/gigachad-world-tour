@@ -8,9 +8,10 @@ import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
 import { ASSETS } from './assets.js';
 import { getAIFrame } from './aiframes.js';
 import { spawnSpark, spawnDust, impact, spawnPop } from './effects.js';
-import { hurtPlayer, grabPlayer, resolveIncomingHit, rewardAttack } from './player.js';
+import { hurtPlayer, grabPlayer, resolveIncomingHit, rewardAttack, boxingVictimPose } from './player.js';
 import { spawnShot, spawnArc, spawnZone } from './shots.js';
 import { createProp } from './props.js';
+import { spawnDefeatFX, defeatVictimPose } from './defeat_fx.js';
 
 const TYPES = {
   // street thug in a vest and lungi: the baseline, comes at you in threes
@@ -78,8 +79,23 @@ for(const [key,role,hp]of [['tough','goonda',36],['bruiser','batta',50],['runner
  TYPES['nr_'+key]={...TYPES[role],role,set:'nr_'+key,hp,h:key==='heavy'?96:86,rig:key==='heavy'?'nr_case':undefined};
 }
 Object.assign(TYPES.nr_runner,{speed:1.7,range:36,dmg:8});
+// Chapter families share proven roles while their source art and identity remain
+// separate. Their ordinary weapon strikes stay blockable like the train cast.
+for(const [key,role,hp,speed,h]of [
+  ['brawler','goonda',38,.95,86],['runner','sepoy',30,1.65,86],
+  ['enforcer','batta',48,.82,90],['heavy','thela',66,.58,94],
+  ['kitchen','cooker',36,.85,86],['docker','goonda',48,.95,90],
+  ['headset','goonda',38,1,86],['operator','sepoy',32,1.6,86],
+  ['thrower','operator',32,.95,86],['security','constable',54,.86,90],
+  ['cabinet','thela',70,.6,92],['lead','goonda',48,1,86],
+]) TYPES['ic_'+key]={...TYPES[role],role,set:'ic_'+key,hp,speed,h,
+  range:['runner','operator'].includes(key)?38:TYPES[role].range,
+  dmg:['runner','operator'].includes(key)?8:TYPES[role].dmg,
+  rig:key==='heavy'?'ic_cart':key==='cabinet'?'ic_cabinet':undefined};
 // Ramming actors pick an edge and charge one lane.
 const isRam = (e) => e.kind === 'bull' || e.ram;
+const chapterPressure = e => e.trainType === 'ic_kitchen';
+const attackClass = e => chapterPressure(e) ? 'unblockable' : e.trainType ? 'counter' : PARRY_CLASS[e.kind];
 
 export function spawnEnemy(type, x, y) {
   const T = TYPES[type];
@@ -94,7 +110,7 @@ export function spawnEnemy(type, x, y) {
     speed: T.speed * diff().aggro, baseSpeed: T.speed * diff().aggro, range: T.range, holdT: 0,
     tint: '', juggle: 0, orbit: Math.random() < 0.5 ? -1 : 1, stridePhase: 0, moved: 0,
     state: 'spawn', t: 0, targetX: clamp(x + (x < G.player.x ? 70 : -70), G.camX + 24, G.camX + W - 24),
-    atkCd: irand(30, 80), dead: false, removeMe: false, flash: 0,
+    atkCd: irand(30, 80), rallyCd:240, dead: false, removeMe: false, flash: 0,
     w: T.w, h: T.h, shadowR: T.shadowR, hitLanded: false,
     offSlot: !!T.offSlot, noCount: !!T.noCount, runner: !!T.runner,
     noLane: false, ffCd: 0, pitCd: 0, rig: null, ramGone: false,
@@ -150,7 +166,7 @@ function unperch(e) {
 
 function hurtEnemy(e, dmg, dir, heavy, launch) {
   if (e.dead || e.state === 'thrown' || (e.superLocked && !e.superApplying)) return;
-  if(!(e.protectedStagger>0)&&!e.superApplying&&e.trainType==='nr_guard'&&!heavy&&!launch&&dir===-e.face&&!(e.blockCd>0)&&['idle','approach','windup'].includes(e.state)){
+  if(!(e.protectedStagger>0)&&!e.superApplying&&['nr_guard','ic_security'].includes(e.trainType)&&!heavy&&!launch&&dir===-e.face&&!(e.blockCd>0)&&['idle','approach','windup'].includes(e.state)){
     e.blockCd=150;e.state='block';e.t=0;G.audio.sfx('armor');spawnSpark(e.x+e.face*12,e.y-52);return;
   }
   // a hit on the berth: light ones rock him, heavy ones knock him off it
@@ -176,6 +192,7 @@ function hurtEnemy(e, dmg, dir, heavy, launch) {
   if (e.hp > 0 && e.kind !== 'prop' && Math.random() < 0.35) G.audio.sfx('ehurt' + (1 + Math.floor(Math.random() * 4)));
   if (e.hp <= 0) {
     e.dead = true;
+    spawnDefeatFX(e,dir,heavy,launch);
     e.state = 'dying'; e.t = 0;
     e.vx = dir * 3.2; e.vz = 4.0; e.z = Math.max(e.z, 0.1);
     addScore(e.score);
@@ -197,7 +214,7 @@ function hurtEnemy(e, dmg, dir, heavy, launch) {
     // He vents when he dies, burning whatever is next to him. The zone is the
     // player's half of it and tryHitLane is the neighbours' - a full-width box,
     // because a pressure cooker does not care which way it was facing.
-    if (e.kind === 'cooker') {
+    if (e.kind === 'cooker' && !chapterPressure(e)) {
       spawnZone('fire', e.x, e.y, 34, 90);
       tryHitLane({ x: e.x, y: e.y, z: e.z, face: 0 }, 14, 70, true, 22);
       G.shake = Math.max(G.shake, 6);
@@ -278,7 +295,7 @@ function pitFall(e) {
 // or counts toward the wave - a wave that waited for the bull could never clear.
 function slotsUsed() {
   let n = 0;
-  for (const e of G.enemies) if (!e.dead && !e.offSlot && (['windup','attack','drop'].includes(e.state))) n++;
+  for (const e of G.enemies) if (!e.dead && !e.offSlot && (['windup','attack','drop','rally'].includes(e.state))) n++;
   return n;
 }
 function slotCap() { return G.boss&&!G.boss.dead&&!G.boss.trainWaiting ? 1 : 2; }
@@ -317,7 +334,7 @@ export function tryHitLane(src, dmg, range, heavy, tol) {
 }
 
 // `sound` names the impact for a hit; the default is the plain punch/heavy pair.
-function tryHitPlayer(e, dmg, range, heavy, tol, parryClass = e.trainType?'counter':PARRY_CLASS[e.kind], sound) {
+function tryHitPlayer(e, dmg, range, heavy, tol, parryClass = attackClass(e), sound) {
   const p = G.player;
   if (parryClass === 'unblockable') tryHitLane(e, dmg, range, heavy, tol);
   if (p.state === 'down' || p.state === 'getup' || p.dying) return;
@@ -357,6 +374,7 @@ export function updateEnemies() {
 
     const x0 = e.x, y0 = e.y;
     e.t++;
+    if(e.rallyCd>0)e.rallyCd--;
     if(e.blockCd>0)e.blockCd--;
     if (e.flash > 0) e.flash--;
     if (e.wallCd > 0) e.wallCd--;
@@ -464,6 +482,10 @@ export function updateEnemies() {
         break;
       }
       case 'idle': {
+        if(e.trainType==='ic_lead'&&e.rallyCd<=0&&e.x>G.camX+20&&e.x<G.camX+W-20&&slotsUsed()<slotCap()&&
+          G.enemies.some(o=>o!==e&&!o.dead&&o.trainType?.startsWith('ic_'))){
+          e.state='rally';e.t=0;e.rallyCd=420;break;
+        }
         // The bull does not queue for a turn and does not orbit: he walks to whichever
         // edge is further away, locks one depth lane, and paws. Everything after that
         // is the ordinary windup -> attack chain, so he gets the red telegraph free.
@@ -551,11 +573,11 @@ export function updateEnemies() {
       }
       case 'windup': {
         // Only one red special may occupy the screen; no hidden windups.
-        const red=!e.trainType&&PARRY_CLASS[e.kind]==='unblockable';
-        if(e.x<G.camX+12||e.x>G.camX+W-12||
+        const red=attackClass(e)==='unblockable';
+        if(e.x<G.camX+12||e.x>G.camX+W-12||(red&&G.india?.environment?.dangerActive)||
           (red&&[...G.enemies,...(G.boss&&!G.boss.dead?[G.boss]:[])].some(o=>o!==e&&!o.dead&&
             ['windup','attack','reach','sweep'].includes(o.state)&&
-            (PARRY_CLASS[o.kind]==='unblockable'||['reach','sweep','grab'].includes(o.pattern))&&o.t>=e.t))){
+            (attackClass(o)==='unblockable'||['reach','sweep','grab'].includes(o.pattern))&&o.t>=e.t))){
           e.state='idle';e.atkCd=35;break;
         }
 
@@ -570,6 +592,16 @@ export function updateEnemies() {
         } else if (e.kind === 'bull' && e.t % 6 === 0) {
           spawnDust(e.x - e.face * 26, e.y, 2);   // pawing the ground, for 40 frames
         }
+        break;
+      }
+      case 'rally': {
+        // A visible, hittable call coordinates only existing crew. Interrupting
+        // it loses this opportunity; it never bypasses the shared attack budget.
+        if(e.t===32){
+          spawnPop(e.x,e.y-e.h-7,'NOW!');G.audio.sfx('ehurt1');
+          for(const ally of G.enemies)if(ally!==e&&!ally.dead&&ally.trainType?.startsWith('ic_')&&ally.state==='idle')ally.atkCd=Math.min(ally.atkCd,10);
+        }
+        if(e.t>=48){e.state='idle';e.t=0;e.atkCd=30;}
         break;
       }
       case 'attack': {
@@ -650,6 +682,7 @@ export function updateEnemies() {
           // because the charge is red and tryHitPlayer routes every red through the lane.
           e.x += e.vx;
           if (!e.hitLanded && tryHitPlayer(e, e.dmg, 60, true, 20)) e.hitLanded = true;
+          else if (e.hitLanded) tryHitLane(e, e.dmg, 60, true, 20);
           if (e.t % 3 === 0) spawnDust(e.x - e.face * 20, e.y, 2);
           if (e.x < G.camX + 16 || e.x > G.camX + W - 16 || e.t > 200) {
             e.vx = 0; e.state = 'idle'; e.t = 0; e.hitLanded = false;
@@ -772,6 +805,7 @@ export function drawEnemy(ctx, e, camX) {
   const k = e.kind;
   switch (e.state) {
     case 'block':name='block';idx=0;break;
+    case 'rally':name='call';idx=Math.min(2,Math.floor(e.t/16));break;
     case 'spawn': case 'approach': case 'backoff': case 'loot': case 'idle':
       if (e.moved > MOVE_EPS) { name = 'walk'; idx = Math.floor(e.stridePhase / 6); }
       else { name = 'idle'; idx = (G.time >> 4) & 1; }
@@ -820,30 +854,39 @@ export function drawEnemy(ctx, e, camX) {
   if(e.trainType==='nr_heavy'&&!e.ramGone&&['windup','attack'].includes(e.state)){
     name='atk';idx=e.state==='windup'?0:e.t<12?1:2;
   }
+  if(e.trainType?.startsWith('ic_')){
+    if(e.state==='windup'&&e.kind!=='cooker'){name='atk';idx=0;}
+    if(e.state==='attack'&&e.kind==='thela'){name='atk';idx=e.t<10?1:2;}
+    if(['down','dying','thrown'].includes(e.state)){name=e.z>4?'fall':'down';idx=0;}
+    if(e.state==='stagger'){name='stagger';idx=0;}
+  }
   if (e.state === 'dying' && ((G.time >> 1) & 1) && e.t > 18) return; // KO blink-out
+  const boxing=boxingVictimPose(e)||defeatVictimPose(e);if(boxing){name=boxing.name;idx=boxing.idx;}
   const f = getFrame(e.set, name, idx, e.face);
   const dx = sx - Math.round(frameW(f) / 2), dy = sy - frameH(f) + 4;
+  if(boxing){ctx.save();ctx.translate(sx+boxing.dx,sy+boxing.dy-40);ctx.rotate(boxing.angle);ctx.translate(-sx,-sy+40);}
   // windup telegraph flash + damage flash
   const cue = e.state === 'windup' && e.t > (WINDUP[e.kind] || 18) - 10;
   const cueHot = cue && ((e.t >> 1) & 1);
-  const hot = cueHot || e.flash > 0;
+  const hot = cueHot || (boxing?boxing.flash:e.flash > 0);
   if (hot || e.tint) {
     ctx.save();
-    ctx.filter = cueHot ? ((e.trainType || PARRY_CLASS[e.kind] !== 'unblockable')
+    ctx.filter = cueHot ? ((attackClass(e) !== 'unblockable')
       ? 'brightness(1.8) sepia(1) saturate(5) hue-rotate(70deg)'
       : 'brightness(1.8) sepia(1) saturate(6) hue-rotate(-35deg)')
-      : e.flash > 0 ? 'brightness(2.2)' : e.tint;
+      : (boxing?boxing.flash:e.flash > 0) ? 'brightness(1.7)' : e.tint;
     blit(ctx, f, dx, dy);
     ctx.restore();
   } else {
     blit(ctx, f, dx, dy);
   }
+  if(boxing)ctx.restore();
   if (cue) {
     ctx.save();
-    ctx.strokeStyle = (e.trainType || PARRY_CLASS[e.kind] !== 'unblockable') ? '#6dff82' : '#ff4050';
+    ctx.strokeStyle = attackClass(e) !== 'unblockable' ? '#6dff82' : '#ff4050';
     ctx.lineWidth = 2;
     const cy = sy - e.h - 8;
-    if ((e.trainType || PARRY_CLASS[e.kind] !== 'unblockable')) {
+    if (attackClass(e) !== 'unblockable') {
       ctx.beginPath(); ctx.moveTo(sx, cy - 5); ctx.lineTo(sx + 5, cy); ctx.lineTo(sx, cy + 5); ctx.lineTo(sx - 5, cy); ctx.closePath(); ctx.stroke();
     } else {
       ctx.beginPath(); ctx.moveTo(sx - 5, cy - 5); ctx.lineTo(sx + 5, cy + 5); ctx.moveTo(sx + 5, cy - 5); ctx.lineTo(sx - 5, cy + 5); ctx.stroke();

@@ -1,0 +1,20 @@
+import { DELHI_SCENERY_FILES } from './delhi_scenery.js';
+// Runtime assets for the rebuilt street and office chapters; no alpha-art fallback.
+export const INDIA_PANELS = {
+ delhi:['market','bazaar','food','vendor','culvert','ghat','wharf','pontoon'],
+ refund:['office','annex','calling','calling_east','servers','records','executive','closer'],
+};
+export const INDIA_PROPS={ic_stall:[64,48],ic_cart:[66,44],ic_boiler:[30,52],ic_cargo:[50,42],ic_monitor:[30,30],ic_cubicle:[64,56],ic_shelf:[42,80],ic_server:[40,76],ic_vendorcart:[68,50],ic_cookingstation:[76,64],ic_pressurevalve:[22,30],ic_cabinet:[42,64],ic_execdesk:[86,52],ic_partition:[54,88]};
+export const INDIA_FILES={
+ ic_projectiles:'assets/stages/india/projectiles.png',
+ ic_steam:'assets/stages/india/props/steam.png',
+ ic_wall_cracked:'assets/stages/refund_tower/wall_cracked.png',ic_closer_finish:'assets/stages/refund_tower/closer_finish.png',
+ ...DELHI_SCENERY_FILES,
+ ...Object.fromEntries(Object.entries(INDIA_PANELS).flatMap(([id,panels])=>panels.map(name=>[`ic_${id}_${name}`,`assets/stages/${id==='delhi'?'dirty_delhi/rebuild':'refund_tower'}/${name}.png`]))),
+ ...Object.fromEntries(Object.keys(INDIA_PROPS).flatMap(name=>[['prop_'+name,`assets/stages/india/props/${name}.png`],['prop_'+name+'_b',`assets/stages/india/props/${name}_b.png`]])),
+ ic_loading_delhi:'assets/stages/dirty_delhi/rebuild/loading.png',ic_loading_refund:'assets/stages/refund_tower/loading.png',
+ ic_rat:'assets/stages/dirty_delhi/rebuild/rats.png',ic_street_life:'assets/stages/dirty_delhi/rebuild/street_life.png',
+ ic_office_life:'assets/stages/refund_tower/office_life.png',ic_breach:'assets/stages/refund_tower/breach.png',ic_finish:'assets/stages/refund_tower/finish.png',
+ ic_office_stand:'assets/stages/refund_tower/office_stand.png',ic_office_chair:'assets/stages/refund_tower/office_chair.png',
+ ic_wall:'assets/stages/refund_tower/wall.png',ic_wall_b:'assets/stages/refund_tower/wall_b.png',ic_success:'assets/stages/refund_tower/success.png',ic_success_b:'assets/stages/refund_tower/success_b.png',
+};

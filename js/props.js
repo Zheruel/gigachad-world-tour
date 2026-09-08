@@ -1,3 +1,4 @@
+import { INDIA_PROPS } from './india_assets.js';
 // props.js - breakable market scenery. Props are duck-typed like fighters (they
 // expose hurt()), so player.js hits them through the same target list and
 // main.js y-sorts them with everything else. No special-casing in the combat code.
@@ -30,9 +31,6 @@ export const PROP_TYPES = {
   // places it and both sides can be pushed into it
   drum: { hp: 18, w: 30, h: 40, shadowR: 14, score: 60, drop: null, art: 'tyres',
     burst: { kind: 'chutney', r: 30, life: 720 }, debris: ['#2a6a9a', '#4a8aba', '#d8d0b0'] },
-  // MIRCHI's chaat cart: he fights from behind it and shoves it at you. Break it and
-  // the charge is gone for the rest of the fight.
-  mirchicart: { hp: 60, w: 70, h: 56, shadowR: 30, score: 300, drop: null, debris: ['#c8c8d0', '#d8302a', '#e8b040'] },
   // the heavy's prop: a handcart in the market, a boat pole on the ghat
   thelacart: { hp: 30, w: 54, h: 40, shadowR: 24, score: 120, drop: null, art: 'cart', debris: ['#c08a3a', '#8a5a20', '#d8d0b8'] },
   thelapole: { hp: 30, w: 70, h: 14, shadowR: 10, score: 120, drop: null, art: 'sign', debris: ['#a8804a', '#6a4a24', '#d0b888'] },
@@ -48,6 +46,8 @@ export const PROP_TYPES = {
   nr_urn:{hp:22,w:28,h:48,shadowR:0,score:80,drop:null,burst:{kind:'fire',r:40,life:150},debris:['#dcbb72','#664d25']},
   nr_contraband:{hp:28,w:44,h:30,shadowR:0,score:200,drop:'life',debris:['#344b64','#bc9561']},
 };
+
+for(const [name,[w,h]]of Object.entries(INDIA_PROPS)){const hp={ic_vendorcart:64,ic_cookingstation:36,ic_pressurevalve:18,ic_cabinet:30,ic_execdesk:40,ic_partition:24}[name]||24;PROP_TYPES[name]={hp,w,h,shadowR:w*.3,score:70,drop:['ic_cart','ic_stall','ic_monitor','ic_cargo'].includes(name)?'shake':null,debris:['#796049','#b39971','#3b4144']};}
 
 // ---- procedural art (swapped for AI PNGs later without touching this file) --
 const ART = {};

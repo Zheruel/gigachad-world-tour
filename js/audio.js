@@ -15,6 +15,7 @@ export const VOICE_SLOTS = {
 // Any slot without a file silently falls back to the synthesized version below,
 // so the game still has full audio if audio/sfx/ is missing.
 const SFX_FILES = [
+  'duke_time_to_crash_this_party','duke_terminated',
   'duke_bring_it_on','duke_bring_pain','duke_train_nowhere','duke_blow_joint','duke_getting_off','duke_rest_pieces','train_blast','train_approach','train_brake','charge_arm','remote_click',
   'room_shaker','room_page','room_pen','room_stamp','room_glass','room_chair',
   'punch', 'heavy', 'kick', 'whiff', 'land', 'slam', 'ko', 'throw', 'grab',
@@ -30,6 +31,8 @@ const SFX_FILES = [
   ...VOICE_SLOTS.rank, ...VOICE_SLOTS.combo, 'duke_lets_rock', 'duke_ride', 'duke_game_over',
 ];
 const SFX_PATHS = {
+  duke_time_to_crash_this_party:'audio/voice/duke/entrances/time_to_crash_this_party.mp3',
+  duke_terminated:'audio/voice/duke/victory/terminated.mp3',
   duke_bring_it_on: 'audio/voice/duke/combat/bring_it_on.mp3',
   duke_bring_pain: 'audio/voice/duke/combat/bring_the_pain.mp3',
   duke_ride: 'audio/voice/duke/entrances/looks_like_i_m_going_for_a_ride_game_take.wav',
@@ -139,7 +142,8 @@ function decodeSamples() {
 }
 
 const activeSamples=new Set();
-function stopSamples(){for(const node of activeSamples){try{node.stop();}catch(_){}node.disconnect();}activeSamples.clear();voiceBusyUntil=0;}
+const activeVoices=new Set();
+function stopSamples(){for(const node of activeSamples){try{node.stop();}catch(_){}node.disconnect();}activeSamples.clear();activeVoices.clear();voiceBusyUntil=0;}
 function playSample(name, vol, stablePitch = false) {
   const buf = samples[name];
   if (!buf) return false;
@@ -150,7 +154,8 @@ function playSample(name, vol, stablePitch = false) {
   src.playbackRate.value = stablePitch ? 1 : 0.97 + Math.random() * 0.06;
   g.gain.value = vol === undefined ? 1 : vol;
   src.connect(g); g.connect(sfxGain);
-  activeSamples.add(src);src.onended=()=>{activeSamples.delete(src);src.disconnect();g.disconnect();};
+  activeSamples.add(src);if(isVoice(name))activeVoices.add(src);
+  src.onended=()=>{activeSamples.delete(src);activeVoices.delete(src);src.disconnect();g.disconnect();};
   src.start();
   return true;
 }
@@ -511,7 +516,7 @@ export const audio = {
     const node=ac.createBufferSource(),gain=ac.createGain();node.buffer=buffer;gain.gain.value=whistle?.3:.22;node.connect(gain);gain.connect(sfxGain);roomSources.add(node);node.start();node.onended=()=>{roomSources.delete(node);node.disconnect();gain.disconnect();};
   },
   stopSamples,
-  snapshot:()=>({music:currentSlot,samples:activeSamples.size,roomSources:roomSources.size,travel:!!travelSound}),
+  snapshot:()=>({music:currentSlot,samples:activeSamples.size,voices:activeVoices.size,roomSources:roomSources.size,travel:!!travelSound}),
   stopRoomAudio,
   roomSfx(name,volume=.6,maxDuration=Infinity) { return roomSample(name,volume,maxDuration); },
   travelLoop,
@@ -691,6 +696,8 @@ export const audio = {
     if (!unlocked || !ac || !samples[name]) return false;
     const now = ac.currentTime;
     if (now < voiceBusyUntil && !urgent) return false;
+    if(urgent)for(const node of activeVoices){try{node.stop();}catch(_){}node.disconnect();activeSamples.delete(node);}
+    if(urgent)activeVoices.clear();
     if (!playSample(name, 1.3, true)) return false;
     voiceBusyUntil = now + samples[name].duration;
     duckMusic(durationMs / 1000);

@@ -8,12 +8,21 @@ import {spawnEnemy} from './enemies.js';
 import {tryHitPlayer,blitTelegraph,drawCueMarker} from './bosslib.js';
 import {startTrainCinematic,drawConductorDesk} from './train.js';
 import {ASSETS} from './assets.js';
+import {getAIFrame} from './aiframes.js';
 import {updateDialogue} from './room_dialogue.js';
 const aliveSupport=()=>G.enemies.some(e=>!e.dead&&!e.noCount);
 const guarded=(b,dir,heavy,launch)=>b.guard>0&&!b.protectedStagger&&!b.superApplying&&!b.parryApplying&&!heavy&&!launch&&dir===-b.face&&['idle','windup','cane','charge','reach','punch'].includes(b.state);
 function propCrash(b){const prop=b.fightProps?.find(q=>!q.broken&&Math.abs(q.x-b.x)<28&&Math.abs(q.y-b.y)<26);if(!prop)return false;prop.broken=true;b.breakGuard();spawnDust(prop.x,prop.y,12);G.audio.sfx('slam');return true;}
 function strikeFurniture(b){for(const q of G.props||[])if(!q.broken&&Math.abs(q.x-(b.x+b.face*38))<40&&Math.abs(q.y-b.y)<24)q.hurt?.(12,b.face,true,false);}
 function drawFightProps(ctx,b,camX){for(const [i,q]of (b.fightProps||[]).entries()){if(q.roof){const im=ASSETS.nr_roof_fittings;if(im)ctx.drawImage(im,((i%2)*2+(q.broken?1:0))*128,0,128,96,q.x-camX-32,q.y-47.5,64,48);}else{const im=ASSETS[q.broken?'prop_nr_case_b':'prop_nr_case'];if(im){const w=42,h=w*im.height/im.width;ctx.drawImage(im,q.x-camX-w/2,q.y-h,w,h);}}}}
+
+// Pose selection follows existing hit ticks; it never owns combat timing.
+const authored=(b,name,fallback)=>getAIFrame(b.set._aiKey,name)?name:fallback;
+function canePose(t,roof){
+ const strikes=roof?[8,26,44]:[8,26];
+ for(const hit of strikes){if(t<hit-1)return ['atk',0];if(t<hit+4)return ['atk',1];if(t<hit+9)return ['atk',2];}
+ return ['recover_polish',0];
+}
 
 const finish=b=>{b.state='recover';b.t=0;b.comboHits=0;b.atkCd=b.roof?44:68;};
 const vikram={
@@ -96,10 +105,14 @@ const vikram={
   let index=wind?0:attack?(b.t<10?1:2):Math.floor(G.time/9);
   if(state==='walk')index=Math.floor(b.stridePhase/6);
   if(b.state==='getup'){state='getup';index=Math.min(3,Math.floor(b.t/4));}
-  if(!b.roof&&(b.state==='pistol'||(wind&&b.pattern==='pistol'))){state='pistol';index=wind?(b.t<18?0:b.t<32?1:2):(b.t===6||b.t===22?3:2);}
+  if(b.state==='cane'){[state,index]=canePose(b.t,b.roof);state=authored(b,state,'atk');}
+  if(b.state==='recover'&&b.t<18){state=authored(b,'recover_polish','idle');index=0;}
+  if(state==='idle'&&b.guard>0){state=authored(b,'guard_polish','idle');index=0;}
+  if(!b.roof&&(b.state==='pistol'||(wind&&b.pattern==='pistol'))){state='pistol';index=wind?(b.t<18?0:b.t<32?1:2):([6,22].some(at=>b.t>=at&&b.t<at+4)?3:b.t>=38?4:2);}
   else if(!b.roof&&(b.state==='reach'||b.state==='grabhold'||(wind&&b.pattern==='reach'))){state='grab';index=wind?0:b.state==='grabhold'?1:2;}
   if(b.roof&&(b.state==='sweep'||wind&&b.pattern==='sweep')){state='sweep';index=wind?0:b.t<24?1:2;}
-  if(b.guardFlash>0){state='block';index=0;}
+  if(b.guardFlash>0){state=authored(b,'guard_polish','block');index=0;}
+  if(b.state==='stagger'&&b.z===0){state=authored(b,'stagger_polish','hurt');index=0;}
   const f=getFrame(b.set,state,index,b.face),x=Math.round(b.x-camX),y=Math.round(b.y-b.z);
   blitTelegraph(ctx,b,f,x-frameW(f)/2,y-frameH(f)+4,wind);
   if(wind)drawCueMarker(ctx,b,x,y-b.h-10);
@@ -180,6 +193,17 @@ const conductor={
   const wind=b.state==='windup',attack=b.state==='punch';
   let state=b.dead||b.state==='down'?'down':['hurt','stagger'].includes(b.state)?'hurt':b.state==='getup'?'getup':b.state==='rise'?(b.t>36?'walk':'rise'):b.state==='whistle'||wind&&b.pattern==='whistle'?'whistle':b.state==='charge'||wind&&b.pattern==='charge'?'charge':wind||attack?'atk':b.state==='recover'?'idle':b.moved>.1?'walk':'idle';
   let index=state==='getup'?Math.min(3,Math.floor(b.t/4)):state==='walk'?Math.floor(b.stridePhase/6):b.state==='rise'?Math.min(2,Math.floor(b.t/14)):wind?0:attack?(b.t<16?1:2):b.state==='charge'?1:Math.floor(G.time/9);
+  if(attack||wind&&b.pattern==='punch'){
+   state=authored(b,'baton_polish','atk');
+   // Two complete swings, with anticipation before the unchanged hits at14/32.
+   index=wind?0:b.t<13?0:b.t<18?1:b.t<23?2:b.t<27?3:b.t<31?0:b.t<36?1:b.t<41?2:3;
+   if(state==='atk')index=Math.min(index,2);
+  }
+  if(b.state==='whistle'||wind&&b.pattern==='whistle'){
+   state=authored(b,'whistle_polish','whistle');index=state==='whistle'?0:wind?(b.t<26?0:1):b.t<56?1:2;
+  }
+  if((b.state==='recover'&&b.t<18)||(state==='idle'&&b.guard>0)){state=authored(b,'guard_polish','idle');index=0;}
+  if(b.state==='stagger'&&b.z===0){state=authored(b,'stagger_polish','hurt');index=0;}
   if(b.shieldActive&&!b.dead){state='shield';index=b.protectedStagger||b.guardFlash>0?2:wind?0:1;}
   const f=getFrame(b.set,state,index,b.face);
   const x=Math.round(b.x-camX),y=Math.round(b.y-b.z);

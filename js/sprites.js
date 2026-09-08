@@ -716,6 +716,7 @@ function aiSet(key) {
 
 export const SPR = {
   player: aiSet('player'),
+  ...Object.fromEntries(['brawler','runner','enforcer','heavy','kitchen','docker','headset','operator','thrower','security','cabinet','lead','vendor','closer','closer_damaged'].map(name=>['ic_'+name,aiSet('ic_'+name)])),
   nr_conductor: aiSet('nr_conductor'),
   nr_tough: aiSet('nr_tough'),
   nr_bruiser: aiSet('nr_bruiser'),
@@ -739,10 +740,6 @@ export const SPR = {
   dhobi: aiSet('dhobi'),
   dabbawala: aiSet('dabbawala'),
   bull: aiSet('bull'),
-  pappu: aiSet('pappu'),
-  pappuRage: aiSet('pappu'),
-  mirchi: aiSet('mirchi'),
-  mirchiRage: aiSet('mirchi'),
   dredger: aiSet('dredger'),
   dredgerLow: aiSet('dredger'),
   thekedar: aiSet('thekedar'),
@@ -750,8 +747,6 @@ export const SPR = {
   rajaRage: aiSet('raja'),
   refund: aiSet('refund'),
   refundRage: aiSet('refund'),
-  mirchi: aiSet('mirchi'),
-  mirchiRage: aiSet('mirchi'),
   yadav: aiSet('yadav'),
   yadavRage: aiSet('yadav'),
   rana: aiSet('rana'),

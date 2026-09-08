@@ -3,11 +3,17 @@ import { ASSETS } from './assets.js';
 import { G } from './engine.js';
 import { SPR, getFrame, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { fx } from './fx.js';
+import { updateDefeatFX, drawDefeatFX, drawDefeatGround } from './defeat_fx.js';
 
 export function spawnSpark(x, y) {
   // the spark art already has a bright core; the extra 4x4 white square that used
   // to fire alongside it on every hit was just a visible rectangle
   G.effects.push({ type: 'spark', x, y, t: 0, life: 9 });
+}
+
+// Authored contact accents, with no random calls or extra gameplay hitstop.
+export function spawnBoxingImpact(x,y,upper,face) {
+  G.effects.push({type:'boxingImpact',x,y,upper,face,t:0,life:upper?17:11});
 }
 
 export function spawnDust(x, y, n) {
@@ -97,6 +103,7 @@ export function updateEffects() {
   for (let i = G.effects.length - 1; i >= 0; i--) {
     const e = G.effects[i];
     e.t++;
+    updateDefeatFX(e);
     if (e.type === 'dust') { e.x += e.vx; e.y += e.vy; e.vy += 0.04; }
     if (e.type === 'steam') { e.x += e.vx; e.y += e.vy; e.vy *= 0.99; }
     if (e.type === 'smoke' || e.type === 'cigarSmoke') {
@@ -114,7 +121,13 @@ export function updateEffects() {
 export function drawEffects(ctx, camX) {
   for (const e of G.effects) {
     const sx = Math.round(e.x - camX), sy = Math.round(e.y);
-    if (e.type === 'spark') {
+    if(drawDefeatFX(ctx,e,camX))continue;
+    if(e.type==='boxingImpact') {
+      const im=ASSETS.boxing_impacts;
+      if(im){const frame=Math.min(3,Math.floor(e.t/(e.upper?4:3))),w=e.upper?50:32,h=w*1.5;
+        ctx.save();ctx.translate(sx,sy);ctx.scale(e.face,1);ctx.globalAlpha=e.upper?.88:.95;
+        ctx.drawImage(im,frame*128,e.upper?192:0,128,192,-w/2,-h*(e.upper?.84:.65),w,h);ctx.restore();}
+    } else if (e.type === 'spark') {
       const f = SPR.spark[Math.min(1, (e.t / 4) | 0)];
       blit(ctx, f, sx - frameW(f) / 2, sy - frameH(f) / 2);
     } else if (e.type === 'dust') {
@@ -168,6 +181,7 @@ export function drawEffects(ctx, camX) {
 // The authored crater is floor art, so it must sit behind bodies. Drawing it in the
 // regular effects pass covered CHAD at the exact payoff frame of RAGNAROK.
 export function drawRagnarokGround(ctx, camX) {
+  if(G.india?.review.fx!==false)drawDefeatGround(ctx,camX);
   for (const e of G.effects) {
     if (e.type !== 'ragnarok') continue;
     const f = fx('ragnarok_impact', Math.min(5, (e.t / 5) | 0));

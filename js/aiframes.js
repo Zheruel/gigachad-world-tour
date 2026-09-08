@@ -31,12 +31,11 @@ const HEIGHTS = {
   nr_tough:100,nr_bruiser:106,nr_runner:100,nr_ambusher:96,nr_heavy:114,nr_guard:104,nr_vikram:112,nr_vikram_roof:112,
   goonda: 80, batta: 82, masala: 79, bandar: 46, pehlwan: 97,
   constable: 86, operator: 80, sepoy: 94,
-  // DIRTY DELHI. These are CANVAS heights, and the canvas is sized by the family's
-  // tallest pose rather than by the body - see tools/verification/check_cast_scale.py. So MIRCHI's
-  // 110 is the ladle held overhead; the man himself reads at 100, his hitbox height.
+  // Retained shared families use canvas heights measured by their tallest pose.
+  // The new ic_ families instead carry registered source-scale frames below.
   cooker: 82, thela: 107, mudlark: 70, dhobi: 90, dabbawala: 89, bull: 105,
-  raja: 104, mirchi: 110, refund: 106, yadav: 108, rana: 112,
-  pappu: 104, dredger: 150, thekedar: 88,
+  raja: 104, refund: 106, yadav: 108, rana: 112,
+  dredger: 150, thekedar: 88,
 };
 
 // game frame name -> candidate manifest state names (first hit wins)
@@ -190,7 +189,7 @@ export async function loadAIFrames() {
           const img = imgs[k];
           if (!img) continue; // failed file: skip, fall back for that frame
           let n;
-          if(charKey.startsWith('nr_') || (charKey==='player' && state==='boxing_rush')) {n=mkCanvas(img.width,img.height);n.getContext('2d').drawImage(img,0,0);n._as=RS;}
+          if(charKey.startsWith('nr_') || charKey.startsWith('ic_') || (charKey==='player' && state==='boxing_rush')) {n=mkCanvas(img.width,img.height);n.getContext('2d').drawImage(img,0,0);n._as=RS;}
           else n = normalize(img, targetH, ANCHORS[files[k]], TORSO_ANCHORED.has(state), PRESERVE_SOURCE_SCALE.has(state));
           if (n) { n._file = files[k]; frames.push(n); }
         }

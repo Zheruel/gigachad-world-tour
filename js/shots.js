@@ -5,6 +5,7 @@ import { hurtPlayer, blindPlayer, poisonPlayer, resolveIncomingHit } from './pla
 import { spawnDust } from './effects.js';
 import { fx } from './fx.js';
 import { blit, frameW, frameH } from './sprites.js';
+import { ASSETS } from './assets.js';
 
 const LIFE = { powder: 90, samosa: 140, steam: 40, brick: 160, slurry: 150, weight: 150, hook: 90, handset: 140 };
 
@@ -172,6 +173,12 @@ export function drawZones(ctx, camX) {
 export function drawShots(ctx, camX) {
   for (const s of G.shots) {
     const sx = Math.round(s.x - camX), sy = Math.round(s.y - s.z);
+    const chapterProp=G.stage.chapter&&(s.kind==='handset'||s.kind==='phone'||s.kind==='wrench'&&s.source?.key==='vendor');
+    if(chapterProp&&ASSETS.ic_projectiles){
+      const i=s.kind==='wrench'?0:s.kind==='phone'?2:1,im=ASSETS.ic_projectiles;
+      ctx.save();ctx.translate(sx,sy-46);ctx.rotate(s.t*.22);
+      ctx.drawImage(im,i*64,0,64,64,-16,-16,32,32);ctx.restore();continue;
+    }
     if(s.kind==='bullet'){
       ctx.fillStyle='#fff1a6';ctx.fillRect(sx-4,sy-51,8,1);
       ctx.fillStyle='#e59c42';ctx.fillRect(sx-Math.sign(s.vx)*12,sy-51,6,1);

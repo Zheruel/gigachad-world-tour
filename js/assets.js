@@ -1,8 +1,10 @@
+import { INDIA_FILES } from './india_assets.js';
 // assets.js - loads game-ready PNGs at boot; each degrades to null if missing.
 // NOTE: assets/sources/* are reference-only and are never loaded here.
 import { RS } from './engine.js';
 
 export const FILES = {
+  ...INDIA_FILES,
   nr_vista_rural: 'assets/stages/night_train/rebuild/vista_rural.png',
   nr_vista_industry: 'assets/stages/night_train/rebuild/vista_industry.png',
   nr_vista_river: 'assets/stages/night_train/rebuild/vista_river.png',
@@ -36,6 +38,9 @@ export const FILES = {
   nr_roof_escape: 'assets/stages/night_train/rebuild/roof_escape.png',
   nr_wreck: 'assets/stages/night_train/rebuild/wreck.png',
   nr_journey_vista: 'assets/stages/night_train/rebuild/journey_vista.png',
+  arcade_defeats: 'assets/fx/arcade_defeats.png',
+  boxing_impacts: 'assets/fx/boxing_impacts.png',
+  nr_passenger_reaction: 'assets/stages/night_train/rebuild/passenger_reaction.png',
   nr_passenger_seated: 'assets/stages/night_train/rebuild/passenger_seated.png',
   nr_pantry_cook: 'assets/stages/night_train/rebuild/pantry_cook.png',
   nr_station_tea: 'assets/stages/night_train/rebuild/station_tea.png',
@@ -97,8 +102,6 @@ export const FILES = {
   portrait_chad: 'assets/ui/portrait_chad.png',
   portrait_chad_48: 'assets/ui/portrait_chad_48.png',
   portrait_raja: 'assets/ui/portrait_raja.png',
-  portrait_pappu: 'assets/ui/portrait_pappu.png',
-  portrait_mirchi: 'assets/ui/portrait_mirchi.png',
   portrait_thekedar: 'assets/ui/portrait_thekedar.png',
 
   bg_lair_wall: 'assets/lair/wall.png',
@@ -186,8 +189,6 @@ export const FILES = {
   lair_relic_dredger: 'assets/lair/relic_dredger.png',
   lair_relic_vikram: 'assets/stages/night_train/rebuild/relic_vikram.png',
   lair_relic_sir: 'assets/lair/relic_sir.png',
-  bg_d1_wall: 'assets/stages/dirty_delhi/wall.png',
-  bg_d1_floor: 'assets/stages/dirty_delhi/floor.png',
 
   prop_bike: 'assets/story/motorcycle/bike.png',
   prop_crate: 'assets/props/crate.png',
@@ -208,8 +209,6 @@ export const FILES = {
   prop_drum_b: 'assets/props/drum_b.png',
   prop_mithai: 'assets/props/mithai.png',
   prop_mithai_b: 'assets/props/mithai_b.png',
-  prop_mirchicart: 'assets/props/mirchicart.png',
-  prop_mirchicart_b: 'assets/props/mirchicart_b.png',
   prop_thelapole: 'assets/props/thelapole.png',
   prop_thelapole_b: 'assets/props/thelapole_b.png',
   prop_dhobislab: 'assets/props/dhobislab.png',
@@ -219,12 +218,6 @@ export const FILES = {
   prop_bucket: 'assets/props/bucket.png',
   prop_bucket_open: 'assets/props/bucket_open.png',
   prop_hose_nozzle: 'assets/props/hose_nozzle.png',
-  amb_rat: 'assets/ambience/delhi_rat.png',
-  amb_debris_bottle: 'assets/ambience/delhi_debris_bottle.png',
-  amb_debris_garland: 'assets/ambience/delhi_debris_garland.png',
-  amb_debris_scooter: 'assets/ambience/delhi_debris_scooter.png',
-  amb_crowd_a: 'assets/ambience/delhi_crowd_a.png',
-  amb_crowd_b: 'assets/ambience/delhi_crowd_b.png',
   // THE NIGHT TRAIN
 
 };

@@ -13,6 +13,8 @@ export function readProgress(saved = {}, stages) {
     if (unlockedIds.includes(stage.id)) unlockedStage = Math.max(unlockedStage, i);
     if (Number.isFinite(scores[stage.id]) && scores[stage.id] >= 0) actBest[i] = scores[stage.id];
   });
+  const delhi=stages.findIndex(s=>s.id==='delhi'),refund=stages.findIndex(s=>s.id==='refund');
+  if(refund>=0&&delhi>=0&&Object.hasOwn(actBest,delhi))unlockedStage=Math.max(unlockedStage,refund);
   return { unlockedStage, actBest };
 }
 

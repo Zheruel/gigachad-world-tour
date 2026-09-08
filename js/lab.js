@@ -26,7 +26,7 @@ const CAST = [
   ['bandar', 'BANDAR'], ['pehlwan', 'PEHLWAN'],
   ['constable', 'CONSTABLE'],
   ['operator', 'OPERATOR'], ['sepoy', 'CHAIN SEPOY'],
-  ['raja', 'RICKSHAW RAJA'], ['mirchi', 'MIRCHI'], ['refund', 'MR. REFUND'],
+  ['raja', 'RICKSHAW RAJA'], ['refund', 'MR. REFUND'],
   ['yadav', 'INSPECTOR YADAV'], ['rana', 'COMMANDER RANA'],
 ];
 

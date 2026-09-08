@@ -37,8 +37,8 @@ from tone import band_stats, match_tone, report
 RS = 2
 SRC = "assets/sources/production/npc/"
 OUT = "assets/npc/"
-WALL = "assets/stages/dirty_delhi/wall.png"
-FLOOR = "assets/stages/dirty_delhi/floor.png"
+WALL = "assets/stages/dirty_delhi/rebuild/market.png"
+FLOOR = "assets/stages/dirty_delhi/rebuild/market.png"
 HERO = 96                      # CHAD's logical height, the scale everything reads against
 
 # Actors that travel. Everything else is drawn with its feet planted, which changes
@@ -86,7 +86,7 @@ def bands():
     # the road tile for anything lying on it.
     return {
         "wall": band_stats(WALL, 100 * RS, 181 * RS),
-        "floor": band_stats(FLOOR, 0, 60 * RS),
+        "floor": band_stats(FLOOR, 213 * RS, 270 * RS),
     }
 
 

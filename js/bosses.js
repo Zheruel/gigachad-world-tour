@@ -1,38 +1,33 @@
-// bosses.js - the Chandni Chowk bosses. One shared state machine, a shared
-// pattern library, and a per-boss pattern list + tuning.
-//   MIRCHI  (mid-boss) the Chaat King: fights from behind his cart - burning
-//                      samosas, a poison chutney puddle, a fistful of chilli powder.
-//                      Break the cart and he loses the charge for good.
-//   YADAV   (boss)     corrupt inspector: lathi thrust, spinning lathi sweep,
-//                      tear gas, and a whistle that brings two goondas running.
+// Shared boss lifecycle; stage modules own their encounter patterns and presentation.
 import { G, W, FLOOR_TOP, FLOOR_BOT, clamp, irand, addScore, diff, clampToArena, clampToLane, laneMin, laneMax, fall, inAir } from './engine.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
 import { spawnSpark, spawnDust, spawnShock, impact, spawnPop, spawnRing } from './effects.js';
 import { hurtPlayer, grabPlayer } from './player.js';
-import { spawnShot, spawnArc, spawnZone } from './shots.js';
+import { spawnShot, spawnArc } from './shots.js';
 import { spawnEnemy } from './enemies.js';
 import { PARRY_CLASS, tryHitPlayer, blitTelegraph, drawCueMarker } from './bosslib.js';
 import { initDelhi } from './delhi_bosses.js';
 import { initTrainBoss } from './train_bosses.js';
+import { initIndiaBoss } from './india_bosses.js';
 import { getAIFrame } from './aiframes.js';
 
 export const BOSSES = {
+  vendor: {
+    name: 'THE VENDOR', title: 'NO REFUNDS', taunt: 'YOU BREAK IT. YOU BUY IT.',
+    set: 'ic_vendor', rageSet: 'ic_vendor', hp: 400, speed: .82,
+    w: 54, h: 92, shadowR: 19, score: 4000, mini: true,
+    patterns: ['ladle', 'utensil', 'valve', 'rush'],
+  },
+  closer: {
+    name: 'THE CLOSER', title: 'FINAL ESCALATION', taunt: 'THIS CALL IS BEING RECORDED.',
+    set: 'ic_closer', rageSet: 'ic_closer', hp: 600, speed: .98,
+    w: 48, h: 90, shadowR: 17, score: 9000,
+    patterns: ['boxing', 'handset', 'shove', 'call'],
+  },
   conductor: {
     name:'HEAD CONDUCTOR',title:'CASH ONLY',taunt:'YOUR TICKET IS NOT VALID.',
     set:'nr_conductor',rageSet:'nr_conductor',hp:210,speed:.85,w:46,h:88,shadowR:16,score:2500,mini:true,
     patterns:['punch','whistle'],lines:['CASH ONLY'],
-  },
-  // ---- DIRTY DELHI ----
-  // The three Delhi fights live in js/delhi_bosses.js; the machine here only runs
-  // their shared states (grab, hurt, down, dying). `mini: true` is data here rather
-  // than a line in main.js's wave code.
-  pappu: {
-    name: 'USTAD PAPPU', title: 'AKHARA CHAMPION', taunt: 'THE CIRCLE IS CLOSED',
-    set: 'pappu', rageSet: 'pappuRage', portrait: 'portrait_pappu',
-    hp: 260, speed: 0.90, w: 62, h: 100, shadowR: 21, score: 3000, mini: true,
-    patterns: ['charge', 'grab', 'stomp'],
-    rageLine: 'MORE ROOM. LESS MERCY.',
-    lines: ['NO WEAPONS', 'STAND AND FIGHT', 'THE CIRCLE HOLDS'],
   },
   // ---- THE NIGHT TRAIN ----
   vikram: {
@@ -54,14 +49,6 @@ export const BOSSES = {
     hp: 300, speed: 1.12, w: 66, h: 104, shadowR: 22, score: 3200, cart: true,
     patterns: ['wrench', 'cartcharge', 'dashpunch', 'grab'],
     rageLine: 'METER DOWN. FISTS UP.', lines: ['ROAD IS CLOSED', 'SURGE PRICING', 'NO CHANGE'],
-  },
-  mirchi: {
-    name: 'MIRCHI', title: 'THE CHAAT KING', taunt: 'FRESH! VERY FRESH!',
-    set: 'mirchi', rageSet: 'mirchiRage', portrait: 'portrait_mirchi',
-    hp: 320, speed: 0.82, w: 62, h: 100, shadowR: 20, score: 3500, cart: true, mini: true,
-    patterns: ['samosa', 'chutney', 'chilli', 'cartcharge', 'grab'],
-    rageLine: 'YOU WANT EXTRA SPICY',
-    lines: ['FRESH! VERY FRESH!', 'NO REFUND', 'ONE PLATE ONLY', 'IS GOOD FOR STOMACH'],
   },
   yadav: {
     name: 'INSPECTOR YADAV', title: 'CHANDNI CHOWK POLICE', taunt: 'YOU HAVE NO PERMIT',
@@ -117,6 +104,7 @@ export function createBoss(key, x, y) {
   G.boss = b;
   initDelhi(b);
   initTrainBoss(b);
+  initIndiaBoss(b);
   return b;
 }
 
@@ -177,9 +165,7 @@ function pickPattern(b) {
     if (p === 'whistle') return G.enemies.length === 0 && b.whistles < (b.enraged ? 2 : 1);
     if (p === 'grab') return d < 100;
     if (p === 'cartcharge') return !b.cartGone && d > 60;
-    if (p === 'samosa' || p === 'teargas' || p === 'wrench' || p === 'phone') return d > 70;
-    if (p === 'chutney') return d > 40;
-    if (p === 'chilli') return d < 90;
+    if (p === 'teargas' || p === 'wrench' || p === 'phone') return d > 70;
     if (p === 'lathisweep') return d < 90;
     if (p === 'lathi') return d > 40;
     return true;
@@ -197,7 +183,7 @@ export function updateBoss() {
   if(b.protectedStagger>0&&!b.dead){
     if(b.flash>0)b.flash--;if(b.guardFlash>0)b.guardFlash--;
     b.protectedStagger--;b.state='stagger';b.t=0;b.vx=0;b.vz=0;b.z=0;
-    if(!b.protectedStagger){if(b.maxGuard&&b.guard===0)b.guard=b.maxGuard;b.state=b.delhi?'recover':'idle';b.atkCd=45;}
+    if(!b.protectedStagger){if(b.maxGuard&&b.guard===0)b.guard=b.maxGuard;b.state=b.delhi?'recover':'idle';b.atkCd=45;b.delhi?.afterOpening?.(b);}
     return;
   }
   b.t++;
@@ -215,7 +201,7 @@ export function updateBoss() {
     return;
   }
   const spd = b.def.speed * (b.enraged ? 1.5 : 1) * diff().aggro;
-  // the cart stays parked in front of MIRCHI wherever he goes
+  // Retained shared rickshaw boss rig.
   if (b.cart && !b.cart.broken && b.state !== 'cartcharge') {
     b.cart.x += clamp((b.x - b.face * 30) - b.cart.x, -1.2, 1.2);
     b.cart.y = b.y + 7;
@@ -242,7 +228,7 @@ export function updateBoss() {
       break;
     }
     case 'windup': {
-      const wind = { samosa: 20, wrench: 22, phone: 20, chutney: 22, chilli: 18, cartcharge: 32, whistle: 24, lathi: 18, lathisweep: 20, teargas: 22 }[b.pattern] || 16;
+      const wind = { wrench: 22, phone: 20, cartcharge: 32, whistle: 24, lathi: 18, lathisweep: 20, teargas: 22 }[b.pattern] || 16;
       if (b.t >= wind) {
         b.state = b.pattern; b.t = 0; b.hitLanded = false;
         switch (b.pattern) {
@@ -313,17 +299,6 @@ export function updateBoss() {
       }
       break;
     }
-    // ---- MIRCHI ------------------------------------------------------
-    case 'samosa': {
-      // lobbed burning samosa that bursts into a patch of fire where it lands
-      if (b.t === 6 || (b.enraged && b.t === 22)) {
-        const dx = clamp((p.x - b.x) / 46, -3.2, 3.2);
-        spawnArc('samosa', b.x + b.face * 16, b.y, dx, 2.6, 10, 'fire', { source: b, parryable: true });
-        G.audio.sfx('throw');
-      }
-      if (b.t > (b.enraged ? 40 : 26)) { b.state = 'idle'; b.atkCd = irand(60, 110) * cdScale; }
-      break;
-    }
     case 'wrench': case 'phone': {
       if (b.t === 6 || (b.enraged && b.t === 18)) {
         const kind = b.pattern;
@@ -332,30 +307,6 @@ export function updateBoss() {
         G.audio.sfx('throw');
       }
       if (b.t > (b.enraged ? 34 : 24)) { b.state = 'idle'; b.atkCd = irand(55, 95) * cdScale; }
-      break;
-    }
-    case 'chutney': {
-      // ladles a poison puddle onto the floor in front of him
-      if (b.t === 8) {
-        const tx = clamp(p.x, G.camX + 30, G.camX + W - 30);
-        spawnZone('chutney', tx, p.y, 26, 260);
-        spawnRing(tx, p.y, '#6fbf42');
-        G.audio.sfx('whiff');
-      }
-      if (b.t > 30) { b.state = 'idle'; b.atkCd = irand(70, 120) * cdScale; }
-      break;
-    }
-    case 'chilli': {
-      // a fistful of chilli powder flung in your face: short, unblockable, blinding.
-      // It hangs at head height, so a jump or a lane change clears it.
-      if (b.t === 8) {
-        for (let i = 0; i < 3; i++) {
-          const s = spawnShot('powder', b.x + b.face * 14, b.y, b.face * (1.3 + i * 0.7), 6, { source: b });
-          s.life = 32;
-        }
-        G.audio.sfx('whiff');
-      }
-      if (b.t > 30) { b.state = 'idle'; b.atkCd = irand(60, 110) * cdScale; }
       break;
     }
     case 'cartcharge': {
@@ -473,15 +424,13 @@ export function drawBoss(ctx, camX) {
       else { name = 'idle'; idx = G.time >> 4; }
       break;
     case 'windup':
-      name = { grab: 'grab', whistle: 'grab', chutney: 'slam', chilli: 'chilli',
-        lathisweep: 'slam', samosa: 'punch', teargas: 'punch', cartcharge: 'charge',
+      name = { grab: 'grab', whistle: 'grab',
+        lathisweep: 'slam', teargas: 'punch', cartcharge: 'charge',
         lathi: 'punch' }[b.pattern] || 'punch';
       idx = 0; break;
     case 'dashpunch': name = 'punch'; idx = b.punchN === 0 ? 0 : (b.t < 8 ? 1 : 2); break;
     case 'grab': case 'grabhold': case 'whistle': name = 'grab'; break;
-    case 'samosa': case 'teargas': name = 'punch'; idx = b.t < 6 ? 0 : (b.t < 18 ? 1 : 2); break;
-    case 'chutney': name = 'slam'; idx = b.t < 8 ? 0 : (b.t < 20 ? 1 : 2); break;
-    case 'chilli': name = 'chilli'; idx = b.t < 8 ? 1 : (b.t < 18 ? 2 : 3); break;
+    case 'teargas': name = 'punch'; idx = b.t < 6 ? 0 : (b.t < 18 ? 1 : 2); break;
     case 'cartcharge': name = 'charge'; idx = 1 + ((G.time >> 2) & 1); break;
     case 'lathi': name = 'punch'; idx = b.t < 8 ? 0 : (b.t < 20 ? 1 : 2); break;
     case 'lathisweep': name = 'slam'; idx = b.t < 6 ? 0 : ((b.t >> 2) % 2 ? 1 : 2); break;

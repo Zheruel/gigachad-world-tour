@@ -7,8 +7,9 @@ import {
 import { input } from './input.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
 import { spawnSpark, spawnDust, spawnRing, spawnSmoke,
-  impact, spawnPop } from './effects.js';
+  impact, spawnPop, spawnBoxingImpact } from './effects.js';
 import { reactStage } from './ambience.js';
+import { getAIFrame } from './aiframes.js';
 
 // keys: the frame advances each time p.t crosses one of these, so a punch reads as
 // wind-up -> strike -> recovery instead of popping to a single pose. The strike frame
@@ -222,7 +223,7 @@ export function startSuper(p) {
       && Math.abs(e.x-p.x)<=96 && (e.x-p.x)*p.face>=0 && Math.abs(e.y-p.y)<=20 && e.z<12)
     .sort((a,b)=>Math.abs(a.x-p.x)-Math.abs(b.x-p.x))[0];
   if (!target) { G.audio.sfx('whiff'); return false; }
-  p.superMove=0; p.superOverride=null; G.meter=0;
+  p.superMove=0; p.superOverride=null; p.boxingAfter=null; G.meter=0;
   setState(p,'special'); p.invuln=120; p.superT=0; p.superHits={};
   p.specialTarget=target; p.superGuarded=!!(target.guard>0 && !(target.protectedStagger>0));
   target.superLocked=true; target.vx=0; target.vz=0; target.z=0;
@@ -239,10 +240,29 @@ function comboMotion(p, c) {
 }
 
 export function ragnarokPose(t,guarded=false) {
-  const poses=guarded?[[0,1],[16,0],[22,2],[28,3],[34,4],[38,6],[44,7],[49,8],[53,9],[62,10],[68,11]]:
-    [[0,1],[16,0],[22,2],[28,3],[31,5],[36,4],[39,6],[44,7],[47,2],[52,4],[58,6],[65,8],[73,9],[82,10],[92,11]];
+  const poses=guarded?[[0,0],[16,1],[24,2],[30,3],[40,4],[47,9],[52,10],[56,11],[60,12],[65,14],[70,15]]:
+    [[0,0],[16,1],[24,2],[28,3],[32,4],[36,5],[40,6],[44,3],[48,4],[52,7],[60,8],[65,9],[72,10],[76,11],[80,12],[86,13],[92,14],[98,15]];
   let idx=0;for(const [at,pose]of poses)if(t>=at)idx=pose;
   return {name:'boxing_rush',idx};
+}
+
+// Draw-only reactions share the existing super clock. Collision, target locks,
+// protected stagger and all physical coordinates remain under the combat update.
+export function boxingVictimPose(e) {
+  const p=G.player;
+  // A lethal strike keeps its upright contact before the existing knockout arc.
+  // Only the drawing changes: death, collision and score still resolve at impact.
+  if(e.kind!=='boss'&&e.dead&&e.boxingKO&&e.t<8)return {name:e.t<2?'idle':'hurt',idx:0,dx:0,dy:0,angle:0,flash:e.t<2};
+  if(!e.superLocked||p?.state!=='special'||p.specialTarget!==e||p.superT<24)return null;
+  const t=p.superT,hits=p.superGuarded?[24,40,56]:[24,32,40,48,60,76];
+  let n=0;for(let i=0;i<hits.length;i++)if(t>=hits[i])n=i;
+  const age=t-hits[n],last=n===hits.length-1,flight=last&&!p.superGuarded?clamp((t-76)/23,0,1):0;
+  const lift=last&&!p.superGuarded?Math.sin(flight*Math.PI)*21:0;
+  let name=last&&age<2?'idle':'hurt';
+  if(p.superGuarded&&!last)name=e.shieldActive?'shield':'block';
+  else if(age>3&&getAIFrame(e.set?._aiKey,'stagger_polish'))name='stagger_polish';
+  return {name,idx:name==='hurt'?n%2:0,dx:p.face*Math.max(0,4-age*.65),dy:-lift,
+    angle:last&&!p.superGuarded?-p.face*Math.sin(flight*Math.PI)*.13:0,flash:age<2};
 }
 
 // True consumes a hostile contact. Projectiles inspect lastDefense to distinguish
@@ -294,6 +314,7 @@ function tryCancel(p) {
 export function updatePlayer(p, bounds = null) {
   const x0 = p.x, y0 = p.y;
   p.t++;
+  if(p.boxingAfter){p.boxingAfter.t++;if(p.boxingAfter.t>=16||p.state!=='idle')p.boxingAfter=null;}
   if(!['grabbing','throwing'].includes(p.state)&&p.grabTarget)releaseGrab(p);
   if(p.state!=='special' && p.specialTarget) releaseSuper(p);
   if(p.guardWindow>0)p.guardWindow--;
@@ -504,8 +525,12 @@ export function updatePlayer(p, bounds = null) {
         target.superApplying=true;
         target.hurt(dmg,p.face,true,false);
         target.superApplying=false;
+        if(target.dead){target.boxingKO=true;p.boxingAfter={t:0,upper:at===76||p.superGuarded&&at===56,pose:ragnarokPose(t,p.superGuarded).idx};}
         if(!target.dead){target.state='stagger';target.t=0;target.vx=0;target.vz=0;target.z=0;}
-        spawnSpark(target.x-p.face*9,target.y-(at===76?65:45));
+        const upper=at===76||p.superGuarded&&at===56,hitX=upper?p.x+p.face*14:target.x-p.face*9,hitY=target.y-(upper?75:at===60?65:45);
+        spawnSpark(hitX,hitY);
+        spawnBoxingImpact(hitX,hitY,upper,p.face);
+        G.shake=Math.max(G.shake,at===76?4:1.4);
         G.audio.sfx(at===76||at===56?'heavy':'punch');G.hitstop=Math.max(G.hitstop,at===76?7:3);
         if(G.stats)G.stats.hits++;addScore(10);
         if(p.superGuarded&&at===56)target.breakGuard?.();
@@ -630,7 +655,7 @@ export function hurtPlayer(p, dmg, dir, heavy) {
 
 export function drawPlayer(ctx, p, camX) {
   const sx = Math.round(p.x - camX), sy = Math.round(p.y - p.z);
-  const cinematicBody = p.state === 'special' || p.state === 'parry_counter';
+  const cinematicBody = p.state === 'special' || p.state === 'parry_counter' || (p.state==='idle'&&p.boxingAfter);
   if (p.invuln > 0 && !cinematicBody && ((G.rawTime >> 1) & 1)) return; // invincibility blink
   let name = 'idle', idx = 0;
   switch (p.state) {
@@ -675,6 +700,7 @@ export function drawPlayer(ctx, p, camX) {
     }
     case 'dead': name = 'down'; break;
   }
+  if(p.state==='idle'&&p.boxingAfter){const a=p.boxingAfter;name='boxing_rush';idx=a.t<4?(a.upper?11:a.pose):a.t<9?(a.upper?12:a.pose):a.t<14?14:15;}
   const f = getFrame(SPR.player, name, idx, p.face);
   const fw = frameW(f), fh = frameH(f);
   const dx = sx - Math.round(fw / 2), dy = sy - fh + 4;
@@ -687,7 +713,7 @@ export function drawPlayer(ctx, p, camX) {
     // Tint the sprite itself instead of drawing offset copies around it. The old
     // aura read as a bright outline, especially on generated combat frames.
     ctx.save();
-    ctx.filter = 'brightness(1.28) saturate(1.08)';
+    ctx.filter = 'brightness(1.08) saturate(1.04)';
     blit(ctx, f, dx, dy);
     ctx.restore();
   } else {

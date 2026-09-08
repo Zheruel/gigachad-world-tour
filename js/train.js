@@ -12,12 +12,12 @@ export const ABOARD_X=2880,ROOF_X=8160,BERTH_Z=115,ROOF_TRANSITION_TICKS=420;
 export const TRAIN_AREAS=[['yard',0,960],['hall',960,1920],['platform',1920,2880],['general',2880,3840],['sleeper',3840,5280],['pantry',5280,5760],['office',5760,6240],['ac',6240,7200],['private',7200,8160],['roof',8160,9120]];
 
 export function trainArea(x){return TRAIN_AREAS.find(a=>x<a[2])||TRAIN_AREAS.at(-1);}
-export function initTrain(){G.train={t:0,motionT:0,distance:0,aboard:false,climbed:false,cinematic:null,endingDone:false,checkpoint:0,checkpointScore:G.score,gate:true,sway:0,steam:0,roofTell:0,scene:0,claimedLives:[],arrival:-1,vistaX:0,vistaTarget:0};}
+export function initTrain(){G.train={t:0,motionT:0,distance:0,aboard:false,climbed:false,cinematic:null,endingDone:false,checkpoint:0,checkpointScore:G.score,gate:true,sway:0,steam:0,roofTell:0,scene:0,claimedLives:[],arrival:-1,vistaX:0,vistaTarget:0,passengerReactions:[{t:-1,ready:0},{t:-1,ready:0}]};}
 const ease=n=>{n=clamp(n,0,1);return n*n*(3-2*n);};
 function position(x,y=218){Object.assign(G.player,{x,y,z:0,vz:0,vx:0,state:'idle',t:0,face:1,grabbedBy:null,invuln:90,guardWindow:0,counterT:0,attackFamilies:[],grabTarget:null,specialTarget:null,superT:0});}
 function clearArena(){G.enemies=[];G.shots=[];G.zones=[];G.spawnQueue=[];G.waveActive=false;G.locked=false;G.arenaSqueeze=G.arenaSqueezeTarget=0;}
 export function restoreTrainCheckpoint(){
- if(!G.train)return;const tr=G.train,x=tr.checkpoint;clearArena();G.boss=null;tr.cinematic=null;tr.endingDone=false;tr.climbed=false;tr.knockoutBody=false;tr.retryBoss=x>=7950;tr.aboard=x>=ABOARD_X;tr.gate=true;
+ if(!G.train)return;const tr=G.train,x=tr.checkpoint;clearArena();G.boss=null;tr.cinematic=null;tr.endingDone=false;tr.climbed=false;tr.knockoutBody=false;tr.passengerReactions=[{t:-1,ready:0},{t:-1,ready:0}];tr.retryBoss=x>=7950;tr.aboard=x>=ABOARD_X;tr.gate=true;
  G.camX=G.camLock=x>=7950?7680:x;position(x>=7950?7950:x+60);G.player.hp=G.player.maxhp;G.player.dying=false;G.score=tr.checkpointScore;
  for(const w of G.stage.waves)w.done=w.x<x;
  G.waveIndex=G.stage.waves.findLastIndex(w=>w.x<x);
@@ -32,8 +32,20 @@ export function vistaTargetFor(x){return clamp((x-ABOARD_X)/(ROOF_X-ABOARD_X)*24
 function checkpoint(x){if(G.train.checkpoint<x){G.train.checkpoint=x;G.train.checkpointScore=G.score;}}
 export function startTrainCinematic(kind){if(G.train.cinematic)return;if(kind==='escape'){G.audio.stopSamples?.();G.audio.stopRoomAudio?.();}G.train.cinematic={kind,t:0,fromX:G.player.x,fromY:G.player.y,fromCam:G.camX,fromBossX:G.boss?.x,fromBossY:G.boss?.y};G.player.grabbedBy=null;G.player.z=0;G.shots=[];G.zones=[];if(kind!=='escape')G.audio.sfx(kind==='boarding'?'go':'heavy');}
 export function updateTrainMotion(){const tr=G.train;if(!tr?.aboard||tr.endingDone||tr.cinematic?.kind==='escape')return;tr.distance+=2.6;tr.motionT++;updateTrainVista(tr,G.stage.waves,tr.checkpoint);if(tr.motionT%24===0)G.audio.trainSfx?.('roll');}
+// Background reactions use the simulation clock and never influence encounters.
+function updatePassengerReactions(tr){
+ tr.passengerReactions||=[{t:-1,ready:0},{t:-1,ready:0}];
+ if(!tr.aboard||tr.cinematic)return;
+ for(const [i,x]of [3170,4235].entries()){
+  const reaction=tr.passengerReactions[i];
+  if(reaction.t>=0){if(++reaction.t>=150)reaction.t=-1;continue;}
+  if(tr.t<reaction.ready)continue;
+  const threat=G.enemies.some(e=>!e.dead&&Math.abs(e.x-x)<185&&['windup','attack','charge','drop'].includes(e.state));
+  if(threat){reaction.t=0;reaction.ready=tr.t+360+i*37;}
+ }
+}
 export function updateTrain(){
- const tr=G.train;if(!tr)return false;tr.t++;
+ const tr=G.train;if(!tr)return false;tr.t++;updatePassengerReactions(tr);
  if(tr.endingDone)return false;
  if(!input.held('use'))tr.gate=false;
  const c=tr.cinematic;
@@ -138,6 +150,16 @@ export function drawConductorDesk(ctx,camX){
 export function drawTrainWallPlane(ctx,camX){
  const tr=G.train;if(!tr)return;
  if(tr.climbed)image(ctx,'hatch_open',ROOF_X+65-camX,165,80,50);
+ if(tr.review?.fx!==false&&tr.review?.interior!==false&&tr.aboard&&!tr.cinematic){
+  // Rotating blade shadows stay inside the authored general-coach fan cages.
+  for(const [i,localX]of [283,510,688].entries()){
+   const x=2880+localX-camX;if(x<-24||x>W+24)continue;
+   ctx.save();ctx.beginPath();ctx.ellipse(x,32,18,7,0,0,Math.PI*2);ctx.clip();
+   ctx.translate(x,32);ctx.scale(1,.39);ctx.rotate(tr.t*.19+i*1.8);
+   for(let j=0;j<3;j++){ctx.rotate(Math.PI*2/3);ctx.fillStyle='#090a0ba0';ctx.fillRect(4,-2,14,4);ctx.fillStyle='#ae774535';ctx.fillRect(5,-2,12,1);}
+   ctx.restore();
+  }
+ }
  if(tr.review?.npc===false)return;
  if(camX<6240&&camX+W>5900){
   const chair=ASSETS.nr_office_chair;
@@ -152,9 +174,12 @@ export function drawTrainWallPlane(ctx,camX){
  // Actor sheets are seated/wiping performances, grounded behind the combat plane.
  for(const [x,row,y]of [[3170,0,201],[4235,1,190]]){
   if(x<camX-80||x>camX+W+80)continue;
-  const clock=(tr.t+row*91)%360,pose=clock<220?0:clock<260?1:clock<310?2:3;
+  const clock=(tr.t+row*91)%360,restPose=clock<220?0:clock<260?1:clock<310?2:3;
+  const reaction=tr.passengerReactions?.[row]?.t??-1;
+  const reacting=reaction>=0,pose=reacting?(reaction<18?0:reaction<60?1:reaction<92?2:reaction<132?3:0):restPose;
   ctx.save();
-  if(row===0)sprite(ctx,'passenger_seated',pose,x-camX,y,92,92,224,224);else sprite(ctx,'passengers',row*4+pose,x-camX,y,78,91,224,256);ctx.restore();
+  if(row===0){if(!reacting||!sprite(ctx,'passenger_reaction',pose,x-camX,y,92,92,224,224))sprite(ctx,'passenger_seated',restPose,x-camX,y,92,92,224,224);}
+  else sprite(ctx,'passengers',row*4+(reacting?(reaction<18?1:reaction<112?2:3):pose),x-camX,y,78,91,224,256);ctx.restore();
  }
  // The cook stands inside the recessed galley; the front serving ledge occludes his lower torso.
  if(camX<5590&&camX+W>5450){

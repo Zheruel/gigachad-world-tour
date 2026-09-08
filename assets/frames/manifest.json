@@ -186,18 +186,22 @@
       "chad_idle_knuckles4.png"
     ],
     "boxing_rush": [
-      "chad_boxing_rush_00.png",
-      "chad_boxing_rush_01.png",
-      "chad_boxing_rush_02.png",
-      "chad_boxing_rush_03.png",
-      "chad_boxing_rush_04.png",
-      "chad_boxing_rush_05.png",
-      "chad_boxing_rush_06.png",
-      "chad_boxing_rush_07.png",
-      "chad_boxing_rush_08.png",
-      "chad_boxing_rush_09.png",
-      "chad_boxing_rush_10.png",
-      "chad_boxing_rush_11.png"
+      "chad_boxing_polish_00.png",
+      "chad_boxing_polish_01.png",
+      "chad_boxing_polish_02.png",
+      "chad_boxing_polish_03.png",
+      "chad_boxing_polish_04.png",
+      "chad_boxing_polish_05.png",
+      "chad_boxing_polish_06.png",
+      "chad_boxing_polish_07.png",
+      "chad_boxing_polish_08.png",
+      "chad_boxing_polish_09.png",
+      "chad_boxing_polish_10.png",
+      "chad_boxing_polish_11.png",
+      "chad_boxing_polish_12.png",
+      "chad_boxing_polish_13.png",
+      "chad_boxing_polish_14.png",
+      "chad_boxing_rush_00.png"
     ]
   },
   "goonda": {
@@ -437,55 +441,6 @@
       "raja_down.png"
     ]
   },
-  "mirchi": {
-    "idle": [
-      "mirchi_idle1.png",
-      "mirchi_idle2.png",
-      "mirchi_idle3.png",
-      "mirchi_idle4.png"
-    ],
-    "walk": [
-      "mirchi_walk1.png",
-      "mirchi_walk2.png",
-      "mirchi_walk3.png",
-      "mirchi_walk4.png"
-    ],
-    "punch": [
-      "mirchi_throw1.png",
-      "mirchi_throw2.png",
-      "mirchi_throw3.png"
-    ],
-    "slam": [
-      "mirchi_ladle1.png",
-      "mirchi_ladle2.png",
-      "mirchi_ladle3.png",
-      "mirchi_ladle4.png"
-    ],
-    "chilli": [
-      "mirchi_chilli1.png",
-      "mirchi_chilli2.png",
-      "mirchi_chilli3.png",
-      "mirchi_chilli4.png"
-    ],
-    "charge": [
-      "mirchi_shove1.png",
-      "mirchi_shove2.png",
-      "mirchi_shove3.png",
-      "mirchi_shove4.png"
-    ],
-    "grab": [
-      "mirchi_shove1.png",
-      "mirchi_shove4.png",
-      "mirchi_shove4.png"
-    ],
-    "hurt": [
-      "mirchi_hurt1.png",
-      "mirchi_hurt2.png"
-    ],
-    "down": [
-      "mirchi_hurt3.png"
-    ]
-  },
   "cooker": {
     "idle": [
       "cooker_idle1.png",
@@ -707,54 +662,6 @@
     ],
     "down": [
       "thekedar_hurt3.png"
-    ]
-  },
-  "pappu": {
-    "idle": [
-      "pappu_idle1.png",
-      "pappu_idle2.png",
-      "pappu_idle3.png",
-      "pappu_idle4.png"
-    ],
-    "walk": [
-      "pappu_walk1.png",
-      "pappu_walk2.png",
-      "pappu_walk3.png",
-      "pappu_walk4.png"
-    ],
-    "punch": [
-      "pappu_charge2.png",
-      "pappu_charge3.png",
-      "pappu_charge4.png"
-    ],
-    "charge": [
-      "pappu_charge1.png",
-      "pappu_charge2.png",
-      "pappu_charge3.png",
-      "pappu_charge4.png"
-    ],
-    "grab": [
-      "pappu_grab1.png",
-      "pappu_grab2.png",
-      "pappu_grab3.png"
-    ],
-    "slam": [
-      "pappu_stomp2.png",
-      "pappu_stomp3.png",
-      "pappu_stomp4.png"
-    ],
-    "stomp": [
-      "pappu_stomp1.png",
-      "pappu_stomp2.png",
-      "pappu_stomp3.png",
-      "pappu_stomp4.png"
-    ],
-    "hurt": [
-      "pappu_hurt1.png",
-      "pappu_hurt2.png"
-    ],
-    "down": [
-      "pappu_hurt3.png"
     ]
   },
   "nr_tough": {
@@ -1079,6 +986,15 @@
       "nr_vikram/recovery_1.png",
       "nr_vikram/recovery_2.png",
       "nr_vikram/recovery_3.png"
+    ],
+    "guard_polish": [
+      "nr_vikram/polish_0.png"
+    ],
+    "recover_polish": [
+      "nr_vikram/polish_1.png"
+    ],
+    "stagger_polish": [
+      "nr_vikram/polish_2.png"
     ]
   },
   "nr_vikram_roof": {
@@ -1126,6 +1042,15 @@
       "nr_vikram_roof/sweep_0.png",
       "nr_vikram_roof/sweep_1.png",
       "nr_vikram_roof/sweep_2.png"
+    ],
+    "guard_polish": [
+      "nr_vikram_roof/polish_0.png"
+    ],
+    "recover_polish": [
+      "nr_vikram_roof/polish_1.png"
+    ],
+    "stagger_polish": [
+      "nr_vikram_roof/polish_2.png"
     ]
   },
   "nr_heavy_unarmed": {
@@ -1224,6 +1149,1368 @@
       "nr_conductor/shield_0.png",
       "nr_conductor/shield_1.png",
       "nr_conductor/shield_2.png"
+    ],
+    "baton_polish": [
+      "nr_conductor/polish_0.png",
+      "nr_conductor/polish_1.png",
+      "nr_conductor/polish_2.png",
+      "nr_conductor/polish_3.png"
+    ],
+    "whistle_polish": [
+      "nr_conductor/polish_4.png",
+      "nr_conductor/polish_5.png",
+      "nr_conductor/polish_6.png"
+    ],
+    "stagger_polish": [
+      "nr_conductor/polish_7.png"
+    ],
+    "guard_polish": [
+      "nr_conductor/polish_3.png"
+    ]
+  },
+  "ic_brawler": {
+    "walk": [
+      "ic_brawler/gait_00.png",
+      "ic_brawler/gait_01.png",
+      "ic_brawler/gait_02.png",
+      "ic_brawler/gait_03.png",
+      "ic_brawler/gait_04.png",
+      "ic_brawler/gait_05.png",
+      "ic_brawler/gait_06.png",
+      "ic_brawler/gait_07.png"
+    ],
+    "run": [
+      "ic_brawler/gait_00.png",
+      "ic_brawler/gait_01.png",
+      "ic_brawler/gait_02.png",
+      "ic_brawler/gait_03.png",
+      "ic_brawler/gait_04.png",
+      "ic_brawler/gait_05.png",
+      "ic_brawler/gait_06.png",
+      "ic_brawler/gait_07.png"
+    ],
+    "idle": [
+      "ic_brawler/performance_08.png"
+    ],
+    "block": [
+      "ic_brawler/performance_10.png"
+    ],
+    "atk": [
+      "ic_brawler/performance_11.png",
+      "ic_brawler/performance_12.png",
+      "ic_brawler/performance_13.png"
+    ],
+    "punch": [
+      "ic_brawler/performance_11.png",
+      "ic_brawler/performance_12.png",
+      "ic_brawler/performance_13.png"
+    ],
+    "kick": [
+      "ic_brawler/performance_14.png",
+      "ic_brawler/performance_15.png"
+    ],
+    "hurt": [
+      "ic_brawler/performance_16.png",
+      "ic_brawler/performance_17.png"
+    ],
+    "stagger": [
+      "ic_brawler/performance_16.png",
+      "ic_brawler/performance_17.png"
+    ],
+    "fall": [
+      "ic_brawler/performance_18.png"
+    ],
+    "down": [
+      "ic_brawler/performance_19.png"
+    ],
+    "getup": [
+      "ic_brawler/performance_20.png",
+      "ic_brawler/performance_21.png",
+      "ic_brawler/performance_08.png"
+    ],
+    "grab": [
+      "ic_brawler/performance_22.png"
+    ],
+    "throw": [
+      "ic_brawler/performance_22.png",
+      "ic_brawler/performance_23.png"
+    ],
+    "ram": [
+      "ic_brawler/performance_11.png",
+      "ic_brawler/performance_12.png",
+      "ic_brawler/performance_13.png"
+    ],
+    "beam": [
+      "ic_brawler/performance_14.png",
+      "ic_brawler/performance_15.png",
+      "ic_brawler/performance_15.png",
+      "ic_brawler/performance_13.png"
+    ],
+    "call": [
+      "ic_brawler/performance_14.png",
+      "ic_brawler/performance_15.png",
+      "ic_brawler/performance_15.png"
+    ],
+    "seated": [
+      "ic_brawler/performance_20.png"
+    ]
+  },
+  "ic_runner": {
+    "walk": [
+      "ic_runner/gait_00.png",
+      "ic_runner/gait_01.png",
+      "ic_runner/gait_02.png",
+      "ic_runner/gait_03.png",
+      "ic_runner/gait_04.png",
+      "ic_runner/gait_05.png",
+      "ic_runner/gait_06.png",
+      "ic_runner/gait_07.png"
+    ],
+    "run": [
+      "ic_runner/gait_00.png",
+      "ic_runner/gait_01.png",
+      "ic_runner/gait_02.png",
+      "ic_runner/gait_03.png",
+      "ic_runner/gait_04.png",
+      "ic_runner/gait_05.png",
+      "ic_runner/gait_06.png",
+      "ic_runner/gait_07.png"
+    ],
+    "idle": [
+      "ic_runner/performance_08.png"
+    ],
+    "block": [
+      "ic_runner/performance_10.png"
+    ],
+    "atk": [
+      "ic_runner/performance_11.png",
+      "ic_runner/performance_12.png",
+      "ic_runner/performance_13.png"
+    ],
+    "punch": [
+      "ic_runner/performance_11.png",
+      "ic_runner/performance_12.png",
+      "ic_runner/performance_13.png"
+    ],
+    "kick": [
+      "ic_runner/performance_14.png",
+      "ic_runner/performance_15.png"
+    ],
+    "hurt": [
+      "ic_runner/performance_16.png",
+      "ic_runner/performance_17.png"
+    ],
+    "stagger": [
+      "ic_runner/performance_16.png",
+      "ic_runner/performance_17.png"
+    ],
+    "fall": [
+      "ic_runner/performance_18.png"
+    ],
+    "down": [
+      "ic_runner/performance_19.png"
+    ],
+    "getup": [
+      "ic_runner/performance_20.png",
+      "ic_runner/performance_21.png",
+      "ic_runner/performance_08.png"
+    ],
+    "grab": [
+      "ic_runner/performance_22.png"
+    ],
+    "throw": [
+      "ic_runner/performance_22.png",
+      "ic_runner/performance_23.png"
+    ],
+    "ram": [
+      "ic_runner/performance_11.png",
+      "ic_runner/performance_12.png",
+      "ic_runner/performance_13.png"
+    ],
+    "beam": [
+      "ic_runner/performance_14.png",
+      "ic_runner/performance_15.png",
+      "ic_runner/performance_15.png",
+      "ic_runner/performance_13.png"
+    ],
+    "call": [
+      "ic_runner/performance_14.png",
+      "ic_runner/performance_15.png",
+      "ic_runner/performance_15.png"
+    ],
+    "seated": [
+      "ic_runner/performance_20.png"
+    ]
+  },
+  "ic_enforcer": {
+    "walk": [
+      "ic_enforcer/gait_00.png",
+      "ic_enforcer/gait_01.png",
+      "ic_enforcer/gait_02.png",
+      "ic_enforcer/gait_03.png",
+      "ic_enforcer/gait_04.png",
+      "ic_enforcer/gait_05.png",
+      "ic_enforcer/gait_06.png",
+      "ic_enforcer/gait_07.png"
+    ],
+    "run": [
+      "ic_enforcer/gait_00.png",
+      "ic_enforcer/gait_01.png",
+      "ic_enforcer/gait_02.png",
+      "ic_enforcer/gait_03.png",
+      "ic_enforcer/gait_04.png",
+      "ic_enforcer/gait_05.png",
+      "ic_enforcer/gait_06.png",
+      "ic_enforcer/gait_07.png"
+    ],
+    "idle": [
+      "ic_enforcer/performance_08.png"
+    ],
+    "block": [
+      "ic_enforcer/performance_10.png"
+    ],
+    "atk": [
+      "ic_enforcer/performance_11.png",
+      "ic_enforcer/performance_12.png",
+      "ic_enforcer/performance_13.png"
+    ],
+    "punch": [
+      "ic_enforcer/performance_11.png",
+      "ic_enforcer/performance_12.png",
+      "ic_enforcer/performance_13.png"
+    ],
+    "kick": [
+      "ic_enforcer/performance_14.png",
+      "ic_enforcer/performance_15.png"
+    ],
+    "hurt": [
+      "ic_enforcer/performance_16.png",
+      "ic_enforcer/performance_17.png"
+    ],
+    "stagger": [
+      "ic_enforcer/performance_16.png",
+      "ic_enforcer/performance_17.png"
+    ],
+    "fall": [
+      "ic_enforcer/performance_18.png"
+    ],
+    "down": [
+      "ic_enforcer/performance_19.png"
+    ],
+    "getup": [
+      "ic_enforcer/performance_20.png",
+      "ic_enforcer/performance_21.png",
+      "ic_enforcer/performance_08.png"
+    ],
+    "grab": [
+      "ic_enforcer/performance_22.png"
+    ],
+    "throw": [
+      "ic_enforcer/performance_22.png",
+      "ic_enforcer/performance_23.png"
+    ],
+    "ram": [
+      "ic_enforcer/performance_11.png",
+      "ic_enforcer/performance_12.png",
+      "ic_enforcer/performance_13.png"
+    ],
+    "beam": [
+      "ic_enforcer/performance_14.png",
+      "ic_enforcer/performance_15.png",
+      "ic_enforcer/performance_15.png",
+      "ic_enforcer/performance_13.png"
+    ],
+    "call": [
+      "ic_enforcer/performance_14.png",
+      "ic_enforcer/performance_15.png",
+      "ic_enforcer/performance_15.png"
+    ],
+    "seated": [
+      "ic_enforcer/performance_20.png"
+    ]
+  },
+  "ic_heavy": {
+    "walk": [
+      "ic_heavy/gait_00.png",
+      "ic_heavy/gait_01.png",
+      "ic_heavy/gait_02.png",
+      "ic_heavy/gait_03.png",
+      "ic_heavy/gait_04.png",
+      "ic_heavy/gait_05.png",
+      "ic_heavy/gait_06.png",
+      "ic_heavy/gait_07.png"
+    ],
+    "run": [
+      "ic_heavy/gait_00.png",
+      "ic_heavy/gait_01.png",
+      "ic_heavy/gait_02.png",
+      "ic_heavy/gait_03.png",
+      "ic_heavy/gait_04.png",
+      "ic_heavy/gait_05.png",
+      "ic_heavy/gait_06.png",
+      "ic_heavy/gait_07.png"
+    ],
+    "idle": [
+      "ic_heavy/performance_08.png"
+    ],
+    "block": [
+      "ic_heavy/performance_10.png"
+    ],
+    "atk": [
+      "ic_heavy/performance_11.png",
+      "ic_heavy/performance_12.png",
+      "ic_heavy/performance_13.png"
+    ],
+    "punch": [
+      "ic_heavy/performance_11.png",
+      "ic_heavy/performance_12.png",
+      "ic_heavy/performance_13.png"
+    ],
+    "kick": [
+      "ic_heavy/performance_14.png",
+      "ic_heavy/performance_15.png"
+    ],
+    "hurt": [
+      "ic_heavy/performance_16.png",
+      "ic_heavy/performance_17.png"
+    ],
+    "stagger": [
+      "ic_heavy/performance_16.png",
+      "ic_heavy/performance_17.png"
+    ],
+    "fall": [
+      "ic_heavy/performance_18.png"
+    ],
+    "down": [
+      "ic_heavy/performance_19.png"
+    ],
+    "getup": [
+      "ic_heavy/performance_20.png",
+      "ic_heavy/performance_21.png",
+      "ic_heavy/performance_08.png"
+    ],
+    "grab": [
+      "ic_heavy/performance_22.png"
+    ],
+    "throw": [
+      "ic_heavy/performance_22.png",
+      "ic_heavy/performance_23.png"
+    ],
+    "ram": [
+      "ic_heavy/performance_11.png",
+      "ic_heavy/performance_12.png",
+      "ic_heavy/performance_13.png"
+    ],
+    "beam": [
+      "ic_heavy/performance_14.png",
+      "ic_heavy/performance_15.png",
+      "ic_heavy/performance_15.png",
+      "ic_heavy/performance_13.png"
+    ],
+    "call": [
+      "ic_heavy/performance_14.png",
+      "ic_heavy/performance_15.png",
+      "ic_heavy/performance_15.png"
+    ],
+    "seated": [
+      "ic_heavy/performance_20.png"
+    ]
+  },
+  "ic_kitchen": {
+    "walk": [
+      "ic_kitchen/gait_00.png",
+      "ic_kitchen/gait_01.png",
+      "ic_kitchen/gait_02.png",
+      "ic_kitchen/gait_03.png",
+      "ic_kitchen/gait_04.png",
+      "ic_kitchen/gait_05.png",
+      "ic_kitchen/gait_06.png",
+      "ic_kitchen/gait_07.png"
+    ],
+    "run": [
+      "ic_kitchen/gait_00.png",
+      "ic_kitchen/gait_01.png",
+      "ic_kitchen/gait_02.png",
+      "ic_kitchen/gait_03.png",
+      "ic_kitchen/gait_04.png",
+      "ic_kitchen/gait_05.png",
+      "ic_kitchen/gait_06.png",
+      "ic_kitchen/gait_07.png"
+    ],
+    "idle": [
+      "ic_kitchen/performance_08.png"
+    ],
+    "block": [
+      "ic_kitchen/performance_10.png"
+    ],
+    "atk": [
+      "ic_kitchen/performance_11.png",
+      "ic_kitchen/performance_12.png",
+      "ic_kitchen/performance_13.png"
+    ],
+    "punch": [
+      "ic_kitchen/performance_11.png",
+      "ic_kitchen/performance_12.png",
+      "ic_kitchen/performance_13.png"
+    ],
+    "kick": [
+      "ic_kitchen/performance_14.png",
+      "ic_kitchen/performance_15.png"
+    ],
+    "hurt": [
+      "ic_kitchen/performance_16.png",
+      "ic_kitchen/performance_17.png"
+    ],
+    "stagger": [
+      "ic_kitchen/performance_16.png",
+      "ic_kitchen/performance_17.png"
+    ],
+    "fall": [
+      "ic_kitchen/performance_18.png"
+    ],
+    "down": [
+      "ic_kitchen/performance_19.png"
+    ],
+    "getup": [
+      "ic_kitchen/performance_20.png",
+      "ic_kitchen/performance_21.png",
+      "ic_kitchen/performance_08.png"
+    ],
+    "grab": [
+      "ic_kitchen/performance_22.png"
+    ],
+    "throw": [
+      "ic_kitchen/performance_22.png",
+      "ic_kitchen/performance_23.png"
+    ],
+    "ram": [
+      "ic_kitchen/performance_11.png",
+      "ic_kitchen/performance_12.png",
+      "ic_kitchen/performance_13.png"
+    ],
+    "beam": [
+      "ic_kitchen/performance_14.png",
+      "ic_kitchen/performance_15.png",
+      "ic_kitchen/performance_15.png",
+      "ic_kitchen/performance_13.png"
+    ],
+    "call": [
+      "ic_kitchen/performance_14.png",
+      "ic_kitchen/performance_15.png",
+      "ic_kitchen/performance_15.png"
+    ],
+    "seated": [
+      "ic_kitchen/performance_20.png"
+    ]
+  },
+  "ic_docker": {
+    "walk": [
+      "ic_docker/gait_00.png",
+      "ic_docker/gait_01.png",
+      "ic_docker/gait_02.png",
+      "ic_docker/gait_03.png",
+      "ic_docker/gait_04.png",
+      "ic_docker/gait_05.png",
+      "ic_docker/gait_06.png",
+      "ic_docker/gait_07.png"
+    ],
+    "run": [
+      "ic_docker/gait_00.png",
+      "ic_docker/gait_01.png",
+      "ic_docker/gait_02.png",
+      "ic_docker/gait_03.png",
+      "ic_docker/gait_04.png",
+      "ic_docker/gait_05.png",
+      "ic_docker/gait_06.png",
+      "ic_docker/gait_07.png"
+    ],
+    "idle": [
+      "ic_docker/performance_08.png"
+    ],
+    "block": [
+      "ic_docker/performance_10.png"
+    ],
+    "atk": [
+      "ic_docker/performance_11.png",
+      "ic_docker/performance_12.png",
+      "ic_docker/performance_13.png"
+    ],
+    "punch": [
+      "ic_docker/performance_11.png",
+      "ic_docker/performance_12.png",
+      "ic_docker/performance_13.png"
+    ],
+    "kick": [
+      "ic_docker/performance_14.png",
+      "ic_docker/performance_15.png"
+    ],
+    "hurt": [
+      "ic_docker/performance_16.png",
+      "ic_docker/performance_17.png"
+    ],
+    "stagger": [
+      "ic_docker/performance_16.png",
+      "ic_docker/performance_17.png"
+    ],
+    "fall": [
+      "ic_docker/performance_18.png"
+    ],
+    "down": [
+      "ic_docker/performance_19.png"
+    ],
+    "getup": [
+      "ic_docker/performance_20.png",
+      "ic_docker/performance_21.png",
+      "ic_docker/performance_08.png"
+    ],
+    "grab": [
+      "ic_docker/performance_22.png"
+    ],
+    "throw": [
+      "ic_docker/performance_22.png",
+      "ic_docker/performance_23.png"
+    ],
+    "ram": [
+      "ic_docker/performance_11.png",
+      "ic_docker/performance_12.png",
+      "ic_docker/performance_13.png"
+    ],
+    "beam": [
+      "ic_docker/performance_14.png",
+      "ic_docker/performance_15.png",
+      "ic_docker/performance_15.png",
+      "ic_docker/performance_13.png"
+    ],
+    "call": [
+      "ic_docker/performance_14.png",
+      "ic_docker/performance_15.png",
+      "ic_docker/performance_15.png"
+    ],
+    "seated": [
+      "ic_docker/performance_20.png"
+    ]
+  },
+  "ic_headset": {
+    "walk": [
+      "ic_headset/gait_00.png",
+      "ic_headset/gait_01.png",
+      "ic_headset/gait_02.png",
+      "ic_headset/gait_03.png",
+      "ic_headset/gait_04.png",
+      "ic_headset/gait_05.png",
+      "ic_headset/gait_06.png",
+      "ic_headset/gait_07.png"
+    ],
+    "run": [
+      "ic_headset/gait_00.png",
+      "ic_headset/gait_01.png",
+      "ic_headset/gait_02.png",
+      "ic_headset/gait_03.png",
+      "ic_headset/gait_04.png",
+      "ic_headset/gait_05.png",
+      "ic_headset/gait_06.png",
+      "ic_headset/gait_07.png"
+    ],
+    "idle": [
+      "ic_headset/performance_08.png"
+    ],
+    "block": [
+      "ic_headset/performance_10.png"
+    ],
+    "atk": [
+      "ic_headset/performance_11.png",
+      "ic_headset/performance_12.png",
+      "ic_headset/performance_13.png"
+    ],
+    "punch": [
+      "ic_headset/performance_11.png",
+      "ic_headset/performance_12.png",
+      "ic_headset/performance_13.png"
+    ],
+    "kick": [
+      "ic_headset/performance_14.png",
+      "ic_headset/performance_15.png"
+    ],
+    "hurt": [
+      "ic_headset/performance_16.png",
+      "ic_headset/performance_17.png"
+    ],
+    "stagger": [
+      "ic_headset/performance_16.png",
+      "ic_headset/performance_17.png"
+    ],
+    "fall": [
+      "ic_headset/performance_18.png"
+    ],
+    "down": [
+      "ic_headset/performance_19.png"
+    ],
+    "getup": [
+      "ic_headset/performance_20.png",
+      "ic_headset/performance_21.png",
+      "ic_headset/performance_08.png"
+    ],
+    "grab": [
+      "ic_headset/performance_22.png"
+    ],
+    "throw": [
+      "ic_headset/performance_22.png",
+      "ic_headset/performance_23.png"
+    ],
+    "ram": [
+      "ic_headset/performance_11.png",
+      "ic_headset/performance_12.png",
+      "ic_headset/performance_13.png"
+    ],
+    "beam": [
+      "ic_headset/performance_14.png",
+      "ic_headset/performance_15.png",
+      "ic_headset/performance_15.png",
+      "ic_headset/performance_13.png"
+    ],
+    "call": [
+      "ic_headset/performance_14.png",
+      "ic_headset/performance_15.png",
+      "ic_headset/performance_15.png"
+    ],
+    "seated": [
+      "ic_headset/performance_20.png"
+    ]
+  },
+  "ic_operator": {
+    "walk": [
+      "ic_operator/gait_00.png",
+      "ic_operator/gait_01.png",
+      "ic_operator/gait_02.png",
+      "ic_operator/gait_03.png",
+      "ic_operator/gait_04.png",
+      "ic_operator/gait_05.png",
+      "ic_operator/gait_06.png",
+      "ic_operator/gait_07.png"
+    ],
+    "run": [
+      "ic_operator/gait_00.png",
+      "ic_operator/gait_01.png",
+      "ic_operator/gait_02.png",
+      "ic_operator/gait_03.png",
+      "ic_operator/gait_04.png",
+      "ic_operator/gait_05.png",
+      "ic_operator/gait_06.png",
+      "ic_operator/gait_07.png"
+    ],
+    "idle": [
+      "ic_operator/performance_08.png"
+    ],
+    "block": [
+      "ic_operator/performance_10.png"
+    ],
+    "atk": [
+      "ic_operator/performance_11.png",
+      "ic_operator/performance_12.png",
+      "ic_operator/performance_13.png"
+    ],
+    "punch": [
+      "ic_operator/performance_11.png",
+      "ic_operator/performance_12.png",
+      "ic_operator/performance_13.png"
+    ],
+    "kick": [
+      "ic_operator/performance_14.png",
+      "ic_operator/performance_15.png"
+    ],
+    "hurt": [
+      "ic_operator/performance_16.png",
+      "ic_operator/performance_17.png"
+    ],
+    "stagger": [
+      "ic_operator/performance_16.png",
+      "ic_operator/performance_17.png"
+    ],
+    "fall": [
+      "ic_operator/performance_18.png"
+    ],
+    "down": [
+      "ic_operator/performance_19.png"
+    ],
+    "getup": [
+      "ic_operator/performance_20.png",
+      "ic_operator/performance_21.png",
+      "ic_operator/performance_08.png"
+    ],
+    "grab": [
+      "ic_operator/performance_22.png"
+    ],
+    "throw": [
+      "ic_operator/performance_22.png",
+      "ic_operator/performance_23.png"
+    ],
+    "ram": [
+      "ic_operator/performance_11.png",
+      "ic_operator/performance_12.png",
+      "ic_operator/performance_13.png"
+    ],
+    "beam": [
+      "ic_operator/performance_14.png",
+      "ic_operator/performance_15.png",
+      "ic_operator/performance_15.png",
+      "ic_operator/performance_13.png"
+    ],
+    "call": [
+      "ic_operator/performance_14.png",
+      "ic_operator/performance_15.png",
+      "ic_operator/performance_15.png"
+    ],
+    "seated": [
+      "ic_operator/performance_20.png"
+    ]
+  },
+  "ic_thrower": {
+    "walk": [
+      "ic_thrower/gait_00.png",
+      "ic_thrower/gait_01.png",
+      "ic_thrower/gait_02.png",
+      "ic_thrower/gait_03.png",
+      "ic_thrower/gait_04.png",
+      "ic_thrower/gait_05.png",
+      "ic_thrower/gait_06.png",
+      "ic_thrower/gait_07.png"
+    ],
+    "run": [
+      "ic_thrower/gait_00.png",
+      "ic_thrower/gait_01.png",
+      "ic_thrower/gait_02.png",
+      "ic_thrower/gait_03.png",
+      "ic_thrower/gait_04.png",
+      "ic_thrower/gait_05.png",
+      "ic_thrower/gait_06.png",
+      "ic_thrower/gait_07.png"
+    ],
+    "idle": [
+      "ic_thrower/performance_08.png"
+    ],
+    "block": [
+      "ic_thrower/performance_10.png"
+    ],
+    "atk": [
+      "ic_thrower/performance_14.png",
+      "ic_thrower/performance_15.png",
+      "ic_thrower/performance_13.png"
+    ],
+    "punch": [
+      "ic_thrower/performance_11.png",
+      "ic_thrower/performance_12.png",
+      "ic_thrower/performance_13.png"
+    ],
+    "kick": [
+      "ic_thrower/performance_14.png",
+      "ic_thrower/performance_15.png"
+    ],
+    "hurt": [
+      "ic_thrower/performance_16.png",
+      "ic_thrower/performance_17.png"
+    ],
+    "stagger": [
+      "ic_thrower/performance_16.png",
+      "ic_thrower/performance_17.png"
+    ],
+    "fall": [
+      "ic_thrower/performance_18.png"
+    ],
+    "down": [
+      "ic_thrower/performance_19.png"
+    ],
+    "getup": [
+      "ic_thrower/performance_20.png",
+      "ic_thrower/performance_21.png",
+      "ic_thrower/performance_08.png"
+    ],
+    "grab": [
+      "ic_thrower/performance_22.png"
+    ],
+    "throw": [
+      "ic_thrower/performance_22.png",
+      "ic_thrower/performance_23.png"
+    ],
+    "ram": [
+      "ic_thrower/performance_11.png",
+      "ic_thrower/performance_12.png",
+      "ic_thrower/performance_13.png"
+    ],
+    "beam": [
+      "ic_thrower/performance_14.png",
+      "ic_thrower/performance_15.png",
+      "ic_thrower/performance_15.png",
+      "ic_thrower/performance_13.png"
+    ],
+    "call": [
+      "ic_thrower/performance_14.png",
+      "ic_thrower/performance_15.png",
+      "ic_thrower/performance_15.png"
+    ],
+    "seated": [
+      "ic_thrower/performance_20.png"
+    ]
+  },
+  "ic_security": {
+    "walk": [
+      "ic_security/gait_00.png",
+      "ic_security/gait_01.png",
+      "ic_security/gait_02.png",
+      "ic_security/gait_03.png",
+      "ic_security/gait_04.png",
+      "ic_security/gait_05.png",
+      "ic_security/gait_06.png",
+      "ic_security/gait_07.png"
+    ],
+    "run": [
+      "ic_security/gait_00.png",
+      "ic_security/gait_01.png",
+      "ic_security/gait_02.png",
+      "ic_security/gait_03.png",
+      "ic_security/gait_04.png",
+      "ic_security/gait_05.png",
+      "ic_security/gait_06.png",
+      "ic_security/gait_07.png"
+    ],
+    "idle": [
+      "ic_security/performance_08.png"
+    ],
+    "block": [
+      "ic_security/performance_10.png"
+    ],
+    "atk": [
+      "ic_security/performance_11.png",
+      "ic_security/performance_12.png",
+      "ic_security/performance_13.png"
+    ],
+    "punch": [
+      "ic_security/performance_11.png",
+      "ic_security/performance_12.png",
+      "ic_security/performance_13.png"
+    ],
+    "kick": [
+      "ic_security/performance_14.png",
+      "ic_security/performance_15.png"
+    ],
+    "hurt": [
+      "ic_security/performance_16.png",
+      "ic_security/performance_17.png"
+    ],
+    "stagger": [
+      "ic_security/performance_16.png",
+      "ic_security/performance_17.png"
+    ],
+    "fall": [
+      "ic_security/performance_18.png"
+    ],
+    "down": [
+      "ic_security/performance_19.png"
+    ],
+    "getup": [
+      "ic_security/performance_20.png",
+      "ic_security/performance_21.png",
+      "ic_security/performance_08.png"
+    ],
+    "grab": [
+      "ic_security/performance_22.png"
+    ],
+    "throw": [
+      "ic_security/performance_22.png",
+      "ic_security/performance_23.png"
+    ],
+    "ram": [
+      "ic_security/performance_11.png",
+      "ic_security/performance_12.png",
+      "ic_security/performance_13.png"
+    ],
+    "beam": [
+      "ic_security/performance_14.png",
+      "ic_security/performance_15.png",
+      "ic_security/performance_15.png",
+      "ic_security/performance_13.png"
+    ],
+    "call": [
+      "ic_security/performance_14.png",
+      "ic_security/performance_15.png",
+      "ic_security/performance_15.png"
+    ],
+    "seated": [
+      "ic_security/performance_20.png"
+    ]
+  },
+  "ic_cabinet": {
+    "walk": [
+      "ic_cabinet/gait_00.png",
+      "ic_cabinet/gait_01.png",
+      "ic_cabinet/gait_02.png",
+      "ic_cabinet/gait_03.png",
+      "ic_cabinet/gait_04.png",
+      "ic_cabinet/gait_05.png",
+      "ic_cabinet/gait_06.png",
+      "ic_cabinet/gait_07.png"
+    ],
+    "run": [
+      "ic_cabinet/gait_00.png",
+      "ic_cabinet/gait_01.png",
+      "ic_cabinet/gait_02.png",
+      "ic_cabinet/gait_03.png",
+      "ic_cabinet/gait_04.png",
+      "ic_cabinet/gait_05.png",
+      "ic_cabinet/gait_06.png",
+      "ic_cabinet/gait_07.png"
+    ],
+    "idle": [
+      "ic_cabinet/performance_08.png"
+    ],
+    "block": [
+      "ic_cabinet/performance_10.png"
+    ],
+    "atk": [
+      "ic_cabinet/performance_11.png",
+      "ic_cabinet/performance_12.png",
+      "ic_cabinet/performance_13.png"
+    ],
+    "punch": [
+      "ic_cabinet/performance_11.png",
+      "ic_cabinet/performance_12.png",
+      "ic_cabinet/performance_13.png"
+    ],
+    "kick": [
+      "ic_cabinet/performance_14.png",
+      "ic_cabinet/performance_15.png"
+    ],
+    "hurt": [
+      "ic_cabinet/performance_16.png",
+      "ic_cabinet/performance_17.png"
+    ],
+    "stagger": [
+      "ic_cabinet/performance_16.png",
+      "ic_cabinet/performance_17.png"
+    ],
+    "fall": [
+      "ic_cabinet/performance_18.png"
+    ],
+    "down": [
+      "ic_cabinet/performance_19.png"
+    ],
+    "getup": [
+      "ic_cabinet/performance_20.png",
+      "ic_cabinet/performance_21.png",
+      "ic_cabinet/performance_08.png"
+    ],
+    "grab": [
+      "ic_cabinet/performance_22.png"
+    ],
+    "throw": [
+      "ic_cabinet/performance_22.png",
+      "ic_cabinet/performance_23.png"
+    ],
+    "ram": [
+      "ic_cabinet/performance_11.png",
+      "ic_cabinet/performance_12.png",
+      "ic_cabinet/performance_13.png"
+    ],
+    "beam": [
+      "ic_cabinet/performance_14.png",
+      "ic_cabinet/performance_15.png",
+      "ic_cabinet/performance_15.png",
+      "ic_cabinet/performance_13.png"
+    ],
+    "call": [
+      "ic_cabinet/performance_14.png",
+      "ic_cabinet/performance_15.png",
+      "ic_cabinet/performance_15.png"
+    ],
+    "seated": [
+      "ic_cabinet/performance_20.png"
+    ]
+  },
+  "ic_lead": {
+    "walk": [
+      "ic_lead/gait_00.png",
+      "ic_lead/gait_01.png",
+      "ic_lead/gait_02.png",
+      "ic_lead/gait_03.png",
+      "ic_lead/gait_04.png",
+      "ic_lead/gait_05.png",
+      "ic_lead/gait_06.png",
+      "ic_lead/gait_07.png"
+    ],
+    "run": [
+      "ic_lead/gait_00.png",
+      "ic_lead/gait_01.png",
+      "ic_lead/gait_02.png",
+      "ic_lead/gait_03.png",
+      "ic_lead/gait_04.png",
+      "ic_lead/gait_05.png",
+      "ic_lead/gait_06.png",
+      "ic_lead/gait_07.png"
+    ],
+    "idle": [
+      "ic_lead/performance_08.png"
+    ],
+    "block": [
+      "ic_lead/performance_10.png"
+    ],
+    "atk": [
+      "ic_lead/performance_11.png",
+      "ic_lead/performance_12.png",
+      "ic_lead/performance_13.png"
+    ],
+    "punch": [
+      "ic_lead/performance_11.png",
+      "ic_lead/performance_12.png",
+      "ic_lead/performance_13.png"
+    ],
+    "kick": [
+      "ic_lead/performance_14.png",
+      "ic_lead/performance_15.png"
+    ],
+    "hurt": [
+      "ic_lead/performance_16.png",
+      "ic_lead/performance_17.png"
+    ],
+    "stagger": [
+      "ic_lead/performance_16.png",
+      "ic_lead/performance_17.png"
+    ],
+    "fall": [
+      "ic_lead/performance_18.png"
+    ],
+    "down": [
+      "ic_lead/performance_19.png"
+    ],
+    "getup": [
+      "ic_lead/performance_20.png",
+      "ic_lead/performance_21.png",
+      "ic_lead/performance_08.png"
+    ],
+    "grab": [
+      "ic_lead/performance_22.png"
+    ],
+    "throw": [
+      "ic_lead/performance_22.png",
+      "ic_lead/performance_23.png"
+    ],
+    "ram": [
+      "ic_lead/performance_11.png",
+      "ic_lead/performance_12.png",
+      "ic_lead/performance_13.png"
+    ],
+    "beam": [
+      "ic_lead/performance_14.png",
+      "ic_lead/performance_15.png",
+      "ic_lead/performance_15.png",
+      "ic_lead/performance_13.png"
+    ],
+    "call": [
+      "ic_lead/performance_14.png",
+      "ic_lead/performance_15.png",
+      "ic_lead/performance_15.png"
+    ],
+    "seated": [
+      "ic_lead/performance_20.png"
+    ]
+  },
+  "ic_vendor": {
+    "walk": [
+      "ic_vendor/gait_00.png",
+      "ic_vendor/gait_01.png",
+      "ic_vendor/gait_02.png",
+      "ic_vendor/gait_03.png",
+      "ic_vendor/gait_04.png",
+      "ic_vendor/gait_05.png",
+      "ic_vendor/gait_06.png",
+      "ic_vendor/gait_07.png"
+    ],
+    "run": [
+      "ic_vendor/gait_00.png",
+      "ic_vendor/gait_01.png",
+      "ic_vendor/gait_02.png",
+      "ic_vendor/gait_03.png",
+      "ic_vendor/gait_04.png",
+      "ic_vendor/gait_05.png",
+      "ic_vendor/gait_06.png",
+      "ic_vendor/gait_07.png"
+    ],
+    "idle": [
+      "ic_vendor/performance_08.png"
+    ],
+    "block": [
+      "ic_vendor/performance_10.png"
+    ],
+    "atk": [
+      "ic_vendor/performance_11.png",
+      "ic_vendor/performance_12.png",
+      "ic_vendor/performance_13.png"
+    ],
+    "punch": [
+      "ic_vendor/performance_11.png",
+      "ic_vendor/performance_12.png",
+      "ic_vendor/performance_13.png"
+    ],
+    "kick": [],
+    "hurt": [
+      "ic_vendor/performance_16.png",
+      "ic_vendor/performance_17.png"
+    ],
+    "stagger": [
+      "ic_vendor/performance_16.png",
+      "ic_vendor/performance_17.png"
+    ],
+    "fall": [
+      "ic_vendor/performance_18.png"
+    ],
+    "down": [
+      "ic_vendor/performance_19.png"
+    ],
+    "getup": [
+      "ic_vendor/performance_20.png",
+      "ic_vendor/performance_21.png",
+      "ic_vendor/performance_08.png"
+    ],
+    "grab": [
+      "ic_vendor/performance_11.png"
+    ],
+    "throw": [
+      "ic_vendor/performance_12.png",
+      "ic_vendor/performance_13.png"
+    ],
+    "ram": [
+      "ic_vendor/performance_11.png",
+      "ic_vendor/performance_12.png",
+      "ic_vendor/performance_13.png"
+    ],
+    "beam": [
+      "ic_vendor/performance_13.png"
+    ],
+    "call": [],
+    "seated": [
+      "ic_vendor/performance_20.png"
+    ],
+    "ladle": [
+      "ic_vendor/action_00.png",
+      "ic_vendor/action_01.png",
+      "ic_vendor/action_02.png"
+    ],
+    "utensil": [
+      "ic_vendor/action_03.png",
+      "ic_vendor/action_04.png",
+      "ic_vendor/action_05.png"
+    ],
+    "rush": [
+      "ic_vendor/action_06.png",
+      "ic_vendor/action_07.png",
+      "ic_vendor/action_08.png"
+    ],
+    "valve": [
+      "ic_vendor/action_09.png",
+      "ic_vendor/action_10.png",
+      "ic_vendor/action_11.png"
+    ]
+  },
+  "ic_closer": {
+    "walk": [
+      "ic_closer/gait_00.png",
+      "ic_closer/gait_01.png",
+      "ic_closer/gait_02.png",
+      "ic_closer/gait_03.png",
+      "ic_closer/gait_04.png",
+      "ic_closer/gait_05.png",
+      "ic_closer/gait_06.png",
+      "ic_closer/gait_07.png"
+    ],
+    "run": [
+      "ic_closer/gait_00.png",
+      "ic_closer/gait_01.png",
+      "ic_closer/gait_02.png",
+      "ic_closer/gait_03.png",
+      "ic_closer/gait_04.png",
+      "ic_closer/gait_05.png",
+      "ic_closer/gait_06.png",
+      "ic_closer/gait_07.png"
+    ],
+    "idle": [
+      "ic_closer/performance_08.png"
+    ],
+    "block": [
+      "ic_closer/performance_10.png"
+    ],
+    "atk": [
+      "ic_closer/performance_11.png",
+      "ic_closer/performance_12.png",
+      "ic_closer/performance_13.png"
+    ],
+    "punch": [
+      "ic_closer/performance_11.png",
+      "ic_closer/performance_12.png",
+      "ic_closer/performance_13.png"
+    ],
+    "kick": [
+      "ic_closer/performance_14.png",
+      "ic_closer/performance_15.png"
+    ],
+    "hurt": [
+      "ic_closer/performance_16.png",
+      "ic_closer/performance_17.png"
+    ],
+    "stagger": [
+      "ic_closer/performance_16.png",
+      "ic_closer/performance_17.png"
+    ],
+    "fall": [
+      "ic_closer/performance_18.png"
+    ],
+    "down": [
+      "ic_closer/performance_19.png"
+    ],
+    "getup": [
+      "ic_closer/performance_20.png",
+      "ic_closer/performance_21.png",
+      "ic_closer/performance_08.png"
+    ],
+    "grab": [
+      "ic_closer/performance_22.png"
+    ],
+    "throw": [
+      "ic_closer/performance_22.png",
+      "ic_closer/performance_23.png"
+    ],
+    "ram": [
+      "ic_closer/performance_11.png",
+      "ic_closer/performance_12.png",
+      "ic_closer/performance_13.png"
+    ],
+    "beam": [
+      "ic_closer/performance_14.png",
+      "ic_closer/performance_15.png",
+      "ic_closer/performance_15.png",
+      "ic_closer/performance_13.png"
+    ],
+    "call": [
+      "ic_closer/action_09.png",
+      "ic_closer/action_10.png",
+      "ic_closer/action_11.png"
+    ],
+    "seated": [
+      "ic_closer/performance_20.png"
+    ],
+    "boxing": [
+      "ic_closer/action_00.png",
+      "ic_closer/action_01.png",
+      "ic_closer/action_02.png"
+    ],
+    "handset": [
+      "ic_closer/action_03.png",
+      "ic_closer/action_04.png",
+      "ic_closer/action_05.png"
+    ],
+    "shove": [
+      "ic_closer/action_06.png",
+      "ic_closer/action_07.png",
+      "ic_closer/action_08.png"
+    ]
+  },
+  "ic_closer_damaged": {
+    "walk": [
+      "ic_closer_damaged/gait_00.png",
+      "ic_closer_damaged/gait_01.png",
+      "ic_closer_damaged/gait_02.png",
+      "ic_closer_damaged/gait_03.png",
+      "ic_closer_damaged/gait_04.png",
+      "ic_closer_damaged/gait_05.png",
+      "ic_closer_damaged/gait_06.png",
+      "ic_closer_damaged/gait_07.png"
+    ],
+    "run": [
+      "ic_closer_damaged/gait_00.png",
+      "ic_closer_damaged/gait_01.png",
+      "ic_closer_damaged/gait_02.png",
+      "ic_closer_damaged/gait_03.png",
+      "ic_closer_damaged/gait_04.png",
+      "ic_closer_damaged/gait_05.png",
+      "ic_closer_damaged/gait_06.png",
+      "ic_closer_damaged/gait_07.png"
+    ],
+    "idle": [
+      "ic_closer_damaged/performance_08.png"
+    ],
+    "block": [
+      "ic_closer_damaged/performance_10.png"
+    ],
+    "atk": [
+      "ic_closer_damaged/performance_11.png",
+      "ic_closer_damaged/performance_12.png",
+      "ic_closer_damaged/performance_13.png"
+    ],
+    "punch": [
+      "ic_closer_damaged/performance_11.png",
+      "ic_closer_damaged/performance_12.png",
+      "ic_closer_damaged/performance_13.png"
+    ],
+    "kick": [
+      "ic_closer_damaged/performance_14.png",
+      "ic_closer_damaged/performance_15.png"
+    ],
+    "hurt": [
+      "ic_closer_damaged/performance_16.png",
+      "ic_closer_damaged/performance_17.png"
+    ],
+    "stagger": [
+      "ic_closer_damaged/performance_16.png",
+      "ic_closer_damaged/performance_17.png"
+    ],
+    "fall": [
+      "ic_closer_damaged/performance_18.png"
+    ],
+    "down": [
+      "ic_closer_damaged/performance_19.png"
+    ],
+    "getup": [
+      "ic_closer_damaged/performance_20.png",
+      "ic_closer_damaged/performance_21.png",
+      "ic_closer_damaged/performance_08.png"
+    ],
+    "grab": [
+      "ic_closer_damaged/performance_22.png"
+    ],
+    "throw": [
+      "ic_closer_damaged/performance_22.png",
+      "ic_closer_damaged/performance_23.png"
+    ],
+    "ram": [
+      "ic_closer_damaged/performance_11.png",
+      "ic_closer_damaged/performance_12.png",
+      "ic_closer_damaged/performance_13.png"
+    ],
+    "beam": [
+      "ic_closer_damaged/performance_14.png",
+      "ic_closer_damaged/performance_15.png",
+      "ic_closer_damaged/performance_15.png",
+      "ic_closer_damaged/performance_13.png"
+    ],
+    "call": [
+      "ic_closer_damaged/action_09.png",
+      "ic_closer_damaged/action_10.png",
+      "ic_closer_damaged/action_11.png"
+    ],
+    "seated": [
+      "ic_closer_damaged/performance_20.png"
+    ],
+    "boxing": [
+      "ic_closer_damaged/action_00.png",
+      "ic_closer_damaged/action_01.png",
+      "ic_closer_damaged/action_02.png"
+    ],
+    "handset": [
+      "ic_closer_damaged/action_03.png",
+      "ic_closer_damaged/action_04.png",
+      "ic_closer_damaged/action_05.png"
+    ],
+    "shove": [
+      "ic_closer_damaged/action_06.png",
+      "ic_closer_damaged/action_07.png",
+      "ic_closer_damaged/action_08.png"
     ]
   }
 }

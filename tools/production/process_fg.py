@@ -22,7 +22,7 @@ from tone import band_stats, match_tone
 RS = 2
 SRC = "assets/sources/production/fg/"
 OUT = "assets/fg/"
-WALL = "assets/stages/dirty_delhi/wall.png"
+WALL = "assets/stages/dirty_delhi/rebuild/market.png"
 LAIR_WALL = "assets/lair/wall.png"
 # Pieces that belong to THE LAIR rather than the street, so they are graded down from
 # the lair's plate. Picked per name rather than passed in: a --wall that applied to a

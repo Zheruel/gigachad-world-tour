@@ -41,7 +41,6 @@ export const G = {
   arenaSqueezeTarget: 0,
   ringWobble: 0,        // frames the crowd around the chalk ring jumps for
   train: null,            // THE NIGHT TRAIN's state, js/train.js; null on every other stage
-  sluice: null,           // { t } once the outfall is armed, for the ghat's rhythm
   runnerEscaped: false,   // the dabbawala got away, so the next gate is two men heavier
   introResume: null,      // wave state parked across a miniboss reveal
   shutterT: 0,            // shopfront rollers, driven by G.locked

@@ -1,18 +1,15 @@
-// delhi_bosses.js - the two DIRTY DELHI fights with their own mechanics. Each one is a set of hooks the shared
-// boss machine in bosses.js calls: init on spawn, update (return true to own the frame,
-// false to fall through to the generic hurt/down/dying/grab states), draw, and the
-// reactions to being hurt, enraged and killed. Every fight has one thing that is not
-// damage: Pappu's ring, the dredger's winch and cab.
-import { G, W, FLOOR_TOP, FLOOR_BOT, clamp, irand, diff, arenaMin, arenaMax, laneMin, fall, inAir } from './engine.js';
+// Retained Dredger mechanics: winch, bucket, reflected hose and cab operator.
+// Hooks run through the shared boss lifecycle without altering its combat rules.
+import { G, W, FLOOR_BOT, clamp, irand, diff, arenaMin, arenaMax, laneMin, fall } from './engine.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
 import { ASSETS } from './assets.js';
-import { spawnSpark, spawnDust, spawnShock, spawnPop, spawnRing, spawnDebris, impact } from './effects.js';
-import { hurtPlayer, grabPlayer, resolveIncomingHit } from './player.js';
-import { spawnShot, spawnArc, spawnZone } from './shots.js';
+import { spawnSpark, spawnDust, spawnShock, spawnPop, spawnDebris, impact } from './effects.js';
+import { hurtPlayer, resolveIncomingHit } from './player.js';
+import { spawnShot, spawnZone } from './shots.js';
 import { spawnEnemy, aliveEnemies } from './enemies.js';
 import { createProp } from './props.js';
 import { reactStage } from './ambience.js';
-import { PARRY_CLASS, tryHitPlayer, hitEnemiesNear, blitTelegraph, drawCueMarker } from './bosslib.js';
+import { tryHitPlayer, hitEnemiesNear, blitTelegraph, drawCueMarker } from './bosslib.js';
 
 const cdScale = (b) => (b.enraged ? 0.6 : 1) / diff().aggro;
 const bossSpeed = (b) => b.def.speed * (b.enraged ? 1.45 : 1) * diff().aggro;
@@ -32,137 +29,6 @@ function say(b, line) {
   b.lastLine = G.rawTime;
   spawnPop(b.x, b.y - b.z - b.h - 8, line);
 }
-
-// ============================================================ USTAD PAPPU
-// The fight is the arena: the crowd walks inward and the walls tighten from 480 to
-// about 300. No weapons, no projectiles, nothing to break - and poise, so trading
-// loses and you have to parry the charge.
-const PAPPU_WIND = { charge: 24, grab: 14, stomp: 28 };
-const pappu = {
-  init(b) {
-    b.poise = 3; b.maxPoise = 3; b.poiseT = 0;
-    b.mashNeed = 9; b.slamDmg = 17;
-    G.arenaSqueezeTarget = 88;
-  },
-  intro(b, t) {
-    // the crowd closes while he walks in
-    const sq = G.arenaSqueezeTarget - G.arenaSqueeze;
-    if (sq) G.arenaSqueeze += clamp(sq, -0.6, 0.6);
-    if (t > 28 && b.x > G.camX + 320) b.x -= 0.9;
-    b.introWalking = t > 28 && b.x > G.camX + 320;
-  },
-  update(b) {
-    const p = G.player;
-    if (b.poise < b.maxPoise && ++b.poiseT > 150) { b.poise = b.maxPoise; b.poiseT = 0; }
-    const spd = bossSpeed(b);
-    switch (b.state) {
-      case 'idle': {
-        approach(b, spd, 24, 44);
-        if (--b.atkCd <= 0) {
-          const d = Math.abs(p.x - b.x);
-          const pick = [];
-          if (d > 80) pick.push('charge', 'charge');
-          if (d < 64) pick.push('grab');
-          if (d < 110) pick.push('stomp', 'stomp');
-          if (d > 50 && d < 140) pick.push('charge');
-          b.pattern = pick.length ? pick[irand(0, pick.length - 1)] : 'stomp';
-          if (Math.random() < 0.35) say(b, b.def.lines[irand(0, b.def.lines.length - 1)]);
-          b.state = 'windup'; b.t = 0; b.hitLanded = false;
-        }
-        return true;
-      }
-      case 'windup': {
-        if (b.t >= PAPPU_WIND[b.pattern]) {
-          b.state = b.pattern; b.t = 0; b.hitLanded = false;
-          if (b.pattern === 'charge') { b.vx = b.face * (b.enraged ? 4.0 : 3.4); G.audio.sfx('dash'); }
-          if (b.pattern === 'stomp') G.audio.sfx('whiff');
-        }
-        return true;
-      }
-      case 'charge': {
-        // shoulder first, the whole man behind it. Countering it is the fight's answer.
-        b.x += b.vx;
-        if (b.t % 3 === 0) spawnDust(b.x - b.face * 14, b.y, 1);
-        if (!b.hitLanded && tryHitPlayer(b, 12, 46, true, 16)) b.hitLanded = true;
-        const wallHit = b.x <= arenaMin() + 2 || b.x >= arenaMax() - 2;
-        if (b.t > 30 || wallHit || (b.hitLanded && b.t > 6)) {
-          b.vx = 0; b.state = 'recover'; b.t = 0; b.recover = wallHit ? 48 : 36;
-          if (wallHit) { G.shake = Math.max(G.shake, 5); spawnDust(b.x, b.y, 4); }
-        }
-        return true;
-      }
-      case 'stomp': {
-        // the ground shakes: on the floor you are hit, in the air you are not
-        if (b.t === 6) {
-          G.shake = Math.max(G.shake, 8);
-          spawnShock(b.x, b.y);
-          spawnRing(b.x, b.y - 4, '#e8d0a0');
-          spawnDust(b.x - 20, b.y, 3); spawnDust(b.x + 20, b.y, 3);
-          G.ringWobble = 40;
-          G.audio.sfx('slam');
-          if (Math.abs(p.x - b.x) < 88 && Math.abs(p.y - b.y) < 26 && p.z < 14 && !p.dying
-              && p.state !== 'down' && p.state !== 'getup') {
-            hurtPlayer(p, 13, p.x < b.x ? -1 : 1, true);
-            spawnSpark(p.x, p.y - 30);
-          }
-          hitEnemiesNear(b.x, b.y, 88, 26, 10, undefined, true);
-          reactStage(b.x, 1.4);
-        }
-        if (b.t > 36) { b.state = 'idle'; b.atkCd = irand(60, 100) * cdScale(b); }
-        return true;
-      }
-      default: return false;   // grab, grabhold, recover, hurt, stagger, down, dying
-    }
-  },
-  onHurt(b, dmg, heavy, launch) {
-    // poise 3: he does not flinch until the third light hit in a row
-    if (b.poise > 0 && !heavy && !launch && b.state !== 'grabhold') {
-      b.poise--; b.poiseT = 0;
-      G.audio.sfx('armor');
-      return true;
-    }
-    b.poise = b.maxPoise;
-    return false;
-  },
-  onEnrage(b) {
-    // he throws the first man out of the ring, and the crowd widens it by 60
-    G.arenaSqueezeTarget = 58;
-    G.ringWobble = 60;
-    spawnDebris(arenaMax() - 6, 200, 8, ['#241a14', '#c8a070', '#e8e0cc']);
-  },
-  onDeath(b) { G.arenaSqueezeTarget = 0; },
-  frame(b) {
-    switch (b.state) {
-      case 'idle': return b.moved > 0.2 ? ['walk', Math.floor(b.stridePhase / 7) & 3] : ['idle', (G.time >> 4) & 3];
-      case 'windup': return b.pattern === 'charge' ? ['charge', 0] : b.pattern === 'grab' ? ['grab', 0] : ['stomp', Math.min(2, b.t >> 3)];
-      case 'charge': return ['charge', b.t < 10 ? 1 : 2];
-      case 'recover': return [b.pattern === 'charge' ? 'charge' : 'stomp', 3];
-      case 'stomp': return ['stomp', 3];
-      case 'grab': return ['grab', b.t < 8 ? 0 : 1];
-      case 'grabhold': return ['grab', 2];
-      case 'hurt': return ['hurt', b.t < 5 ? 1 : 0];
-      case 'stagger': return ['hurt', (b.t >> 3) & 1];
-      case 'down': case 'dying': return ['down', 0];
-    }
-    return ['idle', 0];
-  },
-  draw(ctx, b, camX) {
-    const [name, idx] = pappu.frame(b);
-    const f = getFrame(b.set, name, idx, b.face);
-    const sx = Math.round(b.x - camX), sy = Math.round(b.y - b.z);
-    const dx = sx - Math.round(frameW(f) / 2), dy = sy - frameH(f) + 4;
-    const cue = b.state === 'windup' && b.t > 6;
-    blitTelegraph(ctx, b, f, dx, dy, cue);
-    if (cue) drawCueMarker(ctx, b, sx, sy - b.h - 8);
-    // poise pips: three, and every light hit takes one until he flinches
-    if (!b.dead && b.maxPoise) {
-      for (let i = 0; i < b.maxPoise; i++) {
-        ctx.fillStyle = i < b.poise ? '#f0e0b0' : 'rgba(40,24,20,0.7)';
-        ctx.fillRect(sx - 8 + i * 6, sy - b.h - 2, 4, 3);
-      }
-    }
-  },
-};
 
 // ============================================================ THE DREDGER
 // A machine. The bucket is the boss's body: hittable when it is down on the pontoon
@@ -206,12 +72,13 @@ const dredger = {
   crew(b) {
     // the guard: there must always be something to punch
     if (b.crewCd > 0) b.crewCd--;
-    const mud = G.enemies.filter((e) => !e.dead && e.kind === 'mudlark').length;
+    const crewKind = G.stage?.chapter ? 'ic_docker' : 'mudlark';
+    const mud = G.enemies.filter((e) => !e.dead && (e.kind === crewKind || e.trainType === crewKind)).length;
     if (b.z > 34 && aliveEnemies() === 0 && b.crewCd > 150) b.crewCd = 150;
     if (b.crewCd <= 0 && mud < 2 && aliveEnemies() < 4) {
       b.crewCd = b.winchGone ? 660 : 1140;
-      spawnEnemy('mudlark', G.camX + 60, laneMin(G.camX + 60));
-      spawnEnemy('mudlark', G.camX + W - 80, laneMin(G.camX + W - 80));
+      spawnEnemy(crewKind, G.camX + 60, laneMin(G.camX + 60));
+      spawnEnemy(crewKind, G.camX + W - 80, laneMin(G.camX + W - 80));
       spawnPop(G.camX + W / 2, 150, 'OVER THE SIDE');
       G.audio.sfx('blip');
     }
@@ -231,7 +98,7 @@ const dredger = {
     G.shake = Math.max(G.shake, 6);
     G.audio.sfx('ko');
     // the crane goes still
-    G.enemies.forEach((e) => { if (e.kind === 'mudlark' && !e.dead) e.hurt(999, 1, true, true); });
+    G.enemies.forEach((e) => { if ((e.kind === 'mudlark' || e.trainType === 'ic_docker') && !e.dead) e.hurt(999, 1, true, true); });
   },
   update(b) {
     const p = G.player;
@@ -266,6 +133,11 @@ const dredger = {
     }
     // ---- the machine ----
     if (b.hp <= OPERATOR_HP && !b.dead) { dredger.operatorPhase(b); return true; }
+    // Shared parry/super recovery returns bosses to recover/idle. A severed
+    // winch cannot hoist its bucket again when that protected opening ends.
+    if (b.dead_bucket && ['idle','recover','rise'].includes(b.state)) {
+      b.state = 'grounded'; b.t = 0; b.z = b.vz = b.vx = 0;
+    }
     dredger.crew(b);
     if (b.hoseCd > 0) b.hoseCd--;
     if (b.jaws > 0) b.jaws--;
@@ -406,6 +278,13 @@ const dredger = {
   },
   onHurt(b, dmg, heavy, launch) {
     if (b.phase === 'operator') return false;
+    // Resolve the threshold before the shared death branch. A large final hit
+    // used to kill the machine outright, skipping its living operator.
+    if (b.hp <= OPERATOR_HP) {
+      b.hp = OPERATOR_HP;
+      if (!b.superLocked && !b.protectedStagger) dredger.operatorPhase(b);
+      return true;
+    }
     // a machine does not flinch; it just takes it
     if (b.state === 'grounded' && heavy) { G.shake = Math.max(G.shake, 4); spawnDust(b.x, b.y, 2); }
     return true;
@@ -504,7 +383,7 @@ const dredger = {
   },
 };
 
-export const DELHI = { pappu, dredger };
+export const DELHI = { dredger };
 
 export function initDelhi(b) {
   const d = DELHI[b.key];

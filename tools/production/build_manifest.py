@@ -12,7 +12,7 @@ import os
 FRAMES = "assets/frames/"
 
 BOSSES = {
-    "raja": "raja", "mirchi": "mirchi", "refund": "refund", "yadav": "yadav", "rana": "rana",
+    "raja": "raja", "refund": "refund", "yadav": "yadav", "rana": "rana",
 }
 ENEMIES = {
     "goonda": "goonda", "batta": "batta", "masala": "masala",
@@ -170,36 +170,6 @@ D1_ENEMIES = {
     },
 }
 
-# The two minibosses draw through the boss state machine, which asks for
-# idle / walk / punch / grab / slam / hurt / down.
-D1_BOSSES = {
-    "pappu": {
-        "idle": ["pappu_idle1.png", "pappu_idle2.png", "pappu_idle3.png", "pappu_idle4.png"],
-        "walk": ["pappu_walk1.png", "pappu_walk2.png", "pappu_walk3.png", "pappu_walk4.png"],
-        "punch": ["pappu_charge2.png", "pappu_charge3.png", "pappu_charge4.png"],
-        "charge": ["pappu_charge1.png", "pappu_charge2.png", "pappu_charge3.png", "pappu_charge4.png"],
-        "grab": ["pappu_grab1.png", "pappu_grab2.png", "pappu_grab3.png"],
-        "slam": ["pappu_stomp2.png", "pappu_stomp3.png", "pappu_stomp4.png"],
-        "stomp": ["pappu_stomp1.png", "pappu_stomp2.png", "pappu_stomp3.png", "pappu_stomp4.png"],
-        "hurt": ["pappu_hurt1.png", "pappu_hurt2.png"],
-        "down": ["pappu_hurt3.png"],
-    },
-    "mirchi": {
-        "idle": ["mirchi_idle1.png", "mirchi_idle2.png", "mirchi_idle3.png", "mirchi_idle4.png"],
-        "walk": ["mirchi_walk1.png", "mirchi_walk2.png", "mirchi_walk3.png", "mirchi_walk4.png"],
-        # the samosa lob
-        "punch": ["mirchi_throw1.png", "mirchi_throw2.png", "mirchi_throw3.png"],
-        # the chutney ladle: overhead, swing, low, recover
-        "slam": ["mirchi_ladle1.png", "mirchi_ladle2.png", "mirchi_ladle3.png", "mirchi_ladle4.png"],
-        "chilli": ["mirchi_chilli1.png", "mirchi_chilli2.png", "mirchi_chilli3.png", "mirchi_chilli4.png"],
-        # the cart shove, and the same reach for the grab
-        "charge": ["mirchi_shove1.png", "mirchi_shove2.png", "mirchi_shove3.png", "mirchi_shove4.png"],
-        "grab": ["mirchi_shove1.png", "mirchi_shove4.png", "mirchi_shove4.png"],
-        "hurt": ["mirchi_hurt1.png", "mirchi_hurt2.png"],
-        "down": ["mirchi_hurt3.png"],
-    },
-}
-
 
 def existing(files):
     return [f for f in files if os.path.exists(FRAMES + f)]
@@ -228,13 +198,13 @@ def main():
             manifest[key] = s
     # DIRTY DELHI carries its states literally rather than through a shared template:
     # every family was generated as strips with its own pose list.
-    for key, states in {**D1_ENEMIES, **D1_BOSSES}.items():
+    for key, states in D1_ENEMIES.items():
         got = {state: existing(files) for state, files in states.items()}
         got = {k: v for k, v in got.items() if v}
         if got:
             manifest[key] = got
     previous=json.loads(Path(FRAMES+'manifest.json').read_text())
-    manifest.update({k:v for k,v in previous.items() if k.startswith('nr_')})
+    manifest.update({k:v for k,v in previous.items() if k.startswith(('nr_', 'ic_'))})
     with open(FRAMES + "manifest.json", "w") as f:
         json.dump(manifest, f, indent=2)
     if '--prune' in sys.argv:

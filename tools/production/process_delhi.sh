@@ -21,7 +21,6 @@ run batta   164
 run masala  158
 run bandar   92
 run pehlwan 194
-run mirchi  200
 run yadav   216
 
 $PY tools/production/build_manifest.py --prune

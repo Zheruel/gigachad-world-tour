@@ -5,7 +5,7 @@ export const titleReady = Promise.all([loadTitleMotion(),loadDisplayType()]).the
 // screens.js - title, stage intro, boss intro, stage clear, ending, game over
 import { G, W, H } from './engine.js';
 import { SPR, drawText, drawTextShadow, textWidth, getFrame, blit, frameW, frameH } from './sprites.js';
-import { drawStage, drawRingCrowd, STAGES } from './stages.js';
+import { drawStage, STAGES } from './stages.js';
 import { ASSETS } from './assets.js';
 import { drawProp } from './props.js';
 import { drawTrainOverlay } from './train.js';
@@ -134,12 +134,7 @@ export function drawBossIntro(ctx, camX) {
     // crowd closing, the wire, the bucket coming down out of the dark.
     for (const pr of G.props) if (!pr.broken && pr.x > camX - 40 && pr.x < camX + W + 40) drawProp(ctx, pr, camX);
     b.delhi.draw(ctx, b, camX);
-    if (b.key === 'pappu') {
-      drawRingCrowd(ctx, camX);
-      ctx.fillStyle = 'rgba(30,14,6,0.84)'; ctx.fillRect(0, 202, W, 68);
-      drawTextShadow(ctx, 'NO WEAPONS. NO ROOM. NO LEAVING.', center('NO WEAPONS. NO ROOM. NO LEAVING.', 1), 214, '#e8d0a0', 1);
-      drawTextShadow(ctx, 'USTAD PAPPU', center('USTAD PAPPU', 2), 232, '#ffb860', 2);
-    } else if (b.key === 'vikram') {
+    if (b.key === 'vikram') {
       if(t>=180){
        ctx.fillStyle='rgba(8,6,12,.9)';ctx.fillRect(0,230,W,40);
        drawDisplayTitle(ctx,'COMMISSIONER SETH',W/2,234,{height:19,maxWidth:310});
@@ -150,11 +145,13 @@ export function drawBossIntro(ctx, camX) {
     } else if (b.key === 'conductor') {
       if(t>=210){drawDisplayTitle(ctx,'HEAD CONDUCTOR',W/2,244,{height:17,maxWidth:270});drawDialogue(ctx,{text:'TICKET. CASH ONLY.',x:b.x-camX,bottom:115,age:t-210,remaining:300-t,width:180});}
       return;
-    } else if (b.key === 'mirchi') {
-      if (t > 30 && t < 40) { ctx.fillStyle = 'rgba(255,200,120,0.2)'; ctx.fillRect(0, 0, W, H); }
-      ctx.fillStyle = 'rgba(20,8,6,0.84)'; ctx.fillRect(0, 202, W, 68);
-      drawTextShadow(ctx, 'ONE PLATE. NO REFUND.', center('ONE PLATE. NO REFUND.', 1), 214, '#f0d0b0', 1);
-      drawTextShadow(ctx, 'MIRCHI - THE CHAAT KING', center('MIRCHI - THE CHAAT KING', 2), 232, '#ff7040', 2);
+    } else if (b.key === 'vendor' || b.key === 'closer') {
+      if (t >= 58) {
+        ctx.fillStyle = 'rgba(12,8,10,.72)'; ctx.fillRect(74,237,332,30);
+        drawDisplayTitle(ctx,b.def.name,W/2,241,{height:20,maxWidth:308});
+      }
+      if (t >= 76) drawDialogue(ctx,{text:b.def.taunt,x:b.x-camX,bottom:116,age:t-76,remaining:210-t,width:210});
+      return;
     } else {
       // the dredger's floodlight snaps on with the winch
       if (t > 50) { ctx.fillStyle = `rgba(255,240,200,${t < 58 ? 0.3 : 0.06})`; ctx.fillRect(0, 0, W, H); }
@@ -176,20 +173,6 @@ export function drawBossIntro(ctx, camX) {
     ctx.fillStyle = 'rgba(20,8,2,0.86)'; ctx.fillRect(0, 202, W, 68);
     drawTextShadow(ctx, 'THE METER STOPS HERE', center('THE METER STOPS HERE', 1), 214, '#ffd66a', 1);
     drawTextShadow(ctx, 'RICKSHAW RAJA', center('RICKSHAW RAJA', 2), 232, '#48d278', 2);
-  } else if (b.key === 'mirchi') {
-    // The cart is his arena and his first mechanic: show it before the health bar.
-    if (b.cart) drawProp(ctx, b.cart, camX);
-    bossFrame(t < 72 ? 'idle' : t < 126 ? 'punch' : 'slam', t < 72 ? 0 : t < 126 ? 1 : 2);
-    for (let i = 0; i < 4; i++) {
-      const k = ((t + i * 17) % 55) / 55;
-      ctx.globalAlpha = (1 - k) * 0.32;
-      ctx.fillStyle = '#fff5df';
-      ctx.beginPath(); ctx.ellipse(b.x - camX - 24 + i * 5, 173 - k * 32, 3 + k * 6, 2 + k * 4, 0, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(24,7,3,0.82)'; ctx.fillRect(0, 204, W, 66);
-    drawTextShadow(ctx, 'THE KITCHEN CLOSES WHEN YOU DO', center('THE KITCHEN CLOSES WHEN YOU DO', 1), 214, '#ffd94a', 1);
-    drawTextShadow(ctx, 'MIRCHI - THE CHAAT KING', center('MIRCHI - THE CHAAT KING', 2), 232, '#ff7044', 2);
   } else if (b.key === 'refund') {
     // Fluorescent office blackout, monitor wake-up, then the manager walks
     // out of the lift while every abandoned phone begins to ring.
@@ -249,18 +232,24 @@ export function drawBossIntro(ctx, camX) {
 }
 
 export function drawClear(ctx) {
-  const trainClear=G.stage?.id==='train';
+  const trainClear=G.stage?.id==='train'||G.stage?.chapter;
+  const chapter=!!G.stage?.chapter;
+  // The chapter's victory can finish anywhere in its arena. Put the tally on
+  // the opposite side of CHAD so his final pose remains visible.
+  const panelX=chapter?(G.player.x-G.camX>240?14:256):26;
+  const panelW=chapter?210:340,mid=chapter?panelX+panelW/2:trainClear?196:W/2;
+  const centered=text=>Math.round(mid-textWidth(text,1)/2);
   const t = G.rawTime - G.stateT - (trainClear?45:0);
   if(t<0)return;
   // the arena dims over the boss he just put down; nothing slams in
   ctx.fillStyle = `rgba(10,6,10,${0.78 * Math.min(1, t / 24)})`;
-  if(trainClear){ctx.fillRect(26,12,340,228);ctx.strokeStyle='#776044';ctx.strokeRect(26.5,12.5,339,227);}else ctx.fillRect(0, 0, W, H);
+  if(trainClear){ctx.fillRect(panelX,12,panelW,228);ctx.strokeStyle='#776044';ctx.strokeRect(panelX+.5,12.5,panelW-1,227);}else ctx.fillRect(0, 0, W, H);
   if (t < 12&&!trainClear) return;
-  drawDisplayTitle(ctx,trainClear?'CHAD WINS':'STAGE CLEAR',trainClear?196:W/2,24,{height:28,maxWidth:300});
+  drawDisplayTitle(ctx,trainClear?'CHAD WINS':'STAGE CLEAR',mid,24,{height:28,maxWidth:chapter?190:300});
   const cleared = G.stage ? G.stage.name : '';
-  drawTextShadow(ctx, cleared, center(cleared, 1)-(trainClear?44:0), 56, '#c8c0e0', 1);
+  drawTextShadow(ctx, cleared, centered(cleared), 56, '#c8c0e0', 1);
   // the tally sits over the arena he won, with him still standing in it
-  if (ASSETS.portrait_chad_48) blit(ctx, ASSETS.portrait_chad_48, 46, 112);
+  if (ASSETS.portrait_chad_48) blit(ctx, ASSETS.portrait_chad_48, chapter?panelX+10:46, 112);
   const st = G.clearStats || { hits: 0, kos: 0, bonus: 0, combo: 0 };
   let y = 82;
   const lines = [
@@ -273,18 +262,18 @@ export function drawClear(ctx) {
   const shown = Math.min(lines.length, 1 + ((t - 12) / 26 | 0));
   for (let i = 0; i < shown; i++) {
     const [label, val] = lines[i];
-    drawTextShadow(ctx, label, 150, y, i === lines.length - 1 ? '#ffd94a' : '#c8c0e0', 1);
-    drawTextShadow(ctx, String(val), 336 - textWidth(String(val), 1), y, '#f8f0e0', 1);
+    drawTextShadow(ctx, label, chapter?panelX+68:150, y, i === lines.length - 1 ? '#ffd94a' : '#c8c0e0', 1);
+    drawTextShadow(ctx, String(val), (chapter?panelX+200:336) - textWidth(String(val), 1), y, '#f8f0e0', 1);
     y += 12;
   }
   const last = G.stageIndex >= STAGE_COUNT - 1;
   if (t > 120 && !last) {
     const next = 'NEXT - ' + STAGE_NAMES[G.stageIndex + 1];
-    drawTextShadow(ctx, next, center(next, 1)-(trainClear?44:0), 196, '#d85838', 1);
+    drawTextShadow(ctx, next, centered(next), 196, '#d85838', 1);
   }
   if (t > 150 && ((G.rawTime >> 4) & 1)) {
     const msg = trainClear?'F / LB: CONTINUE':last ? 'PRESS Z' : 'PRESS Z TO CONTINUE';
-    drawTextShadow(ctx, msg, center(msg, 1)-(trainClear?44:0), 220, '#ffd94a', 1);
+    drawTextShadow(ctx, msg, centered(msg), 220, '#ffd94a', 1);
   }
 }
 
@@ -293,16 +282,17 @@ const CREDITS = [
   '',
   'CHAD',
   '',
-  'FIVE ROADS THROUGH DELHI',
+  'THE INDIA CHAPTER',
   '',
-  'GOONDA  BATTA  MASALA  BANDAR  PEHLWAN',
-  'RICKSHAW PUNK  CONSTABLE  OPERATOR  CHAIN SEPOY',
+  'THE NIGHT TRAIN',
+  'DIRTY DELHI',
+  'REFUND TOWER',
   '',
-  'RICKSHAW RAJA - KING OF THE METER',
-  'MIRCHI - THE CHAAT KING',
-  'MR. REFUND - ESCALATION MANAGER',
-  'INSPECTOR YADAV - CHANDNI CHOWK POLICE',
-  'COMMANDER RANA - THE IRON LION',
+  'HEAD CONDUCTOR',
+  'COMMISSIONER SETH',
+  'THE VENDOR',
+  'THE DREDGER',
+  'THE CLOSER',
   '',
   'HE DOES NOT DO IT FOR MONEY',
   'HE DOES NOT DO IT FOR GLORY',
