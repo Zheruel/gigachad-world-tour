@@ -230,50 +230,7 @@ export function drawBossIntro(ctx, camX) {
 }
 
 export function drawClear(ctx) {
-  if(G.stage?.id==='train'||G.stage?.chapter){drawResults(ctx,G.rawTime-G.stateT);return;}
-  const trainClear=G.stage?.id==='train'||G.stage?.chapter;
-  const chapter=!!G.stage?.chapter;
-  // The chapter's victory can finish anywhere in its arena. Put the tally on
-  // the opposite side of CHAD so his final pose remains visible.
-  const panelX=chapter?(G.player.x-G.camX>240?14:256):26;
-  const panelW=chapter?210:340,mid=chapter?panelX+panelW/2:trainClear?196:W/2;
-  const centered=text=>Math.round(mid-textWidth(text,1)/2);
-  const t = G.rawTime - G.stateT - (trainClear?45:0);
-  if(t<0)return;
-  // the arena dims over the boss he just put down; nothing slams in
-  ctx.fillStyle = `rgba(10,6,10,${0.78 * Math.min(1, t / 24)})`;
-  if(trainClear){ctx.fillRect(panelX,12,panelW,228);ctx.strokeStyle='#776044';ctx.strokeRect(panelX+.5,12.5,panelW-1,227);}else ctx.fillRect(0, 0, W, H);
-  if (t < 12&&!trainClear) return;
-  drawDisplayTitle(ctx,trainClear?'CHAD WINS':'STAGE CLEAR',mid,24,{height:28,maxWidth:chapter?190:300});
-  const cleared = G.stage ? G.stage.name : '';
-  drawTextShadow(ctx, cleared, centered(cleared), 56, '#c8c0e0', 1);
-  // the tally sits over the arena he won, with him still standing in it
-  if (ASSETS.portrait_chad_48) blit(ctx, ASSETS.portrait_chad_48, chapter?panelX+10:46, 112);
-  const st = G.clearStats || { hits: 0, kos: 0, bonus: 0, combo: 0 };
-  let y = 82;
-  const lines = [
-    ['HIT BONUS', st.hits * 10],
-    ['KO BONUS', st.kos * 100],
-    ['BEST COMBO', st.combo],
-    ['LIFE BONUS', st.bonus],
-    ['TOTAL', G.score],
-  ];
-  const shown = Math.min(lines.length, 1 + ((t - 12) / 26 | 0));
-  for (let i = 0; i < shown; i++) {
-    const [label, val] = lines[i];
-    drawTextShadow(ctx, label, chapter?panelX+68:150, y, i === lines.length - 1 ? '#ffd94a' : '#c8c0e0', 1);
-    drawTextShadow(ctx, String(val), (chapter?panelX+200:336) - textWidth(String(val), 1), y, '#f8f0e0', 1);
-    y += 12;
-  }
-  const last = G.stageIndex >= STAGE_COUNT - 1;
-  if (t > 120 && !last) {
-    const next = 'NEXT - ' + STAGE_NAMES[G.stageIndex + 1];
-    drawTextShadow(ctx, next, centered(next), 196, '#d85838', 1);
-  }
-  if (t > 150 && ((G.rawTime >> 4) & 1)) {
-    const msg = trainClear?'F / LB: CONTINUE':last ? 'PRESS Z' : 'PRESS Z TO CONTINUE';
-    drawTextShadow(ctx, msg, centered(msg), 220, '#ffd94a', 1);
-  }
+  drawResults(ctx,G.rawTime-G.stateT);
 }
 
 const CREDITS = [

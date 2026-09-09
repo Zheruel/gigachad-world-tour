@@ -101,6 +101,7 @@ export const FILES = {
   logo: 'assets/ui/logo.png',
   go_sign: 'assets/ui/go_sign.png',
   portrait_chad: 'assets/ui/portrait_chad.png',
+  results_exhale: 'assets/ui/results_exhale.png',
   results_card: 'assets/ui/results_card.png',
   portrait_chad_48: 'assets/ui/portrait_chad_48.png',
   portrait_raja: 'assets/ui/portrait_raja.png',

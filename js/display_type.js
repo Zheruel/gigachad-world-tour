@@ -29,11 +29,11 @@ export function loadDisplayType(){
 
 // Authored wordmarks share placement and fallback rules across large UI headings.
 // Fit within both dimensions so compact map headings retain their full silhouette.
-export function drawDisplayTitle(ctx,text,cx,y,{height=26,maxWidth=400,art=artwork}={}){
+export function drawDisplayTitle(ctx,text,cx,y,{height=26,maxWidth=400,art=artwork,anchor=null}={}){
  const key=String(text).toUpperCase(),im=art[key];
  if(im){
   const scale=Math.min(height/im.height,maxWidth/im.width),w=Math.round(im.width*scale),h=Math.round(im.height*scale);
-  ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(im,Math.round(cx-w/2),Math.round(y),w,h);ctx.restore();
+  ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(im,Math.round(cx-w*(anchor?.[0]??.5)),Math.round(y-h*(anchor?.[1]??0)),w,h);ctx.restore();
   return {width:w,height:h};
  }
  const scale=Math.max(1,Math.min(Math.floor(height/7),Math.floor(maxWidth/textWidth(key,1)))),w=textWidth(key,scale);

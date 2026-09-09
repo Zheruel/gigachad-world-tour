@@ -621,7 +621,7 @@ function update() {
   }
   if (G.state === 'clear') {
     const trainClear=G.stage?.id==='train'||G.stage?.chapter,clearT=G.rawTime-G.stateT;
-    if(trainClear)updateResults(clearT);
+    updateResults(clearT);
     if(trainClear&&clearT>=45&&!clearJinglePlayed){clearJinglePlayed=true;audio.jingle('clear');}
     // Require a release after the tally is ready, followed by a new F/LB edge.
     if(trainClear&&clearT>=195&&!input.held('use'))trainClearUseReady=true;

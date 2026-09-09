@@ -4,3 +4,6 @@ from PIL import Image
 ROOT=Path(__file__).resolve().parents[2]
 im=Image.open(ROOT/'assets/sources/production/ui/results_card.png').convert('RGB')
 im.resize((960,540),Image.Resampling.LANCZOS).save(ROOT/'assets/ui/results_card.png')
+
+im=Image.open(ROOT/"assets/sources/production/ui/results_exhale.png").convert("RGB")
+im.resize((960,540),Image.Resampling.LANCZOS).save(ROOT/"assets/ui/results_exhale.png")
