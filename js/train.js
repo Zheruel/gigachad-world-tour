@@ -59,7 +59,7 @@ export function updateTrain(){
    if(c.t===106)G.audio.sfx('slam');
    if(c.t>=120){clearArena();tr.aboard=true;tr.cinematic=null;G.camX=ABOARD_X;position(ABOARD_X+60);checkpoint(ABOARD_X);G.audio.music(G.stage.musicB);G.audio.trainSfx?.('whistle');}
   }else if(c.kind==='roof'){
-   if([230,255,410,438,480].includes(c.t))G.audio.sfx('entrance_boot');
+   if([230,255,425,437,480].includes(c.t))G.audio.sfx('entrance_boot');
    if([50,66,82].includes(c.t)){G.audio.sfx(c.t===82?'slam':'punch');G.shake=c.t===82?4:2;}
    if(c.t===103)G.audio.sfx('land');
    if(c.t===305)G.audio.voice('duke_come_get_some',1800,true);
@@ -271,8 +271,8 @@ function drawCinematic(ctx,tr,c){
    const hx=c.fromX+(7958-c.fromX)*ease(t/42),y=c.fromY+(218-c.fromY)*ease(t/42);
    const hit=[50,66,82].find(at=>t>=at&&t<at+8);
    const h=getFrame(SPR.player,t<42?'walk':t<90?ragnarokPose(t-26).name:'idle',t<42?Math.floor(t/6):t<90?ragnarokPose(t-26).idx:0,1);
-   const heroX=t<90?hx:7958+(7840-7958)*ease((t-90)/60);
-   const hero=t>=90?getFrame(SPR.player,'walk',Math.floor(t/6),-1):h;
+   const heroX=hx;
+   const hero=t>=90?getFrame(SPR.player,'idle',Math.floor(t/14),1):h;
    blit(ctx,hero,heroX-cam-frameW(hero)/2,y-frameH(hero)+4);
    const fall=clamp((t-82)/21,0,1),sx=bx+fall*38*(1-ease((t-110)/40));
    if(t>=108){const recovery=Math.min(3,Math.floor((t-108)/10));if(!sprite(ctx,'seth_recovery',recovery,sx-cam,218,160,120,320,240))sprite(ctx,'seth_roof_climb',6,sx-cam,218,160,120,320,240);}
@@ -286,8 +286,8 @@ function drawCinematic(ctx,tr,c){
     if(!sprite(ctx,'seth_roof_climb',pose,316,218-rise,160,120,320,240)){const f=getFrame(SPR.nr_vikram,rt<42?'hurt':'climb',0,1);blit(ctx,f,316-frameW(f)/2,218-rise-frameH(f));}
    }
    ctx.save();ctx.beginPath();ctx.rect(0,0,W,52);ctx.clip();image(ctx,'private_damaged',-480,0,960,270);ctx.restore();
-   if(rt<240){const f=getFrame(SPR.player,'idle',Math.floor(rt/14),1);blit(ctx,f,160-frameW(f)/2,218-frameH(f)+4);}
-   else if(rt<295){const x=160+156*ease((rt-240)/55),f=getFrame(SPR.player,'walk',Math.floor(rt/7),1);blit(ctx,f,x-frameW(f)/2,218-frameH(f)+4);}
+   if(rt<270){const f=getFrame(SPR.player,'idle',Math.floor(rt/14),1);blit(ctx,f,278-frameW(f)/2,218-frameH(f)+4);}
+   else if(rt<295){const x=278+32.3*clamp((rt-270)/25,0,1),f=getFrame(SPR.player,'walk',Math.floor((x-278)/5.4),1);blit(ctx,f,x-frameW(f)/2,218-frameH(f)+4);}
    else {const pose=Math.min(3,Math.floor((rt-295)/16));const handX=[101.7,99.2,97.2,95.9][pose];sprite(ctx,'chad_roof_climb',pose,332-handX+80,218-(rt-295)*1.65,160,120,320,240);ctx.save();ctx.beginPath();ctx.rect(0,0,W,52);ctx.clip();image(ctx,'private_damaged',-480,0,960,270);ctx.restore();}
    if(rt>=340){ctx.fillStyle=`rgba(5,5,10,${(rt-340)/20})`;ctx.fillRect(0,0,W,H);}
   }else{
