@@ -1,6 +1,5 @@
 import { G, clamp } from './engine.js';
 import { ASSETS } from './assets.js';
-import { drawTextShadow, textWidth } from './sprites.js';
 import { drawDisplayTitle } from './display_type.js';
 import { audio } from './audio.js';
 
@@ -15,6 +14,25 @@ export function updateResults(t){
  for(let i=0;i<5;i++)if(t>=81+i*18)once('row'+i,()=>audio.roomSfx('room_page',.18));
  if(t>=165)once('rank',()=>{audio.roomSfx('slam',.3);audio.voice(r.rank==='S'?'duke_hail':r.rank==='A'?'duke_combo_2':r.rank==='B'?'duke_look_good':'duke_gotta_hurt',2400,false);});
 }
+// Results typography is sized in logical pixels; numbers use a tabular face.
+function resultText(ctx,text,x,y,{align='left',color='#e6cfab',size=8,numeric=false}={}){
+ ctx.save();ctx.font=`${numeric?'bold':'600'} ${size}px ${numeric?'monospace':'Georgia, serif'}`;ctx.textAlign=align;ctx.textBaseline='top';
+ ctx.fillStyle='#090606';ctx.fillText(text,x,y+1);ctx.fillStyle=color;ctx.fillText(text,x,y);ctx.restore();
+}
+function portraitLife(ctx,t){
+ const cycle=t%240,puff=Math.max(0,Math.sin(Math.PI*cycle/240));
+ ctx.save();
+ // The authored cigar tip is fixed at (127,117); emissions begin there.
+ ctx.globalCompositeOperation='screen';
+ const glow=ctx.createRadialGradient(127,117,0,127,117,5);
+ glow.addColorStop(0,`rgba(255,111,27,${.2+puff*.28})`);glow.addColorStop(1,'rgba(255,91,15,0)');ctx.fillStyle=glow;ctx.fillRect(122,112,10,10);
+ ctx.globalCompositeOperation='source-over';
+ for(let i=0;i<7;i++){const age=(t*.35+i*9)%66;ctx.globalAlpha=.1*(1-age/66);ctx.strokeStyle='#e7cfac';ctx.lineWidth=.65+age/90;ctx.beginPath();
+ const x=127+Math.sin(age*.085+i*.7)*(2+age*.06),y=115-age*.65;
+ ctx.moveTo(x,y);ctx.quadraticCurveTo(x+4,y-3,x+1,y-7);ctx.stroke();}
+ const glint=t%420;if(glint<24){ctx.globalAlpha=Math.sin(glint/24*Math.PI)*.6;ctx.strokeStyle='#fff1c4';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(105,96);ctx.lineTo(110,92);ctx.stroke();}
+ ctx.restore();
+}
 export function drawResults(ctx,t){
  if(t<45)return;
  const age=t-45,st=G.clearStats||{hits:0,kos:0,combo:0,bonus:0};
@@ -22,23 +40,25 @@ export function drawResults(ctx,t){
  const x=14,y=8,w=452,h=254;
  if(ASSETS.results_card)ctx.drawImage(ASSETS.results_card,x,y,w,h);
  else{ctx.fillStyle='#160f14';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#b88c45';ctx.strokeRect(x+.5,y+.5,w-1,h-1);}
- drawDisplayTitle(ctx,'CHAD WINS',240,20,{height:24,maxWidth:340});
- const title=G.stage?.name||'STAGE CLEAR';drawTextShadow(ctx,title,Math.round(312-textWidth(title,1)/2),65,'#dcc597',1);
+ portraitLife(ctx,t);
+ drawDisplayTitle(ctx,'CHAD WINS',240,14,{height:30,maxWidth:340});
+ const title=G.stage?.name||'STAGE CLEAR';resultText(ctx,title,312,63,{align:'center',size:8,color:'#dcc597'});
  const rows=[['HITS LANDED',st.hits],['KNOCKOUTS',st.kos],['BEST COMBO',st.combo],['CLEAR BONUS',st.bonus+st.combo*25],['TOTAL SCORE',G.score]];
  rows.forEach(([label,value],i)=>{
   const progress=clamp((t-63-i*18)/18,0,1);if(t<63+i*18)return;
   const yy=88+i*22,total=i===4;
   ctx.fillStyle=total?'#a87b39':'#45352c';ctx.fillRect(190,yy+13,246,1);
-  drawTextShadow(ctx,label,194,yy,total?'#ffe5a0':'#c1ac8a',1);
+  resultText(ctx,label,194,yy-1,{size:7.5,color:total?'#ffe5a0':'#c1ac8a'});
   const shown=String(Math.floor((value||0)*(1-(1-progress)**3))).padStart(total?7:0,'0');
-  drawTextShadow(ctx,shown,432-textWidth(shown,1),yy,'#fff0c8',1);
+  resultText(ctx,shown,432,yy-2,{align:'right',numeric:true,size:10,color:'#fff0c8'});
  });
  if(t>=165){const rank=G.results?.rank||resultRank(st,G.player.hp);
-  drawTextShadow(ctx,'RANK',65,181,'#e6c285',1);
-  drawTextShadow(ctx,rank,75,194,'#ffdc83',4);
+  resultText(ctx,'RANK',76,179,{align:'center',size:7,color:'#e6c285'});
+  const stamp=1+Math.max(0,1-(t-165)/12)*.3;
+  ctx.save();ctx.translate(76,203);ctx.scale(stamp,stamp);drawDisplayTitle(ctx,'RANK '+rank,0,-14,{height:28,maxWidth:30});ctx.restore();
   const labels={S:'ABSOLUTE MENACE',A:'FIRST CLASS BEATDOWN',B:'JOB DONE',C:'STILL STANDING'};
-  drawTextShadow(ctx,labels[rank],194,204,'#eac17c',1);
+  resultText(ctx,labels[rank],194,203,{size:8,color:'#eac17c'});
  }
- if(t>=195)drawTextShadow(ctx,'F / LB: CONTINUE',Math.round(302-textWidth('F / LB: CONTINUE',1)/2),237,'#ffdf94',1);
+ if(t>=195)resultText(ctx,'F / LB: CONTINUE',302,235,{align:'center',size:8,color:'#ffdf94'});
  ctx.restore();
 }

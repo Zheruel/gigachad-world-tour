@@ -1,6 +1,11 @@
 import { drawTextShadow, textWidth } from './sprites.js';
 
 export const DISPLAY_FILES={
+ 'CHAD WINS':'assets/ui/headings/chad-wins.png',
+ 'RANK S':'assets/ui/headings/rank-s.png',
+ 'RANK A':'assets/ui/headings/rank-a.png',
+ 'RANK B':'assets/ui/headings/rank-b.png',
+ 'RANK C':'assets/ui/headings/rank-c.png',
  'THE NIGHT TRAIN':'assets/ui/headings/night-train.png',
  'DIRTY DELHI':'assets/ui/headings/dirty-delhi.png',
  'WORLD TOUR':'assets/ui/headings/world-tour.png',
