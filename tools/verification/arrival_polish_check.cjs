@@ -6,7 +6,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=requ
   const {drawCarWheels,CAR_WHEELS}=await import('/js/street.js'),{TRAVEL_ART,TRAVEL_DURATIONS}=await import('/js/travel.js'),{JET,ENCOUNTER,stairPose,papersAt:actualPapersAt}=await import('/js/airport.js'),{landingAt}=await import('/js/flight.js');
   const papersAt=t=>actualPapersAt(t+ENCOUNTER.throwDelay);
   const out=[],check=(n,v)=>out.push([n,!!v]),im=TRAVEL_ART.car_driver,c=document.createElement('canvas');c.width=im.width;c.height=im.height;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=false;
-  function rims(d){ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(im,0,0);drawCarWheels(ctx,im,0,0,c.width,c.height,d);return ctx.getImageData(0,0,c.width,c.height).data;}
+  function rims(d){ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(im,0,0);drawCarWheels(ctx,im,0,0,c.width,c.height,d,TRAVEL_ART);return ctx.getImageData(0,0,c.width,c.height).data;}
   const a=rims(0),b=rims(8),again=rims(8);let outside=0,inside=[0,0];
   for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const k=(y*c.width+x)*4;if(a.slice(k,k+4).some((v,i)=>v!==b[k+i])){const wheel=CAR_WHEELS.findIndex(w=>((x-w.x)/(w.rx+2))**2+((y-w.y)/(w.ry+2))**2<=1);if(wheel<0)outside++;else inside[wheel]++;}}
   check('both authored rims rotate',inside.every(n=>n>80));check('rotation preserves tyres and body outside rim masks',outside===0);check('same distance is deterministic',b.every((v,i)=>v===again[i]));

@@ -113,13 +113,16 @@ function hotelDoors(ctx,tr,art,cam){
 export const CAR_WHEELS=[{x:89,y:86,rx:24,ry:28},{x:350,y:91,rx:25,ry:28}];
 // Rotate the authored rims inside their fixed elliptical tyre silhouettes.
 // Bodywork and tyre contact patches keep their original registration.
-export function drawCarWheels(ctx,im,x,y,w,h,distance){
- if(!im)return;
+export function drawCarWheels(ctx,im,x,y,w,h,distance,art={}){
+ // The original complete wheels remain untouched when either layer is missing.
+ if(!im||!art.wheel_brake||!art.wheel_rims)return;
  const sx=w/im.width,sy=h/im.height;
- for(const wheel of CAR_WHEELS){
+ for(const [i,wheel] of CAR_WHEELS.entries()){
   const {rx,ry}=wheel;ctx.save();ctx.translate(x+wheel.x*sx,y+wheel.y*sy);ctx.scale(rx*sx,ry*sy);
-  ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.clip();ctx.rotate(distance/(ry*sy));
-  ctx.drawImage(im,wheel.x-rx,wheel.y-ry,rx*2,ry*2,-1,-1,2,2);ctx.restore();
+  ctx.beginPath();ctx.arc(0,0,.9,0,Math.PI*2);ctx.clip();
+  ctx.drawImage(art.wheel_brake,-1,-1,2,2);
+  ctx.rotate(distance/(ry*sy));
+  ctx.drawImage(art.wheel_rims,i*96,0,96,96,-1,-1,2,2);ctx.restore();
  }
 }
 function paintCar(ctx,art,key,x,y,w=STREET.carW,h=STREET.carH){
@@ -143,7 +146,7 @@ function drive(ctx,tr,art,layers){
  ctx.fillStyle='#d5bba0';for(let i=0;i<8;i++)ctx.fillRect(mod(i*90-d*1.7,720)-90,249,37,1);
  const bump=layers.effects===false?0:Math.sin(tr.t*.24)*.35*p.speed;
  paintCar(ctx,art,'car_driver',p.x,p.y+bump,p.w,STREET.carH);
- drawCarWheels(ctx,art.car_driver||art.car,Math.round(p.x),Math.round(p.y+bump),p.w,STREET.carH,d);
+ drawCarWheels(ctx,art.car_driver||art.car,Math.round(p.x),Math.round(p.y+bump),p.w,STREET.carH,d,art);
  if(layers.effects!==false){
   lights(ctx,p.x,p.y,p.w,tr.t);
   ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=(.5+.5*Math.sin(d*.016))*.09;ctx.fillStyle='#f4c176';ctx.fillRect(p.x+35,p.y+26,p.w-63,2);ctx.restore();

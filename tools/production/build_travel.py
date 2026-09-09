@@ -58,4 +58,6 @@ def main():
         image=image.convert('RGB').quantize(colors=64,dither=Image.Dither.NONE).convert('RGBA')
         image.putalpha(alpha); image.save(output_path(name),optimize=True)
         print(name,size)
+    from build_car_wheels import main as build_car_wheels
+    build_car_wheels()
 if __name__=='__main__': main()

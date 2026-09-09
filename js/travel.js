@@ -27,6 +27,8 @@ export const TRAVEL_FILES = {
   india: 'assets/travel/india/india.png',
   car: 'assets/travel/city/car.png',
   car_driver: 'assets/travel/city/car_driver.png',
+  wheel_brake: 'assets/travel/city/wheel_brake.png',
+  wheel_rims: 'assets/travel/city/wheel_rims.png',
   jet: 'assets/travel/airport/jet.png',
   jet_closed: 'assets/travel/airport/jet_closed.png',
   loading: 'assets/travel/india/loading.png',
