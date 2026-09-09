@@ -2,6 +2,7 @@
 
 - Use the built-in GPT Image tool for complex visual assets: characters, environments, vehicles, illustrated UI, and new animation poses. Match the existing CHAD sprites, penthouse materials, sunset skyline, proportions, and detailed arcade shading using actual project images as references.
 - Code is appropriate for motion, parallax, lighting, particles, simple readable UI, and processing generated art. Do not substitute primitive drawings for detailed production art. Keep simple fallback rendering for missing assets.
+- Remove extraction-colour fringes from transparent props and actors before registration; inspect edges on dark and light backgrounds without eroding silhouettes or highlights.
 - Animation sheets need consistent identity, anatomy, scale, camera, lighting, and stable registration between poses. Generate the poses with GPT Image; crop and align them with processing tools. Inspect every frame and play the animation at game scale before accepting it.
 - Review changed scenes in Chrome at the 480×270 logical size and 2× display size. Use the frame explorer or deterministic capture tools to check transitions and occlusion.
 - Reuse the existing licensed Streets of Rage 2 effects and Duke voice samples where the action suits them. Audition with sfxlab.html, avoid overlapping or repetitive quotes, and preserve pause/exit behavior. Simple synthesized machinery and chimes are suitable when they sound convincing. The user has stated they have rights to the supplied sound banks.

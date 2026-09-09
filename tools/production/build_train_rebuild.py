@@ -167,7 +167,9 @@ def main():
     im=Image.open(SOURCE/'props.png')
     for i,name in enumerate(['prop_nr_case','prop_nr_case_b','prop_nr_trolley','prop_nr_trolley_b','prop_nr_table','prop_nr_table_b','prop_nr_urn','prop_nr_urn_b','gate','fan','prop_nr_contraband','prop_nr_contraband_b']):
         if name=='fan':continue  # Ceiling fans are already painted into the coach art.
-        c=crop(cell(im,i));target=[100,100,148,148,130,130,70,70,120,72,114,114][i];c=c.resize((target,round(c.height*target/c.width)),Image.Resampling.NEAREST);c.save(OUT/(name+'.png'))
+        c=crop(cell(im,i));target=[100,100,148,148,130,130,70,70,120,72,114,114][i];c=c.resize((target,round(c.height*target/c.width)),Image.Resampling.NEAREST);
+        from build_train_prop_edges import clean_prop_edges
+        c=clean_prop_edges(c);c.save(OUT/(name+'.png'))
         if name=='prop_nr_contraband':c.resize((40,round(c.height*40/c.width)),Image.Resampling.NEAREST).save(OUT/'relic_vikram.png')
     im=Image.open(SOURCE/'train_exterior.png');out=Image.new('RGBA',(1024,896))
     cars=[]
