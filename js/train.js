@@ -9,7 +9,7 @@ import {drawFinale,updateFinale} from './train_finale.js';
 import {drawTrainVista,updateTrainVista,resetTrainVista} from './train_vistas.js';
 import {drawDirectionArrow} from './direction_arrow.js';
 import {initTrainLife,updateTrainLife,drawTrainLife} from './train_life.js';
-export const ABOARD_X=2880,ROOF_X=8160,BERTH_Z=115,ROOF_TRANSITION_TICKS=420;
+export const ABOARD_X=2880,ROOF_X=8160,BERTH_Z=115,ROOF_TRANSITION_TICKS=660;
 export const TRAIN_AREAS=[['yard',0,960],['hall',960,1920],['platform',1920,2880],['general',2880,3840],['sleeper',3840,5280],['pantry',5280,5760],['office',5760,6240],['ac',6240,7200],['private',7200,8160],['roof',8160,9120]];
 
 export function trainArea(x){return TRAIN_AREAS.find(a=>x<a[2])||TRAIN_AREAS.at(-1);}
@@ -59,8 +59,10 @@ export function updateTrain(){
    if(c.t===106)G.audio.sfx('slam');
    if(c.t>=120){clearArena();tr.aboard=true;tr.cinematic=null;G.camX=ABOARD_X;position(ABOARD_X+60);checkpoint(ABOARD_X);G.audio.music(G.stage.musicB);G.audio.trainSfx?.('whistle');}
   }else if(c.kind==='roof'){
-   if([80,105,260,288,330].includes(c.t))G.audio.sfx('entrance_boot');
-   if(c.t===155)G.audio.voice('duke_come_get_some',1800,true);
+   if([230,255,410,438,480].includes(c.t))G.audio.sfx('entrance_boot');
+   if([50,66,82].includes(c.t)){G.audio.sfx(c.t===82?'slam':'punch');G.shake=c.t===82?4:2;}
+   if(c.t===103)G.audio.sfx('land');
+   if(c.t===305)G.audio.voice('duke_come_get_some',1800,true);
    if(c.t>=ROOF_TRANSITION_TICKS){tr.cinematic=null;tr.climbed=true;G.camX=G.camLock=ROOF_X;position(ROOF_X+105);G.locked=true;if(G.boss){Object.assign(G.boss,{x:ROOF_X+850,y:218,z:0,state:'idle',t:0,atkCd:90,trainWaiting:true,roofGuardsSpawned:false});}}
   }else if(c.kind==='knockout'){
    if([24,32,40,48,60,76].includes(c.t)){G.audio.sfx(c.t===76?'slam':'punch');G.shake=c.t===76?5:2;}
@@ -261,27 +263,42 @@ function drawCinematic(ctx,tr,c){
   const hit=[24,32,40,48,60,76].find(at=>t>=at&&t<at+7),victim=getFrame(SPR.nr_vikram_roof,t>=82?'down':hit!==undefined?'hurt':'idle',hit!==undefined?1:0,-face);
   blit(ctx,victim,bx-cam+face*Math.min(26,Math.max(0,t-72)*1.3)-frameW(victim)/2,by-frameH(victim)+4);
  }else if(c.kind==='roof'){
-  if(t<360){
+  const rt=t-150;
+  if(t<150){
+   const cam=c.fromCam+(7680-c.fromCam)*ease(t/42);
+   drawOutside(ctx,cam);image(ctx,'private_damaged',7200-cam,0,960,270);
+   const bx=(c.fromBossX??7996)+(7996-(c.fromBossX??7996))*ease(t/42);
+   const hx=c.fromX+(7958-c.fromX)*ease(t/42),y=c.fromY+(218-c.fromY)*ease(t/42);
+   const hit=[50,66,82].find(at=>t>=at&&t<at+8);
+   const h=getFrame(SPR.player,t<42?'walk':t<90?ragnarokPose(t-26).name:'idle',t<42?Math.floor(t/6):t<90?ragnarokPose(t-26).idx:0,1);
+   const heroX=t<90?hx:7958+(7840-7958)*ease((t-90)/60);
+   const hero=t>=90?getFrame(SPR.player,'walk',Math.floor(t/6),-1):h;
+   blit(ctx,hero,heroX-cam-frameW(hero)/2,y-frameH(hero)+4);
+   const fall=clamp((t-82)/21,0,1),sx=bx+fall*38*(1-ease((t-110)/40));
+   if(t>=108){const recovery=Math.min(3,Math.floor((t-108)/10));if(!sprite(ctx,'seth_recovery',recovery,sx-cam,218,160,120,320,240))sprite(ctx,'seth_roof_climb',6,sx-cam,218,160,120,320,240);}
+   else {const f=getFrame(SPR.nr_vikram,t>=90?'down':hit!==undefined?'hurt':t<42?'walk':'idle',t<42?Math.floor(t/6):0,-1);blit(ctx,f,sx-cam-frameW(f)/2,218-frameH(f)+4-Math.sin(fall*Math.PI)*14);}
+  }else if(rt<360){
    drawOutside(ctx,7680);image(ctx,'private_damaged',-480,0,960,270);
-   if(t<180){
-    const pose=t<22?0:t<42?1:t<64?2:t<90?3:t<116?4:5;
-    const rise=t<42?0:Math.min(235,(t-42)*1.7);
-    if(!sprite(ctx,'seth_roof_climb',pose,316,218-rise,160,120,320,240)){const f=getFrame(SPR.nr_vikram,t<42?'hurt':'climb',0,1);blit(ctx,f,316-frameW(f)/2,218-rise-frameH(f));}
+   if(rt<180){
+    const pose=rt<22?0:rt<42?1:rt<64?2:rt<90?3:rt<116?4:5;
+    const climb=clamp((rt-42)/120,0,1)*6,step=Math.floor(climb);
+    const rise=rt<42?0:Math.min(235,(step+ease(climb-step))*39.2);
+    if(!sprite(ctx,'seth_roof_climb',pose,316,218-rise,160,120,320,240)){const f=getFrame(SPR.nr_vikram,rt<42?'hurt':'climb',0,1);blit(ctx,f,316-frameW(f)/2,218-rise-frameH(f));}
    }
    ctx.save();ctx.beginPath();ctx.rect(0,0,W,52);ctx.clip();image(ctx,'private_damaged',-480,0,960,270);ctx.restore();
-   if(t<240){const f=getFrame(SPR.player,'idle',Math.floor(t/14),1);blit(ctx,f,160-frameW(f)/2,218-frameH(f)+4);}
-   else if(t<295){const x=160+156*ease((t-240)/55),f=getFrame(SPR.player,'walk',Math.floor(t/7),1);blit(ctx,f,x-frameW(f)/2,218-frameH(f)+4);}
-   else {const pose=Math.min(3,Math.floor((t-295)/16));const handX=[101.7,99.2,97.2,95.9][pose];sprite(ctx,'chad_roof_climb',pose,332-handX+80,218-(t-295)*1.65,160,120,320,240);ctx.save();ctx.beginPath();ctx.rect(0,0,W,52);ctx.clip();image(ctx,'private_damaged',-480,0,960,270);ctx.restore();}
-   if(t>=340){ctx.fillStyle=`rgba(5,5,10,${(t-340)/20})`;ctx.fillRect(0,0,W,H);}
+   if(rt<240){const f=getFrame(SPR.player,'idle',Math.floor(rt/14),1);blit(ctx,f,160-frameW(f)/2,218-frameH(f)+4);}
+   else if(rt<295){const x=160+156*ease((rt-240)/55),f=getFrame(SPR.player,'walk',Math.floor(rt/7),1);blit(ctx,f,x-frameW(f)/2,218-frameH(f)+4);}
+   else {const pose=Math.min(3,Math.floor((rt-295)/16));const handX=[101.7,99.2,97.2,95.9][pose];sprite(ctx,'chad_roof_climb',pose,332-handX+80,218-(rt-295)*1.65,160,120,320,240);ctx.save();ctx.beginPath();ctx.rect(0,0,W,52);ctx.clip();image(ctx,'private_damaged',-480,0,960,270);ctx.restore();}
+   if(rt>=340){ctx.fillStyle=`rgba(5,5,10,${(rt-340)/20})`;ctx.fillRect(0,0,W,H);}
   }else{
    drawOutside(ctx,ROOF_X);image(ctx,'roof',0,0,960,270);image(ctx,'hatch_open',65,191,80,27);
-   const f=getFrame(SPR.nr_vikram_roof,'walk',Math.floor((t-360)*1.1/6),1);blit(ctx,f,335+(t-360)*1.1-frameW(f)/2,218-frameH(f)+4);
-   const pose=t<374?4:t<388?5:t<406?6:7;
+   const f=getFrame(SPR.nr_vikram_roof,'walk',Math.floor((rt-360)*2.1/6),1);blit(ctx,f,335+(rt-360)*2.1-frameW(f)/2,218-frameH(f)+4);
+   const pose=rt<374?4:rt<388?5:rt<406?6:7;
    const handY=[65.2,101.5,108.2][Math.min(2,pose-4)];
    const footY=pose<6?211+116.5-handY:218;
    sprite(ctx,'chad_roof_climb',pose,105,footY,160,120,320,240);
    image(ctx,'hatch_open',65,191,80,27);
-   if(t<380){ctx.fillStyle=`rgba(5,5,10,${1-(t-360)/20})`;ctx.fillRect(0,0,W,H);}
+   if(rt<380){ctx.fillStyle=`rgba(5,5,10,${1-(rt-360)/20})`;ctx.fillRect(0,0,W,H);}
   }
  }else{
   drawFinale(ctx,t);

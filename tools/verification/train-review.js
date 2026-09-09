@@ -5,6 +5,7 @@ const areas=[['yard',0,960],['hall',960,1920],['platform',1920,2880],['general',
 const names=['intro','yard','hall','platform','train-arrival','boarding','general','sleeper','pantry','office','conductor','ac','private','seth-intro','boss','roof-transition','roof-guards','roof','boss-roof','knockout','escape','clear'];
 for(const s of names)$('scene').add(new Option(s.replaceAll('-',' '),s));
 const finaleCheckpoints=[[0,'Tracking arrival'],[90,'Approach'],[179,'Before braking'],[180,'Reaction'],[330,'Plant charge'],[390,'Set charge'],[450,'Run-up'],[465,'Takeoff'],[489,'Flight'],[510,'Touchdown'],[539,'Last braking frame'],[540,'Stopped / shoulder roll'],[585,'Rise'],[600,'Remote'],[715,'Detonate'],[720,'Light cigar'],[732,'Blast 1'],[780,'Blast 2'],[810,'Cigar walk'],[834,'Blast 3'],[894,'Blast 4'],[960,'Blast 5'],[1026,'Blast 6'],[1098,'Blast 7'],[1170,'Final blast / puff'],[1215,'Smoke hold'],[1259,'Last cinematic frame'],[1260,'CHAD WINS hold']];
+for(const [t,label]of [[0,'Defeat contact'],[50,'Body strike'],[82,'Knockdown strike'],[103,'Floor contact'],[126,'Recover'],[192,'Ladder grip'],[240,'Climb'],[330,'Seth through hatch'],[445,'CHAD follows'],[510,'Roof reveal'],[630,'Seth off-screen'],[659,'Before guards']])$('roof-checkpoint').add(new Option(`${label} · ${t}`,t));
 const conductorCheckpoints=[0,30,60,90,120,150,180,210,240,299,300];
 $('finale-checkpoint').add(new Option('Choose a moment…',''));
 for(const [t,label] of finaleCheckpoints)$('finale-checkpoint').add(new Option(`${label} · ${t}`,t));
@@ -32,6 +33,7 @@ function actorDraw(){
 }
 function draw(){
  if(!game)return;layers();game.render();$('number').value=$('time').value;$('back').disabled=['full','combat'].includes(mode);$('back').title=$('back').disabled?'Replay the encounter to inspect it again; combat supports forward stepping.':'';
+ $('roof-controls').hidden=!(mode==='scene'&&$('scene').value==='roof-transition');
  const G=game.G;$('finale-controls').hidden=G.train?.cinematic?.kind!=='escape'&&!(mode==='scene'&&$('scene').value==='escape');$('finale-checkpoint').value=String(+$('time').value);$('clear-controls').hidden=!(mode==='scene'&&$('scene').value==='clear');$('clear-checkpoint').value=String(+$('time').value);$('conductor-controls').hidden=!(mode==='scene'&&$('scene').value==='conductor');$('conductor-checkpoint').value=String(+$('time').value);$('status').textContent=`${G.state} · ${G.train?.cinematic?.kind||areas.find(a=>G.player.x<a[2])?.[0]} · camera ${Math.round(G.camX)} · CHAD ${Math.round(G.player.x)}, ${Math.round(G.player.y)} · ${G.player.state} · ${['scene','route'].includes(mode)?'scenery preview (encounters off)':`wave ${G.waveIndex+1}/${G.stage.waves.length}`} · ${G.enemies.filter(e=>!e.dead).length} enemies · HP ${G.player.hp}`;
  if(manifest)actorDraw();
 }
@@ -69,3 +71,5 @@ $('combat-apply').onclick=()=>{
  }
  draw();frame.focus();
 };
+
+$('roof-checkpoint').onchange=()=>{$('scene').value='roof-transition';$('time').value=$('roof-checkpoint').value;seek()};

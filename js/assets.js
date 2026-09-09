@@ -10,6 +10,7 @@ export const FILES = {
   nr_vista_river: 'assets/stages/night_train/rebuild/vista_river.png',
   nr_chad_roof_climb: 'assets/stages/night_train/rebuild/chad_roof_climb.png',
   nr_roof_fittings: 'assets/stages/night_train/rebuild/roof_fittings.png',
+  nr_seth_recovery: 'assets/stages/night_train/rebuild/seth_recovery.png',
   nr_seth_roof_climb: 'assets/stages/night_train/rebuild/seth_roof_climb.png',
   nr_seth_intro: 'assets/stages/night_train/rebuild/seth_intro.png',
   nr_office_chair: 'assets/stages/night_train/rebuild/office_chair.png',

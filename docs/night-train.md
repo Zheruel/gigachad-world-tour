@@ -58,3 +58,5 @@ Boss presentation follows the existing simulation exactly: each baton/cane hit g
 Use `review-train.html` for route camera scrubbing, the conductor encounter, layer toggles, every character state, encounter starts, slow motion and frame stepping. Inspect each animation at 480×270 and 2×, frame by frame and normal speed. Verify stable anatomy, feet, occlusion, vehicle geometry, seamless joins, grounded props and readable cues. Check keyboard/gamepad, pause, held inputs, checkpoints, retries, missing art, audio cleanup and progression. Run deterministic/focused checks, syntax/Python compilation, repository audit and diff checks.
 
 Delete superseded train-only assets, sources and recipes after auditing consumers; retain shared assets used by other levels. Keep selected new sources and processing recipes, no prompt archive. Report deleted files and reclaimed bytes.
+
+Seth’s interior defeat leads into an 11-second roof escape: visible finishing blows, knockdown and recovery precede the ladder climb. He clears the right edge before the rooftop guards activate; the pursuit starts only after CHAD emerges.
