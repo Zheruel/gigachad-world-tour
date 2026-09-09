@@ -36,6 +36,8 @@ Each sequence has one selected local recording, timed against its measured lengt
 
 ## Acceptance
 
+Use `review-delhi.html` for this level.
+
 Generate replacement scenery, actors and props from approved game references. Eight locomotion poses minimum per humanoid; authored anticipation/contact/follow-through, hurt, knockdown and recovery. Keep selected sources and recipes, no prompt archive. Remove old Delhi-only consumers and assets after audit; retain shared assets and accepted Dredger machinery.
 
 Review at 480×270 and 2×, every animation and every scenery join, including camera motion and near-wall walking. Check complete runs, environmental tactics versus attack repetition, pause, retries, missing assets, keyboard/gamepad, audio cleanup, records and one-time progression. Run focused checks, full gameplay suite, syntax/compilation, asset audit and diff checks before acceptance.

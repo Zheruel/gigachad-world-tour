@@ -30,6 +30,8 @@ The measured local recording sets the pre-contact timing; its catalog listening-
 
 ## Integration and acceptance
 
+Use `review-refund.html` for this level.
+
 New loading illustration and established display lettering. Preparation is silent; fresh F/LB starts music and intro. Preserve existing train/Delhi records and unlock this stage for saves with a Delhi clear. Suitable existing stage3/hold/final music and licensed effects are available; audition selections and prevent speech overlap.
 
 Generate environments, six enemy families, boss, props, civilians and cinematic performance with GPT Image using actual game references. At least eight walk poses per humanoid and distinct contact, reaction and recovery poses. Inspect at native 480×270 and 2×, every pose, every join, every destruction boundary and wall-breach/finishing sequence every three ticks. Test full runs with aggressive and skilled tactics, pause, missing assets, keyboard/gamepad, retries, audio cleanup, held inputs and once-only progression. Update the shared explorer and run focused/full checks, syntax, compilation, asset audit and diff checks. No historical prompt archives.

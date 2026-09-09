@@ -4,7 +4,9 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=requ
  const p=await b.newPage({viewport:{width:1120,height:900}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.goto((process.env.GAME_URL||'http://localhost:8011')+'/review-india.html?stage=refund&scene=calling');
  await p.waitForFunction(()=>document.querySelector('#status').textContent.includes('scenery preview'),{timeout:60000});
- const game=p.frames().find(f=>f.url().includes('auto=walk'));assert(game);
+ let game=p.frames().find(f=>f.url().includes('auto=walk'));assert(game);
+ assert(p.url().includes('review-refund.html?scene=calling'));assert.equal(await p.locator('#stage').count(),0);
+ const load=async(stage,scene='intro')=>{await p.goto((process.env.GAME_URL||'http://localhost:8011')+`/review-${stage}.html?scene=${scene}&stage=${stage==='delhi'?'refund':'delhi'}`);await p.waitForFunction(()=>document.querySelector('#status').textContent.includes('scenery preview'));game=p.frames().find(f=>f.url().includes('auto=walk'));assert.equal(await game.evaluate(()=>__game.G.stage.id),stage);assert.equal(await p.locator('nav[aria-label="Scene explorers"] a').count(),4);};
  const out='tmp/review/india-explorer';fs.mkdirSync(out,{recursive:true});
  for(const effect of ['super','super-ko','ko','heavy-ko','crowd-ko']){
   await p.selectOption('#effect',effect);await p.click('#effect-show');
@@ -21,11 +23,12 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=requ
  assert((await p.locator('#pose-status').innerText()).includes('8 poses'));
  await p.selectOption('#scene','intro');assert((await p.locator('#moment').innerText()).includes('Shoulder breach'));
  for(const [stage,scene,beat]of [['delhi','intro','252'],['delhi','vendor-finish','304'],['delhi','dredger-finish','570'],['refund','closer-finish','412']]){
-  await p.selectOption('#stage',stage);await p.selectOption('#scene',scene);await p.selectOption('#moment',beat);assert.equal(await p.locator('#time').inputValue(),beat);
+  await load(stage,scene);await p.selectOption('#moment',beat);assert.equal(await p.locator('#time').inputValue(),beat);
   await p.uncheck('#actors');assert.equal(await game.evaluate(()=>__game.G.india.review.actors),false);await p.check('#actors');
  }
  for(const [key,n]of [['chad_finishers',16],['chad_cart_push',8],['vendor_finish',12],['operator_finish',8],['operator_limp',8],['closer_cascade',12]]){
-  await p.selectOption('#character','cine:'+key);assert((await p.locator('#pose-status').innerText()).includes(n+' authored poses'));await p.click('#pose-step');assert((await p.locator('#pose-status').innerText()).includes('frame 1'));
+  await load(key==='closer_cascade'?'refund':'delhi');await p.selectOption('#character','cine:'+key);assert((await p.locator('#pose-status').innerText()).includes(n+' authored poses'));await p.click('#pose-step');assert((await p.locator('#pose-status').innerText()).includes('frame 1'));
  }
+ for(const stage of ['delhi','refund']){await load(stage);const keys=await p.locator('#character option').evaluateAll(xs=>xs.map(x=>x.value));assert.equal(keys.includes('ic_vendor'),stage==='delhi');assert.equal(keys.includes('ic_closer'),stage==='refund');await p.screenshot({path:`${out}/${stage}-page-2x.png`});await p.click('#scale');await p.screenshot({path:`${out}/${stage}-page-native.png`});await p.click('#full');await p.waitForFunction(()=>document.querySelector('#status').textContent.includes('chapter-card'));assert.equal(await game.evaluate(()=>__game.G.stage.id),stage);}
  assert.deepEqual(errors,[]);console.log(JSON.stringify({effectPresets:5,replay:true,sceneReset:true,native:true,damagedBossWalk:true,newSequences:4,cinematicSheets:6,errors}));
 }finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});
