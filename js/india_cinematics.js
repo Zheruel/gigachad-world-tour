@@ -1,7 +1,8 @@
+import { drawDialogue, updateDialogue } from './room_dialogue.js';
 // Authored India set pieces. Timelines own state and cues; drawing only samples them.
 import { G, clamp, fall, inAir } from './engine.js';
 import { ASSETS } from './assets.js';
-import { SPR, getFrame, blit, frameW, frameH, drawTextShadow } from './sprites.js';
+import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
 import { releaseSuper, releaseGrab } from './player.js';
 import { spawnDust, spawnDebris } from './effects.js';
 import { CINEMATIC_ANCHORS } from './india_cinematic_anchors.js';
@@ -208,6 +209,7 @@ export function drawIndiaFinisher(ctx){
 export function updateMarketEntrance(t){
  const s=G.india,p=G.player;s.t=t;s.marketIntro??={t:0,cues:new Set()};const c=s.marketIntro;c.t=t;
  p.face=1;p.z=p.vx=p.vz=0;p.y=236;p.invuln=10;p.state='idle';
+ if(t>=75&&t<155)updateDialogue('ENTRY FEE.',t-75,{remaining:155-t,visible:s.review?.actors!==false});
  const pushFrame=Math.floor(Math.max(0,t-174)/6)%8,hand=CINEMATIC_ANCHORS.chad_cart_push.hands[pushFrame];
  p.x=t<75?mix(40,128,t/75):t<156?128:t<174?mix(128,114,(t-156)/18):t<252?mix(248,358,(t-174)/78)-90-(hand[0]-64):t<285?223.31:mix(223.31,348,(t-285)/96);
  G.camX=mix(0,93,ease((t-381)/60));
@@ -229,7 +231,7 @@ export function drawMarketEntrance(ctx,t){
   if(a<0)actor(ctx,'ic_brawler',t<90?'idle':'block',Math.floor(t/10)%4,x,232-i*12,-1);
   else if(a<86){const q=a/86;actor(ctx,'ic_brawler',a<12?'hurt':'down',0,x+q*(i?110:72),232-i*12-68*Math.sin(Math.PI*q),1);}
  }
- if(t>=75&&t<155){const line='ENTRY FEE.',shown=line.slice(0,Math.floor((t-75)/4));ctx.fillStyle='rgba(15,9,7,.94)';ctx.fillRect(294,110,90,24);ctx.strokeStyle='#a98246';ctx.strokeRect(294.5,110.5,90,24);drawTextShadow(ctx,shown,303,119,'#eee0be',1);}
+ if(t>=75&&t<155)drawDialogue(ctx,{text:'ENTRY FEE.',x:352-G.camX,bottom:134,age:t-75,remaining:155-t});
  if(t>=174&&t<252){if(!frame(ctx,'ic_cine_push',Math.floor((t-174)/6)%8,p.x,p.y+4,128,128,4,2))chad(ctx,3,p.x,p.y);}
  else if(t<75||t>=285&&t<381)actor(ctx,'player','walk',Math.floor(Math.abs(p.x-(t<75?40:223.31))/5.4)%8,p.x,p.y);
  else chad(ctx,t<132?0:t<156?1:t<174?2:t<252?3+Math.floor((t-174)/13)%2:t<285?5:t<408?14:0,p.x,p.y);

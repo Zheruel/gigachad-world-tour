@@ -183,7 +183,7 @@ export function drawStreet(ctx,tr,art,{hero,prompt,label},layers=tr.streetLayers
   paintCar(ctx,art,b.seated?'car_driver':'car',cx,STREET.carY);
   if(b.lights&&layers.effects!==false)lights(ctx,cx,STREET.carY,STREET.carW,tr.t);
  }
- if(tr.phase==='curb'&&st.greeting>=0&&layers.actors!==false)drawDialogue(ctx,{speaker:'DOORMAN',text:'Your car awaits, sir.',x:185-cam,bottom:99,age:t-st.greeting,remaining:220-(t-st.greeting),width:152});
+ if(tr.phase==='curb'&&st.greeting>=0&&layers.actors!==false)drawDialogue(ctx,{text:'Your car awaits, sir.',x:185-cam,bottom:99,age:t-st.greeting,remaining:220-(t-st.greeting),width:152});
  label(ctx,'THE GRAND ENTRANCE','PRIVATE TERMINAL');
  if(tr.phase==='car-board'){ctx.save();ctx.globalAlpha=boardingAt(tr.t).blackout;ctx.fillStyle='#08070b';ctx.fillRect(0,0,W,H);ctx.restore();}
 }

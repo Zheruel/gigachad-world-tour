@@ -248,7 +248,7 @@ export function drawAirport(ctx,tr,art,{hero,prompt,label}) {
  } else if(tr.phase!=='apron-arrival'||tr.t>=30)hero(ctx,tr,tr.x,tr.y);
  if(tr.streetLayers?.effects!==false){ctx.fillStyle=tr.animT%70<8?'#ffbca2':'#722921';ctx.fillRect(india?94:338,india?154:177,2,1);}
  ctx.restore();
- if(tr.phase==='apron'&&tr.airport?.greeted){const age=tr.airport.clock-tr.airport.greetingAt;drawDialogue(ctx,{text:'Welcome aboard, sir.',speaker:'Attendant',x:DEPARTURE_JET.attendantX-cam,bottom:126,age,remaining:180-age});}
+ if(tr.phase==='apron'&&tr.airport?.greeted){const age=tr.airport.clock-tr.airport.greetingAt;drawDialogue(ctx,{text:'Welcome aboard, sir.',x:DEPARTURE_JET.attendantX-cam,bottom:126,age,remaining:180-age});}
  if(tr.phase==='disembark'&&tr.t>=100&&tr.t<148)drawDialogue(ctx,{text:'HALT!',x:ENCOUNTER.officialX-cam,bottom:142,age:tr.t-100,remaining:148-tr.t,width:130});
  if(tr.phase==='papers'){const speech=papersDialogue(tr.t);if(speech)drawDialogue(ctx,{text:speech.text,x:ENCOUNTER.officialX-cam,bottom:142,age:tr.t-speech.start,remaining:speech.end-tr.t,width:198});}
  label(ctx,india?'DELHI / ARRIVAL':'PRIVATE AVIATION',india?'INDIA':'DESTINATION: INDIA');

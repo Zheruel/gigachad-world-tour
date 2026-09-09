@@ -9,7 +9,6 @@ import {tryHitPlayer,blitTelegraph,drawCueMarker} from './bosslib.js';
 import {startTrainCinematic,drawConductorDesk} from './train.js';
 import {ASSETS} from './assets.js';
 import {getAIFrame} from './aiframes.js';
-import {updateDialogue} from './room_dialogue.js';
 const aliveSupport=()=>G.enemies.some(e=>!e.dead&&!e.noCount);
 const guarded=(b,dir,heavy,launch)=>b.guard>0&&!b.protectedStagger&&!b.superApplying&&!b.parryApplying&&!heavy&&!launch&&dir===-b.face&&['idle','windup','cane','charge','reach','punch'].includes(b.state);
 function propCrash(b){const prop=b.fightProps?.find(q=>!q.broken&&Math.abs(q.x-b.x)<28&&Math.abs(q.y-b.y)<26);if(!prop)return false;prop.broken=true;b.breakGuard();spawnDust(prop.x,prop.y,12);G.audio.sfx('slam');return true;}
@@ -32,7 +31,6 @@ const vikram={
   b.x=G.camLock+440-Math.min(60,t)*(76/60);b.y=218;b.face=-1;
   if(t===180){G.audio.sfx('land');G.shake=2;}
   if(t===240)G.audio.sfx('whiff');
-  if(t>=194&&t<300)updateDialogue(b.def.taunt,t-194,{remaining:300-t});
  },
  keepFace(b){return ['windup','cane','pistol','charge','reach','sweep'].includes(b.state);},
  beforeHurt(b,dmg,dir,heavy,launch){
@@ -130,7 +128,6 @@ const conductor={
   b.introT=t;b.face=-1;b.y=t<170?188:188+30*clamp((t-170)/40,0,1);
   b.x=t<120?6065:6065-130*clamp((t-120)/50,0,1);
   if([28,72,132,150,176,194].includes(t))G.audio.roomSfx?.(t===28?'room_page':t===72?'room_chair':'entrance_boot',.35);
-  if(t>=210)updateDialogue('TICKET. CASH ONLY.',t-210,{remaining:300-t});
  },
  keepFace(b){return ['windup','punch','charge','whistle'].includes(b.state);},
  beforeHurt(b,dmg,dir,heavy,launch){

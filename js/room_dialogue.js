@@ -27,10 +27,10 @@ function panel(ctx,img,x,y,w,h) {
   const dstX=[x,x+d,x+w-d],dstY=[y,y+d,y+h-d],dstW=[d,w-2*d,d],dstH=[d,h-2*d,d];
   for(let row=0;row<3;row++)for(let col=0;col<3;col++)ctx.drawImage(img,srcX[col],srcY[row],srcW[col],srcH[row],dstX[col],dstY[row],dstW[col],dstH[row]);
 }
-export function drawDialogue(ctx,{text,speaker='',x,bottom,age=60,remaining=240,width=176}) {
+export function drawDialogue(ctx,{text,x,bottom,age=60,remaining=240,width=176}) {
   if(age<0||remaining<=0||x<-60||x>W+60)return;
-  width=Math.min(width,Math.max(96,textWidth(text.toUpperCase(),1)+22,textWidth(speaker.toUpperCase(),1)+22));
-  const lines=dialogueLines(text,width-22),h=20+lines.length*9+(speaker?10:0);
+  width=Math.min(width,Math.max(96,textWidth(text.toUpperCase(),1)+22));
+  const lines=dialogueLines(text,width-22),h=20+lines.length*9;
   const left=Math.round(clamp(x-width/2,5,W-width-5)),top=Math.round(Math.max(32,bottom-h-5));
   const alpha=Math.min(1,(age+1)/5,remaining/20),grow=.94+.06*Math.min(1,age/6);
   ctx.save();ctx.globalAlpha=alpha;ctx.translate(left+width/2,top+h);ctx.scale(grow,grow);ctx.translate(-left-width/2,-top-h);
@@ -41,7 +41,6 @@ export function drawDialogue(ctx,{text,speaker='',x,bottom,age=60,remaining=240,
   const tx=clamp(x,left+12,left+width-12);
   if(img)ctx.drawImage(img,img.width/2-24,Math.round(img.height*.88),48,img.height-Math.round(img.height*.88),tx-6,top+h-1,12,6);
   let y=top+9;
-  if(speaker){drawTextShadow(ctx,speaker.toUpperCase(),left+11,y,'#d6ac69',1);y+=10;}
   const reveal=dialogueReveal(text,age);let start=0;
   for(const line of lines){
     const count=clamp(reveal.count-start,0,line.length),active=reveal.count>=start&&reveal.count<start+line.length;
@@ -49,4 +48,12 @@ export function drawDialogue(ctx,{text,speaker='',x,bottom,age=60,remaining=240,
     drawTextShadow(ctx,visible,left+11,y,'#f9e8ca',1);start+=line.length+1;y+=9;
   }
   ctx.restore();
+}
+
+// One schedule drives both visible boss speech and its typing cues.
+export function bossIntroDialogue(b,t,camX=0) {
+ if(!b||b.key==='rana')return null;
+ const [start,end]=b.key==='conductor'?[210,300]:b.key==='vikram'?[194,315]:b.key==='vendor'?[80,170]:b.key==='closer'?[75,180]:[73,195];
+ if(t<start||t>=end)return null;
+ return {text:b.key==='conductor'?'TICKET. CASH ONLY.':b.def.taunt,x:b.x-camX,bottom:115,age:t-start,remaining:end-t,width:210};
 }

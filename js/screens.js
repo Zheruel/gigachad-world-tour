@@ -9,7 +9,7 @@ import { drawStage, STAGES } from './stages.js';
 import { ASSETS } from './assets.js';
 import { drawProp } from './props.js';
 import { drawTrainOverlay } from './train.js';
-import { drawDialogue } from './room_dialogue.js';
+import { drawDialogue, bossIntroDialogue } from './room_dialogue.js';
 
 function center(str, scale) { return (W - textWidth(str, scale)) / 2; }
 
@@ -129,6 +129,8 @@ export function drawBossIntro(ctx, camX) {
   const pf = getFrame(SPR.player, 'idle', (G.rawTime >> 4) & 1, 1);
   blit(ctx, pf, Math.round(G.player.x - camX - frameW(pf) / 2), Math.round(G.player.y - frameH(pf) + 4));
 
+  const speech=bossIntroDialogue(b,t,camX);
+  const dialogue=()=>{if(speech)drawDialogue(ctx,speech);};
   if (b.delhi) {
     // The Delhi fights draw themselves: the reveal is the mechanic arriving - the
     // crowd closing, the wire, the bucket coming down out of the dark.
@@ -140,17 +142,17 @@ export function drawBossIntro(ctx, camX) {
        drawDisplayTitle(ctx,'COMMISSIONER SETH',W/2,234,{height:19,maxWidth:310});
        drawTextShadow(ctx,'THE PROCESSING FEE',center('THE PROCESSING FEE',1),257,'#d9bc87',1);
       }
-      if(t>=194)drawDialogue(ctx,{text:b.def.taunt,x:b.x-camX,bottom:115,age:t-194,remaining:315-t,width:220});
+      dialogue();
       return;
     } else if (b.key === 'conductor') {
-      if(t>=210){drawDisplayTitle(ctx,'HEAD CONDUCTOR',W/2,244,{height:17,maxWidth:270});drawDialogue(ctx,{text:'TICKET. CASH ONLY.',x:b.x-camX,bottom:115,age:t-210,remaining:300-t,width:180});}
+      if(t>=210){drawDisplayTitle(ctx,'HEAD CONDUCTOR',W/2,244,{height:17,maxWidth:270});dialogue();}
       return;
     } else if (b.key === 'vendor' || b.key === 'closer') {
       if (t >= 58) {
         ctx.fillStyle = 'rgba(12,8,10,.72)'; ctx.fillRect(74,237,332,30);
         drawDisplayTitle(ctx,b.def.name,W/2,241,{height:20,maxWidth:308});
       }
-      if (t >= 76) drawDialogue(ctx,{text:b.def.taunt,x:b.x-camX,bottom:116,age:t-76,remaining:210-t,width:210});
+      dialogue();
       return;
     } else {
       // the dredger's floodlight snaps on with the winch
@@ -223,12 +225,7 @@ export function drawBossIntro(ctx, camX) {
     }
   }
 
-  const full = b.def.taunt;
-  const scale = textWidth(full, 2) < W - 60 ? 2 : 1;
-  const shown = full.slice(0, Math.min(full.length, Math.max(0, t / 3 | 0)));
-  const portrait = ASSETS[b.def.portrait];
-  if (portrait && t > 72 && b.key !== 'rana') ctx.drawImage(portrait, W - 56, 82, 48, 48);
-  if (t > 72 && b.key !== 'rana') drawTextShadow(ctx, shown, center(full, scale), 108, '#f0d0b0', scale);
+  dialogue();
 }
 
 export function drawClear(ctx) {

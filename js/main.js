@@ -1,3 +1,4 @@
+import { bossIntroDialogue, updateDialogue } from './room_dialogue.js';
 import { captureIndiaBossCheckpoint, restoreIndiaCheckpoint } from './india_checkpoints.js';
 import { queueOfficeWorker } from './india_office.js';
 import { INDIA_AREAS, updateIndia, updateIndiaIntro, drawIndiaIntro, drawIndiaCard, drawIndiaPerformance } from './india_stage.js';
@@ -587,6 +588,8 @@ function update() {
     if (G.shake > 0) { G.shake *= 0.85; if (G.shake < 0.3) G.shake = 0; }
     const t = G.rawTime - G.stateT;
     const b = G.boss;
+    const speech=bossIntroDialogue(b,t,G.camX);
+    if(speech)updateDialogue(speech.text,speech.age,speech);
     // The arena was designed at camLock; the camera arrives there during the reveal
     // rather than staying wherever the player happened to trip the gate.
     if (G.camX < G.camLock) G.camX = Math.min(G.camLock, G.camX + 1.5);

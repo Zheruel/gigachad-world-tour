@@ -2,8 +2,12 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=requ
 (async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});try{
  const page=await browser.newPage({viewport:{width:960,height:540}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://localhost:8011/?auto=travel-papers');await page.waitForFunction(()=>__game?.travelReady());
  const checks=await page.evaluate(async()=>{
-  const {dialogueReveal,dialogueLines,updateDialogue,drawDialogue}=await import('/js/room_dialogue.js'),{ENCOUNTER,waitingOfficialAt,papersAt:actualPapersAt,papersDialogue}=await import('/js/airport.js'),{audio}=await import('/js/audio.js'),out=[],check=(n,v)=>out.push([n,!!v]);
+  const {dialogueReveal,dialogueLines,updateDialogue,drawDialogue,bossIntroDialogue}=await import('/js/room_dialogue.js'),{ENCOUNTER,waitingOfficialAt,papersAt:actualPapersAt,papersDialogue}=await import('/js/airport.js'),{audio}=await import('/js/audio.js'),out=[],check=(n,v)=>out.push([n,!!v]);
   const papersAt=t=>actualPapersAt(t+ENCOUNTER.throwDelay);
+  for(const [key,start,end] of [['conductor',210,300],['vikram',194,315],['vendor',80,170],['closer',75,180],['dredger',73,195]]){
+   const b={key,x:300,def:{taunt:'TEST LINE'}};
+   check(key+' speech and audio share exact boundaries',!bossIntroDialogue(b,start-1)&&bossIntroDialogue(b,start).age===0&&bossIntroDialogue(b,end-1).remaining===1&&!bossIntroDialogue(b,end));
+  }
   const text='AND THE PROCESSING FEE.';
   check('train-speed two frames per letter',dialogueReveal(text,12).text==='AND TH');check('typing begins empty',dialogueReveal(text,0).text==='');check('complete line remains visible',dialogueReveal(text,100).text===text&&dialogueReveal(text,100).complete);check('cursor blinks only during reveal',dialogueReveal(text,4).cursor&&!dialogueReveal(text,8).cursor&&!dialogueReveal(text,100).cursor);
   let calls=[];const original=audio.roomSfx;audio.roomSfx=(...a)=>{calls.push(a);return true;};

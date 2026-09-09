@@ -7,7 +7,6 @@ import { createProp, PROP_TYPES } from './props.js';
 import { spawnShot } from './shots.js';
 import { spawnDust, spawnPop } from './effects.js';
 import { tryHitPlayer, blitTelegraph, drawCueMarker, hitEnemiesNear } from './bosslib.js';
-import { updateDialogue } from './room_dialogue.js';
 import { ASSETS } from './assets.js';
 
 // Logical positions relative to the encounter camera, also used by scenery tools.
@@ -219,7 +218,6 @@ const vendor = {
   intro(b, t) {
     b.introT = t;
     if (t === 50) G.audio.sfx('weapon');
-    if (t >= 80 && t < 170) updateDialogue('YOU BREAK IT. YOU BUY IT.', t - 80, { remaining: 170 - t });
   },
   keepFace(b) { return !['idle', 'reguard', 'recover', 'hurt', 'setup-rush', 'setup-valve'].includes(b.state); },
   beforeHurt: beforeHit,
@@ -351,7 +349,6 @@ const closer = {
   intro(b, t) {
     b.introT = t;
     if (t === 45) G.audio.roomSfx?.('room_page', .5);
-    if (t >= 75 && t < 180) updateDialogue('THIS CALL IS BEING RECORDED.', t - 75, { remaining: 180 - t });
   },
   keepFace(b) { return !['idle', 'reguard', 'recover', 'hurt', 'setup-shove'].includes(b.state); },
   beforeHurt: beforeHit,

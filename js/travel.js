@@ -321,7 +321,7 @@ function lobby(ctx, tr) {
   if (tr.y < 211) drawPorter();
   for(const [role,x] of [['concierge',concierge.x],['bartender',bartender.x]]) {
     const speech=tr.room?.[role];
-    if(speech?.text)drawDialogue(ctx,{speaker:role==='concierge'?'Concierge':'Bartender',text:speech.text,x:x-cam,bottom:110,age:t-speech.last,remaining:300-(t-speech.last),width:190});
+    if(speech?.text)drawDialogue(ctx,{text:speech.text,x:x-cam,bottom:110,age:t-speech.last,remaining:300-(t-speech.last),width:190});
   }
   drawEffects(ctx, cam);
   const palm = TRAVEL_ART.palm;

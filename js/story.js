@@ -453,7 +453,7 @@ export function stationEntryPosition(t) {
 export function updateStationArrival(t) {
   const p = G.player;
   Object.assign(p,stationEntryPosition(t)); p.face = 1;
-  if(t>=55&&t<117)updateDialogue('TICKET FIRST.',t-55);
+  if(t>=55&&t<123)updateDialogue('TICKET FIRST.',t-55,{remaining:123-t});
   once('charge',t,123,()=>audio.sfx('dash'));
   once('barrier',t,143,()=>{audio.sfx('heavy');audio.sfx('slam');G.shake=9;});
   if ((t<60||(t>=123&&t<174)||(t>=222&&t<ST.walkEnd)) && t % 26 === 8) audio.sfx('entrance_boot');
@@ -492,7 +492,7 @@ export function drawStationArrival(ctx) {
     for(let i=0;i<8;i++)ctx.fillRect(275+(i%2?1:-1)*(39+age*.5),169+(i*7)%25+age*.35,1,1);
     ctx.restore();
   }
-  if(t>=55&&t<123)drawDialogue(ctx,{text:'TICKET FIRST.',speaker:'TICKET CLERK',x:96,bottom:128,age:t-55,remaining:123-t,width:135});
+  if(t>=55&&t<123)drawDialogue(ctx,{text:'TICKET FIRST.',x:96,bottom:128,age:t-55,remaining:123-t,width:135});
   // the night, and the station's tubes waking one at a time
   ctx.fillStyle = 'rgba(4,4,12,0.22)'; ctx.fillRect(0, 0, W, H);
   if (t >= ST.chime && t < ST.chime + 14 && ((t >> 1) & 1)) { ctx.fillStyle = 'rgba(200,220,255,0.10)'; ctx.fillRect(0, 0, W, H); }

@@ -6,6 +6,8 @@
 - Review changed scenes in Chrome at the 480×270 logical size and 2× display size. Use the frame explorer or deterministic capture tools to check transitions and occlusion.
 - Reuse the existing licensed Streets of Rage 2 effects and Duke voice samples where the action suits them. Audition with sfxlab.html, avoid overlapping or repetitive quotes, and preserve pause/exit behavior. Simple synthesized machinery and chimes are suitable when they sound convincing. The user has stated they have rights to the supplied sound banks.
 
+- All character dialogue uses `js/room_dialogue.js`: the lobby frame, no name header, two-tick letter reveal, and its quiet typing sound.
+
 # Asset layout
 
 - Runtime travel art: assets/travel/{elevator,lobby,city,airport,india}/. Selected generation sources mirror those folders under assets/sources/travel/. Keep generated prompts out of the repository.
