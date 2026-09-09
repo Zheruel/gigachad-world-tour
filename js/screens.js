@@ -1,3 +1,4 @@
+import { drawResults } from './results.js';
 import { loadTitleMotion, drawTitleMotion } from './title_motion.js';
 import { loadDisplayType, drawDisplayTitle } from './display_type.js';
 let titleArt = null;
@@ -229,6 +230,7 @@ export function drawBossIntro(ctx, camX) {
 }
 
 export function drawClear(ctx) {
+  if(G.stage?.id==='train'||G.stage?.chapter){drawResults(ctx,G.rawTime-G.stateT);return;}
   const trainClear=G.stage?.id==='train'||G.stage?.chapter;
   const chapter=!!G.stage?.chapter;
   // The chapter's victory can finish anywhere in its arena. Put the tally on

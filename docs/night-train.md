@@ -60,3 +60,5 @@ Use `review-train.html` for route camera scrubbing, the conductor encounter, lay
 Delete superseded train-only assets, sources and recipes after auditing consumers; retain shared assets used by other levels. Keep selected new sources and processing recipes, no prompt archive. Report deleted files and reclaimed bytes.
 
 Seth’s interior defeat leads into an 11-second roof escape: visible finishing blows, knockdown and recovery precede the ladder climb. He clears the right edge before the rooftop guards activate; the pursuit starts only after CHAD emerges.
+
+Chapter results share an illustrated black-and-gold CHAD card with animated counting, quiet tally ticks and a rank reaction. Rank: S at 80+ remaining health and 12+ best combo; A at 60+ health and 8+ combo; B at 35+ health; otherwise C. Rank is presentation only and never changes score or unlocks. The existing 45-tick victory hold and fresh F/LB continuation remain.

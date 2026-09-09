@@ -1,3 +1,4 @@
+import { updateResults } from './results.js';
 import { bossIntroDialogue, updateDialogue } from './room_dialogue.js';
 import { captureIndiaBossCheckpoint, restoreIndiaCheckpoint } from './india_checkpoints.js';
 import { queueOfficeWorker } from './india_office.js';
@@ -82,7 +83,7 @@ function persist() {
 // ---- state transitions ----
 function setState(s) {
   if(s==='title'){G.train=null;G.india=null;}
-  if (s === 'clear') { clearSaved = false; clearJinglePlayed = false; trainClearUseReady = false; } // one save and one sting per tally
+  if (s === 'clear') { G.results=null; clearSaved = false; clearJinglePlayed = false; trainClearUseReady = false; } // one save and one sting per tally
   G.transition = null;   // a direct change of scene cancels a cut that was on its way
   G.state = s; G.stateT = G.rawTime;
 }
@@ -620,6 +621,7 @@ function update() {
   }
   if (G.state === 'clear') {
     const trainClear=G.stage?.id==='train'||G.stage?.chapter,clearT=G.rawTime-G.stateT;
+    if(trainClear)updateResults(clearT);
     if(trainClear&&clearT>=45&&!clearJinglePlayed){clearJinglePlayed=true;audio.jingle('clear');}
     // Require a release after the tally is ready, followed by a new F/LB edge.
     if(trainClear&&clearT>=195&&!input.held('use'))trainClearUseReady=true;
@@ -635,6 +637,7 @@ function update() {
       persist();
     }
     if (trainClear ? (clearT>=195&&trainClearUseReady&&input.pressed('use')) : (clearT>150&&input.pressed('attack'))) {
+      if(trainClear){audio.stopRoomAudio?.();audio.stopSamples?.();}
       audio.sfx('blip');
       // The tally promises the next act, so the next act is what comes: straight on,
       // the arcade way. The lair is home after the tour's last act. The ENDING belongs
