@@ -20,28 +20,29 @@ function resultText(ctx,text,x,y,{align='left',color='#e6cfab',size=8,numeric=fa
  ctx.fillStyle='#090606';ctx.fillText(text,x,y+1);ctx.fillStyle=color;ctx.fillText(text,x,y);ctx.restore();
 }
 // Bounds measured from the blank card at 960x540, then mapped to game pixels.
-export const RESULTS_LAYOUT=Object.freeze({title:{x:64,y:15,w:352,h:22},rank:{x:60,y:189,w:32,h:32}});
+export const RESULTS_LAYOUT=Object.freeze({title:{x:64,y:15,w:352,h:22},rank:{x:58,y:186,w:32,h:32}});
 export function resultPortraitFrame(t){
- const phase=Math.max(0,t-45)%360;
- const beats=[[108,0],[132,1],[144,2],[156,3],[168,4],[264,5],[276,4],[288,3],[300,6],[312,7],[360,0]];
- return beats.find(([end])=>phase<end)[1];
+ if(t<109)return 0;
+ if(t<165)return 1+Math.floor((t-109)/8);
+ return [8,9,10,11,10,9][Math.floor((t-165)%240/40)];
 }
 function portraitLife(ctx,t){
  const im=ASSETS.results_portrait;if(!im)return;
- const frame=resultPortraitFrame(t),phase=Math.max(0,t-45)%360;
+ const frame=resultPortraitFrame(t),phase=Math.max(0,t-165)%240;
  ctx.save();ctx.beginPath();ctx.rect(17,48,177,174);ctx.clip();
- // Fixed head/torso registration and one scale for all eight generated poses.
- ctx.drawImage(im,frame%4*384,Math.floor(frame/4)*512,384,512,22,20,161.28,215.04);
- const tips=[[270,205],[270,205],[279,193],[300,234],[250,300],[250,300],[279,193],[270,205]],tip=tips[frame];
- const tx=22+tip[0]*.42,ty=20+tip[1]*.42;
+ // Fixed head/torso registration and one scale for fold and breathing poses.
+ ctx.drawImage(im,frame%4*346,Math.floor(frame/4)*410,346,410,18,22,173,205);
+ // Cigar remains clenched in his mouth through the fold and breathing poses.
+ const tx=138,ty=102;
  ctx.globalCompositeOperation='screen';
  const glow=ctx.createRadialGradient(tx,ty,0,tx,ty,3);
- glow.addColorStop(0,`rgba(255,116,29,${frame===1?.75:.25})`);glow.addColorStop(1,'rgba(255,91,15,0)');ctx.fillStyle=glow;ctx.fillRect(tx-3,ty-3,6,6);
+ const draw=t>=165&&phase>=70&&phase<105;
+ glow.addColorStop(0,`rgba(255,116,29,${draw?.55:.15})`);glow.addColorStop(1,'rgba(255,91,15,0)');ctx.fillStyle=glow;ctx.fillRect(tx-3,ty-3,6,6);
  ctx.globalCompositeOperation='source-over';
  // Smoke starts at the registered mouth during the exhale hold.
- if(phase>=166&&phase<264)for(let i=0;i<9;i++){
-  const age=phase-166-i*7;if(age<0||age>48)continue;
-  const sx=126+age*.44,sy=101-age*.30+Math.sin(age*.16+i)*1.5,r=1.4+age*.065;
+ if(t>=165&&phase>=105&&phase<210)for(let i=0;i<9;i++){
+  const age=phase-105-i*7;if(age<0||age>48)continue;
+  const sx=117+age*.44,sy=98-age*.30+Math.sin(age*.16+i)*1.5,r=1.4+age*.065;
   ctx.globalAlpha=.22*(1-age/48);ctx.fillStyle='#dbd0bc';ctx.beginPath();ctx.ellipse(sx,sy,r*1.6,r,0,0,Math.PI*2);ctx.fill();
  }
  ctx.restore();
