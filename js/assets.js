@@ -43,7 +43,6 @@ export const FILES = {
   boxing_impacts: 'assets/fx/boxing_impacts.png',
   nr_passenger_reaction: 'assets/stages/night_train/rebuild/passenger_reaction.png',
   nr_passenger_seated: 'assets/stages/night_train/rebuild/passenger_seated.png',
-  nr_pantry_cook: 'assets/stages/night_train/rebuild/pantry_cook.png',
   nr_station_tea: 'assets/stages/night_train/rebuild/station_tea.png',
 
   nr_platform_front: 'assets/stages/night_train/rebuild/platform_front.png',

@@ -184,13 +184,6 @@ export function drawTrainWallPlane(ctx,camX){
   if(row===0){if(!reacting||!sprite(ctx,'passenger_reaction',pose,x-camX,y,92,92,224,224))sprite(ctx,'passenger_seated',restPose,x-camX,y,92,92,224,224);}
   else sprite(ctx,'passengers',row*4+(reacting?(reaction<18?1:reaction<112?2:3):pose),x-camX,y,78,91,224,256);ctx.restore();
  }
- // The cook stands inside the recessed galley; the front serving ledge occludes his lower torso.
- if(camX<5590&&camX+W>5450){
-  const cycle=tr.t%540,nearFight=G.enemies.some(e=>!e.dead&&Math.abs(e.x-5510)<190);
-  const pose=nearFight?7:cycle<240?[0,1,2,3,2,1][Math.floor(cycle/12)%6]:cycle<420?4+Math.floor(cycle/18)%2:6;
-  sprite(ctx,'pantry_cook',pose,5510-camX,129,56,56,192,192);
-  const counter=ASSETS.nr_pantry;if(counter)ctx.drawImage(counter,300,254,320,106,5430-camX,127,160,53);
- }
  if(camX<550){
   const t=G.state==='intro'?G.rawTime-G.stateT:tr.t,cycle=t%720;
   const pose=cycle<260?0:cycle<420?1:cycle<510?2:3;

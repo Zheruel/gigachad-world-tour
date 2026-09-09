@@ -13,7 +13,7 @@ A 12–15 minute journey from a remote station at midnight through increasingly 
 | Platform and boarding | 1920–2880 | Clear the final station fight; the blue sleeper visibly rolls in over four seconds. A fresh F / LB near its door triggers a two-second rail-assisted step and climb in the same platform view. |
 | General compartment | 2880–3840 | Battered benches, luggage and animated passengers; moonlit villages outside. |
 | Sleeper coaches | 3840–5280 | Stacked berths, curtains, ambushers; brickworks and rail yards emerge outside. |
-| Pantry | 5280–5760 | Detailed cook chopping, preparing food and reacting inside a recessed galley, behind a serving hatch with visible side walls and an access door; warm kitchen fixtures and a short recovery stretch. |
+| Pantry | 5280–5760 | Shallow, unattended snack counter against a continuous carriage wall: greasy parcels, dusty jars and tea equipment. No side room, serving-hole cook or rear doorway; retain the clear aisle and short recovery stretch. |
 | Inspector office | 5760–6240 | Grimy paperwork, cash drawers and confiscated luggage. Two enforcers first, then the inspector rises and steps around his desk to fight. |
 | AC sleeper | 6240–7200 | Cool lighting, sealed windows, professional guards; polluted blue-hour outskirts. |
 | Private carriage | 7200–8160 | Wood, brass, velvet, contraband and bodyguards; interior boss phase. |

@@ -36,6 +36,8 @@ def main():
         im=Image.open(SOURCE/(name+'.png'))
         im=im.crop((0,round(im.height*.063) if name=='office' else 0,im.width,round(im.height*(.974 if name=='office' else .965))))
         clean_edge(keyed(im)).resize((960,540),Image.Resampling.NEAREST).save(OUT/(name+'.png'))
+    from build_train_snack_counter import main as build_snack_counter
+    build_snack_counter()
     for directory in (ROOT/'assets/frames').glob('nr_*'):
         if directory.is_dir():
             for path in directory.glob('*.png'):clean_edge(Image.open(path)).save(path)

@@ -1,4 +1,4 @@
-"""Register the pantry performance and inspector's office actions."""
+"""Register the inspector's office actions."""
 import json
 import numpy as np
 from PIL import Image
@@ -14,10 +14,6 @@ def grounded(c,scale,width=320,height=240,feet=233):
     return clean_edge(f)
 
 def main():
-    cells=extract(Image.open(SOURCE/'pantry_cook.png'),2)
-    assert len(cells)==8
-    scale=154/cells[0].height
-    atlas([grounded(cells[i],scale,192,192,186) for i in range(8)],OUT/'pantry_cook.png')
     cells=extract(Image.open(SOURCE/'conductor_performance.png'),4)
     extra=extract(Image.open(SOURCE/'conductor_office.png'),2)
     assert len(cells)==16 and len(extra)==8
