@@ -37,6 +37,6 @@ export function drawDisplayTitle(ctx,text,cx,y,{height=26,maxWidth=400,art=artwo
   return {width:w,height:h};
  }
  const scale=Math.max(1,Math.min(Math.floor(height/7),Math.floor(maxWidth/textWidth(key,1)))),w=textWidth(key,scale);
- drawTextShadow(ctx,key,Math.round(cx-w/2),Math.round(y),'#ffda86',scale,'#592719');
+ drawTextShadow(ctx,key,Math.round(cx-w*(anchor?.[0]??.5)),Math.round(y-scale*6*(anchor?.[1]??0)),'#ffda86',scale,'#592719');
  return {width:w,height:scale*6};
 }
