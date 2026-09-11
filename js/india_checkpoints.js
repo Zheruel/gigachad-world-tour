@@ -1,3 +1,4 @@
+import {snapshotGrade,restoreGrade} from './grading.js';
 // Checkpoint rollback for the two replacement India stages. Train retries remain
 // owned by train.js; these snapshots never alter their state or balance.
 import { G, W, clamp, laneMin, laneMax } from './engine.js';
@@ -19,7 +20,7 @@ export const INDIA_CHECKPOINTS = Object.freeze({
 function save(point) {
   const s = G.india;
   s.retryPoint = {
-    ...point, score: G.score, bestCombo: G.bestCombo,
+    ...point, grading:snapshotGrade(), score: G.score, bestCombo: G.bestCombo,
     stats: { ...G.stats }, time: s.t,
     wallBroken: s.wallBroken, bullDone: s.bullDone, marketBroken:s.marketBroken, damage:{...s.damage}, finishersDone:[...(s.finishersDone||[])], completedScenes:{...s.completedScenes},
     cues: [...s.cues], recoveryWaves: [...(s.recoveryWaves || [])],
@@ -61,7 +62,7 @@ export function captureIndiaBossCheckpoint(wave, key) {
 
 export function restoreIndiaCheckpoint() {
   if (!ensureInitial()) return false;
-  const s = G.india, saved = s.retryPoint;
+  const s = G.india, saved = s.retryPoint;restoreGrade(saved.grading);
   releaseSuper(G.player);
   releaseGrab(G.player);
   G.audio.stopSamples?.();

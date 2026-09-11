@@ -1,3 +1,4 @@
+import {gradeDamage,gradeFamily} from './grading.js';
 // player.js - CHAD: movement, flowing one-button combo, parry/counter,
 // the single-target Boxing Rush, status effects and recovery.
 import {
@@ -10,6 +11,7 @@ import { spawnSpark, spawnDust, spawnRing, spawnSmoke,
   impact, spawnPop, spawnBoxingImpact } from './effects.js';
 import { reactStage } from './ambience.js';
 import { getAIFrame } from './aiframes.js';
+import { BOXING_COMBOS,chooseCombo,superCues,superPose } from './boxing_combos.js';
 
 // keys: the frame advances each time p.t crosses one of these, so a punch reads as
 // wind-up -> strike -> recovery instead of popping to a single pose. The strike frame
@@ -37,9 +39,7 @@ export const COMBO_FLOW = [
 
 export const SUPER_VOICES=['duke_bring_it_on','duke_bring_pain','duke_come_get_some','duke_lets_rock'];
 
-export const SUPER_MOVES = [
-  { id: 'boxing_rush', name: 'BOXING RUSH', color: '#ff9b35', dur: 100 },
-];
+export const SUPER_MOVES = BOXING_COMBOS;
 
 // A chained attack skips its wind-up: it starts partway in so the chain reads as one
 // continuous motion instead of restarting from a guard between every hit.
@@ -110,7 +110,7 @@ export function poisonPlayer(p, frames) {
 // ---- hit detection -----------------------------------------------------
 function hitTargets() {
   const t = [...G.enemies, ...G.props.filter((pr) => !pr.decor)];
-  if (G.boss && !G.boss.dead) t.push(G.boss);
+  if (G.boss && !G.boss.dead&&!G.boss.backupProtected) t.push(G.boss);
   return t;
 }
 
@@ -122,7 +122,7 @@ function playerHit(p, spec) {
   let hitAny = false;
   let heaviest = 0;
   for (const e of hitTargets()) {
-    if (e.dead || e.broken || e.superLocked) continue;
+    if (e.dead || e.broken || e.superLocked || e.backupProtected) continue;
     if (e.state === 'grabbed' || e.state === 'thrown' || e.state === 'getup') continue;
     // Airborne bodies stay hittable (that is the juggle); grounded knockdowns
     // do not, so you cannot just stomp someone lying on the floor forever.
@@ -170,6 +170,7 @@ function playerHit(p, spec) {
 
 // Meter rewards successful variety, never penalizes basic attack damage.
 export function rewardAttack(p, family, base) {
+  if(family!=='parry')gradeFamily(family);
   const history = p.attackFamilies || (p.attackFamilies = []);
   addMeter(history.includes(family) ? base : base * 1.5);
   history.push(family);
@@ -194,7 +195,12 @@ export function releaseSuper(p) {
   if (target) {
     target.superLocked = false;
     target.superApplying = false;
-    if (!target.dead) { target.state = 'stagger'; target.t = 0; target.protectedStagger = Math.max(target.protectedStagger || 0, 45); }
+    if(!target.pendingSuperDefeat)target.superImpact=null;
+    if (!target.dead && !target.pendingSuperDefeat) {
+      target.t=0;
+      if(target.kind==='boss'||target.protectedStagger>45){target.state='stagger';target.protectedStagger=Math.max(target.protectedStagger||0,45);}
+      else {target.state='down';target.protectedStagger=0;if(!target.superLaunched){target.z=Math.max(target.z,1);target.vz=2.2;target.vx=p.face*1.5;}}
+    }
   }
   p.specialTarget = null;
 }
@@ -219,14 +225,14 @@ export function grabPlayer(p, holder) {
 export function startSuper(p) {
   if (G.meter < METER_MAX) { G.audio.sfx('whiff'); return false; }
   const target = [...G.enemies, ...(G.boss && !G.boss.dead ? [G.boss] : [])]
-    .filter(e => e && !e.dead && !e.superLocked && !['down','dying','thrown','grabbed','getup'].includes(e.state)
+    .filter(e => e && !e.dead && !e.superLocked && !e.backupProtected && !['down','dying','thrown','grabbed','getup'].includes(e.state)
       && Math.abs(e.x-p.x)<=96 && (e.x-p.x)*p.face>=0 && Math.abs(e.y-p.y)<=20 && e.z<12)
     .sort((a,b)=>Math.abs(a.x-p.x)-Math.abs(b.x-p.x))[0];
   if (!target) { G.audio.sfx('whiff'); return false; }
-  p.superMove=0; p.superOverride=null; p.boxingAfter=null; G.meter=0;
+  p.superMove=chooseCombo(p); p.superOverride=null; G.meter=0;
   setState(p,'special'); p.invuln=120; p.superT=0; p.superHits={};
   p.specialTarget=target; p.superGuarded=!!(target.guard>0 && !(target.protectedStagger>0));
-  target.superLocked=true; target.vx=0; target.vz=0; target.z=0;
+  target.superLocked=true; target.superLaunched=false;target.superBounced=false; target.vx=0; target.vz=0; target.z=0;
   G.audio.sfx('super'); G.audio.voiceRandom(SUPER_VOICES,1600,8,true);
   spawnDust(p.x,p.y,3);
   return true;
@@ -250,17 +256,16 @@ export function ragnarokPose(t,guarded=false) {
 // protected stagger and all physical coordinates remain under the combat update.
 export function boxingVictimPose(e) {
   const p=G.player;
-  // A lethal strike keeps its upright contact before the existing knockout arc.
-  // Only the drawing changes: death, collision and score still resolve at impact.
-  if(e.kind!=='boss'&&e.dead&&e.boxingKO&&e.t<8)return {name:e.t<2?'idle':'hurt',idx:0,dx:0,dy:0,angle:0,flash:e.t<2};
-  if(!e.superLocked||p?.state!=='special'||p.specialTarget!==e||p.superT<24)return null;
-  const t=p.superT,hits=p.superGuarded?[24,40,56]:[24,32,40,48,60,76];
-  let n=0;for(let i=0;i<hits.length;i++)if(t>=hits[i])n=i;
-  const age=t-hits[n],last=n===hits.length-1,flight=last&&!p.superGuarded?clamp((t-76)/23,0,1):0;
-  const lift=last&&!p.superGuarded?Math.sin(flight*Math.PI)*21:0;
-  let name=last&&age<2?'idle':'hurt';
+  if(e.superLaunched&&e.state==='down'&&getAIFrame(e.set?._aiKey,'super_reaction'))return {name:'super_reaction',idx:e.z>0?(e.vz>0&&!e.superBounced?(e.superLaunchKind==='upper'?6:4):5):7,dx:0,dy:e.z>0&&e.vz<=0?-Math.min(26,e.z):0,angle:0,flash:false};
+  if(!e.superLocked||p?.state!=='special'||p.specialTarget!==e||p.superT<superCues(p).hits[0].at)return null;
+  const t=p.superT,cues=superCues(p),hits=cues.hits;
+  let n=0;for(let i=0;i<hits.length;i++)if(t>=hits[i].at)n=i;
+  const age=t-hits[n].at,last=n===hits.length-1,flight=last&&!p.superGuarded?clamp(age/(cues.dur-hits[n].at),0,1):0;
+  const lift=0;
+  let name=last&&e.superLaunched?'down':last&&age<2?'idle':'hurt';
   if(p.superGuarded&&!last)name=e.shieldActive?'shield':'block';
-  else if(age>3&&getAIFrame(e.set?._aiKey,'stagger_polish'))name='stagger_polish';
+  else if(!e.superLaunched&&age>3&&getAIFrame(e.set?._aiKey,'stagger_polish'))name='stagger_polish';
+  if(getAIFrame(e.set?._aiKey,'super_reaction')&&!p.superGuarded){name='super_reaction';return {name,idx:hits[n].height<55?0:1+n%2,dx:0,dy:0,angle:0,flash:age<2};}
   return {name,idx:name==='hurt'?n%2:0,dx:p.face*Math.max(0,4-age*.65),dy:-lift,
     angle:last&&!p.superGuarded?-p.face*Math.sin(flight*Math.PI)*.13:0,flash:age<2};
 }
@@ -277,18 +282,19 @@ export function resolveIncomingHit(p, attacker, spec = {}) {
   if (!(p.guardWindow>0)) {
     p.lastDefense='guard';
     const chip=Math.ceil((spec.dmg || 0)*diff().dmg*.1);
-    p.hp=Math.max(0,p.hp-chip);
+    gradeDamage(Math.min(p.hp,chip));p.hp=Math.max(0,p.hp-chip);
     spawnSpark(p.x+p.face*14,p.y-50); G.audio.sfx('armor');
     G.hitstop=Math.max(G.hitstop,2);
     if(p.hp===0){p.dying=true;setState(p,'down');p.vz=2;p.z=.1;}
     return true;
   }
+  if(G.grading)G.grading.parries++;
   p.lastDefense='parry';p.guardWindow=0;p.counterT=60;p.parryTarget=attacker||null;
   setState(p,'parry_counter');p.invuln=12;
   G.hitstop=Math.max(G.hitstop,5);G.shake=Math.max(G.shake,3);
   spawnRing(p.x+p.face*8,p.y-44,'#6dff82');spawnSpark(p.x+p.face*14,p.y-50);
   rewardAttack(p,'parry',10);G.audio.sfx('parry');
-  if(attacker&&!attacker.dead){
+  if(attacker&&!attacker.dead&&!attacker.backupProtected){
     attacker.parried?.(0,p.face);
     attacker.protectedStagger=Math.max(attacker.protectedStagger||0,45);
     attacker.state='stagger';attacker.t=0;attacker.vx=0;attacker.hitLanded=true;
@@ -314,7 +320,6 @@ function tryCancel(p) {
 export function updatePlayer(p, bounds = null) {
   const x0 = p.x, y0 = p.y;
   p.t++;
-  if(p.boxingAfter){p.boxingAfter.t++;if(p.boxingAfter.t>=16||p.state!=='idle')p.boxingAfter=null;}
   if(!['grabbing','throwing'].includes(p.state)&&p.grabTarget)releaseGrab(p);
   if(p.state!=='special' && p.specialTarget) releaseSuper(p);
   if(p.guardWindow>0)p.guardWindow--;
@@ -326,7 +331,7 @@ export function updatePlayer(p, bounds = null) {
   if (p.poison > 0) {
     p.poison--;
     if (++p.poisonT % 45 === 0) {
-      p.hp -= 2;
+      gradeDamage(Math.min(2,Math.max(0,p.hp-1)));p.hp -= 2;
       spawnSpark(p.x, p.y - 50);
       if (p.hp <= 0) { p.hp = 1; }
     }
@@ -517,25 +522,33 @@ export function updatePlayer(p, bounds = null) {
     }
     case 'special': {
       const t=++p.superT,target=p.specialTarget;
-      if(!target || target.dead){releaseSuper(p);setState(p,'idle');break;}
-      if(t<=16){p.x+=p.face*Math.min(5,Math.max(0,(target.x-p.x)*p.face-30));p.y+=clamp(target.y-p.y,-1.5,1.5);}
-      if((p.superGuarded?t>=50&&t<=54:t>=70&&t<=74))p.x+=p.face*Math.min(2.4,Math.max(0,(target.x-p.x)*p.face-18));
-      const hits=p.superGuarded?[[24,6],[40,6],[56,6]]:[[24,4],[32,4],[40,4],[48,4],[60,6],[76,14]];
-      for(const [at,dmg] of hits)if(t===at){
-        target.superApplying=true;
-        target.hurt(dmg,p.face,true,false);
+      if(!target){releaseSuper(p);setState(p,'idle');break;}
+      const cues=superCues(p),final=cues.hits.at(-1);
+      if(target.superLaunched&&!target.dead){target.x+=target.vx;target.z+=target.vz;target.vz-=.28;if(target.z<=0){target.z=0;target.vz=0;target.vx=0;}}
+      if(t<=16){p.x+=p.face*Math.min(5,Math.max(0,(target.x-p.x)*p.face-42));p.y+=clamp(target.y-p.y,-1.5,1.5);}
+      if(t>=final.at-6&&t<final.at)p.x+=p.face*Math.min(2.4,Math.max(0,(target.x-p.x)*p.face-(cues.finish==='upper'?28:40)));
+      for(const hit of cues.hits)if(t===hit.at&&!target.dead){
+        target.superImpact={height:hit.height,upper:hit.finish&&cues.finish==='upper',finish:!!hit.finish};
+        gradeFamily('super');target.superApplying=true;
+        target.hurt(hit.dmg,p.face,true,false);
         target.superApplying=false;
-        if(target.dead){target.boxingKO=true;p.boxingAfter={t:0,upper:at===76||p.superGuarded&&at===56,pose:ragnarokPose(t,p.superGuarded).idx};}
         if(!target.dead){target.state='stagger';target.t=0;target.vx=0;target.vz=0;target.z=0;}
-        const upper=at===76||p.superGuarded&&at===56,hitX=upper?p.x+p.face*14:target.x-p.face*9,hitY=target.y-(upper?75:at===60?65:45);
-        spawnSpark(hitX,hitY);
-        spawnBoxingImpact(hitX,hitY,upper,p.face);
-        G.shake=Math.max(G.shake,at===76?4:1.4);
-        G.audio.sfx(at===76||at===56?'heavy':'punch');G.hitstop=Math.max(G.hitstop,at===76?7:3);
+        const hitX=target.x-p.face*9,hitY=target.y-hit.height;
+        spawnSpark(hitX,hitY);spawnBoxingImpact(hitX,hitY,!!target.superImpact.upper,p.face);
+        G.shake=Math.max(G.shake,hit.finish?4:1.4);
+        G.audio.sfx(hit.finish?'heavy':'punch');G.hitstop=Math.max(G.hitstop,hit.finish?7:3);
         if(G.stats)G.stats.hits++;addScore(10);
-        if(p.superGuarded&&at===56)target.breakGuard?.();
+        if(p.superGuarded&&hit.finish)target.breakGuard?.();
+        if(hit.finish&&cues.finish==='upper'){
+          G.effects.push({type:'superElectric',x:hitX,y:hitY,face:p.face,t:0,life:18});
+          G.audio.roomSfx?.('super_electric',.65);
+        }
+        if(hit.finish&&target.kind!=='boss'){
+          if(target.pendingSuperDefeat){target.pendingSuperDefeat=false;target.superLocked=false;target.superApplying=true;target.hurt(target.hp,p.face,true,false);target.superApplying=false;target.superLocked=true;}
+          else if(!p.superGuarded){target.superLaunched=true;target.superLaunchKind=cues.finish;target.state='down';target.z=1;target.vz=cues.finish==='upper'?5.8:3.5;target.vx=p.face*(cues.finish==='upper'?2.5:4);target.bounced=false;}
+        }
       }
-      if(t>=(p.superGuarded?72:100)||target.dead){releaseSuper(p);setState(p,'idle');}
+      if(t>=cues.dur){releaseSuper(p);setState(p,'idle');}
       p.z=0;
       break;
     }
@@ -622,7 +635,7 @@ function pitFallPlayer(p, side) {
   spawnDust(p.x, edge, 8);
   spawnRing(p.x, edge, side > 0 ? '#c8c8d8' : '#8fd8c8');
   spawnPop(p.x, edge - 30, side > 0 ? 'HANGING ON' : 'SOAKED');
-  p.hp = Math.max(1, p.hp - Math.round(20 * diff().dmg));
+  gradeDamage(Math.min(Math.max(0,p.hp-1),Math.round(20*diff().dmg)));p.hp = Math.max(1, p.hp - Math.round(20 * diff().dmg));
   p.y = side > 0 ? edge - 2 : edge + 2; p.z = 0; p.vz = 0; p.vx = 0;
   p.invuln = 90;
   G.combo = 0;
@@ -634,7 +647,7 @@ export function hurtPlayer(p, dmg, dir, heavy) {
   if (p.invuln > 0 || p.state === 'down' || p.state === 'getup' || p.state === 'dead') return;
   if (p.state === 'special') return;
   if (G.state !== 'play') return;
-  p.hp -= Math.round(dmg * diff().dmg);
+  gradeDamage(Math.min(p.hp,Math.round(dmg*diff().dmg)));p.hp -= Math.round(dmg * diff().dmg);
   G.combo = 0;
   addMeter(3);
   G.audio.sfx('phurt');
@@ -655,7 +668,7 @@ export function hurtPlayer(p, dmg, dir, heavy) {
 
 export function drawPlayer(ctx, p, camX) {
   const sx = Math.round(p.x - camX), sy = Math.round(p.y - p.z);
-  const cinematicBody = p.state === 'special' || p.state === 'parry_counter' || (p.state==='idle'&&p.boxingAfter);
+  const cinematicBody = p.state === 'special' || p.state === 'parry_counter';
   if (p.invuln > 0 && !cinematicBody && !(p.invulnFlashAfter>G.time) && ((G.rawTime >> 1) & 1)) return; // invincibility blink
   let name = 'idle', idx = 0;
   switch (p.state) {
@@ -694,26 +707,18 @@ export function drawPlayer(ctx, p, camX) {
     case 'getup': name = 'getup'; break;
     case 'victory': name = 'victory'; break;
     case 'special': {
-      const pose = ragnarokPose(p.superT,p.superGuarded);
+      const pose = getAIFrame('player',superCues(p).state)?superPose(p):ragnarokPose(p.superT,p.superGuarded);
       name = pose.name; idx = pose.idx;
       break;
     }
     case 'dead': name = 'down'; break;
   }
-  if(p.state==='idle'&&p.boxingAfter){const a=p.boxingAfter;name='boxing_rush';idx=a.t<4?(a.upper?11:a.pose):a.t<9?(a.upper?12:a.pose):a.t<14?14:15;}
   const f = getFrame(SPR.player, name, idx, p.face);
   const fw = frameW(f), fh = frameH(f);
   const dx = sx - Math.round(fw / 2), dy = sy - fh + 4;
   if (p.poison > 0 || p.blind > 0) {
     ctx.save();
     ctx.filter = p.blind > 0 ? 'sepia(1) saturate(3) hue-rotate(-20deg)' : 'hue-rotate(60deg) saturate(1.5)';
-    blit(ctx, f, dx, dy);
-    ctx.restore();
-  } else if (p.state === 'special' && !G.reflecting) {
-    // Tint the sprite itself instead of drawing offset copies around it. The old
-    // aura read as a bright outline, especially on generated combat frames.
-    ctx.save();
-    ctx.filter = 'brightness(1.08) saturate(1.04)';
     blit(ctx, f, dx, dy);
     ctx.restore();
   } else {

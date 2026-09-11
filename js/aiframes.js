@@ -189,7 +189,7 @@ export async function loadAIFrames() {
           const img = imgs[k];
           if (!img) continue; // failed file: skip, fall back for that frame
           let n;
-          if(charKey.startsWith('nr_') || charKey.startsWith('ic_') || (charKey==='player' && state==='boxing_rush')) {n=mkCanvas(img.width,img.height);n.getContext('2d').drawImage(img,0,0);n._as=RS;}
+          if(charKey==='thekedar' || charKey.startsWith('nr_') || charKey.startsWith('ic_') || (charKey==='player' && ['boxing_rush','boxing_variety','super_barrage','super_electric','electric_finish','inspector_pair','seth_pair'].includes(state))) {n=mkCanvas(img.width,img.height);n.getContext('2d').drawImage(img,0,0);n._as=RS;}
           else n = normalize(img, targetH, ANCHORS[files[k]], TORSO_ANCHORED.has(state), PRESERVE_SOURCE_SCALE.has(state));
           if (n) { n._file = files[k]; frames.push(n); }
         }

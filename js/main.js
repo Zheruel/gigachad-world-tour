@@ -1,3 +1,5 @@
+import {newGrade,snapshotGrade} from './grading.js';
+import {seekTrainFinish} from './train.js';
 import { updateResults } from './results.js';
 import { bossIntroDialogue, updateDialogue } from './room_dialogue.js';
 import { captureIndiaBossCheckpoint, restoreIndiaCheckpoint } from './india_checkpoints.js';
@@ -116,6 +118,7 @@ function startStage(index, silent = false) {
   clearTravel();
   const carriedMeter = G.meter || 0;
   G.stageIndex = index;
+  G.grading=newGrade();
   initStage(index);
   const st = stageDef(index);
   const keepHp = G.player ? Math.max(G.player.hp, 60) : 100;
@@ -233,7 +236,7 @@ function updateWaves() {
     if (next && p.x >= next.x) {
       G.waveIndex++;
       if (next.boss) {
-        if(G.train){G.train.checkpoint=next.x;G.train.checkpointScore=G.score;}
+        if(G.train){G.train.checkpoint=next.x;G.train.checkpointScore=G.score;G.train.gradeCheckpoint=snapshotGrade();}
         G.locked = true;
         G.camLock = clamp(next.camX ?? next.x - 60, 0, G.camMax);
         captureIndiaBossCheckpoint(next, G.stage.boss);
@@ -387,6 +390,7 @@ function checkPlayerDeath() {
       G.meter = Math.max(G.meter, 40);
       if(G.train)restoreTrainCheckpoint();
       else if(G.india)restoreIndiaCheckpoint();
+      else if(G.grading)G.grading.retries++;
     } else {
       p.state = 'dead';
       G.continueT = 9 * 60 + 59;
@@ -422,7 +426,7 @@ function checkBossClear() {
       else if (b.key === 'rana') audio.voice('duke_hail', 1800, true);
     }
     G.clearStats = {
-      hits: G.stats.hits, kos: G.stats.kos,
+      grading:snapshotGrade(),hits: G.stats.hits, kos: G.stats.kos,
       bonus: G.lives * 500, combo: G.bestCombo,
     };
     addScore(G.lives * 500 + G.bestCombo * 25);
@@ -671,6 +675,7 @@ function update() {
       audio.sfx('blip');
       if(G.train)restoreTrainCheckpoint();
       else if(G.india)restoreIndiaCheckpoint();
+      else if(G.grading)G.grading.retries++;
       transitionTo(() => {
         setState('play');
         audio.music(G.boss && !G.boss.dead
@@ -941,12 +946,12 @@ window.__game = {
       G.player.x=G.camX+90;G.boss=createBoss(key,G.camX+270,226);G.locked=true;G.boss.mini=key==='vendor';
       if(cinematic||name==='clear'){
         if(key==='dredger')G.boss.delhi.operatorPhase(G.boss);
-        G.boss.hp=0;G.boss.dead=true;G.boss.finishStarted=G.india.startCinematic(key+'-finish',G.boss);
+        render();G.boss.hp=0;G.boss.dead=true;G.boss.finishStarted=G.india.startCinematic(key+'-finish',G.boss);
         const limit=INDIA_FINISHERS[key+'-finish'].ticks;
         for(let i=0;i<Math.min(name==='clear'?limit:t,limit);i++){updateIndia();updateEffects();}
       }
       if(name==='clear'){
-        G.clearStats={hits:G.stats.hits,kos:G.stats.kos,bonus:G.lives*500,combo:G.bestCombo};setState('clear');G.stateT=G.rawTime-t;
+        G.clearStats={grading:snapshotGrade(),hits:G.stats.hits,kos:G.stats.kos,bonus:G.lives*500,combo:G.bestCombo};setState('clear');G.stateT=G.rawTime-t;
       }
     }
     render();
@@ -959,15 +964,17 @@ window.__game = {
     if(area){G.camX=area[1];G.player.x=area[1]+140;G.train.aboard=area[1]>=ABOARD_X;G.train.climbed=name==='roof';if(name==='roof')G.player.y=210;G.train.scene=area[1]>=7200?2:area[1]>=4320?1:0;G.train.t=t;G.train.distance=t*2.6;if(name==='platform')G.train.arrival=t;}
     else if(name==='train-arrival'){G.train.arrival=t;G.camX=2400;G.player.x=2650;G.train.t=t;}
     else if(name==='intro'){setState('intro');G.stateT=G.rawTime-t;updateStationArrival(t);}
+    else if(name==='inspector-finish'){G.camX=G.camLock=5760;G.player.x=5880;G.player.y=218;G.train.aboard=true;const b=createBoss('conductor',5930,218);Object.assign(b,{x:5930,y:218,dead:true,hp:0});startTrainCinematic('inspector-finish');G.train.cinematic.t=t;G.train.officeDeskBroken=t>=198;}
     else if(name==='knockout'){G.camX=G.camLock=8640;G.player.x=8820;G.player.y=218;G.train.aboard=G.train.climbed=true;const b=createBoss('vikram',8860,218);b.roof=b.dead=true;b.hp=0;G.train.knockoutBody=true;startTrainCinematic('knockout');G.train.cinematic.t=t;}
     else if(['boarding','roof-transition','escape'].includes(name)){G.train.aboard=name!=='boarding';G.train.scene=2;startTrainCinematic(name==='roof-transition'?'roof':name);G.train.cinematic.t=t;if(name==='roof-transition')Object.assign(G.train.cinematic,{fromX:7920,fromY:218,fromCam:7680,fromBossX:7996,fromBossY:218});if(name==='boarding'){G.train.arrival=240;G.camX=2400;Object.assign(G.train.cinematic,{fromX:2705,fromY:218,fromCam:2400});}}
-    else if(name==='clear'){G.train.aboard=true;G.train.endingDone=true;G.train.cinematic={kind:'escape',t:FINALE_TICKS};G.clearStats={hits:G.stats.hits,kos:G.stats.kos,bonus:G.lives*500,combo:G.bestCombo};setState('clear');G.stateT=G.rawTime-t;}
+    else if(name==='clear'){G.train.aboard=true;G.train.endingDone=true;G.train.cinematic={kind:'escape',t:FINALE_TICKS};G.clearStats={grading:snapshotGrade(),hits:G.stats.hits,kos:G.stats.kos,bonus:G.lives*500,combo:G.bestCombo};setState('clear');G.stateT=G.rawTime-t;}
     else if(name==='conductor'){audio.music(G.stage.musicB||G.stage.music);G.camX=G.camLock=5760;G.player.x=5850;G.train.aboard=true;createBoss('conductor',6100,218);G.locked=true;setState('bossintro');}
     else if(name==='seth-intro'){G.camX=G.camLock=7680;G.player.x=7950;G.player.y=218;G.train.aboard=true;createBoss('vikram',8120,218);G.locked=true;setState('bossintro');}
     else if(name==='roof-guards'){G.camX=G.camLock=8160;G.player.x=8265;G.train.aboard=G.train.climbed=true;const b=createBoss('vikram',9010,218);b.roof=b.trainWaiting=true;b.set=SPR.nr_vikram_roof;G.locked=true;updateBoss();}
     else if(name==='boss'||name==='boss-roof'){G.camX=G.camLock=name==='boss'?7680:8640;G.train.aboard=true;G.train.scene=2;G.train.climbed=name==='boss-roof';G.player.y=218;G.player.x=G.camX+120;const b=createBoss('vikram',G.camX+330,218);b.roof=name==='boss-roof';if(b.roof)b.set=SPR.nr_vikram_roof;G.locked=true;}
     if(name==='escape'){G.train.knockoutBody=true;const b=createBoss('vikram',ROOF_X+850,218);Object.assign(b,{dead:true,hp:0,t:71,roof:true});}
     G.train.vistaX=G.train.vistaTarget=vistaTargetFor(name==='roof-transition'||name==='escape'?ROOF_X:G.player.x);G.train.motionT=G.train.vistaX/.12;resetTrainVista(G.train,['roof-transition','knockout','escape'].includes(name)?ROOF_X:G.player.x);
+    if(G.train.cinematic?.entry){const c=G.train.cinematic,e=c.entry;c.entry=null;c.t=e.start;render();e.snapshot?.getContext('2d').drawImage(canvas,0,0);c.entry=e;seekTrainFinish(t);}
     if(['conductor','seth-intro'].includes(name)&&t>0)window.__game.step(t);
     render();
   },
@@ -1659,7 +1666,11 @@ if (autoMode) {
         const lifeKinds = others.map(([k]) => k).sort().join(',');
         t('train-one-up-preserved', STAGES.find(s=>s.id==='train').props.filter(q=>PROP_TYPES[q.kind].drop==='life').length===1);
         G.pickups.length = 0;
-        const box = createProp('nr_contraband', G.player.x + 24, G.player.y);
+        // Isolate the expiry check from live wave spawns and knockback pickup collection.
+        G.enemies.length=0;G.spawnQueue=[];G.waveActive=false;G.waveIndex=G.stage.waves.length-1;
+        G.player.dying=false;G.player.state='idle';G.player.vx=G.player.vy=G.player.z=0;
+        G.player.invuln=1000;
+        const box = createProp('nr_contraband', G.player.x + 120, G.player.y);
         G.props.push(box);
         box.hurt(999, 1);
         const up = G.pickups.find((q) => q.kind === 'life');
@@ -1700,7 +1711,7 @@ if (autoMode) {
         // and the wave it interrupted is handed back rather than lost
         t('miniboss-reveal-returns-the-wave',
           G.state === 'play' && G.waveActive === true && G.locked === true);
-        G.boss.hurt(9999, 1, true, false); step(600);
+        G.boss.hurt(9999, 1, true, false); step(INDIA_FINISHERS['vendor-finish'].ticks+80);
         t('miniboss-does-not-end-the-act', G.state === 'play' && G.boss === null);
       }
       G.enemies.length = 0; G.spawnQueue = []; G.hitstop = 0;
@@ -1726,7 +1737,7 @@ if (autoMode) {
         t('vendor-arrives-with-cart-and-valve',!!b.cart&&!!b.valve&&G.props.includes(b.station));
         b.cart.hurt(9999,1,true,true);step(2);
         t('vendor-loses-rush-permanently',b.cartGone&&b.cart.broken);
-        b.hurt(9999,1,true,true);step(600);
+        b.hurt(9999,1,true,true);step(INDIA_FINISHERS['vendor-finish'].ticks+80);
         // THE DREDGER: the bucket, the crew, the cab, the winch, the man
         b = jump('dredger');
         t('dredger-rests-out-of-reach', !!b && b.phase === 'machine' && b.z >= 60);
@@ -1734,16 +1745,16 @@ if (autoMode) {
         let crew = false;
         for (let i = 0; i < 400 && !crew; i++) { step(1); crew = G.enemies.some((e) => e.trainType === 'ic_docker'); }
         t('dredger-always-has-crew', crew);
-        G.shots = [{ kind: 'slurry', x: b.rail.x - 60, y: 215, z: 0, vx: -3, vz: 0, dmg: 9, t: 0, life: 400,
+        G.shots = [{ kind: 'wrench', x: b.rail.x - 60, y: 215, z: 0, vx: -3, vz: 0, dmg: 9, t: 0, life: 400,
           source: b, parryClass: 'reflect', reflected: true }];
         for (let i = 0; i < 150 && G.shots.length; i++) step(1);
-        t('dredger-reflected-hose-cracks-the-cab', b.glass === 2 && G.shots.length === 0);
+        t('dredger-reflected-scrap-cracks-the-cab', b.glass === 2 && G.shots.length === 0);
         b.winch.hurt(999, 1); step(200);
-        const stopped = b.winchGone === true && b.state === 'grounded' && b.z === 0;
+        const stopped = b.winchGone === true && ['grounded','windup','hose'].includes(b.state) && b.z === 0;
         step(400);
-        t('dredger-winch-stops-the-bucket', stopped && b.state === 'grounded' && b.z === 0);
+        t('dredger-winch-stops-the-bucket', stopped && ['grounded','windup','hose'].includes(b.state) && b.z === 0);
         b.hurt(b.hp - 80, 1, false, false); step(5);
-        t('dredger-operator-comes-out', b.phase === 'operator' && b.label === 'THE THEKEDAR' && b.maxhp === 90);
+        t('dredger-operator-comes-out', b.phase === 'operator' && b.label === 'THE THEKEDAR' && b.maxhp === 360);
         b.hurt(9999, 1, true, true); step(80);
         t('dredger-dies-as-a-man', b.dead === true && b.state === 'dying');
         // hand the suite a quiet street again
@@ -1863,7 +1874,7 @@ if (autoMode) {
       s1.state = 'idle'; s1.atkCd = 999; s1.hp = 500; s1.maxhp = 500;
       G.meter = METER_MAX; G.player.state = 'idle';
       debugPress('super'); step(2); debugRelease('super');
-      t('ragnarok-state', G.player.state === 'special' && G.player.superMove === 0);
+      t('boxing-variant-state', G.player.state === 'special' && G.player.superMove >= 0 && G.player.superMove < 4);
       step(150);
       t('ragnarok-damage', s1.hp < 500);
       t('ragnarok-cost', G.meter === 0);
@@ -1931,7 +1942,7 @@ if (autoMode) {
       // armour at full health, enrage on the way through half, and death.
       if (G.boss) {
         G.boss.hurt(Math.ceil(G.boss.maxhp / 2) + 1, 1, false, false);
-        t('boss-enrages-at-half', G.boss.enraged === true);
+        t('boss-half-health-policy', G.boss.delhi?.noRage ? G.boss.enraged === false : G.boss.enraged === true);
         G.boss.hurt(9999, 1, true, true);
         if(G.boss.phase==='operator'&&!G.boss.dead){G.hitstop=0;step(2);G.boss.hurt(9999,1,true,true);}
         t('boss-dies', G.boss.dead === true);

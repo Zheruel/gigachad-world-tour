@@ -98,4 +98,10 @@ def main():
     conductor_intro()
     from build_train_gaits import main as gaits
     gaits()
+    from build_combat_variety import main as combat_variety
+    combat_variety()
+    from build_seth_retreat import main as seth_retreat
+    seth_retreat()
+    from build_signature_supers import main as signature_supers
+    signature_supers()
 if __name__=='__main__':main()

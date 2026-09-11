@@ -1,3 +1,4 @@
+import {initDelhiAmbient,updateDelhiAmbient,drawDelhiAmbient} from './delhi_ambient.js';
 import { drawOfficeWorkers, updateOfficeWorkers, initOfficeWorkers, alarmOfficeWorkers } from './india_office.js';
 import { updateIndiaCheckpoint } from './india_checkpoints.js';
 // Authored street/office scenery and deterministic chapter choreography.
@@ -21,6 +22,7 @@ export function initIndia(st){
   startCinematic:startIndiaFinisher};
  initOfficeWorkers(st.id);
  initIndiaEnvironment();
+ initDelhiAmbient();
 }
 function cue(key,t,at,fn){const s=G.india;if(t>=at&&!s.cues.has(key)){s.cues.add(key);fn();}}
 export function chapterFrame(ctx,key,frame,x,y,w,h,cols=4,rows=4){
@@ -43,12 +45,7 @@ export function drawIndiaStage(ctx,camX){
  if(s.review.ambient===false)return;
  const t=s.t;
  if(G.stage.id==='delhi'){
-  // Small separately animated rats follow the rear curb and flee nearby impacts.
-  for(const base of [380,1220,2140,3540,4650,5500]){
-   const phase=(t+base*3)%780;if(phase>260)continue;
-   const x=base+phase*.55-camX;if(x < -30||x>W+30)continue;
-   chapterFrame(ctx,'ic_rat',Math.floor(t/5)%8,x,209,27,14,8,1);
-  }
+  if(G.state!=='intro')drawDelhiAmbient(ctx,camX);
   for(const [i,x]of [500,1030,1500,1960,2370,4260,4820,5260].entries()){
    const sx=x-camX;if(sx<-80||sx>W+80)continue;
    const alert=G.enemies.some(e=>!e.dead&&Math.abs(e.x-x)<110&&e.state==='attack');
@@ -65,6 +62,7 @@ export function updateIndiaIntro(t){
  p.face=1;p.z=0;p.y=236;p.invuln=10;p.vx=0;p.vz=0;
  if(G.stage.id==='delhi'){
   updateMarketEntrance(t);
+  updateDelhiAmbient();
  }else{
   // All travel belongs to the actual airborne/run poses. Brace and guard keep
   // planted boots instead of sliding the finished pose across the floor.
@@ -80,7 +78,7 @@ export function drawIndiaIntro(ctx,t){
  drawIndiaStage(ctx,G.camX);
  if(G.stage.id==='refund'&&t<120)return;
  const p=G.player;
- if(G.stage.id==='delhi'){ctx.save();ctx.translate(-G.camX,0);drawMarketEntrance(ctx,t);ctx.restore();}
+ if(G.stage.id==='delhi'){ctx.save();ctx.translate(-G.camX,0);drawMarketEntrance(ctx,t);ctx.restore();if(G.india.review.ambient!==false)drawDelhiAmbient(ctx,G.camX);}
  else if(G.stage.id==='refund'&&t<320){const f=t<180?6+Math.min(3,Math.floor((t-120)/15)):t<230?10+Math.min(2,Math.floor((t-180)/17)):t<265?13:t<290?14:15;if(!chapterFrame(ctx,'ic_breach',f,p.x,p.y-p.z,128,128))actor(ctx,'player','run',Math.floor(t/6)%8,p.x,p.y-p.z);}
  else actor(ctx,'player',p.state==='walk'?'walk':'idle',Math.floor(t/7)%8,p.x,p.y);
  if(t>G.stage.introTicks-85){const age=t-(G.stage.introTicks-85);ctx.fillStyle='rgba(8,5,11,.68)';ctx.fillRect(26,46,428,62);drawDisplayTitle(ctx,G.stage.name,240,56,{height:27,maxWidth:398});if(age>18)drawTextShadow(ctx,G.stage.sub,Math.round((480-textWidth(G.stage.sub,1))/2),93,'#d8c2a1',1);}
@@ -92,7 +90,7 @@ export function drawIndiaCard(ctx){
  const text='F / LB: START LEVEL';drawTextShadow(ctx,text,(W-textWidth(text,1))/2,253,'#eee3d3',1);
 }
 export function updateIndia(){
- const s=G.india;if(!G.stage.chapter||!s)return false;s.t++;updateOfficeWorkers();
+ const s=G.india;if(!G.stage.chapter||!s)return false;s.t++;updateOfficeWorkers();updateDelhiAmbient();
  if(updateIndiaFinisher())return true;
  if(G.stage.id==='delhi'&&!s.bullDone&&G.player.x>950&&!G.waveActive&&!G.boss){s.bullDone=true;spawnEnemy('bull',G.camX-50,229);}
  updateIndiaEnvironment();

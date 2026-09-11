@@ -1,3 +1,4 @@
+import {updateDaze,drawDaze,beginDazePose} from './daze.js';
 // enemies.js - the Chandni Chowk street crew: AI states, turn-taking attacks,
 // hit reactions, wall splats.
 import {
@@ -190,13 +191,14 @@ function hurtEnemy(e, dmg, dir, heavy, launch) {
   e.flash = 5;
   // his own voice, not every hit: a grunt on about a third of them, a scream on the KO
   if (e.hp > 0 && e.kind !== 'prop' && Math.random() < 0.35) G.audio.sfx('ehurt' + (1 + Math.floor(Math.random() * 4)));
+  if(e.hp<=0&&e.superLocked){e.hp=1;e.pendingSuperDefeat=true;return;}
   if (e.hp <= 0) {
     e.dead = true;
     spawnDefeatFX(e,dir,heavy,launch);
     e.state = 'dying'; e.t = 0;
     e.vx = dir * 3.2; e.vz = 4.0; e.z = Math.max(e.z, 0.1);
     addScore(e.score);
-    if (G.stats) G.stats.kos++;
+    if (G.stats) G.stats.kos++;if(G.grading)G.grading.knockouts++;
     spawnPop(e.x, e.y - 70, '+' + e.score);
     G.audio.sfx('ko');
     if (e.kind !== 'prop') G.audio.sfx(Math.random() < 0.5 ? 'edie1' : 'edie2');
@@ -365,13 +367,17 @@ export function updateEnemies() {
   const p = G.player;
   for (const e of G.enemies) {
     if (e.removeMe) continue;
+    updateDaze(e);
     if(e.superLocked){
       if(G.player.state==='special'&&G.player.specialTarget===e)continue;
       e.superLocked=false;
     }
+    if(e.pendingSuperDefeat){e.pendingSuperDefeat=false;e.superApplying=true;e.hurt(e.hp,G.player.face,true,false);e.superApplying=false;continue;}
     if(e.protectedStagger>0&&!e.dead){e.protectedStagger--;e.state='stagger';e.vx=0;e.t=0;
       if(!e.protectedStagger){e.state='idle';e.atkCd=24;}continue;}
 
+    // Encounter-owned scrap preparation keeps its planted throwing contact.
+    if(e.dredgerCrew&&e.scrapTell>0&&['idle','approach'].includes(e.state)){e.face=p.x<e.x?-1:1;e.vx=0;continue;}
     const x0 = e.x, y0 = e.y;
     e.t++;
     if(e.rallyCd>0)e.rallyCd--;
@@ -396,7 +402,7 @@ export function updateEnemies() {
     if (e.state === 'grabhold' && p.grabbedBy !== e) { e.state = 'idle'; e.t = 0; e.atkCd = irand(40, 80); }
     if ((e.state === 'down' || e.state === 'thrown') && e.t > 240) {
       e.z = 0; e.vz = 0; e.vx = 0;
-      e.state = 'getup'; e.t = 0;
+      e.state = 'getup'; e.t = 0;e.superLaunched=false;
     }
 
     switch (e.state) {
@@ -719,10 +725,10 @@ export function updateEnemies() {
       }
       case 'down': {
         if (inAir(e)) {
-          const r = fall(e);
+          const r = fall(e,undefined,e.superLaunched?(e.superBounced?0:.25):undefined);if(e.superLaunched&&r==='bounce')e.superBounced=true;
           if (r === 'bounce') { spawnDust(e.x, e.y, 2); G.audio.sfx('land'); }
           else if (r === 'land') { spawnDust(e.x, e.y, 3); G.shake = Math.max(G.shake, 2); G.audio.sfx('land'); }
-        } else if (e.t > 45) { e.state = 'getup'; e.t = 0; }
+        } else if (e.t > 45) { e.state = 'getup'; e.t = 0;e.superLaunched=false; }
         break;
       }
       case 'getup': {
@@ -743,7 +749,7 @@ export function updateEnemies() {
         for (const pr of G.props) {
           if (!pr.broken && !pr.decor && Math.abs(pr.x - e.x) < 22 && Math.abs(pr.y - e.y) < 15) pr.hurt(20, Math.sign(e.vx) || 1);
         }
-        if (!e.bossCollision && G.boss && !G.boss.dead && !G.boss.superLocked && G.boss.z < 30 && Math.abs(G.boss.x - e.x) < 28 && Math.abs(G.boss.y - e.y) < 18) {
+        if (!e.bossCollision && G.boss && !G.boss.dead && !G.boss.superLocked && !G.boss.backupProtected && G.boss.z < 30 && Math.abs(G.boss.x - e.x) < 28 && Math.abs(G.boss.y - e.y) < 18) {
           e.bossCollision=true;G.boss.damageGuard?.(1);G.boss.counterApplying=true;
           G.boss.hurt(12, Math.sign(e.vx) || 1, true, false);G.boss.counterApplying=false;
           spawnSpark(G.boss.x, G.boss.y - 56);
@@ -800,6 +806,7 @@ export function updateEnemies() {
 }
 
 export function drawEnemy(ctx, e, camX) {
+  if(e.dead&&e.dismembered&&(e.superImpact?.finish||e.t>=8))return;
   const sx = Math.round(e.x - camX), sy = Math.round(e.y - e.z);
   let name = 'idle', idx = (G.time >> 4) & 1;
   const k = e.kind;
@@ -830,7 +837,7 @@ export function drawEnemy(ctx, e, camX) {
       else { name = 'atk'; idx = e.t < (ATK_RECOVER[e.kind] || 10) ? 1 : 2; }
       break;
     case 'hurt': name = 'hurt'; idx = e.t < 5 ? 1 : 0; break;
-    case 'stagger': name = 'hurt'; idx = (e.t >> 3) & 1; break;
+    case 'stagger': name = getAIFrame(e.set._aiKey,'stagger_polish')?'stagger_polish':'hurt'; idx = Math.floor((e.dazeT||0)/10); break;
     case 'down': case 'dying': case 'corpse': name = 'down'; break;
     // a family without a getup strip rises through its hurt pose rather than
     // snapping from the floor straight into the idle
@@ -858,12 +865,14 @@ export function drawEnemy(ctx, e, camX) {
     if(e.state==='windup'&&e.kind!=='cooker'){name='atk';idx=0;}
     if(e.state==='attack'&&e.kind==='thela'){name='atk';idx=e.t<10?1:2;}
     if(['down','dying','thrown'].includes(e.state)){name=e.z>4?'fall':'down';idx=0;}
-    if(e.state==='stagger'){name='stagger';idx=0;}
+    if(e.state==='stagger'){name='stagger';idx=Math.floor((e.dazeT||0)/10);}
   }
+  if(e.dredgerCrew&&e.scrapTell>0&&['idle','approach'].includes(e.state)){name='throw';idx=e.scrapTell<28?0:1;}
   if (e.state === 'dying' && ((G.time >> 1) & 1) && e.t > 18) return; // KO blink-out
   const boxing=boxingVictimPose(e)||defeatVictimPose(e);if(boxing){name=boxing.name;idx=boxing.idx;}
   const f = getFrame(e.set, name, idx, e.face);
   const dx = sx - Math.round(frameW(f) / 2), dy = sy - frameH(f) + 4;
+  const dazed=beginDazePose(ctx,e,sx,sy);
   if(boxing){ctx.save();ctx.translate(sx+boxing.dx,sy+boxing.dy-40);ctx.rotate(boxing.angle);ctx.translate(-sx,-sy+40);}
   // windup telegraph flash + damage flash
   const cue = e.state === 'windup' && e.t > (WINDUP[e.kind] || 18) - 10;
@@ -874,13 +883,15 @@ export function drawEnemy(ctx, e, camX) {
     ctx.filter = cueHot ? ((attackClass(e) !== 'unblockable')
       ? 'brightness(1.8) sepia(1) saturate(5) hue-rotate(70deg)'
       : 'brightness(1.8) sepia(1) saturate(6) hue-rotate(-35deg)')
-      : (boxing?boxing.flash:e.flash > 0) ? 'brightness(1.7)' : e.tint;
+      : (boxing?boxing.flash:e.flash > 0) ? 'brightness(1.18)' : e.tint;
     blit(ctx, f, dx, dy);
     ctx.restore();
   } else {
     blit(ctx, f, dx, dy);
   }
   if(boxing)ctx.restore();
+  if(dazed)ctx.restore();
+  drawDaze(ctx,e,camX);
   if (cue) {
     ctx.save();
     ctx.strokeStyle = attackClass(e) !== 'unblockable' ? '#6dff82' : '#ff4050';

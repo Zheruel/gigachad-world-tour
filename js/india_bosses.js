@@ -104,7 +104,7 @@ function beforeHit(b, dmg, dir, heavy, launch) {
   // and bypass guard indefinitely while both silhouettes occupied one spot.
   const frontal = dir === -b.face || Math.abs(G.player.x-b.x)<18;
   const guarded = !earned && !interruptible && frontal && b.guard > 0 &&
-    ['idle', 'reguard', 'setup-rush', 'setup-valve', 'setup-shove', 'windup', 'ladle', 'boxing', 'rush', 'shove', 'utensil', 'handset'].includes(b.state);
+    ['idle', 'reguard', 'setup-rush', 'setup-valve', 'setup-shove', 'windup', 'ladle', 'boxing', 'rush', 'shove', 'utensil', 'handset', 'overhead', 'vendor-lunge'].includes(b.state);
   b.preservePattern = guarded;
   b.guardingHit = guarded && (heavy || launch);
   if (guarded && !heavy && !launch) {
@@ -164,7 +164,7 @@ function crash(b, moving, targets) {
 
 function drawPerformance(ctx, b, camX) {
   const wind = b.state === 'windup';
-  const acting = ['ladle', 'utensil', 'rush', 'valve', 'boxing', 'handset', 'shove', 'call'].includes(b.state);
+  const acting = ['ladle', 'utensil', 'rush', 'valve', 'boxing', 'handset', 'shove', 'call', 'overhead', 'vendor-lunge'].includes(b.state);
   let action = wind ? b.pattern : acting ? b.state :
     b.dead || b.state === 'down' ? 'down' :
     ['hurt', 'stagger'].includes(b.state) ? 'hurt' :
@@ -172,10 +172,26 @@ function drawPerformance(ctx, b, camX) {
   let index = action === 'walk' ? Math.floor(b.stridePhase / 5.4) :
     wind ? 0 : acting ? (b.t < 14 ? 1 : 2) :
     action === 'getup' ? Math.min(3, Math.floor(b.t / 4)) : Math.floor(G.time / 12);
+  if(b.key==='vendor') {
+    if(action==='vendor-lunge')action='lunge';
+    if(b.state==='setup-rush'){action='rush';index=0;}
+    if(b.state==='setup-valve'){action='valve';index=0;}
+    if(acting){
+      if(b.state==='ladle')index=Math.min(8,Math.floor(b.t/22)*3+(b.t%22<10?0:b.t%22<15?1:2));
+      else if(b.state==='rush')index=b.t<12?1:b.t<60?2+Math.floor(b.stridePhase/7)%2:4;
+      else if(b.state==='vendor-lunge')index=b.t<8?1:b.t<22?2:b.t<30?3:4;
+      else if(b.state==='overhead')index=b.t<10?1:b.t<18?2:b.t<23?3:4;
+      else if(b.state==='utensil')index=b.t<14?1:b.t<20?2:3;
+      else index=b.t<20?1:2;
+    }
+    if(b.state==='recover'&&['rush','vendor-lunge','overhead'].includes(b.pattern)){
+      action=b.pattern==='vendor-lunge'?'lunge':b.pattern;index=5;
+    }
+  }
   if(action==='walk'&&b.state.startsWith('setup-')&&b.stepDir*b.face<0)index=(8-index%8)%8;
   if(b.state==='reguard'){action='block';index=0;}
   if (b.hitReactT > 0 && !b.dead) { action = 'hurt'; index = b.hitReactT > 4 ? 0 : 1; }
-  if (b.guardFlash > 0) { action = 'block'; index = 0; }
+  if (b.guardFlash > 0 && !(b.key==='vendor'&&b.protectedStagger>0)) { action = 'block'; index = 0; }
   if (G.state === 'bossintro') {
     action = b.key === 'vendor' ? 'ladle' : 'call';
     index = Math.min(2, Math.floor((b.introT || 0) / 65));
@@ -188,6 +204,40 @@ function drawPerformance(ctx, b, camX) {
   if (wind && b.t > 8) drawCueMarker(ctx, b, x, y - b.h - 10);
 }
 
+// Distance and action age choose patterns without consuming combat randomness.
+// Equipment removal changes the vocabulary permanently, not just the artwork.
+function vendorPattern(b) {
+  const distance=Math.abs(G.player.x-b.x), lane=Math.abs(G.player.y-b.y);
+  const choices=[['ladle',distance<95?6:1],['utensil',distance>95?6:2]];
+  if(!b.cartGone) choices.push(['rush',distance>110?5:3]);
+  else {
+    choices.push(['overhead',distance<90?5:1]);
+    if(b.turn-(b.lastLunge??-4)>=4&&distance>65&&lane<22)choices.push(['vendor-lunge',5]);
+  }
+  if(!b.station.broken&&!b.valve.broken&&G.player.x>=b.station.x+20&&G.player.x<=b.station.x+175&&b.turn-(b.lastValve??-3)>=3&&
+    !G.enemies.some(e=>!e.dead&&['windup','attack','drop'].includes(e.state)))choices.push(['valve',4]);
+  const previous=b.pattern;
+  choices.sort((a,c)=>{
+    const score=([name,weight])=>weight+Math.min(6,b.turn-(b.patternUsed[name]??-3));
+    return score(c)-score(a);
+  });
+  const pattern=(choices.find(([name])=>name!==previous)||choices[0])[0];
+  b.patternUsed[pattern]=b.turn++;
+  if(pattern==='vendor-lunge')b.lastLunge=b.turn;
+  if(pattern==='valve')b.lastValve=b.turn;
+  return pattern;
+}
+
+function vendorStep(b,start,end,distance) {
+  // A foot plants at the end of each step; no movement during the held contact.
+  if(b.t<=start||b.t>end)return;
+  const ease=t=>.5-.5*Math.cos(Math.PI*clamp(t,0,1));
+  const travel=distance*(ease((b.t-start)/(end-start))-ease((b.t-1-start)/(end-start)));
+  const gap=(G.player.x-b.x)*b.face;
+  const sameLane=Math.abs(G.player.y-b.y)<17&&G.player.z<18;
+  b.x+=b.face*(sameLane&&gap>=0?Math.min(travel,Math.max(0,gap-30)):travel);
+}
+
 const vendor = {
   noRage: true,
   afterOpening: regroup,
@@ -197,11 +247,14 @@ const vendor = {
     b.station = b.fightProps.find(p => p.role === 'station');
     b.valve = b.fightProps.find(p => p.role === 'valve');
     b.cartGone = false;
+    b.patternUsed = {};
+    b.lastLunge = -4; b.lastValve = -3;
     b.cartFacing = -1;
     const hurtCart = b.cart.hurt;
     b.cart.hurt = (dmg, dir, heavy, launch) => hurtCart(heavy || launch ? dmg * 1.5 : dmg, dir);
     b.cart.onBreak = () => {
       b.cartGone = true;
+      b.phaseTwo = true; b.phasePending = false;
       if (!b.dead) b.breakGuard();
     };
     const hurtValve = b.valve.hurt;
@@ -210,8 +263,12 @@ const vendor = {
       if (b.dead || !b.valveActive || b.valve.broken) return;
       b.valve.decor = false;
       hurtValve(dmg, dir);
+      b.redirectedSteamUntil = G.time + 24;
+      spawnDust(b.x,b.y-28,5);
       opening(b);
       b.damageGuard(1);
+      b.hurt(24,dir,false,false);
+      G.audio.roomSfx?.('train_brake',.2,.9);
       G.audio.sfx('armor');
     };
   },
@@ -248,14 +305,9 @@ const vendor = {
       case 'idle': {
         approach(b, 68);
         if (--b.atkCd > 0) return true;
-        // The cart and kitchen are the encounter, not a sixth attack that a
-        // close-range player could prevent from ever being selected.
-        const sequence = b.cartGone?['valve','utensil','ladle','utensil']:['rush','valve','ladle','utensil'];
-        let next = sequence[b.turn++ % sequence.length];
-        if(next==='rush'){b.state='setup-rush';b.t=0;return true;}
-        if (next === 'valve' && (b.station.broken || b.valve.broken ||
-          G.enemies.some(e => !e.dead && ['windup', 'attack', 'drop'].includes(e.state)))) next = 'utensil';
-        if(next==='valve'){b.state='setup-valve';b.t=0;return true;}
+        const next=vendorPattern(b);
+        if(next==='rush'){b.pattern=next;b.state='setup-rush';b.t=0;return true;}
+        if(next==='valve'){b.pattern=next;b.state='setup-valve';b.t=0;return true;}
         begin(b, next);
         return true;
       }
@@ -263,38 +315,52 @@ const vendor = {
         if(b.t>=12){b.state='idle';b.t=0;b.atkCd=0;}
         return true;
       case 'setup-rush':
-        if(b.cartGone){b.state='idle';b.atkCd=0;return true;}
-        if(preparationStep(b,G.camLock+360,b.station.y-3)||b.t>=190){begin(b,'rush');b.face=b.cartFacing;b.attackLane=b.y;}
+        if(b.cartGone){begin(b,'overhead');return true;}
+        // Brace in place instead of walking to the opposite end of the room.
+        if(b.t>=16){begin(b,'rush');b.cartFacing=b.face;b.attackLane=b.y;}
         return true;
       case 'setup-valve':
         if(b.station.broken||b.valve.broken){begin(b,'utensil');return true;}
-        if(preparationStep(b,b.station.x+58,b.station.y-3)||b.t>=210){
+        if(b.t>=16){
           begin(b,'valve');b.valveActive=true;b.valve.decor=false;b.pressureLane=G.player.y;
         }
         return true;
       case 'windup':
-        if (b.t >= (b.pattern === 'valve' ? 80 : b.pattern === 'rush' ? 52 : 36)) {
+        if (b.t >= (b.pattern === 'valve' ? 80 : b.pattern === 'rush' ? 52 : b.pattern === 'vendor-lunge' ? 54 : b.pattern === 'overhead' ? 52 : 36)) {
           b.state = b.pattern; b.t = 0;
           G.audio.sfx(b.pattern === 'rush' ? 'dash' : 'whiff');
         }
         return true;
       case 'ladle':
-        if (b.t === 12 || b.t === 34) tryHitPlayer(b, 11, 72, true, 17, 'counter');
-        if (b.t > 55) recover(b, 38);
+        vendorStep(b,1,9,8);vendorStep(b,23,31,8);
+        if(!b.cartGone)vendorStep(b,45,53,10);
+        if (b.t === 12 || b.t === 34 || !b.cartGone&&b.t===56) tryHitPlayer(b, 8, 72, true, 17, 'counter');
+        if (b.state==='ladle'&&b.t > (b.cartGone?53:77)) recover(b, 46);
         return true;
       case 'utensil':
-        if (b.t === 14) { spawnShot('wrench', b.x + b.face * 30, b.y, b.face * 3.7, 12, { source: b, parryClass: 'reflect' }); G.audio.sfx('weapon'); }
+        if (b.t === 14) { spawnShot('wrench', b.x + b.face * Math.min(30,Math.max(8,(G.player.x-b.x)*b.face-12)), b.y, b.face * 3.7, 9, { source: b, parryClass: 'reflect' }); G.audio.sfx('weapon'); }
         if (b.t > 36) recover(b, 40);
         return true;
       case 'rush':
         if (b.cartGone || b.face !== b.cartFacing) { recover(b, 70); return true; }
-        if (b.t < 110) {
-          b.x += b.face * 3.2;
+        if (b.t < 76) {
+          const speed=3.4*Math.min(1,b.t/12,(76-b.t)/16);
+          b.x += b.face * speed;
           b.cart.x = b.x + b.cartFacing * 26;
           if (crash(b, b.cart, [b.station])) return true;
-          if (!b.hitLanded && tryHitPlayer(b, 16, 64, true, 17, 'counter')) b.hitLanded = true;
+          if (!b.hitLanded && tryHitPlayer(b, 12, 64, true, 17, 'counter')) b.hitLanded = true;
         }
-        if (b.t >= 110||b.x<G.camLock+48) recover(b, 80);
+        if (b.state==='rush'&&(b.t >= 76||b.x<G.camLock+48||b.x>G.camLock+432)) recover(b, 80);
+        return true;
+      case 'vendor-lunge':
+        vendorStep(b,0,28,112);
+        if(b.t>=8&&b.t<=28&&!b.hitLanded&&tryHitPlayer(b,12,47,true,13,'unblockable'))b.hitLanded=true;
+        if(b.state==='vendor-lunge'&&b.t>=42)recover(b,82);
+        return true;
+      case 'overhead':
+        vendorStep(b,0,10,14);
+        if(b.t===18)tryHitPlayer(b,12,66,true,15,'counter');
+        if(b.state==='overhead'&&b.t>=40)recover(b,72);
         return true;
       case 'valve':
         if (b.t === 1) { b.pressureT = 70; G.audio.roomSfx?.('train_brake', .18, .7); }
@@ -314,6 +380,9 @@ const vendor = {
     b.finishStarted = !!G.india?.startCinematic?.('vendor-finish', b);
   },
   draw(ctx, b, camX) {
+    // The rear pressure vessel survives disabled equipment and anchors the finisher.
+    const vessel=ASSETS.ic_delhi_mechanisms;
+    if(vessel){const sw=vessel.width/4,sh=vessel.height/2,damaged=b.station.broken||b.valve.broken;ctx.drawImage(vessel,damaged?sw:0,0,sw,sh,G.camLock+303-camX,143,78,78);}
     // The floor marker establishes the locked lane before pressure releases.
     if (b.state === 'windup' && b.pattern === 'valve') {
       ctx.save(); ctx.fillStyle = 'rgba(248,123,54,.30)';
@@ -321,6 +390,20 @@ const vendor = {
       ctx.fillStyle = '#e59b43';
       for (let i = 0; i < 9; i++) ctx.fillRect(b.station.x + 30 + i * 15 - camX, b.pressureLane + 4, 7, 1);
       ctx.restore();
+    }
+    const redirectedSteamT=Math.max(0,(b.redirectedSteamUntil||0)-G.time);
+    if(redirectedSteamT>0){
+      const smoke=ASSETS.nr_finale_smoke;
+      if(smoke){
+        ctx.save();ctx.globalAlpha=.42*redirectedSteamT/24;
+        const age=24-redirectedSteamT;
+        for(let i=0;i<4;i++){
+          const q=clamp(age/16-i*.12,0,1),frame=Math.floor(age/4)%6;
+          const x=b.valve.x+(b.x-b.valve.x)*q-camX;
+          ctx.drawImage(smoke,frame*64,0,64,96,x-10,b.y-38,20,30);
+        }
+        ctx.restore();
+      }
     }
     // The valve's bright tell is a local affordance; steam stays below faces.
     if (b.valveActive && !b.valve.broken) {

@@ -14,5 +14,5 @@ const lethal=process.env.BOXING_REVIEW_KO==='1';
   rec.start();const start=G.rawTime;G.freezeTime=false;startSuper(G.player);
   await new Promise(resolve=>setTimeout(resolve,3300));G.freezeTime=true;rec.stop();const data=await ready;
   return {data,elapsed:G.rawTime-start,superT:G.player.superT,state:G.player.state,hp:e.hp,dead:e.dead};
- },lethal);fs.mkdirSync('tmp/review/boxing-polish/live',{recursive:true});fs.writeFileSync(`tmp/review/boxing-polish/live/${lethal?'lethal-':''}boxing-with-audio.webm`,Buffer.from(out.data,'base64'));delete out.data;console.log(JSON.stringify(out));assert(out.superT>=(lethal?76:100));assert.equal(out.hp,lethal?0:84);if(lethal)assert(out.dead);
+ },lethal);fs.mkdirSync('tmp/review/boxing-polish/live',{recursive:true});fs.writeFileSync(`tmp/review/boxing-polish/live/${lethal?'lethal-':''}boxing-with-audio.webm`,Buffer.from(out.data,'base64'));delete out.data;console.log(JSON.stringify(out));assert(out.superT>=90);assert.equal(out.hp,lethal?0:84);if(lethal)assert(out.dead);
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

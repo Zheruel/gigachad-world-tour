@@ -202,6 +202,88 @@
       "chad_boxing_polish_13.png",
       "chad_boxing_polish_14.png",
       "chad_boxing_rush_00.png"
+    ],
+    "boxing_variety": [
+      "chad_boxing_variety_00.png",
+      "chad_boxing_variety_01.png",
+      "chad_boxing_variety_02.png",
+      "chad_boxing_variety_03.png",
+      "chad_boxing_variety_04.png",
+      "chad_boxing_variety_05.png",
+      "chad_boxing_variety_06.png",
+      "chad_boxing_variety_07.png",
+      "chad_boxing_variety_08.png",
+      "chad_boxing_variety_09.png",
+      "chad_boxing_variety_10.png",
+      "chad_boxing_variety_11.png",
+      "chad_boxing_variety_12.png",
+      "chad_boxing_variety_13.png",
+      "chad_boxing_variety_14.png",
+      "chad_boxing_variety_15.png",
+      "chad_boxing_variety_16.png",
+      "chad_boxing_variety_17.png"
+    ],
+    "inspector_pair": [
+      "chad_inspector_pair_00.png",
+      "chad_inspector_pair_01.png",
+      "chad_inspector_pair_02.png",
+      "chad_inspector_pair_03.png",
+      "chad_inspector_pair_04.png",
+      "chad_inspector_pair_05.png"
+    ],
+    "seth_pair": [
+      "chad_seth_pair_00.png",
+      "chad_seth_pair_01.png",
+      "chad_seth_pair_02.png",
+      "chad_seth_pair_03.png",
+      "chad_seth_pair_04.png",
+      "chad_seth_pair_05.png",
+      "chad_seth_pair_06.png",
+      "chad_seth_pair_07.png"
+    ],
+    "super_barrage": [
+      "player/super_barrage_00.png",
+      "player/super_barrage_01.png",
+      "player/super_barrage_02.png",
+      "player/super_barrage_03.png",
+      "player/super_barrage_04.png",
+      "player/super_barrage_05.png",
+      "player/super_barrage_06.png",
+      "player/super_barrage_07.png",
+      "player/super_barrage_08.png",
+      "player/super_barrage_09.png",
+      "player/super_barrage_10.png",
+      "player/super_barrage_11.png",
+      "player/super_barrage_12.png",
+      "player/super_barrage_13.png",
+      "player/super_barrage_14.png",
+      "player/super_barrage_15.png"
+    ],
+    "super_electric": [
+      "player/super_electric_00.png",
+      "player/super_electric_01.png",
+      "player/super_electric_02.png",
+      "player/super_electric_03.png",
+      "player/super_electric_04.png",
+      "player/super_electric_05.png",
+      "player/electric_finish_00.png",
+      "player/electric_finish_01.png",
+      "player/electric_finish_02.png",
+      "player/electric_finish_03.png",
+      "player/electric_finish_04.png",
+      "player/electric_finish_05.png",
+      "player/electric_finish_06.png",
+      "player/electric_finish_07.png"
+    ],
+    "electric_finish": [
+      "player/electric_finish_00.png",
+      "player/electric_finish_01.png",
+      "player/electric_finish_02.png",
+      "player/electric_finish_03.png",
+      "player/electric_finish_04.png",
+      "player/electric_finish_05.png",
+      "player/electric_finish_06.png",
+      "player/electric_finish_07.png"
     ]
   },
   "goonda": {
@@ -635,33 +717,118 @@
   },
   "thekedar": {
     "idle": [
-      "thekedar_idle1.png",
-      "thekedar_idle2.png",
-      "thekedar_idle3.png",
-      "thekedar_idle4.png"
+      "thekedar/rebuild_operator_base_09.png"
     ],
     "walk": [
-      "thekedar_idle1.png",
-      "thekedar_idle2.png",
-      "thekedar_idle3.png",
-      "thekedar_idle4.png"
+      "thekedar/rebuild_operator_base_00.png",
+      "thekedar/rebuild_operator_base_01.png",
+      "thekedar/rebuild_operator_base_02.png",
+      "thekedar/rebuild_operator_base_03.png",
+      "thekedar/rebuild_operator_base_04.png",
+      "thekedar/rebuild_operator_base_05.png",
+      "thekedar/rebuild_operator_base_06.png",
+      "thekedar/rebuild_operator_base_07.png"
     ],
     "atk": [
-      "thekedar_swing1.png",
-      "thekedar_swing2.png",
-      "thekedar_swing3.png"
+      "thekedar/rebuild_operator_actions_00.png",
+      "thekedar/rebuild_operator_actions_01.png",
+      "thekedar/rebuild_operator_actions_02.png",
+      "thekedar/rebuild_operator_actions_03.png",
+      "thekedar/rebuild_operator_actions_04.png",
+      "thekedar/rebuild_operator_actions_05.png"
     ],
     "punch": [
-      "thekedar_swing1.png",
-      "thekedar_swing2.png",
-      "thekedar_swing3.png"
+      "thekedar/rebuild_operator_actions_00.png",
+      "thekedar/rebuild_operator_actions_01.png",
+      "thekedar/rebuild_operator_actions_02.png",
+      "thekedar/rebuild_operator_actions_03.png",
+      "thekedar/rebuild_operator_actions_04.png",
+      "thekedar/rebuild_operator_actions_05.png"
     ],
     "hurt": [
-      "thekedar_hurt1.png",
-      "thekedar_hurt2.png"
+      "thekedar/rebuild_operator_base_11.png"
     ],
     "down": [
-      "thekedar_hurt3.png"
+      "thekedar/rebuild_operator_actions_22.png"
+    ],
+    "run": [
+      "thekedar/rebuild_operator_base_00.png",
+      "thekedar/rebuild_operator_base_01.png",
+      "thekedar/rebuild_operator_base_02.png",
+      "thekedar/rebuild_operator_base_03.png",
+      "thekedar/rebuild_operator_base_04.png",
+      "thekedar/rebuild_operator_base_05.png",
+      "thekedar/rebuild_operator_base_06.png",
+      "thekedar/rebuild_operator_base_07.png"
+    ],
+    "cocky": [
+      "thekedar/rebuild_operator_base_08.png"
+    ],
+    "block": [
+      "thekedar/rebuild_operator_base_10.png"
+    ],
+    "fall": [
+      "thekedar/rebuild_operator_base_11.png"
+    ],
+    "stagger": [
+      "thekedar/rebuild_operator_actions_18.png",
+      "thekedar/rebuild_operator_actions_19.png",
+      "thekedar/rebuild_operator_actions_20.png"
+    ],
+    "cower": [
+      "thekedar/rebuild_operator_actions_18.png",
+      "thekedar/rebuild_operator_actions_19.png",
+      "thekedar/rebuild_operator_actions_20.png"
+    ],
+    "wrench": [
+      "thekedar/rebuild_operator_actions_00.png",
+      "thekedar/rebuild_operator_actions_01.png",
+      "thekedar/rebuild_operator_actions_02.png",
+      "thekedar/rebuild_operator_actions_03.png",
+      "thekedar/rebuild_operator_actions_04.png",
+      "thekedar/rebuild_operator_actions_05.png"
+    ],
+    "toolthrow": [
+      "thekedar/rebuild_operator_actions_06.png",
+      "thekedar/rebuild_operator_actions_07.png",
+      "thekedar/rebuild_operator_actions_08.png",
+      "thekedar/rebuild_operator_actions_09.png",
+      "thekedar/rebuild_operator_actions_10.png",
+      "thekedar/rebuild_operator_actions_11.png"
+    ],
+    "throw": [
+      "thekedar/rebuild_operator_actions_06.png",
+      "thekedar/rebuild_operator_actions_07.png",
+      "thekedar/rebuild_operator_actions_08.png",
+      "thekedar/rebuild_operator_actions_09.png",
+      "thekedar/rebuild_operator_actions_10.png",
+      "thekedar/rebuild_operator_actions_11.png"
+    ],
+    "restart": [
+      "thekedar/rebuild_operator_actions_12.png",
+      "thekedar/rebuild_operator_actions_13.png",
+      "thekedar/rebuild_operator_actions_14.png"
+    ],
+    "call": [
+      "thekedar/rebuild_operator_actions_16.png",
+      "thekedar/rebuild_operator_actions_17.png"
+    ],
+    "getup": [
+      "thekedar/rebuild_operator_actions_23.png",
+      "thekedar/rebuild_operator_actions_21.png"
+    ],
+    "climbdown": [
+      "thekedar/rebuild_operator_climb_00.png",
+      "thekedar/rebuild_operator_climb_01.png",
+      "thekedar/rebuild_operator_climb_02.png",
+      "thekedar/rebuild_operator_climb_03.png"
+    ],
+    "seated": [
+      "thekedar/rebuild_operator_climb_04.png",
+      "thekedar/rebuild_operator_climb_05.png"
+    ],
+    "scared": [
+      "thekedar/rebuild_operator_climb_07.png"
     ]
   },
   "nr_tough": {
@@ -704,6 +871,16 @@
       "nr_tough/recovery_1.png",
       "nr_tough/recovery_2.png",
       "nr_tough/recovery_3.png"
+    ],
+    "super_reaction": [
+      "nr_tough/super_reaction_00.png",
+      "nr_tough/super_reaction_01.png",
+      "nr_tough/super_reaction_02.png",
+      "nr_tough/super_reaction_03.png",
+      "nr_tough/super_reaction_04.png",
+      "nr_tough/super_reaction_05.png",
+      "nr_tough/super_reaction_06.png",
+      "nr_tough/super_reaction_07.png"
     ]
   },
   "nr_bruiser": {
@@ -995,6 +1172,30 @@
     ],
     "stagger_polish": [
       "nr_vikram/polish_2.png"
+    ],
+    "injured_retreat": [
+      "nr_vikram/injured_retreat_00.png",
+      "nr_vikram/injured_retreat_01.png",
+      "nr_vikram/injured_retreat_02.png",
+      "nr_vikram/injured_retreat_03.png",
+      "nr_vikram/injured_retreat_04.png",
+      "nr_vikram/injured_retreat_05.png",
+      "nr_vikram/injured_retreat_06.png",
+      "nr_vikram/injured_retreat_07.png",
+      "nr_vikram/injured_retreat_08.png",
+      "nr_vikram/injured_retreat_09.png",
+      "nr_vikram/injured_retreat_10.png",
+      "nr_vikram/injured_retreat_11.png",
+      "nr_vikram/injured_retreat_12.png",
+      "nr_vikram/injured_retreat_13.png",
+      "nr_vikram/injured_retreat_14.png",
+      "nr_vikram/injured_retreat_15.png"
+    ],
+    "injured_climb": [
+      "nr_vikram/injured_climb_00.png",
+      "nr_vikram/injured_climb_01.png",
+      "nr_vikram/injured_climb_02.png",
+      "nr_vikram/injured_climb_03.png"
     ]
   },
   "nr_vikram_roof": {
@@ -1057,6 +1258,9 @@
       "nr_vikram_roof/charge_polish_1.png",
       "nr_vikram_roof/charge_polish_2.png",
       "nr_vikram_roof/charge_polish_3.png"
+    ],
+    "finisher_flight": [
+      "nr_vikram_roof/finisher_flight_00.png"
     ]
   },
   "nr_heavy_unarmed": {
@@ -1107,14 +1311,14 @@
       "nr_conductor/performance_1.png"
     ],
     "walk": [
-      "nr_conductor/contact_0.png",
-      "nr_conductor/passing_0.png",
-      "nr_conductor/passing_1.png",
-      "nr_conductor/contact_1.png",
-      "nr_conductor/contact_2.png",
-      "nr_conductor/passing_2.png",
-      "nr_conductor/passing_3.png",
-      "nr_conductor/contact_3.png"
+      "nr_conductor/stride_00.png",
+      "nr_conductor/stride_01.png",
+      "nr_conductor/stride_02.png",
+      "nr_conductor/stride_03.png",
+      "nr_conductor/stride_04.png",
+      "nr_conductor/stride_05.png",
+      "nr_conductor/stride_06.png",
+      "nr_conductor/stride_07.png"
     ],
     "atk": [
       "nr_conductor/performance_8.png",
@@ -1152,31 +1356,67 @@
       "nr_conductor/recovery_3.png"
     ],
     "shield": [
-      "nr_conductor/shield_0.png",
-      "nr_conductor/shield_1.png",
-      "nr_conductor/shield_2.png"
+      "nr_conductor/shield_variety_00.png",
+      "nr_conductor/shield_variety_01.png",
+      "nr_conductor/shield_variety_02.png",
+      "nr_conductor/shield_variety_03.png"
     ],
     "baton_polish": [
-      "nr_conductor/polish_0.png",
-      "nr_conductor/polish_1.png",
-      "nr_conductor/polish_2.png",
-      "nr_conductor/polish_3.png"
+      "nr_conductor/variety_baton_polish_00.png",
+      "nr_conductor/variety_baton_polish_01.png",
+      "nr_conductor/variety_baton_polish_02.png",
+      "nr_conductor/variety_baton_polish_03.png"
     ],
     "whistle_polish": [
-      "nr_conductor/polish_4.png",
-      "nr_conductor/polish_5.png",
-      "nr_conductor/polish_6.png"
+      "nr_conductor/variety_whistle_polish_00.png",
+      "nr_conductor/variety_whistle_polish_01.png",
+      "nr_conductor/variety_whistle_polish_02.png"
     ],
     "stagger_polish": [
-      "nr_conductor/polish_7.png"
+      "nr_conductor/variety_stagger_polish_00.png",
+      "nr_conductor/variety_stagger_polish_01.png",
+      "nr_conductor/variety_stagger_polish_02.png",
+      "nr_conductor/variety_stagger_polish_03.png"
     ],
     "guard_polish": [
-      "nr_conductor/polish_3.png"
+      "nr_conductor/variety_guard_polish_00.png"
     ],
     "charge_polish": [
-      "nr_conductor/charge_polish_0.png",
-      "nr_conductor/charge_polish_1.png",
-      "nr_conductor/charge_polish_2.png"
+      "nr_conductor/charge_variety_00.png",
+      "nr_conductor/charge_variety_01.png",
+      "nr_conductor/charge_variety_02.png",
+      "nr_conductor/charge_variety_03.png"
+    ],
+    "finisher_flight": [
+      "nr_conductor/finisher_flight_00.png"
+    ],
+    "luggage_motion": [
+      "nr_conductor/luggage_motion_00.png",
+      "nr_conductor/luggage_motion_01.png",
+      "nr_conductor/luggage_motion_02.png",
+      "nr_conductor/luggage_motion_03.png",
+      "nr_conductor/luggage_motion_04.png",
+      "nr_conductor/luggage_motion_05.png",
+      "nr_conductor/luggage_motion_06.png",
+      "nr_conductor/luggage_motion_07.png",
+      "nr_conductor/luggage_motion_08.png",
+      "nr_conductor/luggage_motion_09.png",
+      "nr_conductor/luggage_motion_10.png",
+      "nr_conductor/luggage_motion_11.png"
+    ],
+    "step_attacks": [
+      "nr_conductor/step_attacks_00.png",
+      "nr_conductor/step_attacks_01.png",
+      "nr_conductor/step_attacks_02.png",
+      "nr_conductor/step_attacks_03.png",
+      "nr_conductor/step_attacks_04.png",
+      "nr_conductor/step_attacks_05.png",
+      "nr_conductor/step_attacks_06.png",
+      "nr_conductor/step_attacks_07.png",
+      "nr_conductor/step_attacks_08.png",
+      "nr_conductor/step_attacks_09.png",
+      "nr_conductor/step_attacks_10.png",
+      "nr_conductor/step_attacks_11.png"
     ]
   },
   "ic_brawler": {
@@ -2225,99 +2465,149 @@
   },
   "ic_vendor": {
     "walk": [
-      "ic_vendor/gait_00.png",
-      "ic_vendor/gait_01.png",
-      "ic_vendor/gait_02.png",
-      "ic_vendor/gait_03.png",
-      "ic_vendor/gait_04.png",
-      "ic_vendor/gait_05.png",
-      "ic_vendor/gait_06.png",
-      "ic_vendor/gait_07.png"
+      "ic_vendor/rebuild_vendor_base_00.png",
+      "ic_vendor/rebuild_vendor_base_01.png",
+      "ic_vendor/rebuild_vendor_base_02.png",
+      "ic_vendor/rebuild_vendor_base_03.png",
+      "ic_vendor/rebuild_vendor_base_04.png",
+      "ic_vendor/rebuild_vendor_base_05.png",
+      "ic_vendor/rebuild_vendor_base_06.png",
+      "ic_vendor/rebuild_vendor_base_07.png"
     ],
     "run": [
-      "ic_vendor/gait_00.png",
-      "ic_vendor/gait_01.png",
-      "ic_vendor/gait_02.png",
-      "ic_vendor/gait_03.png",
-      "ic_vendor/gait_04.png",
-      "ic_vendor/gait_05.png",
-      "ic_vendor/gait_06.png",
-      "ic_vendor/gait_07.png"
+      "ic_vendor/rebuild_vendor_base_00.png",
+      "ic_vendor/rebuild_vendor_base_01.png",
+      "ic_vendor/rebuild_vendor_base_02.png",
+      "ic_vendor/rebuild_vendor_base_03.png",
+      "ic_vendor/rebuild_vendor_base_04.png",
+      "ic_vendor/rebuild_vendor_base_05.png",
+      "ic_vendor/rebuild_vendor_base_06.png",
+      "ic_vendor/rebuild_vendor_base_07.png"
     ],
     "idle": [
-      "ic_vendor/performance_08.png"
+      "ic_vendor/rebuild_vendor_base_08.png"
     ],
     "block": [
-      "ic_vendor/performance_10.png"
+      "ic_vendor/rebuild_vendor_base_09.png"
     ],
     "atk": [
-      "ic_vendor/performance_11.png",
-      "ic_vendor/performance_12.png",
-      "ic_vendor/performance_13.png"
+      "ic_vendor/rebuild_vendor_ladle_00.png",
+      "ic_vendor/rebuild_vendor_ladle_01.png",
+      "ic_vendor/rebuild_vendor_ladle_02.png"
     ],
     "punch": [
-      "ic_vendor/performance_11.png",
-      "ic_vendor/performance_12.png",
-      "ic_vendor/performance_13.png"
+      "ic_vendor/rebuild_vendor_ladle_00.png",
+      "ic_vendor/rebuild_vendor_ladle_01.png",
+      "ic_vendor/rebuild_vendor_ladle_02.png"
     ],
-    "kick": [],
+    "kick": [
+      "ic_vendor/rebuild_vendor_specials_18.png",
+      "ic_vendor/rebuild_vendor_specials_19.png",
+      "ic_vendor/rebuild_vendor_specials_20.png",
+      "ic_vendor/rebuild_vendor_specials_21.png",
+      "ic_vendor/rebuild_vendor_specials_22.png",
+      "ic_vendor/rebuild_vendor_specials_23.png"
+    ],
     "hurt": [
-      "ic_vendor/performance_16.png",
-      "ic_vendor/performance_17.png"
+      "ic_vendor/rebuild_vendor_base_10.png"
     ],
     "stagger": [
-      "ic_vendor/performance_16.png",
-      "ic_vendor/performance_17.png"
+      "ic_vendor/rebuild_vendor_base_10.png",
+      "ic_vendor/rebuild_vendor_base_11.png"
     ],
     "fall": [
-      "ic_vendor/performance_18.png"
+      "ic_vendor/rebuild_vendor_specials_14.png"
     ],
     "down": [
-      "ic_vendor/performance_19.png"
+      "ic_vendor/rebuild_vendor_specials_15.png"
     ],
     "getup": [
-      "ic_vendor/performance_20.png",
-      "ic_vendor/performance_21.png",
-      "ic_vendor/performance_08.png"
+      "ic_vendor/rebuild_vendor_base_11.png",
+      "ic_vendor/rebuild_vendor_base_08.png"
     ],
     "grab": [
-      "ic_vendor/performance_11.png"
+      "ic_vendor/rebuild_vendor_specials_00.png"
     ],
     "throw": [
-      "ic_vendor/performance_12.png",
-      "ic_vendor/performance_13.png"
+      "ic_vendor/rebuild_vendor_ladle_09.png",
+      "ic_vendor/rebuild_vendor_ladle_10.png",
+      "ic_vendor/rebuild_vendor_ladle_11.png",
+      "ic_vendor/rebuild_vendor_ladle_12.png",
+      "ic_vendor/rebuild_vendor_ladle_13.png",
+      "ic_vendor/rebuild_vendor_ladle_14.png"
     ],
     "ram": [
-      "ic_vendor/performance_11.png",
-      "ic_vendor/performance_12.png",
-      "ic_vendor/performance_13.png"
+      "ic_vendor/rebuild_vendor_specials_00.png",
+      "ic_vendor/rebuild_vendor_specials_01.png",
+      "ic_vendor/rebuild_vendor_specials_02.png",
+      "ic_vendor/rebuild_vendor_specials_03.png",
+      "ic_vendor/rebuild_vendor_specials_04.png",
+      "ic_vendor/rebuild_vendor_specials_05.png"
     ],
     "beam": [
-      "ic_vendor/performance_13.png"
+      "ic_vendor/rebuild_vendor_specials_06.png",
+      "ic_vendor/rebuild_vendor_specials_07.png",
+      "ic_vendor/rebuild_vendor_specials_08.png",
+      "ic_vendor/rebuild_vendor_specials_09.png",
+      "ic_vendor/rebuild_vendor_specials_10.png",
+      "ic_vendor/rebuild_vendor_specials_11.png"
     ],
-    "call": [],
+    "call": [
+      "ic_vendor/rebuild_vendor_base_08.png"
+    ],
     "seated": [
-      "ic_vendor/performance_20.png"
+      "ic_vendor/rebuild_vendor_base_11.png"
     ],
     "ladle": [
-      "ic_vendor/action_00.png",
-      "ic_vendor/action_01.png",
-      "ic_vendor/action_02.png"
+      "ic_vendor/rebuild_vendor_ladle_00.png",
+      "ic_vendor/rebuild_vendor_ladle_01.png",
+      "ic_vendor/rebuild_vendor_ladle_02.png",
+      "ic_vendor/rebuild_vendor_ladle_03.png",
+      "ic_vendor/rebuild_vendor_ladle_04.png",
+      "ic_vendor/rebuild_vendor_ladle_05.png",
+      "ic_vendor/rebuild_vendor_ladle_06.png",
+      "ic_vendor/rebuild_vendor_ladle_07.png",
+      "ic_vendor/rebuild_vendor_ladle_08.png"
     ],
     "utensil": [
-      "ic_vendor/action_03.png",
-      "ic_vendor/action_04.png",
-      "ic_vendor/action_05.png"
+      "ic_vendor/rebuild_vendor_ladle_09.png",
+      "ic_vendor/rebuild_vendor_ladle_10.png",
+      "ic_vendor/rebuild_vendor_ladle_11.png",
+      "ic_vendor/rebuild_vendor_ladle_12.png",
+      "ic_vendor/rebuild_vendor_ladle_13.png",
+      "ic_vendor/rebuild_vendor_ladle_14.png"
     ],
     "rush": [
-      "ic_vendor/action_06.png",
-      "ic_vendor/action_07.png",
-      "ic_vendor/action_08.png"
+      "ic_vendor/rebuild_vendor_specials_00.png",
+      "ic_vendor/rebuild_vendor_specials_01.png",
+      "ic_vendor/rebuild_vendor_specials_02.png",
+      "ic_vendor/rebuild_vendor_specials_03.png",
+      "ic_vendor/rebuild_vendor_specials_04.png",
+      "ic_vendor/rebuild_vendor_specials_05.png"
     ],
     "valve": [
-      "ic_vendor/action_09.png",
-      "ic_vendor/action_10.png",
-      "ic_vendor/action_11.png"
+      "ic_vendor/rebuild_vendor_specials_06.png",
+      "ic_vendor/rebuild_vendor_specials_07.png",
+      "ic_vendor/rebuild_vendor_specials_08.png",
+      "ic_vendor/rebuild_vendor_specials_09.png",
+      "ic_vendor/rebuild_vendor_specials_10.png",
+      "ic_vendor/rebuild_vendor_specials_11.png"
+    ],
+    "lunge": [
+      "ic_vendor/rebuild_vendor_specials_12.png",
+      "ic_vendor/rebuild_vendor_specials_13.png",
+      "ic_vendor/rebuild_vendor_specials_14.png",
+      "ic_vendor/rebuild_vendor_specials_15.png",
+      "ic_vendor/rebuild_vendor_specials_16.png",
+      "ic_vendor/rebuild_vendor_specials_17.png"
+    ],
+    "overhead": [
+      "ic_vendor/rebuild_vendor_specials_18.png",
+      "ic_vendor/rebuild_vendor_specials_19.png",
+      "ic_vendor/rebuild_vendor_specials_20.png",
+      "ic_vendor/rebuild_vendor_specials_21.png",
+      "ic_vendor/rebuild_vendor_specials_22.png",
+      "ic_vendor/rebuild_vendor_specials_23.png"
     ]
   },
   "ic_closer": {

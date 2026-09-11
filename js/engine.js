@@ -253,7 +253,7 @@ export const RANKS = [
 
 // Player landed a hit: extend the combo chain, return the new count.
 export function bumpCombo() {
-  G.combo++;
+  G.combo++;if(G.grading)G.grading.combo=Math.max(G.grading.combo,G.combo);
   G.comboT = 100;
   if (G.combo > G.bestCombo) G.bestCombo = G.combo;
   const r = RANKS.findIndex((k) => k.at === G.combo);

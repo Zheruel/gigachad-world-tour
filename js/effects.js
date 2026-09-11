@@ -122,6 +122,9 @@ export function drawEffects(ctx, camX) {
   for (const e of G.effects) {
     const sx = Math.round(e.x - camX), sy = Math.round(e.y);
     if(drawDefeatFX(ctx,e,camX))continue;
+    if(e.type==='superElectric') {
+      const im=ASSETS.electric_impact;if(im){const frame=Math.min(7,Math.floor(e.t*8/e.life));ctx.save();ctx.translate(sx,sy);ctx.scale(e.face,1);ctx.globalAlpha=.78;ctx.drawImage(im,frame%4*128,Math.floor(frame/4)*128,128,128,-26,-30,52,52);ctx.restore();}continue;
+    }
     if(e.type==='boxingImpact') {
       const im=ASSETS.boxing_impacts;
       if(im){const frame=Math.min(3,Math.floor(e.t/(e.upper?4:3))),w=e.upper?50:32,h=w*1.5;

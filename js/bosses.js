@@ -1,3 +1,4 @@
+import {updateDaze,drawDaze} from './daze.js';
 // Shared boss lifecycle; stage modules own their encounter patterns and presentation.
 import { G, W, FLOOR_TOP, FLOOR_BOT, clamp, irand, addScore, diff, clampToArena, clampToLane, laneMin, laneMax, fall, inAir } from './engine.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
@@ -14,7 +15,7 @@ import { getAIFrame } from './aiframes.js';
 export const BOSSES = {
   vendor: {
     name: 'THE VENDOR', title: 'NO REFUNDS', taunt: 'YOU BREAK IT. YOU BUY IT.',
-    set: 'ic_vendor', rageSet: 'ic_vendor', hp: 400, speed: .82,
+    set: 'ic_vendor', rageSet: 'ic_vendor', hp: 680, speed: .82,
     w: 54, h: 92, shadowR: 19, score: 4000, mini: true,
     patterns: ['ladle', 'utensil', 'valve', 'rush'],
   },
@@ -38,7 +39,7 @@ export const BOSSES = {
   dredger: {
     name: 'THE DREDGER', title: 'WHAT EATS THE RIVER', taunt: 'THE RIVER IS A CONTRACT',
     set: 'thekedar', rageSet: 'thekedar', portrait: 'portrait_thekedar',
-    hp: 520, speed: 0.70, w: 60, h: 66, shadowR: 28, score: 9000,
+    hp: 1200, speed: 0.70, w: 60, h: 66, shadowR: 28, score: 9000,
     patterns: ['sweep', 'bucketdrop', 'hose', 'swing'],
     rageLine: 'THE ARM COMES DOWN',
     lines: ['(the winch screams)', '(chain rattle over the water)'],
@@ -89,9 +90,9 @@ export function createBoss(key, x, y) {
     w: def.w, h: def.h, shadowR: def.shadowR, set: SPR[def.set],
     hurt(dmg, dir, heavy, launch) { hurtBoss(b, dmg, dir, heavy, launch); },
     protectedStagger: 0, superLocked: false,
-    damageGuard(amount=1) { if(!b.maxGuard||b.guard<=0)return; b.guard=Math.max(0,b.guard-amount);b.guardFlash=8;if(b.guard===0)b.breakGuard(); },
-    breakGuard() { b.guard=0;b.protectedStagger=Math.max(b.protectedStagger,90);b.state='stagger';b.t=0;b.vx=0;b.atkCd=90;G.audio.sfx('heavy');spawnPop(b.x,b.y-b.h-8,'GUARD BREAK'); },
-    parried(dmg, dir) {
+    damageGuard(amount=1) { if(b.backupProtected||!b.maxGuard||b.guard<=0)return; b.guard=Math.max(0,b.guard-amount);b.guardFlash=8;if(b.guard===0)b.breakGuard(); },
+    breakGuard() { if(b.backupProtected)return;b.guard=0;b.protectedStagger=Math.max(b.protectedStagger,90);b.state='stagger';b.t=0;b.vx=0;b.atkCd=90;G.audio.sfx('heavy');spawnPop(b.x,b.y-b.h-8,'GUARD BREAK'); },
+    parried(dmg, dir) { if(b.backupProtected)return;
       if(b.key==='yadav'){b.posture--;if(b.posture<=0){b.posture=b.maxPosture;b.protectedStagger=90;}}
       b.protectedStagger=Math.max(b.protectedStagger,45);
       b.damageGuard(1);
@@ -109,7 +110,7 @@ export function createBoss(key, x, y) {
 }
 
 export function hurtBoss(b, dmg, dir, heavy, launch) {
-  if (b.dead || (b.superLocked&&!b.superApplying) || (b.key === 'vikram' && G.train?.cinematic)) return;
+  if (b.dead || b.backupProtected || (b.superLocked&&!b.superApplying) || (b.key === 'vikram' && G.train?.cinematic)) return;
   if(heavy&&!b.superApplying&&!b.parryApplying&&!b.counterApplying)b.damageGuard(.35);
   if(b.delhi?.beforeHurt&&b.delhi.beforeHurt(b,dmg,dir,heavy,launch)===false)return;
   if (b.armor > 0 && !launch) {
@@ -177,6 +178,7 @@ export function updateBoss() {
   const b = G.boss;
   if (!b || b.removeMe) return;
   const p = G.player;
+  updateDaze(b);
   if(b.superLocked&&p.state!=='special'){b.superLocked=false;b.superApplying=false;}
   if(b.superLocked)return;
   if(b.pendingSuperDefeat){b.pendingSuperDefeat=false;hurtBoss(b,b.hp,p.face,true,false);return;}
@@ -196,7 +198,7 @@ export function updateBoss() {
   if (b.delhi && b.delhi.update(b)) {
     b.moved = G.stage?.id==='train'?Math.hypot(b.x-px0,b.y-py0):Math.abs(b.x-px0); b.stridePhase += b.moved;
     if(b.trainWaiting)return;
-    clampToLane(b);
+    if(!['backup_retreat','backup_call','backup_wait','backup_return'].includes(b.state))clampToLane(b);
     clampToArena(b, 0);
     return;
   }
@@ -415,7 +417,8 @@ export function drawBoss(ctx, camX) {
   const b = G.boss;
   if (!b || b.removeMe) return;
   if (b.state === 'dying' && b.t > 20 && ((G.time >> 1) & 1)) return;
-  if (b.delhi) { b.delhi.draw(ctx, b, camX); return; }
+  if (b.delhi) { b.delhi.draw(ctx, b, camX); drawDaze(ctx,b,camX); return; }
+  drawDaze(ctx,b,camX);
   const sx = Math.round(b.x - camX), sy = Math.round(b.y - b.z);
   let name = 'idle', idx = (G.time >> 4) & 1;
   switch (b.state) {

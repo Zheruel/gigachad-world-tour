@@ -8,6 +8,7 @@ const OUT = 'tmp/review/india-playtest';
 const STAGES = (process.env.STAGES || 'delhi,refund').split(',');
 const POLICIES = (process.env.POLICIES || 'attack-heavy,varied').split(',');
 const BOSS_ONLY=process.env.BOSS_ONLY==='1';
+const BOSS_KEY=process.env.BOSS_KEY||'';
 const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
 
 (async()=>{
@@ -20,7 +21,7 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
       page.on('pageerror',e=>errors.push(e.message));
       await page.goto('http://localhost:8011/?auto=walk');
       await page.waitForFunction(()=>window.__game?.G.state==='play');
-      const result=await page.evaluate(async({stage,policy,bossOnly,maxTicks})=>{
+      const result=await page.evaluate(async({stage,policy,bossOnly,bossKey,maxTicks})=>{
         const g=__game,G=g.G;
         let seed=541;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
         // Audio detune/noise and wall-clock voice cooldowns must not consume the
@@ -38,7 +39,7 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
         G.time=G.rawTime=0;
         g.resetInput();g.playStage(stage);G.freezeTime=true;
         if(bossOnly){
-          g.indiaScene(stage,stage==='delhi'?'vendor':'closer',0);
+          g.indiaScene(stage,bossKey||(stage==='delhi'?'vendor':'closer'),0);
           if(stage==='refund')g.spawn('ic_security',260,0);
         }
         const isolatedBoss=bossOnly?G.boss:null;
@@ -59,7 +60,7 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
         let encounter=null,clearTick=null,lastProgress=0,progressSignature='',lastParry=-100,grace=0;
         let lastActionState='',chosen=null,lastChosenTick=0,lastCheckpoint='',playerRef=G.player,dodgeLane=null,dodgeUntil=0;
         const stuck=[];
-        const simple=e=>e?{key:e.key||e.trainType||e.kind,state:e.state,pattern:e.pattern,t:e.t,x:Math.round(e.x),y:Math.round(e.y),z:Math.round(e.z||0),hp:e.hp,guard:e.guard,phase:e.phase,phaseTwo:e.phaseTwo}:null;
+        const simple=e=>e?{key:e.key||e.trainType||e.kind,state:e.state,pattern:e.pattern,t:e.t,x:Math.round(e.x),y:Math.round(e.y),z:Math.round(e.z||0),hp:e.hp,guard:e.guard,phase:e.phase,phaseTwo:e.phaseTwo,...(e.key==='dredger'?{winchGone:e.winchGone,pumpGone:e.pumpGone,cabBroken:e.cab?.broken,crewSpawned:e.crewSpawned,restarts:e.restarts}:{} )}:null;
         function capture(label){g.render();if(captures.length<35)captures.push({label,ticks,png:document.querySelector('#game').toDataURL('image/png')});}
         function logState(){
           const key=[G.state,G.waveIndex,G.boss?.key,G.boss?.phase,G.india?.cinematic?.kind,G.india?.retryPoint?.id].join(':');
@@ -77,6 +78,9 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
           const food=G.pickups.filter(q=>q.heal>0);
           if(p.hp<(G.waveActive?60:90)&&food.length){return food.sort((a,b)=>Math.abs(a.x-p.x)-Math.abs(b.x-p.x))[0];}
           if(b?.key==='dredger'&&b.phase==='machine'){
+            const crew=alive.find(e=>Math.abs(e.x-p.x)<90);
+            if(crew)return crew;
+            if(technical&&b.pump&&!b.pump.broken)return b.pump;
             if(!b.winchGone)return b.winch;
             if(b.z<36)return b;
           }
@@ -92,7 +96,9 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
           if(e.dead||e.protectedStagger||e.superLocked)return false;
           if(Math.abs(e.y-G.player.y)>18||Math.abs(e.x-G.player.x)>Math.max(85,e.range||0))return false;
           if(e.key){
-            if(e.state==='ladle')return e.t>=5&&e.t<12||e.t>=27&&e.t<34;
+            if(e.state==='ladle')return e.t>=5&&e.t<12||e.t>=27&&e.t<34||!e.cartGone&&e.t>=49&&e.t<56;
+            if(e.state==='overhead')return e.t>=11&&e.t<18;
+            if(e.state==='wrench')return e.t>=3&&e.t<10||e.t>=23&&e.t<30;
             if(e.state==='utensil')return e.t>=7&&e.t<14;
             if(e.state==='handset')return e.t>=7&&e.t<14;
             if(e.state==='boxing')return e.t>=3&&e.t<10||e.t>=21&&e.t<28||e.phaseTwo&&e.t>=39&&e.t<46;
@@ -130,15 +136,16 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
             const shot=incoming&&Math.abs(incoming.x-p.x)<38?incoming:null;
             const danger=hostile.find(dangerSoon);
             const cooker=hostile.find(e=>!e.dead&&e.kind==='cooker'&&['windup','attack'].includes(e.state)&&Math.abs(e.y-p.y)<16&&Math.abs(e.x-p.x)<190);
-            const machineRed=b?.key==='dredger'&&b.phase==='machine'&&['sweep','bucketfall','tell'].includes(b.state);
+            const machineRed=b?.key==='dredger'&&b.phase==='machine'&&['sweepaim','sweep','dropaim','bucketfall','tell','hose'].includes(b.state);
             const preparing=parryFocused&&hostile.find(e=>!e.dead&&!e.protectedStagger&&
               Math.abs(e.x-p.x)<(e.key?180:90)&&Math.abs(e.y-p.y)<22&&
               (e.state==='windup'&&!['call','valve'].includes(e.pattern)||['handset','utensil'].includes(e.state)));
             const safeToAct=!pickup&&Math.abs(dx)<44&&Math.abs(dy)<14&&dx*p.face>=0;
             const turnThreat=technical&&(incoming||preparing||danger);
             const pressure=b?.key==='vendor'&&b.pressureT>0&&Math.abs(p.y-b.pressureLane)<17;
-            if(technical&&(cooker||pressure)){
-              const lane=cooker?cooker.y:b.pressureLane;
+            const belly=b?.key==='vendor'&&(b.state==='vendor-lunge'||b.state==='windup'&&b.pattern==='vendor-lunge');
+            if(technical&&(cooker||pressure||belly)){
+              const lane=cooker?cooker.y:belly?b.attackLane:b.pressureLane;
               dodgeLane=lane>229?214:244;dodgeUntil=ticks+45;
             }
             if(parryFocused&&pressure&&neutral){
@@ -162,11 +169,16 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
             else if(preparing){
               // Respect visible windups: finish/cancel the current confirmed hit,
               // release guard before contact, then time a genuinely fresh parry.
-              const wind=preparing.key==='vendor'?(preparing.pattern==='rush'?52:36):
+              const wind=preparing.key==='vendor'?(preparing.pattern==='rush'?52:preparing.pattern==='overhead'?52:36):
                 preparing.key==='closer'?(preparing.pattern==='shove'?52:32):
                 ({goonda:18,batta:28,constable:22,operator:25,sepoy:24,thela:30}[preparing.kind]||22);
               actions.length=0;
               if(preparing.state==='windup'&&preparing.t<wind-10&&p.hitConfirm)actions.push('parry');
+            }
+            else if(parryFocused&&b&&!b.protectedStagger&&['ladle','overhead','utensil','rush','vendor-lunge','wrench','toolthrow','hose'].includes(b.state)&&Math.abs(b.x-p.x)<110){
+              // Do not start a fresh jab during an already committed boss string.
+              // Wait for its next visible contact, then use the earned counter.
+              actions.length=0;if(p.state==='attack'&&p.hitConfirm)actions.push('parry');
             }
             else if(target&&safeToAct){
               if(technical&&G.meter>=100&&target.kind!=='prop'&&['idle','walk','run'].includes(p.state)&&ticks%8===0)actions.push('super');
@@ -180,11 +192,12 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
               if(Math.abs(p.y-dodgeLane)>2)actions.push(dodgeLane>p.y?'down':'up');
             }
           }
+          const beforePlayer={state:p.state,t:p.t,hitConfirm:p.hitConfirm,guardWindow:p.guardWindow};
           input(actions);g.step(1);
           if(G.boss?.pattern)patterns.add(G.boss.key+':'+G.boss.pattern);
           if(G.player.hp<lastHP){
             damage+=lastHP-G.player.hp;
-            if(defenses.length<400)defenses.push({ticks,damage:lastHP-G.player.hp,actions:[...actions],beforeTarget:simple(chosen),player:{...simple(G.player),face:G.player.face,window:G.player.guardWindow,defense:G.player.lastDefense},boss:simple(G.boss),shots:G.shots.map(s=>({kind:s.kind,x:s.x,y:s.y,vx:s.vx}))});
+            if(defenses.length<400)defenses.push({ticks,beforePlayer,damage:lastHP-G.player.hp,actions:[...actions],beforeTarget:simple(chosen),player:{...simple(G.player),face:G.player.face,window:G.player.guardWindow,defense:G.player.lastDefense},boss:simple(G.boss),shots:G.shots.map(s=>({kind:s.kind,x:s.x,y:s.y,vx:s.vx}))});
           }
           if(G.lives<lastLives)deaths+=lastLives-G.lives;
           if(G.player.counterT>lastCounter)parries++;
@@ -221,8 +234,8 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
         }
         input([]);
         return result;
-      },{stage,policy,bossOnly:BOSS_ONLY,maxTicks:MAX_TICKS});
-      const prefix=BOSS_ONLY?'boss-':'';
+      },{stage,policy,bossOnly:BOSS_ONLY,bossKey:BOSS_KEY,maxTicks:MAX_TICKS});
+      const prefix=BOSS_ONLY?`boss-${BOSS_KEY?BOSS_KEY+'-':''}`:'';
       for(const c of result.captures){fs.writeFileSync(path.join(OUT,`${prefix}${stage}-${policy}-${c.label}.png`),Buffer.from(c.png.split(',')[1],'base64'));delete c.png;}
       result.errors=errors;results.push(result);
       fs.writeFileSync(path.join(OUT,`${prefix}${stage}-${policy}.json`),JSON.stringify(result,null,2));

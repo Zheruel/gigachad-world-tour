@@ -281,7 +281,7 @@ export function drawProp(ctx, pr, camX) {
   }
   if (pr.flash > 0) {
     ctx.save();
-    ctx.filter = 'brightness(2.4)';
+    ctx.filter = 'brightness(1.25)';
     blit(ctx, f, dx, dy);
     ctx.restore();
   } else {

@@ -1,4 +1,5 @@
-// Retained Dredger mechanics: winch, bucket, reflected hose and cab operator.
+import {initDredgerEquipment,updateDredgerLife,spawnDredgerCrew,operatorUpdate,operatorReaction,operatorFrame,drawDredgerDetails,dredgerLine,OPERATOR_HEALTH} from './delhi_dredger_rebuild.js';
+// Dredger encounter: independent machinery, reflected crew scrap and cab operator.
 // Hooks run through the shared boss lifecycle without altering its combat rules.
 import { G, W, FLOOR_BOT, clamp, irand, diff, arenaMin, arenaMax, laneMin, fall } from './engine.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
@@ -33,14 +34,25 @@ function say(b, line) {
 // ============================================================ THE DREDGER
 // A machine. The bucket is the boss's body: hittable when it is down on the pontoon
 // or dragging the lane, unreachable at rest. The winch on the deck is an ordinary
-// breakable that stops the bucket for good. The hose is a reflectable projectile, and
-// reflecting it into the cab glass is the fast way through. Then the operator comes out.
+// breakable that stops the bucket for good. The live pump keeps its lane discharge;
+// reflected crew tools crack the cab. Then the operator comes out.
 const BUCKET_REST = 80;      // above a jump; a jump kick reaches 42
 const SWEEP_Z = 8;
 const OPERATOR_HP = 90;
 const DREDGER_WIND = { hose: 18, swing: 22 };
 
 const dredger = {
+  noRage:true,
+  beforeHurt(b,dmg,dir,heavy,launch){
+    b.guardingHit=false;
+    if(b.phase!=='operator'||b.protectedStagger||b.superApplying||b.parryApplying||b.counterApplying)return true;
+    if(b.state==='cower'&&b.coverTarget&&!b.coverTarget.broken){b.coverTarget.hurt(dmg,dir,heavy,launch);return false;}
+    const guard=b.guard>0&&dir===-b.face&&['idle','windup','wrench','toolthrow'].includes(b.state)&&!['restart','call'].includes(b.pattern);
+    if(guard&&!heavy&&!launch){b.guardFlash=6;G.audio.sfx('armor');return false;}
+    b.guardingHit=guard;return true;
+  },
+  afterOpening(b){if(b.phase==='operator'){b.state='idle';b.t=0;b.atkCd=18;}},
+  keepFace(b){return b.phase==='operator'&&!['idle','recover','hurt'].includes(b.state);},
   init(b) {
     b.phase = 'machine';
     b.z = BUCKET_REST; b.face = -1;
@@ -62,6 +74,7 @@ const dredger = {
       if (b.phase === 'machine' && !b.dead) { b.state = 'bucketfall'; b.t = 0; b.dead_bucket = true; }
     };
     G.props.push(b.winch);
+    initDredgerEquipment(b);
   },
   intro(b, t) {
     // the crane starts: the bucket comes down out of the dark to its rest height
@@ -70,69 +83,35 @@ const dredger = {
     if (t === 50) G.audio.sfx('enrage');
   },
   crew(b) {
-    // the guard: there must always be something to punch
-    if (b.crewCd > 0) b.crewCd--;
-    const crewKind = G.stage?.chapter ? 'ic_docker' : 'mudlark';
-    const mud = G.enemies.filter((e) => !e.dead && (e.kind === crewKind || e.trainType === crewKind)).length;
-    if (b.z > 34 && aliveEnemies() === 0 && b.crewCd > 150) b.crewCd = 150;
-    if (b.crewCd <= 0 && mud < 2 && aliveEnemies() < 4) {
-      b.crewCd = b.winchGone ? 660 : 1140;
-      spawnEnemy(crewKind, G.camX + 60, laneMin(G.camX + 60));
-      spawnEnemy(crewKind, G.camX + W - 80, laneMin(G.camX + W - 80));
-      spawnPop(G.camX + W / 2, 150, 'OVER THE SIDE');
-      G.audio.sfx('blip');
-    }
+    if(b.crewCd>0)b.crewCd--;
+    if(b.crewCd<=0&&b.crewSpawned<5&&b.crewActors.length<2)spawnDredgerCrew(b,Math.min(2,5-b.crewSpawned));
   },
   operatorPhase(b) {
     if (b.phase !== 'machine') return;
     b.phase = 'operator';
     // a fresh bar for a new man; the machine's enrage line must not fire for him
-    b.hp = OPERATOR_HP; b.maxhp = OPERATOR_HP; b.enraged = true;
-    b.bucket = { x: b.x, y: b.y, z: b.z, dead: !!b.dead_bucket };
+    b.hp = Math.round(OPERATOR_HEALTH*diff().hp); b.maxhp=b.hp; b.enraged=false;
+    b.guard=b.maxGuard=3;b.operatorTurn=0;b.operatorPending=false;
+    b.bucket = { x: G.camLock+320, y:194, z:0, dead:!!b.dead_bucket };
+    b.operatorExitX=b.reflectTarget.x; b.reflectTarget=null;
     b.set = SPR.thekedar; b.label = 'THE THEKEDAR';
-    b.w = 40; b.h = 88; b.shadowR = 13; b.z = 0;
-    b.x = b.reflectTarget.x - 10; b.y = laneMin(b.x) + 6; b.face = -1;
+    b.w = 40; b.h = 88; b.shadowR = 13; b.z = 78;
+    b.x = G.camLock + 365; b.y = laneMin(b.x) + 6; b.face = 1;
     b.state = 'openter'; b.t = 0; b.armor = 0;
     spawnPop(b.x, b.y - 100, 'THE OPERATOR');
-    spawnDebris(b.reflectTarget.x, b.reflectTarget.y, 10, ['#9ad0e0', '#e8f4ff', '#3a5060']);
+    spawnDebris(b.operatorExitX, 74, 10, ['#9ad0e0', '#e8f4ff', '#3a5060']);
     G.shake = Math.max(G.shake, 6);
     G.audio.sfx('ko');
     // the crane goes still
-    G.enemies.forEach((e) => { if ((e.kind === 'mudlark' || e.trainType === 'ic_docker') && !e.dead) e.hurt(999, 1, true, true); });
+    for(const e of b.crewActors){e.atkCd=Math.max(e.atkCd,90);e.state='idle';e.t=0;}
+    dredgerLine(b,'I ONLY DRIVE IT!');
   },
   update(b) {
     const p = G.player;
-    if (b.phase === 'operator') {
-      switch (b.state) {
-        case 'openter': {
-          b.x -= 1.1;
-          if (b.t > 70) { b.state = 'idle'; b.atkCd = 40; }
-          return true;
-        }
-        case 'idle': {
-          approach(b, bossSpeed(b) * 1.3, 26, 40);
-          if (--b.atkCd <= 0) {
-            b.pattern = 'swing';
-            if (Math.random() < 0.4) say(b, ['PLEASE', 'I ONLY DRIVE IT', 'NOT MY RIVER'][irand(0, 2)]);
-            b.state = 'windup'; b.t = 0;
-          }
-          return true;
-        }
-        case 'windup': {
-          if (b.t >= DREDGER_WIND.swing) { b.state = 'swing'; b.t = 0; b.hitLanded = false; G.audio.sfx('whiff'); }
-          return true;
-        }
-        case 'swing': {
-          if (b.t < 6) b.x += b.face * 1.2;
-          if (b.t === 6 && !b.hitLanded) { b.hitLanded = true; tryHitPlayer(b, 9, 44, false, 15, 'counter'); }
-          if (b.t > 30) { b.state = 'idle'; b.atkCd = irand(50, 90); }
-          return true;
-        }
-        default: return false;
-      }
-    }
+    updateDredgerLife(b);
+    if(b.phase==='operator')return operatorUpdate(b);
     // ---- the machine ----
-    if (b.hp <= OPERATOR_HP && !b.dead) { dredger.operatorPhase(b); return true; }
+    if ((b.hp <= OPERATOR_HP||b.operatorPending) && !b.dead) { dredger.operatorPhase(b); return true; }
     // Shared parry/super recovery returns bosses to recover/idle. A severed
     // winch cannot hoist its bucket again when that protected opening ends.
     if (b.dead_bucket && ['idle','recover','rise'].includes(b.state)) {
@@ -151,9 +130,10 @@ const dredger = {
         if (--b.atkCd <= 0 && b.z >= BUCKET_REST - 1) {
           const opts = [];
           if (!b.winchGone) opts.push('sweep', 'sweep', 'bucketdrop', 'bucketdrop');
-          if (b.hoseCd <= 0) opts.push('hose', 'hose');
+          if (b.hoseCd <= 0&&!b.pumpGone) opts.push('hose');
           if (!opts.length) { b.atkCd = 30; return true; }
-          b.pattern = opts[irand(0, opts.length - 1)];
+          if(b.crewActors.some(e=>['windup','attack'].includes(e.state))){b.atkCd=12;return true;}
+          const available=opts.filter(p=>p!==b.lastMachinePattern);b.pattern=(available.length?available:opts)[b.machineTurn++%(available.length||opts.length)];b.lastMachinePattern=b.pattern;
           b.t = 0; b.hitLanded = false;
           if (b.pattern === 'sweep') {
             b.state = 'sweepaim';
@@ -163,7 +143,7 @@ const dredger = {
             G.audio.sfx('blip');
           } else if (b.pattern === 'bucketdrop') {
             b.state = 'dropaim'; G.audio.sfx('blip');
-          } else { b.state = 'windup'; }
+          } else { b.state = 'windup';b.hoseLane=p.y; }
         }
         return true;
       }
@@ -204,8 +184,8 @@ const dredger = {
       }
       case 'dropaim': {
         // it hangs over your shadow for 40 frames and comes straight down
-        b.x += clamp(p.x - b.x, -2.6, 2.6) * spd;
-        b.y += clamp(clamp(p.y, laneMin(b.x), FLOOR_BOT) - b.y, -2, 2);
+        if(b.t<20){b.x += clamp(p.x - b.x, -2.6, 2.6) * spd;
+        b.y += clamp(clamp(p.y, laneMin(b.x), FLOOR_BOT) - b.y, -2, 2);}
         b.z += clamp(BUCKET_REST + 10 - b.z, -2, 2);
         if (b.t >= (b.enraged ? 32 : 40)) { b.state = 'bucketfall'; b.t = 0; b.hitLanded = false; }
         return true;
@@ -235,7 +215,7 @@ const dredger = {
       case 'grounded': {
         // the punish window: it sits on the pontoon and you hit it
         b.z = 0;
-        if (b.dead_bucket) return true;   // the winch is gone: it never lifts again
+        if (b.dead_bucket) {if(!b.pumpGone&&b.hoseCd<=0&&!b.crewActors.some(e=>['windup','attack'].includes(e.state))){b.state='windup';b.pattern='hose';b.hoseLane=p.y;b.t=0;}return true;}   // the winch is gone: it never lifts again
         if (b.t > (b.enraged ? 66 : 96)) { b.state = 'rise'; b.t = 0; }
         return true;
       }
@@ -249,13 +229,12 @@ const dredger = {
         return true;
       }
       case 'hose': {
-        // the deck crew turn the slurry hose on you: green, and it goes back where it came from
-        if (b.t === 4 || b.t === 20 || b.t === 36) {
-          spawnShot('slurry', b.rail.x - 8, clamp(p.y, laneMin(b.rail.x), FLOOR_BOT), -3.2, 9,
-            { source: b, parryClass: 'reflect' });
-          G.audio.sfx('whiff');
+        if(b.pumpGone){b.state=b.dead_bucket?'grounded':'idle';b.t=0;return true;}
+        if([10,28,46].includes(b.t)){
+          tryHitPlayer({x:b.rail.x,y:b.hoseLane,face:-1,pattern:'steamjet'},9,220,false,12,'unblockable');
+          spawnDust(b.rail.x-80,b.hoseLane,7);G.audio.roomSfx('train_brake',.15,.65);
         }
-        if (b.t > 50) { b.hoseCd = b.enraged ? 320 : 480; b.state = 'idle'; b.atkCd = irand(30, 60) * cdScale(b); }
+        if(b.t>=60){b.hoseCd=360;b.state=b.dead_bucket?'grounded':'idle';b.t=0;b.atkCd=40;}
         return true;
       }
       case 'dying': {
@@ -266,7 +245,7 @@ const dredger = {
     }
   },
   onReflectHit(b, s) {
-    // a reflected hose into the cab glass: the best-kept secret in the level
+    // reflected crew scrap damages the cab protection
     if (b.phase !== 'machine') { b.hurt(Math.round(s.dmg * 1.5), 1, true, false); return; }
     b.glass = Math.max(0, b.glass - 1);
     spawnDebris(b.reflectTarget.x, b.reflectTarget.y, 8, ['#9ad0e0', '#e8f4ff', '#3a5060']);
@@ -274,10 +253,10 @@ const dredger = {
     G.shake = Math.max(G.shake, 6);
     G.audio.sfx('slam');
     b.hurt(45, 1, false, false);
-    if (b.glass <= 0 && !b.dead) dredger.operatorPhase(b);
+    if(b.glass<=0&&!b.dead&&b.cab&&!b.cab.broken)b.cab.hurt(b.cab.hp,1,true,true);
   },
   onHurt(b, dmg, heavy, launch) {
-    if (b.phase === 'operator') return false;
+    if (b.phase === 'operator') return operatorReaction(b);
     // Resolve the threshold before the shared death branch. A large final hit
     // used to kill the machine outright, skipping its living operator.
     if (b.hp <= OPERATOR_HP) {
@@ -302,12 +281,13 @@ const dredger = {
     if (b.z > 0) b.vz = -0.5;
   },
   frame(b) {
+    const authored=operatorFrame(b);if(authored)return authored;
     switch (b.state) {
       case 'openter': return ['walk', (G.time >> 3) & 3];
-      case 'idle': return b.moved > 0.2 ? ['walk', Math.floor(b.stridePhase / 7) & 3] : ['idle', (G.time >> 4) & 3];
+      case 'idle': return b.moved > 0.2 ? ['walk', Math.floor(b.stridePhase / 5.4) % 8] : ['idle', (G.time >> 4) & 3];
       case 'windup': return ['punch', 0];
       case 'swing': return ['punch', b.t < 10 ? 1 : 2];
-      case 'recover': return ['punch', 2];
+      case 'recover': return b.t<18?['wrench',5]:['idle',0];
       case 'hurt': return ['hurt', b.t < 5 ? 1 : 0];
       case 'stagger': return ['hurt', (b.t >> 3) & 1];
       case 'down': case 'dying': return ['down', 0];
@@ -337,8 +317,8 @@ const dredger = {
     ctx.restore();
   },
   drawCab(ctx, b, camX) {
-    // cracks in the cab glass, one set per reflected hose
-    if (b.glass >= 3) return;
+    // cracks in the cab glass, one set per reflected tool
+    if (b.glass >= 3||!b.reflectTarget) return;
     const cx = Math.round(b.reflectTarget.x - camX), cy = b.reflectTarget.y;
     ctx.save();
     ctx.strokeStyle = 'rgba(230,245,255,0.85)'; ctx.lineWidth = 1;
@@ -360,10 +340,12 @@ const dredger = {
     if (b.state === 'windup' && (b.t & 2)) { ctx.fillStyle = '#8a8070'; ctx.fillRect(sx - 24, sy - 1, 4, 3); }
   },
   draw(ctx, b, camX) {
+    drawDredgerDetails(ctx,b,camX);
     dredger.drawCab(ctx, b, camX);
     dredger.drawHose(ctx, b, camX);
+    if(b.phase==='machine'&&['hose','windup'].includes(b.state)){ctx.fillStyle=b.state==='hose'?'rgba(111,121,70,.45)':'rgba(218,131,55,.3)';ctx.fillRect(b.rail.x-220-camX,b.hoseLane-6,220,12);}
     if (b.phase === 'operator') {
-      if (b.bucket) dredger.drawBucket(ctx, camX, b.bucket.x, b.bucket.y, b.bucket.z, false, false, null, 0);
+      if(b.bucket){const im=ASSETS.ic_delhi_mechanisms;if(im){const sw=im.width/4,sh=im.height/2;ctx.drawImage(im,0,sh,sw,sh,b.bucket.x-camX-41.5,b.bucket.y-83,83,83);}else dredger.drawBucket(ctx, camX, b.bucket.x, b.bucket.y, b.bucket.z, false, false, null, 0);}
       const [name, idx] = dredger.frame(b);
       const f = getFrame(b.set, name, idx, b.face);
       const sx = Math.round(b.x - camX), sy = Math.round(b.y - b.z);
@@ -374,7 +356,7 @@ const dredger = {
       return;
     }
     const cue = b.state === 'sweepaim' || b.state === 'dropaim' || (b.state === 'windup' && b.t > 6);
-    const swing = b.z > 20 && b.state !== 'dying' ? Math.sin(G.rawTime * 0.06) * 0.035 : 0;
+    const swing = b.z > 20 && b.state !== 'dying' ? Math.sin(b.machineClock * 0.06) * 0.035 : 0;
     dredger.drawBucket(ctx, camX, b.x, b.y, b.z, b.jaws > 0, cue, b, swing);
     if (cue && b.state !== 'windup') {
       // the red cross sits on the ground under it: that is where it is going

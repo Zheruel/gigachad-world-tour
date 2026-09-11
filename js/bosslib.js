@@ -1,3 +1,4 @@
+import {beginDazePose} from './daze.js';
 // bosslib.js - the pieces every boss shares: the parry class of each pattern, the
 // player hit test, friendly fire on reds, and the telegraph tint. bosses.js and the
 // per-act boss modules both import from here, so neither has to import the other.
@@ -17,7 +18,7 @@ export const PARRY_CLASS = {
   troop: 'hazard', lunge: 'counter',
   sweep: 'unblockable', bucketdrop: 'unblockable', hose: 'reflect', swing: 'counter',
   // Replacement India encounters; their ordinary rushes remain parryable.
-  ladle: 'counter', utensil: 'reflect', rush: 'counter', valve: 'unblockable',
+  'vendor-lunge':'unblockable', overhead:'counter', ladle: 'counter', utensil: 'reflect', rush: 'counter', valve: 'unblockable',
   boxing: 'counter', handset: 'reflect', shove: 'counter', call: 'hazard',
   // THE NIGHT TRAIN
   torch: 'reflect', ledger: 'counter', check: 'hazard',
@@ -65,15 +66,15 @@ export function blitTelegraph(ctx, b, f, dx, dy, cue) {
     const cx=dx+frameW(f)/2,cy=dy+frameH(f)-4;
     const hit=getFrame(b.set,boxing.name,boxing.idx,b.face);
     ctx.save();ctx.translate(cx+boxing.dx,cy+boxing.dy-40);ctx.rotate(boxing.angle);
-    if(boxing.flash)ctx.filter='brightness(1.7)';
+    if(boxing.flash)ctx.filter='brightness(1.18)';
     blit(ctx,hit,-frameW(hit)/2,40-frameH(hit)+4);ctx.restore();return;
   }
   const telegraph = (cue && ((b.t >> 1) & 1)) || b.flash > 0;
-  if (!telegraph) { blit(ctx, f, dx, dy); return; }
+  if (!telegraph) {const dazed=beginDazePose(ctx,b,dx+frameW(f)/2,dy+frameH(f)-4);blit(ctx, f, dx, dy);if(dazed)ctx.restore();return;}
   ctx.save();
   ctx.filter = cue && isGreen(b.pattern)
     ? 'brightness(1.8) sepia(1) saturate(5) hue-rotate(70deg)'
-    : cue ? 'brightness(1.8) sepia(1) saturate(6) hue-rotate(-35deg)' : 'brightness(2.2)';
+    : cue ? 'brightness(1.8) sepia(1) saturate(6) hue-rotate(-35deg)' : 'brightness(1.18)';
   blit(ctx, f, dx, dy);
   ctx.restore();
 }

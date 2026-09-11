@@ -1164,6 +1164,18 @@
       "recipe": "tools/production/build_boss_audio.py",
       "label": "Two short hand-whistle breaths",
       "verifiedByEar": false
+    },
+    "super_electric": {
+      "recipe": "tools/production/extract_tekken_electric.py",
+      "label": "Tekken 7 electric impact \u2014 user-confirmed, no fighter shout",
+      "source": "https://tekkenmods.com/mod/3100/tekken-7-electric-sfx-for-t8",
+      "archive": "audio/sources/tekken7/T7_Electric_SFX_P.pak",
+      "archiveSha256": "99b82c409571a92e8ba9fec67400b8c0f9359aaed6d9039c538d44c88030676d",
+      "seconds": 1.5658956916099773,
+      "processing": "Wwise PCM container conversion only; exact auditioned samples, full attack and tail",
+      "provenanceVerified": true,
+      "verifiedByEar": true,
+      "verification": "User listened to the isolated preview and confirmed: This is it."
     }
   }
 }

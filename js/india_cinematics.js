@@ -1,4 +1,6 @@
-import { drawDialogue, updateDialogue } from './room_dialogue.js';
+import {DELHI_FINISHERS,delhiFinisherPose,delhiBucketPose} from './delhi_finisher_performance.js';
+import {spawnDefeatFX} from './defeat_fx.js';
+import {beginBossEntry,updateBossEntry,drawBossEntry} from './boss_cinematic_entry.js';
 // Authored India set pieces. Timelines own state and cues; drawing only samples them.
 import { G, clamp, fall, inAir } from './engine.js';
 import { ASSETS } from './assets.js';
@@ -7,10 +9,11 @@ import { releaseSuper, releaseGrab } from './player.js';
 import { spawnDust, spawnDebris } from './effects.js';
 import { CINEMATIC_ANCHORS } from './india_cinematic_anchors.js';
 
-export const INDIA_INTRO_TICKS = 540;
+export const INDIA_INTRO_TICKS = 720;
+export const MARKET_RIDE_TICKS=180;
 export const INDIA_FINISHERS = Object.freeze({
- 'vendor-finish': { ticks:540, camera:2670, voice:'duke_turn_up_heat', voiceAt:78, voiceMs:2060, hits:[210,236,262], damage:[304,366,430], exit:'play' },
- 'dredger-finish': { ticks:960, camera:6000, voice:'duke_safety_inspections', voiceAt:720, voiceMs:3400, hits:[130,166,204], damage:[272,402,570], exit:'clear' },
+ 'vendor-finish': DELHI_FINISHERS['vendor-finish'],
+ 'dredger-finish': DELHI_FINISHERS['dredger-finish'],
  'closer-finish': { ticks:840, camera:6000, voice:'duke_checks_cash', voiceAt:84, voiceMs:3330, hits:[302,330,364], damage:[412,486,578], exit:'clear' },
 });
 const mix=(a,b,t)=>a+(b-a)*clamp(t,0,1), ease=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
@@ -36,7 +39,7 @@ export function startIndiaFinisher(kind,boss){
  releaseSuper(p);releaseGrab(p);
  if(p.grabbedBy){p.grabbedBy.holding=false;p.grabbedBy=null;}
  s.finishersDone??=new Set();s.damage??={kitchen:0,dredger:0,success:0};
- const bx=cfg.camera+(kind==='vendor-finish'?280:kind==='dredger-finish'?255:280);
+ const bx=cfg.camera+(DELHI_FINISHERS[kind]?246:280);
  s.cinematic={kind,t:0,boss,cues:new Set(),cameraX:G.camX,playerX:p.x,playerY:p.y,bossX:boss.x,bossY:boss.y,bx,px:bx-56,
   priorDamage:(boss.fightProps||[]).map(q=>({role:q.role,broken:!!q.broken})),bucket:boss.bucket?{...boss.bucket}:null,bucketStartZ:boss.bucket?.z||0,winchGone:!!boss.winchGone};
  if(kind==='dredger-finish'&&boss.glass<3)s.damage.dredger=Math.max(s.damage.dredger,1);
@@ -45,10 +48,12 @@ export function startIndiaFinisher(kind,boss){
  for(const e of G.enemies)if(!e.dead){e.state='spawn';e.face=e.x<bx?-1:1;e.moved=2;e.vx=0;}
  p.state='idle';p.z=p.vx=p.vz=0;p.invuln=999;
  G.effects=[];G.shots=[];G.zones=[];G.spawnQueue=[];G.hitstop=G.slowmo=G.parrySlow=0;
+ beginBossEntry(s.cinematic,DELHI_FINISHERS[kind]?0:72);
  boss.finishStarted=true;boss.removeMe=true;boss.vx=boss.vz=boss.z=0;
  return true;
 }
 export function finisherPose(c,t=c.t){
+ if(DELHI_FINISHERS[c.kind])return delhiFinisherPose(c,t);
  const cfg=INDIA_FINISHERS[c.kind],setup=72,b=c.bx,px=c.px;
  const pos={x:mix(c.playerX,px,t/setup),y:mix(c.playerY,236,t/setup),pose:0,walk:t<setup,
   vx:mix(c.bossX,b,t/60),vy:mix(c.bossY,236,t/60),victim:0};
@@ -84,8 +89,9 @@ export function updateIndiaFinisher(){
  if(s.pendingFinisher&&!G.player.specialTarget&&!s.pendingFinisher.boss.superLocked)startIndiaFinisher(s.pendingFinisher.kind,s.pendingFinisher.boss);
  const c=s.cinematic;if(!c)return false;
  const cfg=INDIA_FINISHERS[c.kind];if(!cfg)return false;
+ if(updateBossEntry(c,()=>{G.camX=cfg.camera;c.cameraX=cfg.camera;c.playerX=c.px;c.playerY=236;c.bossX=c.bx;c.bossY=236;G.player.x=c.px;G.player.y=236;G.player.face=1;}))return true;
  c.t++;const t=c.t,p=G.player,pose=finisherPose(c),cam=cfg.camera;
- G.camX=mix(c.cameraX,cam,ease(t/72));p.x=pose.x;p.y=pose.y;p.z=0;p.face=pose.walk?(Math.sign(c.px-c.playerX)||1):1;p.invuln=10;
+ G.camX=cam;p.x=pose.x;p.y=pose.y;p.z=0;p.face=pose.walk?(Math.sign(c.px-c.playerX)||1):1;p.invuln=10;
  for(const e of G.enemies){
   if(!e.dead){e.x+=e.face*2.4;e.stridePhase=(e.stridePhase||0)+2.4;e.moved=2.4;}
   else{
@@ -105,18 +111,15 @@ export function updateIndiaFinisher(){
   for(const q of c.boss.fightProps||[])if((group==='kitchen'&&q.role==='station')||(group==='success'&&q.role!=='cabinet')){q.broken=q.dead=true;q.hp=0;}
  });
  if(group==='kitchen'){
-  for(const [i,at]of [304,348,366,404,430].entries())smash(c,'blast'+i,at,cam+310+i%3*27,180-i%2*35,i===2||i===4,['room_glass','armor','train_blast','room_glass','slam'][i]);
-  once(c,'pressure-release',t,348,()=>G.audio.roomSfx('train_brake',.15,.65));
+  for(const [i,at]of [218,326,354,422,480].entries())smash(c,'blast'+i,at,cam+310+i%3*27,180-i%2*35,i===2||i===4,['room_glass','armor','train_blast','room_glass','slam'][i]);
+  once(c,'pressure-release',t,326,()=>G.audio.roomSfx('train_brake',.15,.65));
  }
- if(group==='dredger')for(const [i,at]of [272,326,402,450,500,534,570,608,648].entries())smash(c,'blast'+i,at,cam+276+i%4*34,90+Math.min(i,4)*20,i>=2&&i%2===0,['room_glass','armor','train_blast','heavy','train_blast','armor','train_blast','slam','heavy'][i]);
- if(group==='dredger'&&t>=402&&c.bucket&&!c.bucket.dead){
-  c.bucket.z=Math.max(0,c.bucketStartZ-.1*(t-402)**2);
-  if(!c.bucket.z){c.bucket.dead=true;sound('slam',.36);spawnDust(c.bucket.x,c.bucket.y,5);}
- }
+ if(group==='dredger')for(const [i,at]of [354,398,468,516,558,588,612,654,684].entries())smash(c,'blast'+i,at,cam+276+i%4*34,90+Math.min(i,4)*20,i>=2&&i%2===0,['room_glass','armor','train_blast','heavy','train_blast','armor','train_blast','slam','heavy'][i]);
+ if(group==='dredger'){c.bucketPose=delhiBucketPose(t);once(c,'latch-release',t,260,()=>sound('armor',.38));}
  if(group==='success')for(const [i,at]of [412,450,486,532,578,620].entries())smash(c,'blast'+i,at,cam+312+i%3*38,155-i%2*32,i===2,['room_glass','armor','slam','room_glass','heavy','room_chair'][i]);
- const landing=cfg.damage[0]+(group==='kitchen'?78:group==='dredger'?60:94);
+ const landing=group==='kitchen'?453:group==='dredger'?188:cfg.damage[0]+94;
  once(c,'victim-land',t,landing,()=>{sound('land',.24);spawnDust(pose.vx,pose.vy,3);});
- if(t>=cfg.ticks){
+ if(t>=(cfg.performanceTicks??cfg.ticks)){
   s.finishersDone.add(c.kind);s.completedScenes??={};s.completedScenes[c.kind]={...c,t:cfg.ticks};
   s.cinematic=null;c.boss.t=80;p.invuln=90;s.pendingFinisher=null;
   G.audio.stopRoomAudio();G.effects=[];G.shake=0;
@@ -139,13 +142,7 @@ export function drawIndiaSetPieces(ctx,camX){
  const s=G.india;if(!s||s.review?.sets===false)return;
  const d=s.damage||{};
  if(G.stage.id==='delhi'){
-  if(camX<530&&s.marketBroken){
-   structure(ctx,'ic_market_set',3,332-camX,237,112,75);
-   frame(ctx,'ic_market_set',2,358-camX,235,200,133.333,2,2,-1);
-   // The attendants stay where they landed instead of disappearing at the end
-   // of their arc. These are scenery actors, never additional encounter slots.
-   if(s.review?.actors!==false)for(const [i,x]of [424,500].entries())if((s.marketIntro?.t??540)>=338+i*5)actor(ctx,'ic_brawler','down',0,x-camX,232-i*12,1);
-  }
+  if(camX<560&&G.state!=='intro'){drawMarketStalls(ctx,camX,s.marketBroken?3:0);if(s.marketBroken)frame(ctx,'ic_rampage_bike',7,85-camX,240,192,160,4,2);}
   if(camX>2380&&camX<3220)structure(ctx,'ic_kitchen_set',d.kitchen||0,3000-camX,213,246,164);
   if(camX>5630)structure(ctx,'ic_dredger_set',d.dredger||0,6322-camX,210,260,174);
  }else if(camX>5640){
@@ -154,25 +151,23 @@ export function drawIndiaSetPieces(ctx,camX){
  }
  const c=s.cinematic||(s.endingDone?s.completedScenes?.['dredger-finish']||s.completedScenes?.['closer-finish']:null);
  const dredger=s.cinematic?.kind==='dredger-finish'?s.cinematic:s.completedScenes?.['dredger-finish'];
- if(dredger?.bucket){
-  const b=dredger.bucket,im=ASSETS.prop_bucket;
-  if(!b.dead&&dredger.t<402)dredger.boss.delhi.drawBucket(ctx,camX,b.x,b.y,b.z,false,false,null,0);
-  else if(im)blit(ctx,im,Math.round(b.x-camX-frameW(im)/2),Math.round(b.y-b.z-frameH(im)+4));
- }
  if(c&&s.review?.fx!==false){
   const cam=INDIA_FINISHERS[c.kind].camera,t=c.t;
-  if(c.kind==='vendor-finish')for(const [i,at]of [304,348,366,404,430].entries())explosion(ctx,t,at,cam+310+i%3*27-camX,180-i%2*35,i===2?94:65);
-  if(c.kind==='dredger-finish')for(const [i,at]of [272,326,402,450,500,534,570,608,648].entries())explosion(ctx,t,at,cam+276+i%4*34-camX,100+Math.min(i,4)*19,i%2?70:110);
-  if(c.kind==='dredger-finish'&&t>=570&&t<740){ctx.save();ctx.globalAlpha=t>700?(740-t)/40:1;frame(ctx,'ic_cine_splash',Math.min(7,Math.floor((t-570)/19)),cam+334-camX,196,260,145,8,1);ctx.restore();}
-  if(c.kind==='dredger-finish'&&t>=650)for(let i=0;i<4;i++)frame(ctx,'nr_explosion',3+Math.floor((t+i*17)/18)%2,cam+272+i*33-camX,198,32,31,8,1);
+  if(c.kind==='vendor-finish'&&t>=294&&t<354)frame(ctx,'ic_steam',Math.floor((t-294)/8)%8,cam+343-camX,166,50,43,4,2);
+  if(c.kind==='vendor-finish')for(const [i,at]of [354,422,480].entries())explosion(ctx,t,at,cam+310+i%3*27-camX,180-i%2*35,i===2?94:65);
+  if(c.kind==='dredger-finish')for(const [i,at]of [354,398,468,516,558,588,612,654,684].entries())explosion(ctx,t,at,cam+276+i%4*34-camX,100+Math.min(i,4)*19,i%2?70:110);
+  if(c.kind==='dredger-finish'&&t>=612&&t<790){ctx.save();ctx.globalAlpha=t>750?(790-t)/40:1;frame(ctx,'ic_cine_splash',Math.min(7,Math.floor((t-612)/21)),cam+334-camX,196,260,145,8,1);ctx.restore();}
+  if(c.kind==='dredger-finish'&&t>=690)for(let i=0;i<4;i++)frame(ctx,'nr_explosion',3+Math.floor((t+i*17)/18)%2,cam+272+i*33-camX,198,32,31,8,1);
   if(c.kind==='closer-finish')for(const [i,at]of [412,450,486,532,578,620].entries())explosion(ctx,t,at,cam+312+i%3*38-camX,155-i%2*32,i===2?78:44);
  }
 }
-export function drawIndiaFinisher(ctx){
+export function drawIndiaFinisher(ctx){drawIndiaFinisherActors(ctx);drawBossEntry(ctx,G.india?.cinematic);}
+function drawIndiaFinisherActors(ctx){
  const s=G.india;if(s?.review?.actors===false)return;
  const scenes=Object.values(s?.completedScenes||{});
  if(s?.cinematic)scenes.push(s.cinematic);
  for(const c of scenes){
+  if(DELHI_FINISHERS[c.kind]){drawDelhiPerformance(ctx,c,c===s.cinematic||s.endingDone);continue;}
   const pos=finisherPose(c),key=c.kind==='vendor-finish'?'ic_cine_vendor':c.kind==='dredger-finish'?'ic_cine_operator':'ic_cine_closer';
   const set=c.kind==='vendor-finish'?'ic_vendor':c.kind==='dredger-finish'?'thekedar':'ic_closer_damaged';
   if(pos.vx-G.camX>-120&&pos.vx-G.camX<600){
@@ -206,33 +201,92 @@ export function drawIndiaFinisher(ctx){
   }
  }
 }
-export function updateMarketEntrance(t){
- const s=G.india,p=G.player;s.t=t;s.marketIntro??={t:0,cues:new Set()};const c=s.marketIntro;c.t=t;
- p.face=1;p.z=p.vx=p.vz=0;p.y=236;p.invuln=10;p.state='idle';
- if(t>=75&&t<155)updateDialogue('ENTRY FEE.',t-75,{remaining:155-t,visible:s.review?.actors!==false});
- const pushFrame=Math.floor(Math.max(0,t-174)/6)%8,hand=CINEMATIC_ANCHORS.chad_cart_push.hands[pushFrame];
- p.x=t<75?mix(40,128,t/75):t<156?128:t<174?mix(128,114,(t-156)/18):t<252?mix(248,358,(t-174)/78)-90-(hand[0]-64):t<285?223.31:mix(223.31,348,(t-285)/96);
- G.camX=mix(0,93,ease((t-381)/60));
- for(const at of [24,48,70,304,328,352,378])once(c,'boot'+at,t,at,()=>sound('entrance_boot',.3));
- once(c,'barricade',t,252,()=>{s.marketBroken=true;G.shake=6;sound('entrance_crack',.6);sound('slam',.65);spawnDebris(326,188,23,['#694937','#ac8762','#4a4135']);spawnDust(335,235,12);});
- quote(c,408,'duke_who_wants_some',1800);
+function drawDelhiPerformance(ctx,c,showChad){
+ const pos=delhiFinisherPose(c),vendor=c.kind==='vendor-finish',t=c.t,cam=G.camX;
+ const key=vendor?'ic_pressure_vendor':'ic_bucket_operator';
+ const bp=delhiBucketPose(t);
+ if(!vendor){
+  // The scoop's real silhouette occludes the seated operator below its rim.
+  frame(ctx,'ic_delhi_mechanisms',t<260?6:7,6265-cam,206,52,52,4,2);
+  ctx.save();ctx.translate(bp.x-cam,bp.y);ctx.rotate(bp.angle);frame(ctx,'ic_delhi_mechanisms',t<354?4:5,0,0,83,83,4,2);ctx.restore();
+ }
+ if(!frame(ctx,key,pos.art,pos.vx-cam,pos.vy+4,128,128,4,3))actor(ctx,vendor?'ic_vendor':'thekedar',t>350?'down':'hurt',0,pos.vx-cam,pos.vy,-1);
+ if(vendor){
+  frame(ctx,'ic_delhi_mechanisms',t<354?Math.min(1,c.priorDamage.some(q=>q.broken)?1:0):t<480?2:3,3012-cam,221,78,78,4,2);
+ }else{
+  ctx.save();ctx.translate(bp.x-cam,bp.y);ctx.rotate(bp.angle);
+  const im=ASSETS.ic_delhi_mechanisms;if(im){const k=t<354?4:5,w=im.width/4,h=im.height/2;ctx.drawImage(im,k%4*w,h+h*.73,w,h*.27,-41.5,-83*.27,83,83*.27);}ctx.restore();
+ }
+ if(showChad){
+  if(pos.walk)actor(ctx,'player','walk',Math.floor(Math.abs(pos.x-c.px)/5.4)%8,pos.x-cam,pos.y,1);
+  else if(!frame(ctx,'ic_delhi_finish_chad',pos.pose,pos.x-cam,pos.y+4,128,128,4,4))chad(ctx,pos.pose,pos.x-cam,pos.y);
+ }
 }
-export function drawMarketEntrance(ctx,t){
- const p=G.player;
- if(t<252&&G.india.review?.sets!==false){
-  structure(ctx,'ic_market_set',1,332,237,112,75);
-  const x=t<174?248:mix(248,358,(t-174)/78);
-  // The authored handle is on the right; mirror the cart so CHAD pushes from the left.
-  frame(ctx,'ic_market_set',0,x,235,200,133.333,2,2,-1);
+export const MARKET_IMPACTS=[216,286,356];
+export function marketPose(t){
+ if(t<120)return -1;
+ if(t<145)return 0;if(t<158)return 1;if(t<170)return 2;if(t<180)return 3;
+ if(t>=216&&t<224||t>=286&&t<294)return 8;
+ if(t>=224&&t<234||t>=294&&t<304)return 9;
+ if(t<322)return 4+Math.floor((t-180)/5)%4;
+ if(t<338)return 11;if(t<360)return 12;if(t<382)return 13;if(t<402)return 14;return 15;
+}
+function drawMarketStalls(ctx,camX,state){
+ if(G.india.review?.sets===false)return;
+ frame(ctx,'ic_rampage_stalls',state,300-camX,242,280,186.667,2,2);
+
+}
+function drawMarketCounter(ctx,state){
+ const im=ASSETS.ic_rampage_stalls;if(!im||G.india.review?.sets===false)return;
+ const sw=im.width/2,sh=im.height/2,cut=sh*320/512;
+ ctx.drawImage(im,state%2*sw,Math.floor(state/2)*sh+cut,sw,sh-cut,160,242-186.667+186.667*320/512,280,186.667*(1-320/512));
+ if(state===2&&ASSETS.ic_rampage_awning){const q=ease(((G.india.marketIntro?.t||286)-300)/56);ctx.save();ctx.translate(300,99.083+q*61);ctx.rotate(Math.sin(q*Math.PI)*.06);ctx.drawImage(ASSETS.ic_rampage_awning,-140,0,280,65.625);ctx.restore();}
+}
+export function updateMarketEntrance(T){
+ const t=Math.max(0,T-MARKET_RIDE_TICKS);
+ const s=G.india,p=G.player;s.t=T;s.marketIntro??={t:0,cues:new Set(),damage:0};const c=s.marketIntro;c.t=t;
+ p.face=1;p.z=p.vx=p.vz=0;p.y=236;p.invuln=10;p.state='idle';
+ G.camX=0;
+ once(c,'engine',T,0,()=>sound('entrance_engine',.38));
+ once(c,'skid',T,60,()=>sound('entrance_skid',.32));
+ if(T<MARKET_RIDE_TICKS){p.x=T<75?mix(-100,85,ease(T/75)):T<130?65:mix(65,130,(T-130)/50);return;}
+ // Continuous rightward approach; contact holds preserve shoulder registration.
+ p.x=t<180?130:t<216?mix(130,192,(t-180)/36):t<224?192:t<286?mix(192,316,(t-224)/62):t<294?316:t<322?mix(316,382,(t-294)/28):t<338?mix(382,392,ease((t-322)/16)):392;
+ G.camX=0;
+ for(const at of [185,195,205,238,248,258,268,278,308,318,334])once(c,'boot'+at,t,at,()=>sound('entrance_boot',.24));
+ for(const [i,at]of MARKET_IMPACTS.entries())once(c,'stall'+i,t,at,()=>{
+  c.damage=i+1;s.marketBroken=i===2;G.shake=i===2?3:5;
+  if(i===0){c.vendorBurst=true;spawnDefeatFX({kind:'scenery',trainType:'ic_operator',x:265,y:221,z:0,h:74,state:'idle',superApplying:true,cosmeticSeed:73419},1,true,true);}
+  sound(i===2?'entrance_crack':'slam',i===2?.4:.55);sound('room_glass',.22);
+  spawnDebris(i===0?222:i===1?340:300,198,12,['#76502d','#b28b46','#4c3422','#8c6c3a']);spawnDust(i===0?222:340,230,5);
+ });
+ for(const at of [229,244,300,315,366])once(c,'pot'+at,t,at,()=>sound('armor',.24));
+ quote(c,420,'duke_who_wants_some',1800);
+}
+export function drawMarketEntrance(ctx,T){
+ const t=Math.max(0,T-MARKET_RIDE_TICKS),p=G.player,s=G.india;
+ drawMarketStalls(ctx,0,s.marketIntro?.damage||0);
+ // Vendors stand in front of hanging cookware but behind the actual counter silhouette.
+ if(s.review?.actors!==false)for(const [i,x]of [265,378].entries()){
+  if(i===0&&s.marketIntro?.vendorBurst)continue;
+  const flee=i===0?Math.min(8,Math.max(0,t-205)):Math.max(0,t-222);
+  const vx=x+Math.max(0,flee-16)*2.6;
+  if(vx<535){
+   if(flee<1){
+    // Independent routines run during arrival too; each has a deliberate rest beat.
+    const loop=i?[0,1,2,3,2,3,4,5,4,6,7,0]:[0,1,2,3,2,1,4,5,4,6,7,0];
+    const pose=loop[Math.floor((T+i*57)/(i?12:10))%loop.length]+i*8;
+    if(!frame(ctx,'ic_rampage_work',pose,vx,225,128,128,4,4))frame(ctx,'ic_rampage_vendor',i, vx,225,128,128,4,2);
+   }else if(i===1){
+    frame(ctx,'ic_rampage_chai',flee<8?0:flee<16?1:2+Math.floor((flee-16)/5)%6,vx,225,128,128,4,2);
+   }else frame(ctx,'ic_rampage_vendor',2,vx,225,128,128,4,2);
+  }
  }
- if(G.india.review?.actors===false)return;
- for(const [i,x]of [352,390].entries()){
-  const a=t-252-i*5;
-  if(a<0)actor(ctx,'ic_brawler',t<90?'idle':'block',Math.floor(t/10)%4,x,232-i*12,-1);
-  else if(a<86){const q=a/86;actor(ctx,'ic_brawler',a<12?'hurt':'down',0,x+q*(i?110:72),232-i*12-68*Math.sin(Math.PI*q),1);}
- }
- if(t>=75&&t<155)drawDialogue(ctx,{text:'ENTRY FEE.',x:352-G.camX,bottom:134,age:t-75,remaining:155-t});
- if(t>=174&&t<252){if(!frame(ctx,'ic_cine_push',Math.floor((t-174)/6)%8,p.x,p.y+4,128,128,4,2))chad(ctx,3,p.x,p.y);}
- else if(t<75||t>=285&&t<381)actor(ctx,'player','walk',Math.floor(Math.abs(p.x-(t<75?40:223.31))/5.4)%8,p.x,p.y);
- else chad(ctx,t<132?0:t<156?1:t<174?2:t<252?3+Math.floor((t-174)/13)%2:t<285?5:t<408?14:0,p.x,p.y);
+ drawMarketCounter(ctx,s.marketIntro?.damage||0);
+ if(s.review?.actors===false)return;
+ if(T<MARKET_RIDE_TICKS){const idx=T<60?0:T<75?1:T<90?2:T<105?3:T<120?4:T<130?5:7;frame(ctx,'ic_rampage_bike',idx,T<75?mix(-100,85,ease(T/75)):85,240,192,160,4,2);if(T>=130)actor(ctx,'player','walk',Math.floor((p.x-65)/5.4)%8,p.x,p.y);return;}
+ frame(ctx,'ic_rampage_bike',7,85,240,192,160,4,2);
+ const pose=t<120?0:marketPose(t);
+ if(pose<0)actor(ctx,'player','walk',Math.floor((p.x-40)/5.4)%8,p.x,p.y);
+ else if(!frame(ctx,'ic_rampage_chad',pose,p.x,p.y+4,128,128,4,4))actor(ctx,'player',t>=180&&t<322?'run':'idle',Math.floor(t/5)%8,p.x,p.y);
 }

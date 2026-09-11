@@ -6,7 +6,19 @@ export const INDIA_PANELS = {
 };
 export const INDIA_PROPS={ic_stall:[64,48],ic_cart:[66,44],ic_boiler:[30,52],ic_cargo:[50,42],ic_monitor:[30,30],ic_cubicle:[64,56],ic_shelf:[42,80],ic_server:[40,76],ic_vendorcart:[68,50],ic_cookingstation:[76,64],ic_pressurevalve:[22,30],ic_cabinet:[42,64],ic_execdesk:[86,52],ic_partition:[54,88]};
 export const INDIA_FILES={
+ ic_rampage_awning:'assets/stages/dirty_delhi/rampage/awning.png',
+ ic_rampage_bike:'assets/stages/dirty_delhi/rampage/bike.png',
+ ic_rampage_work:'assets/stages/dirty_delhi/rampage/vendors-working.png',
+ ic_rampage_chai:'assets/stages/dirty_delhi/rampage/chai-flee.png',
+ ic_rampage_vendor:'assets/stages/dirty_delhi/rampage/vendor.png',
+ ic_rampage_stalls:'assets/stages/dirty_delhi/rampage/stalls.png',
+ ic_rampage_chad:'assets/stages/dirty_delhi/rampage/chad.png',
+ ic_pigeon:'assets/stages/dirty_delhi/rampage/pigeons.png',
  ic_market_set:'assets/stages/india/cinematics/market_set.png',
+ ic_delhi_finish_chad:'assets/stages/dirty_delhi/finishers/chad.png',
+ ic_pressure_vendor:'assets/stages/dirty_delhi/finishers/vendor.png',
+ ic_bucket_operator:'assets/stages/dirty_delhi/finishers/operator.png',
+ ic_delhi_mechanisms:'assets/stages/dirty_delhi/finishers/mechanisms.png',
  ic_kitchen_set:'assets/stages/india/cinematics/kitchen_set.png',
  ic_dredger_set:'assets/stages/india/cinematics/dredger_set.png',
  ic_success_set:'assets/stages/india/cinematics/success_set.png',

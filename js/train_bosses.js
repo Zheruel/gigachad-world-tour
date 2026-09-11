@@ -115,7 +115,7 @@ const vikram={
    if(!wind&&b.t>=44){state=authored(b,'recover_polish','idle');index=0;}
   }
   if(b.guardFlash>0){state=authored(b,'guard_polish','block');index=0;}
-  if(b.state==='stagger'&&b.z===0){state=authored(b,'stagger_polish','hurt');index=0;}
+  if(b.state==='stagger'&&b.z===0){state=authored(b,'stagger_polish','hurt');index=Math.floor((b.dazeT||0)/10);}
   const f=getFrame(b.set,state,index,b.face),x=Math.round(b.x-camX),y=Math.round(b.y-b.z);
   blitTelegraph(ctx,b,f,x-frameW(f)/2,y-frameH(f)+4,wind);
   if(wind)drawCueMarker(ctx,b,x,y-b.h-10);
@@ -123,7 +123,8 @@ const vikram={
 };
 const conductor={
  noRage:true,
- init(b){b.guard=b.maxGuard=3;b.shieldHp=3;b.shieldUsed=false;b.fightProps=[{x:5860,y:220},{x:6150,y:222}];b.turn=0;b.backup=0;b.comboHits=0;b.state='rise';b.x=6065;b.y=188;b.t=0;},
+ onDeath(b){startTrainCinematic('inspector-finish');},
+ init(b){b.guard=b.maxGuard=3;b.shieldHp=3;b.shieldUsed=false;b.fightProps=[{x:5860,y:220},{x:6150,y:222}];b.turn=0;b.backup=0;b.backupDone=false;b.backupProtected=false;b.backupActors=[];b.comboHits=0;b.state='rise';b.x=6065;b.y=188;b.t=0;},
  intro(b,t){
   b.introT=t;b.face=-1;b.y=t<170?188:188+30*clamp((t-170)/40,0,1);
   b.x=t<120?6065:6065-130*clamp((t-120)/50,0,1);
@@ -133,18 +134,45 @@ const conductor={
  beforeHurt(b,dmg,dir,heavy,launch){
   b.preservePattern=b.guard>0&&!b.protectedStagger&&!b.superApplying&&!b.parryApplying;
   b.guardingHit=dir===-b.face&&b.guard>0&&!b.protectedStagger&&!b.superApplying&&!b.parryApplying&&['idle','windup','cane','charge','reach','punch'].includes(b.state);
-  if(b.state==='rise')return false;
+  if(b.state==='rise'||b.backupProtected)return false;
   if(b.shieldActive&&!b.protectedStagger&&!b.superApplying&&!b.parryApplying){if(heavy||launch){b.shieldHp--;if(b.shieldHp<=0){b.shieldActive=false;b.breakGuard();}}else{G.audio.sfx('armor');return false;}}
   if(guarded(b,dir,heavy,launch)){G.audio.sfx('armor');return false;}
   return true;
  },
  onHurt(b){
-  if(b.state==='whistle'||b.state==='windup'&&b.pattern==='whistle'){b.protectedStagger=Math.max(b.protectedStagger,45);b.state='stagger';b.t=0;spawnPop(b.x,b.y-96,'INTERRUPTED');return true;}
   return b.preservePattern;
  },
  update(b){
   const p=G.player;
+  if(!b.backupDone&&b.hp<=b.maxhp*.6&&!aliveSupport()&&['idle','recover'].includes(b.state)){
+   b.backupOrigin={x:b.x,y:b.y};b.state='backup_retreat';b.t=0;b.backupLeg=0;
+  }
   switch(b.state){
+   case 'backup_retreat': {
+    const goal=[{x:5935,y:b.backupOrigin.y},{x:5935,y:188},{x:6065,y:188}][b.backupLeg];
+    const dx=goal.x-b.x,dy=goal.y-b.y,dist=Math.hypot(dx,dy),step=Math.min(2.8,dist);
+    if(dist){b.x+=dx/dist*step;b.y+=dy/dist*step;b.face=Math.sign(dx)||b.face;}
+    if(b.t%14===0)G.audio.roomSfx?.('entrance_boot',.25);
+    if(dist<3){if(b.backupLeg<2)b.backupLeg++;else{b.state='backup_call';b.t=0;b.backupProtected=true;}}
+    return true;
+   }
+   case 'backup_call':
+    b.face=-1;
+    if(b.t===20){G.audio.roomSfx?.('conductor_whistle',.8);}
+    if(b.t===48||b.t===72){b.backupDone=true;const e=spawnEnemy(b.t===48?'nr_tough':'nr_guard',G.camX+440,b.t===48?220:242);if(e)b.backupActors.push(e);b.backup++;}
+    if(b.t>=84){b.state='backup_wait';b.t=0;}
+    return true;
+   case 'backup_wait':
+    if(!b.backupActors.some(e=>!e.dead&&!e.removeMe&&G.enemies.includes(e))){b.state='backup_return';b.t=0;b.backupLeg=0;}
+    return true;
+   case 'backup_return': {
+    const goal=b.backupLeg?{x:5935,y:218}:{x:5935,y:188};
+    const dx=goal.x-b.x,dy=goal.y-b.y,dist=Math.hypot(dx,dy),step=Math.min(2.8,dist);
+    if(dist){b.x+=dx/dist*step;b.y+=dy/dist*step;b.face=Math.sign(dx)||b.face;}
+    if(b.t%14===0)G.audio.roomSfx?.('entrance_boot',.25);
+    if(dist<3){if(!b.backupLeg)b.backupLeg=1;else{b.backupProtected=false;b.state='recover';b.t=24;}}
+    return true;
+   }
    case 'rise':
     if(b.t>36){b.x=6065-130*Math.min(1,(b.t-36)/36);b.y=183+35*clamp((b.t-72)/18,0,1);}
     if(b.t>=90){b.state='idle';b.t=0;b.atkCd=45;}return true;
@@ -152,11 +180,11 @@ const conductor={
     if(!b.shieldUsed&&b.hp<b.maxhp*.65){b.shieldUsed=true;b.shieldActive=true;G.audio.sfx('armor');}
     b.y+=clamp(p.y-b.y,-.45,.45);
     if(Math.abs(p.x-b.x)>68)b.x+=Math.sign(p.x-b.x)*.8;
-    if(--b.atkCd<=0){b.pattern=b.shieldActive?'charge':++b.turn%3===0&&b.backup<2&&!aliveSupport()?'whistle':b.turn%2===0?'charge':'punch';b.state='windup';b.t=0;}
+    if(--b.atkCd<=0){b.pattern=b.shieldActive?'charge':++b.turn%2===0?'charge':'punch';b.state='windup';b.t=0;}
     return true;
    case 'windup':if(b.t>=42){b.state=b.pattern;b.t=0;b.hitLanded=false;if(b.pattern!=='whistle')G.audio.sfx(b.pattern==='charge'?'dash':'whiff');}return true;
    case 'punch':
-    if(b.t<14)b.x+=b.face*.9;
+    if(b.t<14)b.x+=b.face*([1,2,3,4,8,9,10].includes(b.t)?1.8:0);
     if(b.t===14||b.t===32)tryHitPlayer(b,10,54,true,18,'counter');
     if(b.t>=50){b.state='recover';b.t=0;b.comboHits=0;}
     return true;
@@ -164,12 +192,6 @@ const conductor={
     if(b.t<30){b.x+=b.face*3.1;if(propCrash(b))return true;}
     if(b.t>3&&b.t<30&&!b.hitLanded&&tryHitPlayer(b,15,40,true,20,'counter'))b.hitLanded=true;
     if(b.t>=58){b.state='recover';b.t=0;b.comboHits=0;}
-    return true;
-   case 'whistle':
-    if(b.t===1)G.audio.roomSfx?.('conductor_whistle',.7);
-    if(b.t===1)spawnPop(b.x,b.y-96,'BACKUP!');
-    if(b.t===54&&!aliveSupport()&&b.backup<2){spawnEnemy('nr_tough',G.camX+440,220);b.backup++;}
-    if(b.t>=72){b.state='recover';b.t=0;}
     return true;
    case 'recover':if(b.t>=54){b.state='idle';b.atkCd=38;b.t=0;b.comboHits=0;}return true;
   }
@@ -196,27 +218,33 @@ const conductor={
   let state=b.dead||b.state==='down'?'down':['hurt','stagger'].includes(b.state)?'hurt':b.state==='getup'?'getup':b.state==='rise'?(b.t>36?'walk':'rise'):b.state==='whistle'||wind&&b.pattern==='whistle'?'whistle':b.state==='charge'||wind&&b.pattern==='charge'?'charge':wind||attack?'atk':b.state==='recover'?'idle':b.moved>.1?'walk':'idle';
   let index=state==='getup'?Math.min(3,Math.floor(b.t/4)):state==='walk'?Math.floor(b.stridePhase/6):b.state==='rise'?Math.min(2,Math.floor(b.t/14)):wind?0:attack?(b.t<16?1:2):b.state==='charge'?1:Math.floor(G.time/9);
   if(attack||wind&&b.pattern==='punch'){
-   state=authored(b,'baton_polish','atk');
+   state=authored(b,'step_attacks','atk');
    // Two complete swings, with anticipation before the unchanged hits at14/32.
-   index=wind?0:b.t<13?0:b.t<18?1:b.t<23?2:b.t<27?3:b.t<31?0:b.t<36?1:b.t<41?2:3;
+   index=wind?3:b.t<5?0:b.t<8?1:b.t<11?2:b.t<14?3:b.t<19?4:b.t<25?5:b.t<29?6:b.t<32?7:b.t<37?5:3;
    if(state==='atk')index=Math.min(index,2);
   }
   if(b.state==='whistle'||wind&&b.pattern==='whistle'){
    state=authored(b,'whistle_polish','whistle');index=state==='whistle'?0:wind?(b.t<26?0:1):b.t<56?1:2;
   }
   if(b.state==='charge'&&!b.shieldActive){
-   state=authored(b,'charge_polish','charge');index=state==='charge'?1:b.t<30?Math.floor(b.t/6)%3:0;
+   state=authored(b,'step_attacks','charge');index=state==='charge'?1:b.t<30?8+Math.floor(b.stridePhase/9)%2:b.t<42?10:11;
    if(b.t>=42){state=authored(b,'guard_polish','idle');index=0;}
   }
   if((b.state==='recover'&&b.t<18)||(state==='idle'&&b.guard>0)){state=authored(b,'guard_polish','idle');index=0;}
-  if(b.state==='stagger'&&b.z===0){state=authored(b,'stagger_polish','hurt');index=0;}
-  if(b.shieldActive&&!b.dead){state='shield';index=b.protectedStagger||b.guardFlash>0?2:wind?0:1;}
+  if(b.state==='stagger'&&b.z===0){state=authored(b,'stagger_polish','hurt');index=Math.floor((b.dazeT||0)/10);}
+  if(b.shieldActive&&!b.dead&&!b.protectedStagger&&!['stagger','hurt','down','getup'].includes(b.state)){
+   state=authored(b,'luggage_motion','shield');
+   index=state==='shield'?1:b.guardFlash>0?7:wind?4:b.state==='charge'?(b.t<30?5+Math.floor(b.stridePhase/9)%2:b.t<40?8:9):b.moved>.1?Math.floor(b.stridePhase/8)%4:11;
+  }
+  if(b.state==='backup_call'||b.state==='backup_wait'){state=authored(b,'whistle_polish','whistle');index=b.state==='backup_wait'?Math.floor(b.t/45)%2===0?0:2:b.t<20?0:b.t<52?1:2;}
+  if(['backup_retreat','backup_return'].includes(b.state)&&!b.shieldActive){state='walk';index=Math.floor(b.stridePhase/6);}
   const f=getFrame(b.set,state,index,b.face);
   const x=Math.round(b.x-camX),y=Math.round(b.y-b.z);
   ctx.save();
 
   blitTelegraph(ctx,b,f,x-frameW(f)/2,y-frameH(f)+4,wind);ctx.restore();
 
+  if(b.state==='backup_call'||b.state==='backup_wait'||b.state==='backup_retreat'&&b.backupLeg===2||b.state==='backup_return'&&b.backupLeg===0)drawConductorDesk(ctx,camX);
   if(wind)drawCueMarker(ctx,b,x,y-b.h-10);
  }
 };

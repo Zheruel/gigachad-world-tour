@@ -1,24 +1,27 @@
+import {snapshotGrade,restoreGrade} from './grading.js';
+import {beginBossEntry,updateBossEntry,drawBossEntry,seekBossEntry} from './boss_cinematic_entry.js';
 // Fresh Night Train route. Simulation owns every timer; rendering never mutates it.
 import {G,W,H,clamp} from './engine.js';
 import {ASSETS} from './assets.js';
 import {input} from './input.js';
 import {drawTextShadow,textWidth,SPR,getFrame,blit,frameW,frameH} from './sprites.js';
 import {createProp} from './props.js';
-import {hurtPlayer,ragnarokPose} from './player.js';
+import {hurtPlayer} from './player.js';
 import {drawFinale,updateFinale} from './train_finale.js';
 import {drawTrainVista,updateTrainVista,resetTrainVista} from './train_vistas.js';
 import {drawDirectionArrow} from './direction_arrow.js';
+import {drawInspectorFinish,updateInspectorFinish,drawSethKnockout,drawSethInterior,updateSethRetreat,SETH_RETREAT_TICKS,drawRetainedProps,drawRetainedCases} from './train_finishers.js';
 import {initTrainLife,updateTrainLife,drawTrainLife} from './train_life.js';
-export const ABOARD_X=2880,ROOF_X=8160,BERTH_Z=115,ROOF_TRANSITION_TICKS=660;
+export const ABOARD_X=2880,ROOF_X=8160,BERTH_Z=115,ROOF_TRANSITION_TICKS=SETH_RETREAT_TICKS;
 export const TRAIN_AREAS=[['yard',0,960],['hall',960,1920],['platform',1920,2880],['general',2880,3840],['sleeper',3840,5280],['pantry',5280,5760],['office',5760,6240],['ac',6240,7200],['private',7200,8160],['roof',8160,9120]];
 
 export function trainArea(x){return TRAIN_AREAS.find(a=>x<a[2])||TRAIN_AREAS.at(-1);}
-export function initTrain(){G.train={t:0,motionT:0,distance:0,aboard:false,climbed:false,cinematic:null,endingDone:false,checkpoint:0,checkpointScore:G.score,gate:true,sway:0,steam:0,roofTell:0,scene:0,claimedLives:[],arrival:-1,vistaX:0,vistaTarget:0,passengerReactions:[{t:-1,ready:0},{t:-1,ready:0}]};initTrainLife(G.train);}
+export function initTrain(){G.train={t:0,motionT:0,distance:0,aboard:false,climbed:false,cinematic:null,endingDone:false,checkpoint:0,checkpointScore:G.score,gradeCheckpoint:snapshotGrade(),gate:true,sway:0,steam:0,roofTell:0,scene:0,claimedLives:[],arrival:-1,vistaX:0,vistaTarget:0,passengerReactions:[{t:-1,ready:0},{t:-1,ready:0}]};initTrainLife(G.train);}
 const ease=n=>{n=clamp(n,0,1);return n*n*(3-2*n);};
 function position(x,y=218){Object.assign(G.player,{x,y,z:0,vz:0,vx:0,state:'idle',t:0,face:1,grabbedBy:null,invuln:90,guardWindow:0,counterT:0,attackFamilies:[],grabTarget:null,specialTarget:null,superT:0});}
 function clearArena(){G.enemies=[];G.shots=[];G.zones=[];G.spawnQueue=[];G.waveActive=false;G.locked=false;G.arenaSqueeze=G.arenaSqueezeTarget=0;}
 export function restoreTrainCheckpoint(){
- if(!G.train)return;const tr=G.train,x=tr.checkpoint;clearArena();G.boss=null;tr.cinematic=null;tr.endingDone=false;tr.climbed=false;tr.knockoutBody=false;tr.passengerReactions=[{t:-1,ready:0},{t:-1,ready:0}];tr.retryBoss=x>=7950;tr.aboard=x>=ABOARD_X;tr.gate=true;
+ if(!G.train)return;const tr=G.train,x=tr.checkpoint;restoreGrade(tr.gradeCheckpoint);clearArena();G.boss=null;tr.cinematic=null;tr.endingDone=false;tr.climbed=false;tr.knockoutBody=false;tr.sethJacketDropped=false;tr.inspectorBody=null;tr.officeDeskBroken=false;tr.passengerReactions=[{t:-1,ready:0},{t:-1,ready:0}];tr.retryBoss=x>=7950;tr.aboard=x>=ABOARD_X;tr.gate=true;
  initTrainLife(tr);
  G.camX=G.camLock=x>=7950?7680:x;position(x>=7950?7950:x+60);G.player.hp=G.player.maxhp;G.player.dying=false;G.score=tr.checkpointScore;
  for(const w of G.stage.waves)w.done=w.x<x;
@@ -31,8 +34,8 @@ export function restoreTrainCheckpoint(){
 
 }
 export function vistaTargetFor(x){return clamp((x-ABOARD_X)/(ROOF_X-ABOARD_X)*2400,0,2400);}
-function checkpoint(x){if(G.train.checkpoint<x){G.train.checkpoint=x;G.train.checkpointScore=G.score;}}
-export function startTrainCinematic(kind){if(G.train.cinematic)return;if(kind==='escape'){G.audio.stopSamples?.();G.audio.stopRoomAudio?.();}G.train.cinematic={kind,t:0,fromX:G.player.x,fromY:G.player.y,fromCam:G.camX,fromBossX:G.boss?.x,fromBossY:G.boss?.y};G.player.grabbedBy=null;G.player.z=0;G.shots=[];G.zones=[];if(kind!=='escape')G.audio.sfx(kind==='boarding'?'go':'heavy');}
+function checkpoint(x){if(G.train.checkpoint<x){G.train.checkpoint=x;G.train.checkpointScore=G.score;G.train.gradeCheckpoint=snapshotGrade();}}
+export function startTrainCinematic(kind){if(G.train.cinematic)return;if(kind==='escape'){G.audio.stopSamples?.();G.audio.stopRoomAudio?.();}G.train.cinematic={kind,t:0,fromX:G.player.x,fromY:G.player.y,fromCam:G.camX,fromBossX:G.boss?.x,fromBossY:G.boss?.y,deskBroken:!!G.train.officeDeskBroken,fightProps:(G.boss?.fightProps||[]).map(p=>({...p}))};G.player.grabbedBy=null;G.player.z=0;G.shots=[];G.zones=[];if(['inspector-finish','knockout','roof'].includes(kind))beginBossEntry(G.train.cinematic,kind==='inspector-finish'?48:kind==='knockout'?20:0);if(!['escape','inspector-finish','knockout','roof'].includes(kind))G.audio.sfx(kind==='boarding'?'go':'heavy');}
 export function updateTrainMotion(){const tr=G.train;if(!tr?.aboard||tr.endingDone||tr.cinematic?.kind==='escape')return;tr.distance+=2.6;tr.motionT++;updateTrainVista(tr,G.stage.waves,tr.checkpoint);if(tr.motionT%24===0)G.audio.trainSfx?.('roll');}
 // Background reactions use the simulation clock and never influence encounters.
 function updatePassengerReactions(tr){
@@ -52,21 +55,22 @@ export function updateTrain(){
  if(!input.held('use'))tr.gate=false;
  const c=tr.cinematic;
  if(c){
+  if(updateBossEntry(c,()=>stageTrainFinish(c)))return true;
   c.t++;if(G.shake>0){G.shake*=.86;if(G.shake<.2)G.shake=0;}if(G.flash>0)G.flash--;
   if(c.kind==='boarding'){
    if(c.t===24)G.audio.sfx('entrance_boot');
    if(c.t===52||c.t===76)G.audio.sfx('entrance_boot');
    if(c.t===106)G.audio.sfx('slam');
    if(c.t>=120){clearArena();tr.aboard=true;tr.cinematic=null;G.camX=ABOARD_X;position(ABOARD_X+60);checkpoint(ABOARD_X);G.audio.music(G.stage.musicB);G.audio.trainSfx?.('whistle');}
+  }else if(c.kind==='inspector-finish'){
+   if(updateInspectorFinish(c)){tr.cinematic=null;if(G.boss){G.boss.removeMe=true;G.boss.t=90;}G.player.state='idle';G.player.invuln=45;G.player.x=c.endX||G.player.x;G.player.y=c.endY||G.player.y;}
   }else if(c.kind==='roof'){
-   if([230,255,425,437,480].includes(c.t))G.audio.sfx('entrance_boot');
-   if([50,66,82].includes(c.t)){G.audio.sfx(c.t===82?'slam':'punch');G.shake=c.t===82?4:2;}
-   if(c.t===103)G.audio.sfx('land');
-   if(c.t===305)G.audio.voice('duke_come_get_some',1800,true);
+   updateSethRetreat(c);
    if(c.t>=ROOF_TRANSITION_TICKS){tr.cinematic=null;tr.climbed=true;G.camX=G.camLock=ROOF_X;position(ROOF_X+105);G.locked=true;if(G.boss){Object.assign(G.boss,{x:ROOF_X+850,y:218,z:0,state:'idle',t:0,atkCd:90,trainWaiting:true,roofGuardsSpawned:false});}}
   }else if(c.kind==='knockout'){
    if([24,32,40,48,60,76].includes(c.t)){G.audio.sfx(c.t===76?'slam':'punch');G.shake=c.t===76?5:2;}
-   if(c.t===105)G.audio.voice('duke_game_over',1700,true);
+   if(c.t===111||c.t===129){G.audio.sfx('land');G.shake=c.t===111?3:1;}
+   if(c.t===140)G.audio.voice('duke_game_over',1700,true);
    if(c.t>=216){tr.cinematic=null;startTrainCinematic('escape');}
   }else if(c.kind==='escape'){
    if(updateFinale(c)){tr.endingDone=true;position(ROOF_X+180);G.fade=0;G.shake=0;G.flash=0;if(G.boss)G.boss.t=71;}
@@ -149,7 +153,9 @@ export function drawTrainScene(ctx,camX){
 }
 export function drawConductorDesk(ctx,camX){
  if(G.train?.review?.conductorDesk===false)return;
- const desk=ASSETS.nr_office_desk;if(desk)ctx.drawImage(desk,5985-camX,116,155,78);
+ const desk=G.train?.officeDeskBroken?(ASSETS.nr_office_desk_broken||ASSETS.nr_office_desk):ASSETS.nr_office_desk;if(desk)ctx.drawImage(desk,5985-camX,116,155,78);
+ if(!G.boss||G.boss.removeMe)drawRetainedCases(ctx,G.train?.officeFightProps,camX);
+ const body=G.train?.inspectorBody;if(body){const f=getFrame(SPR.nr_conductor,'down',0,-1);blit(ctx,f,body.x-camX-frameW(f)/2,body.y-frameH(f)+4);}
 }
 export function drawTrainWallPlane(ctx,camX){
  const tr=G.train;if(!tr)return;
@@ -206,7 +212,7 @@ export function drawTrainWallPlane(ctx,camX){
 }
 export function drawTrainOverlay(ctx,camX){
  const tr=G.train;if(!tr)return;const c=tr.cinematic;
- if(c){drawCinematic(ctx,tr,c);return;}
+ if(c){drawCinematic(ctx,tr,c);drawBossEntry(ctx,c);return;}
  if(!tr.aboard&&tr.arrival>=240&&!G.locked){
   drawDirectionArrow(ctx,{x:2715-camX,y:96,direction:'down',size:24,time:tr.t});
   if(Math.abs(G.player.x-2715)<55){const s='F / LB: CLIMB ABOARD';ctx.fillStyle='#090810dc';ctx.fillRect(163,247,154,15);drawTextShadow(ctx,s,(W-textWidth(s,1))/2,252,'#ffdd94',1);}
@@ -254,51 +260,23 @@ function drawCinematic(ctx,tr,c){
  const t=c.t;
  if(c.kind==='boarding'){drawPlatformBoarding(ctx,tr,c);return;}
  ctx.fillStyle='#101521';ctx.fillRect(0,0,W,H);
- if(c.kind==='knockout'){
-  const cam=c.fromCam,by=c.fromBossY||218,bx=c.fromBossX||c.fromX+38,face=bx>=c.fromX?1:-1;
-  drawOutside(ctx,cam);image(ctx,'roof',ROOF_X-cam,0,960,270);
-  const hx=c.fromX+(bx-face*38-c.fromX)*ease(t/20),hy=c.fromY+(by-c.fromY)*ease(t/20);
-  const pose=ragnarokPose(t),hero=getFrame(SPR.player,t<100?pose.name:'idle',t<100?pose.idx:0,face);
-  blit(ctx,hero,hx-cam-frameW(hero)/2,hy-frameH(hero)+4);
-  const hit=[24,32,40,48,60,76].find(at=>t>=at&&t<at+7),victim=getFrame(SPR.nr_vikram_roof,t>=82?'down':hit!==undefined?'hurt':'idle',hit!==undefined?1:0,-face);
-  blit(ctx,victim,bx-cam+face*Math.min(26,Math.max(0,t-72)*1.3)-frameW(victim)/2,by-frameH(victim)+4);
+ if(c.kind==='inspector-finish'){
+  const cam=c.fromCam;drawOutside(ctx,cam);image(ctx,'office',5760-cam,0,480,270);drawConductorDesk(ctx,cam);drawRetainedProps(ctx,c,cam);drawInspectorFinish(ctx,c);
+ }else if(c.kind==='knockout'){
+  const cam=c.fromCam;drawOutside(ctx,cam);image(ctx,'roof',ROOF_X-cam,0,960,270);drawRetainedProps(ctx,c,cam);drawSethKnockout(ctx,c);
  }else if(c.kind==='roof'){
-  const rt=t-150;
-  if(t<150){
-   const cam=c.fromCam+(7680-c.fromCam)*ease(t/42);
-   drawOutside(ctx,cam);image(ctx,'private_damaged',7200-cam,0,960,270);
-   const bx=(c.fromBossX??7996)+(7996-(c.fromBossX??7996))*ease(t/42);
-   const hx=c.fromX+(7958-c.fromX)*ease(t/42),y=c.fromY+(218-c.fromY)*ease(t/42);
-   const hit=[50,66,82].find(at=>t>=at&&t<at+8);
-   const h=getFrame(SPR.player,t<42?'walk':t<90?ragnarokPose(t-26).name:'idle',t<42?Math.floor(t/6):t<90?ragnarokPose(t-26).idx:0,1);
-   const heroX=hx;
-   const hero=t>=90?getFrame(SPR.player,'idle',Math.floor(t/14),1):h;
-   blit(ctx,hero,heroX-cam-frameW(hero)/2,y-frameH(hero)+4);
-   const fall=clamp((t-82)/21,0,1),sx=bx+fall*38*(1-ease((t-110)/40));
-   if(t>=108){const recovery=Math.min(3,Math.floor((t-108)/10));if(!sprite(ctx,'seth_recovery',recovery,sx-cam,218,160,120,320,240))sprite(ctx,'seth_roof_climb',6,sx-cam,218,160,120,320,240);}
-   else {const f=getFrame(SPR.nr_vikram,t>=90?'down':hit!==undefined?'hurt':t<42?'walk':'idle',t<42?Math.floor(t/6):0,-1);blit(ctx,f,sx-cam-frameW(f)/2,218-frameH(f)+4-Math.sin(fall*Math.PI)*14);}
-  }else if(rt<360){
-   drawOutside(ctx,7680);image(ctx,'private_damaged',-480,0,960,270);
-   if(rt<180){
-    const pose=rt<22?0:rt<42?1:rt<64?2:rt<90?3:rt<116?4:5;
-    const climb=clamp((rt-42)/120,0,1)*6,step=Math.floor(climb);
-    const rise=rt<42?0:Math.min(235,(step+ease(climb-step))*39.2);
-    if(!sprite(ctx,'seth_roof_climb',pose,316,218-rise,160,120,320,240)){const f=getFrame(SPR.nr_vikram,rt<42?'hurt':'climb',0,1);blit(ctx,f,316-frameW(f)/2,218-rise-frameH(f));}
-   }
-   ctx.save();ctx.beginPath();ctx.rect(0,0,W,52);ctx.clip();image(ctx,'private_damaged',-480,0,960,270);ctx.restore();
-   if(rt<270){const f=getFrame(SPR.player,'idle',Math.floor(rt/14),1);blit(ctx,f,278-frameW(f)/2,218-frameH(f)+4);}
-   else if(rt<295){const x=278+32.3*clamp((rt-270)/25,0,1),f=getFrame(SPR.player,'walk',Math.floor((x-278)/5.4),1);blit(ctx,f,x-frameW(f)/2,218-frameH(f)+4);}
-   else {const pose=Math.min(3,Math.floor((rt-295)/16));const handX=[101.7,99.2,97.2,95.9][pose];sprite(ctx,'chad_roof_climb',pose,332-handX+80,218-(rt-295)*1.65,160,120,320,240);ctx.save();ctx.beginPath();ctx.rect(0,0,W,52);ctx.clip();image(ctx,'private_damaged',-480,0,960,270);ctx.restore();}
-   if(rt>=340){ctx.fillStyle=`rgba(5,5,10,${(rt-340)/20})`;ctx.fillRect(0,0,W,H);}
+  if(t<630){
+   drawOutside(ctx,7680);image(ctx,'private_damaged',-480,0,960,270);drawRetainedProps(ctx,c,7680);
+   const ceiling=()=>{ctx.save();ctx.beginPath();ctx.rect(0,0,W,52);ctx.clip();image(ctx,'private_damaged',-480,0,960,270);ctx.restore();};
+   drawSethInterior(ctx,c,7680,sprite,ceiling);
+   if(t>=618){ctx.fillStyle=`rgba(5,5,10,${(t-618)/12})`;ctx.fillRect(0,0,W,H);}
   }else{
-   drawOutside(ctx,ROOF_X);image(ctx,'roof',0,0,960,270);image(ctx,'hatch_open',65,191,80,27);
-   const f=getFrame(SPR.nr_vikram_roof,'walk',Math.floor((rt-360)*2.1/6),1);blit(ctx,f,335+(rt-360)*2.1-frameW(f)/2,218-frameH(f)+4);
-   const pose=rt<374?4:rt<388?5:rt<406?6:7;
-   const handY=[65.2,101.5,108.2][Math.min(2,pose-4)];
-   const footY=pose<6?211+116.5-handY:218;
-   sprite(ctx,'chad_roof_climb',pose,105,footY,160,120,320,240);
-   image(ctx,'hatch_open',65,191,80,27);
-   if(rt<380){ctx.fillStyle=`rgba(5,5,10,${1-(rt-360)/20})`;ctx.fillRect(0,0,W,H);}
+   const rt=t-630;drawOutside(ctx,ROOF_X);image(ctx,'roof',0,0,960,270);image(ctx,'hatch_open',65,191,80,27);
+   const f=getFrame(SPR.nr_vikram_roof,'walk',Math.floor(rt*1.8/6),1);blit(ctx,f,335+rt*1.8-frameW(f)/2,218-frameH(f)+4);
+   const pose=rt<14?4:rt<28?5:rt<46?6:7;
+   const handY=[65.2,101.5,108.2][Math.min(2,pose-4)],footY=pose<6?211+116.5-handY:218;
+   sprite(ctx,'chad_roof_climb',pose,105,footY,160,120,320,240);image(ctx,'hatch_open',65,191,80,27);
+   if(rt<12){ctx.fillStyle=`rgba(5,5,10,${1-rt/12})`;ctx.fillRect(0,0,W,H);}
   }
  }else{
   drawFinale(ctx,t);
@@ -306,3 +284,11 @@ function drawCinematic(ctx,tr,c){
  }
  if(c.kind!=='escape'){ctx.fillStyle='#050409';ctx.fillRect(0,0,W,16);ctx.fillRect(0,254,W,16);}
 }
+
+export function stageTrainFinish(c){
+ const roof=c.kind==='roof';const cam=roof?7680:c.kind==='inspector-finish'?5760:c.fromCam;
+ const bx=roof?7880:c.kind==='inspector-finish'?5970:Math.max(cam+150,Math.min(cam+350,c.fromBossX??cam+240));
+ Object.assign(c,{fromCam:cam,fromX:bx-(roof?38:c.kind==='inspector-finish'?50:48),fromY:218,fromBossX:bx,fromBossY:218});
+ G.camX=cam;G.player.x=c.fromX;G.player.y=218;G.player.face=1;
+}
+export function seekTrainFinish(t){const c=G.train?.cinematic;if(c?.entry){seekBossEntry(c,t,()=>stageTrainFinish(c));G.train.officeDeskBroken=c.deskBroken||(c.kind==='inspector-finish'&&c.t>=198);}}

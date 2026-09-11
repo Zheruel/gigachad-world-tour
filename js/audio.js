@@ -21,7 +21,7 @@ const SFX_FILES = [
   'room_shaker','room_page','room_pen','room_stamp','room_glass','room_chair',
   'punch', 'heavy', 'kick', 'whiff', 'land', 'slam', 'ko', 'throw', 'grab',
   'dash', 'jump', 'pickup', 'blip', 'armor', 'enrage', 'super', 'phurt',
-  'pistol', 'conductor_whistle', 'weapon', 'go', 'duke_quote', 'duke_come_get_some', 'duke_gotta_hurt',
+  'pistol', 'super_electric', 'conductor_whistle', 'weapon', 'go', 'duke_quote', 'duke_come_get_some', 'duke_gotta_hurt',
   'duke_back_to_work', 'duke_book_em', 'duke_hail', 'duke_look_good', 'parry',
   'entrance_engine', 'entrance_skid', 'entrance_boot', 'entrance_stand',
   'entrance_birds', 'entrance_crack',

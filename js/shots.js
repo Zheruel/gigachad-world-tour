@@ -43,7 +43,7 @@ export function updateShots() {
     if (!s) break;
     s.t++;
     s.x += s.vx;
-    if (s.reflected && s.source && !s.source.dead) {
+    if (s.reflected && s.source && !s.source.dead && !s.source.backupProtected) {
       const tgt = s.source.reflectTarget;
       if (tgt && s.source.delhi && s.source.delhi.onReflectHit) {
         // a fixed target off the lane - the dredger's cab glass. It flies there, not

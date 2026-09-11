@@ -1,14 +1,13 @@
+import {evaluateGrade} from './grading.js';
 import { G, clamp } from './engine.js';
 import { ASSETS } from './assets.js';
 import { drawDisplayTitle } from './display_type.js';
 import { audio } from './audio.js';
 
-export function resultRank(stats,health){
- const combo=stats?.combo||0;
- return health>=80&&combo>=12?'S':health>=60&&combo>=8?'A':health>=35?'B':'C';
-}
+export {evaluateGrade} from './grading.js';
+export function resultRank(stats){return evaluateGrade(stats).rank;}
 export function updateResults(t){
- const r=G.results||(G.results={rank:resultRank(G.clearStats,G.player.hp),cues:new Set()});
+ const r=G.results||(G.results={...evaluateGrade(G.clearStats),cues:new Set()});
  const once=(key,fn)=>{if(!r.cues.has(key)){r.cues.add(key);fn();}};
  if(t>=63&&t<163&&t%6===0)once('tick'+t,()=>audio.roomSfx('blip',.075,.035));
  for(let i=0;i<5;i++)if(t>=81+i*18)once('row'+i,()=>audio.roomSfx('room_page',.18));
@@ -75,7 +74,8 @@ export function drawResults(ctx,t){
   const box=RESULTS_LAYOUT.rank;
   ctx.save();ctx.translate(box.x+box.w/2,box.y+box.h/2);ctx.scale(stamp,stamp);centeredArtwork(ctx,'RANK '+rank,{x:-box.w/2,y:-box.h/2,w:box.w,h:box.h},30,box.w);ctx.restore();
   const labels={S:'ABSOLUTE MENACE',A:'FIRST CLASS BEATDOWN',B:'JOB DONE',C:'STILL STANDING'};
-  resultText(ctx,labels[rank],194,203,{size:8,color:'#eac17c'});
+  const grade=evaluateGrade(st);resultText(ctx,`${labels[rank]} · ${Math.floor(grade.rating)}/100`,194,195,{size:8,color:'#eac17c'});
+  resultText(ctx,`CLEAR 60  STYLE +${Math.round(grade.components.combo+grade.components.parries+grade.components.variety)}  CLEAN +${Math.round(grade.components.clean)}  RETRY ${grade.components.retries}`,194,205,{size:6,color:'#c1ac8a'});
  }
  if(t>=195)resultText(ctx,G.stage?.id==='train'||G.stage?.chapter?'F / LB: CONTINUE':'Z: CONTINUE',302,235,{align:'center',size:8,color:'#ffdf94'});
  ctx.restore();
