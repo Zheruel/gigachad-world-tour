@@ -2,6 +2,7 @@
 // Everything here replaced something that used to be drawn with raw fillRect:
 // five orange sticks for fire, five squares for chilli powder, and a spinning
 // triangle for a samosa.
+import { assetURL } from './asset_url.js';
 const FX = {};
 
 // name -> frame count (1 = single image)
@@ -19,7 +20,7 @@ export function loadFX() {
       const img = new Image();
       img.onload = () => { img._as = 2; FX[name][i] = img; resolve(); };
       img.onerror = () => resolve();
-      img.src = n === 1 ? `assets/fx/${name}.png` : `assets/fx/${name}${i + 1}.png`;
+      img.src = assetURL(n === 1 ? `assets/fx/${name}.png` : `assets/fx/${name}${i + 1}.png`);
     }));
   }));
 }

@@ -14,6 +14,7 @@ import { blit, frameW, frameH } from './sprites.js';
 import { fx } from './fx.js';
 import { audio } from './audio.js';
 import { shutterState } from './ambience.js';
+import { assetURL } from './asset_url.js';
 
 const FRAMES = {};   // kind -> [Image], and kind + '_r' -> react frames
 
@@ -63,7 +64,7 @@ function load(name, n) {
     const img = new Image();
     img.onload = () => { img._as = 2; FRAMES[name][i] = img; resolve(); };
     img.onerror = () => resolve();
-    img.src = `assets/npc/${name}${i + 1}.png`;
+    img.src = assetURL(`assets/npc/${name}${i + 1}.png`);
   }));
 }
 

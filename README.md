@@ -21,6 +21,8 @@ Double-tap left or right to dash. Red-cue attacks cannot be guarded or parried: 
 
 Serve this directory with `python3 tools/serve.py 8011`, then open `http://localhost:8011`. No build step is required. The boot loads only the menus, penthouse, CHAD and sounds; each chapter's art streams in behind the title as a pack (`js/loading.js`), and a stage whose pack is not ready holds on the load screen. Automation and the Review Studio load everything up front; add `?stream` to test streaming there.
 
+GitHub Pages deploys from `.github/workflows/pages.yml`: `tools/production/build_pages.py` copies the runtime files and adds a WebP beside every PNG under `assets/` (`js/asset_url.js` picks it). Run it locally with `.venv/bin/python tools/production/build_pages.py` and serve `_site/`.
+
 `review.html` is the shared Review Studio: choose Home & Trip or a level, select an area/fight/cinematic, then press Play. Inspect adds frame stepping, layers, actor poses and captures. Assets, audio and presentation tools share the same workspace; Review progression is isolated from campaign saves. Design documents live in `docs/`; production recipes and verification tools live in `tools/`.
 
 For playtest reports, include the area, controls used, steps to reproduce and a screenshot or short recording where possible.

@@ -5,6 +5,7 @@ import { MARKET_LIFE_FILES } from './delhi_life_market.js';
 // NOTE: assets/sources/* are reference-only and are never loaded here.
 import { RS } from './engine.js';
 import { packOfFile, track } from './loading.js';
+import { assetURL } from './asset_url.js';
 
 export const FILES = {
   ...INDIA_FILES,
@@ -350,6 +351,6 @@ export function loadAssets(pack) {
       const img = new Image();
       img.onload = () => { img._as = LOGICAL_SCALE.has(key) ? 1 : RS; ASSETS[key] = img; resolve(); };
       img.onerror = () => { ASSETS[key] = null; resolve(); };
-      img.src = src;
+      img.src = assetURL(src);
     }))));
 }

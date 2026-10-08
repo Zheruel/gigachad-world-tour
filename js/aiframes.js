@@ -7,6 +7,7 @@
 
 import { RS } from './engine.js';
 import { packOfActor, track, urgentPack } from './loading.js';
+import { assetURL } from './asset_url.js';
 
 const AIF = {}; // charKey -> { manifestState: { f: [canvas], fl: [canvas] } }
 
@@ -157,7 +158,7 @@ function pumpImages(){
   const first=urgentPack()?imageQueue.findIndex(q=>q.pack===urgentPack()):-1;
   const{src,resolve}=imageQueue.splice(Math.max(0,first),1)[0],img=new Image();activeImages++;
   const done=value=>{activeImages--;resolve(value);pumpImages();};
-  img.onload=()=>done(img);img.onerror=()=>done(null);img.src=src;
+  img.onload=()=>done(img);img.onerror=()=>done(null);img.src=assetURL(src);
  }
 }
 function loadImage(src,pack){return new Promise(resolve=>{imageQueue.push({src,resolve,pack});pumpImages();});}

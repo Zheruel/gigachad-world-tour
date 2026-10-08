@@ -15,6 +15,7 @@ import { blit, frameW, frameH } from './sprites.js';
 import { drawDelhiMarketFront } from './delhi_life_market.js';
 import { drawRiverFront } from './delhi_life_river.js';
 import { drawRefundForeground } from './refund_scenery.js';
+import { assetURL } from './asset_url.js';
 
 const ART = {};
 const PIECES = ['wires', 'tarp', 'garland', 'banner', 'fg_crates', 'fg_bike', 'fg_bins', 'fg_stall',
@@ -27,7 +28,7 @@ export function loadFG() {
     const img = new Image();
     img.onload = () => { img._as = 2; ART[name] = img; resolve(); };
     img.onerror = () => resolve();
-    img.src = `assets/fg/${name}.png`;
+    img.src = assetURL(`assets/fg/${name}.png`);
   })));
 }
 

@@ -11,6 +11,7 @@ import { drawEffects } from './effects.js';
 import { drawPlayer, IDLES } from './player.js';
 import { audio } from './audio.js';
 import { drawCigarReplay, chadCigarAt } from './cigar_smoke.js';
+import { assetURL } from './asset_url.js';
 
 export const STATION_LAST_FRAME = 480;
 
@@ -52,7 +53,7 @@ function loadFrame(path, onload) {
     const img = new Image();
     img.onload = () => { onload(asCanvas(img, path.split('/').pop())); resolve(); };
     img.onerror = () => resolve();
-    img.src = path;
+    img.src = assetURL(path);
   });
 }
 

@@ -12,3 +12,4 @@ __pycache__/
 tmp/review/
 tools/verification/tmp/
 assets/frames/.manifest.lock
+_site/

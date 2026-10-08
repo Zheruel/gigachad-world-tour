@@ -16,6 +16,7 @@ import { input } from './input.js';
 import { drawTextShadow, textWidth } from './sprites.js';
 import { audio } from './audio.js';
 import { drawElevatorCabin, CABIN_BOUNDS } from './elevator.js';
+import { assetURL } from './asset_url.js';
 export { ELEVATOR_X, ELEVATOR_BOUNDS, drawElevatorDoor } from './elevator.js';
 
 export const TRAVEL_FILES = {
@@ -58,7 +59,7 @@ export function loadTravel() {
     const timeout = setTimeout(finish, 8000);
     img.onload = () => { img._as = 2; TRAVEL_ART[key] = img; finish(); };
     img.onerror = finish;
-    img.src = path;
+    img.src = assetURL(path);
   }))).then(() => { travelReady = true; });
   return loading;
 }

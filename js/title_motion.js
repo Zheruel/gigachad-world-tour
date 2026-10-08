@@ -1,5 +1,6 @@
 import { drawTextShadow, textWidth } from './sprites.js';
 import { drawCigarReplay } from './cigar_smoke.js';
+import { assetURL } from './asset_url.js';
 export const TITLE_MOTION_FILES={
  world:'assets/ui/title-motion/poster-world.png',globe:'assets/ui/title-motion/world-globe.png',
  cigar:'assets/ui/title-motion/chad-cigar.png',logo:'assets/ui/logo.png',
@@ -16,7 +17,7 @@ export function titleMotionAt(kind,time){
  return {t,frame,action:t<120||t>=375?'Resting':t<150?'Raising cigar':t<215?'Taking a draw':t<235?'Lowering cigar':t<350?'Exhaling':'Settling',exhale:t>=235&&t<350,glint:false};
 }
 export async function loadTitleMotion(){
- const art={};await Promise.all(Object.entries(TITLE_MOTION_FILES).map(async([name,path])=>{try{if(name==='anchors'){const r=await fetch(path);if(!r.ok)throw Error('Missing anchors');art[name]=await r.json();return;}const im=new Image();im.src=path;await im.decode();art[name]=im;}catch(_){art[name]=null;}}));return art;
+ const art={};await Promise.all(Object.entries(TITLE_MOTION_FILES).map(async([name,path])=>{try{if(name==='anchors'){const r=await fetch(path);if(!r.ok)throw Error('Missing anchors');art[name]=await r.json();return;}const im=new Image();im.src=assetURL(path);await im.decode();art[name]=im;}catch(_){art[name]=null;}}));return art;
 }
 function puff(ctx,x,y,r,alpha,tint='185,204,212'){
  const g=ctx.createRadialGradient(x-r*.2,y-r*.2,0,x,y,r);g.addColorStop(0,`rgba(${tint},${alpha})`);g.addColorStop(.4,`rgba(${tint},${alpha*.65})`);g.addColorStop(1,`rgba(${tint},0)`);ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);
