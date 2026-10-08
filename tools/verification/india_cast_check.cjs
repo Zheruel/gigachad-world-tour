@@ -18,7 +18,7 @@ const {chromium} = require('playwright');
       g.indiaScene('delhi','market',0);G.enemies=[];G.boss=null;G.freezeTime=true;
       for(const name of keys){
         G.enemies=[];G.props=[];const key='ic_'+name,e=spawnEnemy(key,230,232);
-        check(`${key} uses new art`,e.set._aiKey===key&&getAIFrame(key,'walk')?.f.length===8);
+        check(`${key} uses new art`,e.set._aiKey===key&&getAIFrame(key,'walk')?.f.length>=8);   // revamped crews walk on 8-16 frame cycles
         check(`${key} reactions present`,['atk','hurt','down','getup','block'].every(s=>getAIFrame(key,s)?.f.length>0));
         e.state='approach';G.player.x=130;for(let i=0;i<18;i++)updateEnemies();
         check(`${key} movement is finite`,[e.x,e.y,e.stridePhase].every(Number.isFinite));
@@ -28,8 +28,8 @@ const {chromium} = require('playwright');
       check('leader coordinates an existing ally',ally.atkCd<=10&&G.enemies.length===2);
       lead.state='rally';lead.t=12;lead.hurt(1,-1,true,false);
       check('leader call is interruptible',lead.state!=='rally');
-      G.enemies=[];G.props=[];const heavy=spawnEnemy('ic_heavy',250,232);
-      heavy.rig.hurt(999,1,true,false);check('cart destruction permanently removes ram',heavy.ramGone&&heavy.rig.broken);
+      G.enemies=[];G.props=[];const heavy=spawnEnemy('ic_cabinet',250,232);
+      heavy.rig.hurt(999,1,true,false);check('cabinet destruction permanently removes ram',heavy.ramGone&&heavy.rig.broken);
       G.enemies=[];const security=spawnEnemy('ic_security',260,232);security.state='idle';security.face=-1;
       const hp=security.hp;security.hurt(4,1,false,false);check('security guards frontal light strike',security.hp===hp&&security.state==='block');
       G.enemies=[];G.zones=[];G.props=[];

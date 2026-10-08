@@ -145,12 +145,12 @@ D1_ENEMIES = {
     },
     "bull": {
         "idle": ["sandh_paw1.png"],
-        "walk": ["sandh_walk1.png", "sandh_walk2.png", "sandh_walk3.png", "sandh_walk4.png"],
+        "walk": ["bull/walk_00.png", "bull/walk_01.png", "bull/walk_02.png", "bull/walk_03.png"],
         # the paw IS the telegraph, so it is what the wind-up and the strike play
         "atk": ["sandh_paw4.png", "sandh_charge2.png", "sandh_charge3.png"],
         "paw": ["sandh_paw1.png", "sandh_paw2.png", "sandh_paw3.png", "sandh_paw4.png"],
         "charge": ["sandh_charge1.png", "sandh_charge2.png", "sandh_charge3.png", "sandh_charge4.png"],
-        "hurt": ["sandh_hurt1.png", "sandh_hurt2.png"],
+        "hurt": ["bull/hurt_00.png", "sandh_hurt2.png"],
         "down": ["sandh_hurt3.png"],
     },
     "dabbawala": {
@@ -159,14 +159,6 @@ D1_ENEMIES = {
         "run": ["dabbawala_run1.png", "dabbawala_run2.png", "dabbawala_run3.png", "dabbawala_run4.png"],
         "hurt": ["dabbawala_drop1.png", "dabbawala_drop2.png"],
         "down": ["dabbawala_drop3.png"],
-    },
-    "thekedar": {
-        "idle": ["thekedar_idle1.png", "thekedar_idle2.png", "thekedar_idle3.png", "thekedar_idle4.png"],
-        "walk": ["thekedar_idle1.png", "thekedar_idle2.png", "thekedar_idle3.png", "thekedar_idle4.png"],
-        "atk": ["thekedar_swing1.png", "thekedar_swing2.png", "thekedar_swing3.png"],
-        "punch": ["thekedar_swing1.png", "thekedar_swing2.png", "thekedar_swing3.png"],
-        "hurt": ["thekedar_hurt1.png", "thekedar_hurt2.png"],
-        "down": ["thekedar_hurt3.png"],
     },
 }
 

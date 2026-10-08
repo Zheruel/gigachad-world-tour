@@ -5,7 +5,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=requ
  const result=await p.evaluate(async()=>{const {beginBossEntry,updateBossEntry}=await import('./js/boss_cinematic_entry.js');const c={};beginBossEntry(c,48);let staged=0;for(let i=0;i<30;i++){if(!updateBossEntry(c,()=>staged++))throw Error('entry advanced early');if(c.t!==48)throw Error('hidden performance advanced');}if(staged!==1||updateBossEntry(c,()=>staged++))throw Error('entry not once');return true});assert(result);
  const dir='tmp/review/boss-entry';fs.mkdirSync(dir,{recursive:true});
  for(const [stage,scene]of [['train','inspector-finish'],['train','knockout'],['train','roof-transition'],['delhi','vendor-finish'],['delhi','dredger-finish'],['refund','closer-finish']]){
-  const beats=scene==='inspector-finish'?[80,134,154,180,208]:scene==='knockout'?[34,42,50,70,86,100,121,139]:scene==='roof-transition'?[60,84,112,133,222,270,360,475,540,660]:scene==='vendor-finish'?[168,194,220,262,324,388,496]:scene==='dredger-finish'?[88,124,162,230,360,528,678,916]:[260,288,322,370,444,536,796];
+  const beats=scene==='inspector-finish'?[80,134,154,180,208]:scene==='knockout'?[34,42,50,70,86,100,121,139]:scene==='roof-transition'?[60,84,112,133,222,270,360,475,540,660]:scene==='vendor-finish'?[92,174,202,230,243,291,355,409,476]:scene==='dredger-finish'?[74,110,180,230,278,350,390,475,541,700]:[54,112,170,258,314,358,412,450,509];
   const ticks=[...new Set([0,9,12,18,24,30,33,...beats.flatMap(t=>Array.from({length:9},(_,i)=>t-12+i*3))])].sort((a,b)=>a-b);
   for(const t of ticks){
    await p.evaluate(({stage,scene,t})=>{if(stage==='train')__game.trainScene(scene,t);else __game.indiaScene(stage,scene,t);__game.G.shake=0;__game.render()},{stage,scene,t});

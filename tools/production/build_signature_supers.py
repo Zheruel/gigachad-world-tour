@@ -40,9 +40,6 @@ def main():
   frame=fx.crop((round(i%4*fx.width/4),round(i//4*fx.height/2),round((i%4+1)*fx.width/4),round((i//4+1)*fx.height/2)))
   frame.thumbnail((128,128),Image.Resampling.LANCZOS);sheet.alpha_composite(frame,(i%4*128+(128-frame.width)//2,i//4*128+(128-frame.height)//2))
  sheet.save(ROOT/'assets/fx/electric_impact.png')
- build(m,ROOT/'assets/sources/production/stages/night_train/rebuild/conductor_step_attacks.png',3,'nr_conductor','step_attacks',290)
- build(m,ROOT/'assets/sources/production/stages/night_train/rebuild/conductor_luggage_motion.png',3,'nr_conductor','luggage_motion',365)
- build(m,ROOT/'assets/sources/production/stages/night_train/rebuild/super_victim.png',2,'nr_tough','super_reaction',370)
  path.write_text(json.dumps(m,indent=2)+'\n')
 
 if __name__=='__main__':main()

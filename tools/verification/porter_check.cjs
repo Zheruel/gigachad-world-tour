@@ -25,7 +25,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=requ
   await p.evaluate(t=>{const g=window.__game;g.G.freezeTime=false;g.travel('lobby');g.G.travel.greeted=true;g.G.travel.greetT=-800;g.G.travel.x=690;g.step(1);g.G.travel.t=t;g.G.freezeTime=true;g.G.fade=0;g.render();},t);await p.screenshot({path:`${out}/${name}.png`});
  }
  await p.setViewportSize({width:480,height:270});await p.screenshot({path:`${out}/native-scale.png`});
- await p.goto('http://localhost:8011/review-elevator.html?scene=porter&t=275');await p.waitForFunction(()=>document.querySelector('#readout').textContent.startsWith('Frame'));await p.locator('#porter').click();await p.locator('[data-step="30"]').click();assert.equal(await p.locator('#timeline').inputValue(),'31');
- await p.locator('#play').click();await p.waitForTimeout(900);await p.locator('#play').click();assert(Number(await p.locator('#timeline').inputValue())>31);
+ const studio=require('./studio_helper.cjs');await studio.openStudio(p,'trip/lobby');await studio.step(p,31);assert.equal(await p.evaluate(()=>__review.snapshot().tick),31);
+ await p.evaluate(()=>__review.play());await p.waitForTimeout(900);await p.evaluate(()=>__review.pause());assert(await p.evaluate(()=>__review.snapshot().tick)>31);
  assert.deepEqual(errors,[]);console.log(JSON.stringify({checks,screenshots:out,reviewPlayback:true}));
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

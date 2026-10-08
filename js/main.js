@@ -1,38 +1,46 @@
+import {drawInfernoFrame} from './vendor_floor_fire.js';
 import {newGrade,snapshotGrade} from './grading.js';
+import { startAdvanceCue, updateAdvanceCue } from './advance_cue.js';
+import { updateCombatWarnings } from './combat_warning_update.js';
 import {seekTrainFinish} from './train.js';
-import { updateResults } from './results.js';
-import { bossIntroDialogue, updateDialogue } from './room_dialogue.js';
+import { updateResults, RESULTS_CONTINUE } from './results.js';
+import { bossIntroDialogue, carryIntroDialogue, drawDialogue, updateDialogue } from './room_dialogue.js';
 import { captureIndiaBossCheckpoint, restoreIndiaCheckpoint } from './india_checkpoints.js';
 import { queueOfficeWorker } from './india_office.js';
-import { INDIA_AREAS, updateIndia, updateIndiaIntro, drawIndiaIntro, drawIndiaCard, drawIndiaPerformance } from './india_stage.js';
+import { INDIA_AREAS, updateIndia, updateIndiaIntro, drawIndiaIntro, drawIndiaIntroOverlay, drawIndiaPerformance } from './india_stage.js';
 import { INDIA_FINISHERS } from './india_cinematics.js';
 import { drawContactShadow } from './contact_shadow.js';
-import { readProgress, writeProgress } from './progress.js';
-import { startElevatorRide, beginTravel, clearTravel, updateTravel, drawTravel, loadTravel, travelReady, drawTravelLoading, TRAVEL_PHASES, TRAVEL_DURATIONS } from './travel.js';
+import { readProgress, writeProgress, hasCleared } from './progress.js';
+import { hearTrack, backfillTracks, bindTrackSave, announceTracks, updateTrackToast, drawTrackToast } from './music_library.js';
+import { startElevatorRide, beginTravel, clearTravel, updateTravel, drawTravel, loadTravel, travelReady, TRAVEL_PHASES, TRAVEL_DURATIONS } from './travel.js';
 // main.js - boot, fixed-timestep loop, game state machine, rendering, debug hook
-import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, RANKS, clamp, addScore, laneMin, laneMax, arenaMin, arenaMax } from './engine.js';
+import { G, W, H, RS, STEP, DIFF, METER_MAX, FLOOR_TOP, FLOOR_BOT, RANKS, resetCombo, updateCombo, clamp, addScore, laneMin, laneMax, arenaMin, arenaMax } from './engine.js';
 import { initInput, input, endFrameInput, pollGamepad, debugPress, debugRelease, debugResetInput } from './input.js';
 import { SPR, drawTextShadow, textWidth, blit, frameW, frameH } from './sprites.js';
 import { initStage, initStageObj, drawStage, updateMotes, STAGES, stageDef } from './stages.js';
-import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, hubSay, hubTiger, petsWatch, hubTank, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
+import { HUB_STAGE, CHAPTERS, FIXTURES, RELIC_SLOTS, BED_X, hubBed, hubSay, hubLion, hubLionPose, petsWatch, petsScatter, lionLinks, hubTank, createBag, resetHub, updateHub, drawHubWall, drawHubUI } from './hub.js';
 import { createProp } from './props.js';
 import { loadAmbience, updateAmbience, reactStage, updateShutters, shutterState } from './ambience.js';
 import { loadCrowd, updateCrowd } from './crowd.js';
 import { loadFX, fx } from './fx.js';
 import { loadFG, drawFG } from './fg.js';
-import { createPlayer, updatePlayer, drawPlayer, hurtPlayer } from './player.js';
+import { createPlayer, updatePlayer, drawPlayer, hurtPlayer, drawBlindOverlay } from './player.js';
 import { spawnEnemy, updateEnemies, drawEnemy, aliveEnemies } from './enemies.js';
 import { createBoss, updateBoss, drawBoss, BOSSES } from './bosses.js';
 import { delhiIntro } from './delhi_bosses.js';
 import { drawFinale, FINALE_TICKS } from './train_finale.js';
 import { resetTrainVista } from './train_vistas.js';
-import { updateTrain, updateTrainMotion, drawTrainOverlay, startTrainCinematic, restoreTrainCheckpoint, TRAIN_AREAS, ABOARD_X, ROOF_X, vistaTargetFor } from './train.js';
+import { updateTrain, updateTrainMotion, drawTrainOverlay, startTrainCinematic, restoreTrainCheckpoint, position as placeTrainPlayer, TRAIN_AREAS, ABOARD_X, ROOF_X, vistaTargetFor } from './train.js';
 import { updateShots, drawShots, drawZones, spawnShot, spawnZone } from './shots.js';
 import { updateProps, drawProp, PROP_TYPES } from './props.js';
 import { updateEffects, drawEffects, drawRagnarokGround, spawnPop, spawnSteam } from './effects.js';
+import { note } from './finisher_fx.js';
 import { drawHUD, drawPause } from './hud.js';
+import { drawSuperUnder, drawSuperOver } from './super_fx.js';
+import { LOAD_ALL, PACKS, packOfStage, packReady, markReady, track, showLoader, hideLoader } from './loading.js';
 import { titleReady, drawWelcome, drawTitle, drawIntro, drawBossIntro, drawClear, drawOver, drawEnding } from './screens.js';
 import { audio, loadManifest, loadSFX } from './audio.js';
+import { GS_BOOT_TICKS, GS_BOOT_SKIP_AFTER, startGigastationBoot, stopGigastationBoot, drawGigastationBoot, gigastationBootTick, cueGigastationBoot } from './gigastation_boot.js';
 import { loadAssets } from './assets.js';
 import { loadAIFrames } from './aiframes.js';
 import { ENTRANCE_LAST_FRAME, STATION_LAST_FRAME, loadStory, resetStory, updateMotorcycleArrival, finishMotorcycleArrival, drawMotorcycleArrival, updateStationArrival, drawStationArrival } from './story.js';
@@ -54,11 +62,12 @@ resize();
 initInput();
 G.audio = audio;
 const manifestReady = loadManifest();
-let welcomeRequested=false,titleInputGate=false;
+let welcomeRequested=false,titleInputGate=false,bootSkipRequested=false,bootPadArmed=false,bootWait=0;
 function activateWelcome() {
   if(G.state==='boot')return;
   audio.unlock();
   if(G.state==='welcome')welcomeRequested=true;
+  if(G.state==='gsboot')bootSkipRequested=true;
 }
 window.addEventListener('keydown', e => {
   if(!e.repeat&&!['Shift','Control','Alt','Meta','CapsLock','Tab'].includes(e.key))activateWelcome();
@@ -72,6 +81,9 @@ function loadSave() {
     const s = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
     if (typeof s.hiscore === 'number') G.hiscore = s.hiscore;
     Object.assign(G, readProgress(s, STAGES));
+    // A save from before the jukebox kept track has its cleared stages' music announced
+    // once, in the lair; any other save is only topped up (js/music_library.js).
+    backfillTracks(STAGES.filter((_, i) => hasCleared(G, i)).map((st) => st.id), !s.tracks);
     if (typeof s.bestComboAll === 'number') G.bestComboAll = s.bestComboAll;
     G.selectedStage = G.unlockedStage;
   } catch (e) { /* first run */ }
@@ -81,11 +93,16 @@ function persist() {
     localStorage.setItem(SAVE_KEY, JSON.stringify(writeProgress(G, STAGES)));
   } catch (e) { /* private mode */ }
 }
+// Music unlocks the first time the game really plays it. Scripted runs (?auto=, and the
+// review studio built on them) keep what they hear in memory and never write the save.
+audio.watchMusic(hearTrack);
+bindTrackSave(() => { if (!location.search.includes('auto=')) persist(); });
 
 // ---- state transitions ----
 function setState(s) {
   if(s==='title'){G.train=null;G.india=null;}
   if (s === 'clear') { G.results=null; clearSaved = false; clearJinglePlayed = false; trainClearUseReady = false; } // one save and one sting per tally
+  if (s !== 'hub') G.trackToast = null;   // the unlock toast belongs to the lair (an unshown one stays queued)
   G.transition = null;   // a direct change of scene cancels a cut that was on its way
   G.state = s; G.stateT = G.rawTime;
 }
@@ -99,6 +116,7 @@ function transitionTo(then, dur = 26) {
 }
 
 function goTitle() {
+  G.transition = null;   // Quit from the pause menu mid-fade must win over the cut already running
   clearTravel();
   audio.stopSamples();
   audio.fadeMusic(0.4);
@@ -114,7 +132,25 @@ function resetRun() {
   G.bestCombo = 0;
 }
 
+const packLoads = {};
+function loadPack(pack) {
+  return packLoads[pack] ||= Promise.all([loadAssets(pack), loadAIFrames(pack)]).then(() => markReady(pack));
+}
+
 function startStage(index, silent = false) {
+  // A chapter still streaming in holds on the load screen, then starts as asked.
+  const pack = packOfStage(stageDef(index));
+  if (!packReady(pack)) {
+    clearTravel(); audio.fadeMusic(0.6);
+    setState('loading'); G.fade = 0; G.awaitStage = { index, silent };
+    showLoader(pack, stageDef(index).name);
+    loadPack(pack).then(() => {
+      const a = G.awaitStage;
+      if (G.state !== 'loading' || !a) return;
+      G.awaitStage = null; hideLoader(); startStage(a.index, a.silent);
+    });
+    return;
+  }
   clearTravel();
   const carriedMeter = G.meter || 0;
   G.stageIndex = index;
@@ -130,13 +166,15 @@ function startStage(index, silent = false) {
   G.shots = [];
   G.zones = [];
   G.boss = null;
+  G.swingAt = undefined;   // the swing-spacing clock is per run, or a replay inherits the last one
   G.meter = index > 0 ? carriedMeter : 0;
-  G.combo = 0;
+  resetCombo();
   G.paused = false;
   G.fade = 1;
   resetStory();
-  setState(st.chapter?'chapter-card':'intro');
-  audio.music(silent||st.chapter ? null : st.music);
+  setState('intro');
+  audio.music(silent ? null : st.music);
+  audio.prefetchMusic([st.musicB, st.bossMusic].filter(Boolean));
 }
 
 function startGame(index = G.selectedStage || 0) {
@@ -170,9 +208,7 @@ function enterHub(fresh) {
   G.shots = [];
   G.zones = [];
   G.boss = null;
-  G.combo = 0;
-  G.comboT = 0;
-  G.rank = -1; G.rankT = 0;
+  resetCombo();
   G.props = [createBag()];
   G.hubAct = 0;
   G.shakePoster = 0;
@@ -186,8 +222,13 @@ function enterHub(fresh) {
   G.camX = clamp(G.player.x - W / 2, 0, G.camMax);
   setState('hub');
   audio.music(G.hubTrack || HUB_STAGE.music);
+  // Music first heard on the road is announced here, after the relic you brought home has
+  // had its moment. Not on the results card: it fills the screen from the banner to the
+  // continue prompt for the whole tally, so there is nowhere free to put it.
+  announceTracks(G.hubRelicT > 0 ? G.hubRelicT + 10 : 45);
 }
 
+const LANE_SLOTS = [.5, .15, .85, .3, .7];
 function spawnFromQueue() {
   if (!G.spawnQueue || !G.spawnQueue.length) return;
   const visibleCap=G.stage.chapter?(G.stage.waves[G.waveIndex]?.visibleCap||6):6;
@@ -199,8 +240,9 @@ function spawnFromQueue() {
 
   // just inside the arena edge: they run in rather than trudging on from off-screen
   const x = fromLeft ? G.camX + 18 : G.camX + W - 18;
-  const lo = laneMin(x);
-  const y = lo + Math.random() * (laneMax(x) - lo);
+  // Lane slots, not dice: each entry takes the next depth in a spread the queue itself counts off.
+  const lo = laneMin(x), slot = LANE_SLOTS[G.spawnQueue.length % LANE_SLOTS.length];
+  const y = lo + slot * (laneMax(x) - lo);
   const e = spawnEnemy(type, x, y);
   G.spawnCd = 36;
 }
@@ -211,6 +253,8 @@ function stageTrack() {
   if (!st.musicB) return st.music;
   return G.camX >= st.musicBX ? st.musicB : st.music;
 }
+// A miniboss plays the stage theme unless the stage gives him his own.
+const minibossTrack = (b) => G.stage.minibossMusic?.[b?.key] || stageTrack();
 
 // Route beats fire once when the player crosses their milestone.
 function updateEvents() {
@@ -250,17 +294,18 @@ function updateWaves() {
           G.props.push(boss.cart);
         }
         setState('bossintro');
-        if(G.train?.retryBoss&&boss.key==='vikram')G.stateT-=240;
+        if(G.train?.retryBoss&&boss.key==='neta')G.stateT-=100;
         G.fade = 0.85;
         G.shake = 6;
         audio.sfx('enrage');
         // the theme starts ON the reveal, not after the card
-        audio.music(G.stage.bossMusicFinal || G.stage.bossMusic);
+        audio.music(G.stage.bossMusic);
         if (G.stage.boss === 'refund') audio.voice('duke_back_to_work', 1800);
       } else {
         next.done = true;
         G.waveActive = true;
         G.locked = true;
+        G.goTimer = 0;
         // A boss arena is designed before the boss, so a fight that has one pins the
         // camera there rather than wherever the player happened to stop walking.
         G.camLock = clamp(next.camX === undefined ? G.camX : next.camX, G.camX, G.camMax);
@@ -283,12 +328,24 @@ function updateWaves() {
           // would otherwise take the full-boss branch and end the act when one died.
           b.mini = true;
           audio.sfx('enrage');
-          if(next.miniboss!=='conductor')audio.music(G.stage.bossMusic);
+          audio.music(minibossTrack(b));
+
           // A miniboss with a designed arena gets a real reveal, and the wave state is
           // parked across it: bossintro used to belong to the terminal boss alone, which
           // assumed the fight it was introducing ended the act.
           if (next.intro) {
             G.introResume = { waveActive: true, locked: true };
+            // The arena is staged for CHAD's mark: clearing the last wave from the far side
+            // used to start the reveal with him standing on the boss. The fade covers the move.
+            if (next.playerAt) {
+              // Forward-only travel can overshoot this room after the previous KO.
+              // Stage the camera with CHAD, otherwise its walls shove him off his mark.
+              G.camLock = clamp(next.camX ?? G.camLock, 0, G.camMax);
+              G.camX = G.camLock;
+              placeTrainPlayer(...next.playerAt);
+              G.cinematic = null;
+              G.hitstop = G.slowmo = G.parrySlow = 0;
+            }
             setState('bossintro');
             G.fade = 0.7;
             G.shake = 5;
@@ -309,7 +366,7 @@ function updateWaves() {
       G.spawnQueue=[...current.reserves[G.india.reserveIndex++]];
       G.spawnCd=0;
     }
-    spawnFromQueue();
+    if (G.camX >= G.camLock - 1) spawnFromQueue();   // wait for the pan to a designed arena
     const bossBusy = G.boss && !G.boss.removeMe;
     const reservesPending=G.stage.chapter&&G.india.reserveIndex<(current?.reserves?.length||0);
     if (!G.spawnQueue.length && aliveEnemies() === 0 && !bossBusy && !(G.india?.pendingEntries>0)&&!reservesPending) {
@@ -324,13 +381,12 @@ function updateWaves() {
         }
       }
       G.arenaSqueezeTarget = 0;   // belt and braces: a fight ending any other way still lets go
-      G.goTimer = 200;
-      audio.sfx('go');
+      startAdvanceCue();
       addScore(50);
       if (G.stage.music) audio.music(stageTrack());
     }
   }
-  if (G.goTimer > 0) G.goTimer--;
+  updateAdvanceCue();
   // One owner of the number, many writers of the target. A fight that drove the walls
   // directly would fight its own release for as long as it took to die, and 0.6 px a
   // frame is what makes a crowd WALK inward rather than snap.
@@ -341,6 +397,8 @@ function updateWaves() {
   if (!G.locked) {
     G.camX = clamp(Math.max(G.camX, p.x - 255), 0, G.camMax);
   } else {
+    // A wave with a designed arena (camX) pans the camera there instead of fighting wherever CHAD tripped it.
+    if (G.waveActive && G.camX < G.camLock) G.camX = Math.min(G.camLock, G.camX + 2);
     G.camX = clamp(G.camX, 0, G.camLock);
   }
   // The coach interior belongs to the boarding transition. Do not reveal its
@@ -357,6 +415,13 @@ function updatePickups() {
     // at full health is one a good run never gets to keep.
     const life = pk.kind === 'life';
     if (!life && pk.t > 600) { G.pickups.splice(i, 1); continue; }
+    // Bait cash (a bribe pickup): stepping on it freezes CHAD for the thrower's follow-up.
+    if (pk.kind === 'bribe') {
+      if (Math.abs(p.x - pk.x) < 11 && Math.abs(p.y - pk.y) < 9 && p.z < 8 && !['down', 'getup', 'special'].includes(p.state)) {
+        G.pickups.splice(i, 1); p.state = 'hurt'; p.t = -16; p.vx = 0; pk.from.bribeTaken = true; spawnPop(pk.x, pk.y - 24, 'TAKEN!'); audio.sfx('blip');
+      }
+      continue;
+    }
     const usable = life || p.hp < p.maxhp;
     if (Math.abs(p.x - pk.x) < 11 && Math.abs(p.y - pk.y) < 9 && p.z < 8 && usable) {
       if (life) {
@@ -368,7 +433,7 @@ function updatePickups() {
       } else {
         p.hp = Math.min(p.maxhp, p.hp + pk.heal);
         spawnPop(pk.x, pk.y - 20, '+' + pk.heal);
-        audio.sfx('pickup');
+        audio.sfx('pickup_health');
         addScore(50);
       }
       G.pickups.splice(i, 1);
@@ -411,12 +476,13 @@ function checkBossClear() {
   if (b.mini) {
     if (b.t > 60) {
       G.boss = null;
+      audio.music(stageTrack());
       G.arenaSqueezeTarget = 0;
       addScore(500);
     }
     return;
   }
-  if(b.key==='vikram'&&!G.train.endingDone){if(!G.train.cinematic)startTrainCinematic('escape');return;}
+  if(b.key==='neta'&&!G.train.endingDone){if(!G.train.cinematic)startTrainCinematic('escape');return;}
   if (b.t > 70) {
     if (!b.victoryLine) {
       b.victoryLine = true;
@@ -464,11 +530,28 @@ function updateMenu() {
 function update() {
   if (G.freezeTime) return false;
   pollGamepad();
+  if (G.state === 'loading') return;   // the load screen (index.html) is up; startStage resumes
   if(G.state==='welcome') {
     G.rawTime++;
     const padPress=Array.from(navigator.getGamepads?.()||[]).some(p=>p?.connected&&p.buttons.some(b=>b.pressed||b.value>.5));
     if(welcomeRequested||padPress) {
-      welcomeRequested=false;audio.unlock();setState('title');G.rawTime=0;G.stateT=0;
+      // The console boot plays first; the title follows it.
+      welcomeRequested=false;audio.unlock();setState('gsboot');G.rawTime=0;G.stateT=0;
+      bootSkipRequested=false;bootPadArmed=false;bootWait=0;startGigastationBoot();
+    }
+    return;
+  }
+  if(G.state==='gsboot') {
+    // Follow the recording while it plays: wait up to half a second for it to start, then catch
+    // up to it after any stutter. Without sound the ticks count on their own.
+    const t0=G.rawTime-G.stateT,heard=gigastationBootTick();
+    G.rawTime=G.stateT+(heard==null?t0+1:heard===0?(bootWait++<30?t0:t0+1):Math.max(t0+1,Math.round(heard)));
+    const t=G.rawTime-G.stateT;cueGigastationBoot(t0,t);
+    const padDown=Array.from(navigator.getGamepads?.()||[]).some(p=>p?.connected&&p.buttons.some(b=>b.pressed||b.value>.5));
+    const skip=t>=GS_BOOT_SKIP_AFTER&&(bootSkipRequested||(bootPadArmed&&padDown));
+    bootSkipRequested=false;if(!padDown)bootPadArmed=true;
+    if(t>=GS_BOOT_TICKS||skip){
+      stopGigastationBoot();setState('title');G.rawTime=0;G.stateT=0;
       titleInputGate=true;audio.music('title');
     }
     return;
@@ -486,6 +569,9 @@ function update() {
   G.rawTime++;
   if(G.stage?.id==='train'&&['play','bossintro'].includes(G.state))updateTrainMotion();
   if (G.fade > 0 && !G.paused) G.fade = Math.max(0, G.fade - 0.06);
+  // Cinematic bars and the white flash run on sim ticks, so a 120 Hz display neither doubles nor a capture render advances them.
+  if (G.cinematic && ++G.cinematic.t >= G.cinematic.life) G.cinematic = null;
+  if (G.flash > 0) G.flash--;
   if (G.transition) {
     const tr = G.transition;
     if (++tr.t >= tr.dur) { G.transition = null; tr.then(); G.fade = 1; }
@@ -502,21 +588,22 @@ function update() {
     return;
   }
   if (G.state === 'hub') {
+    updateTrackToast();
     if (G.hitstop > 0) { G.hitstop--; return false; }
     G.time++;
-    if (G.comboT > 0 && --G.comboT === 0) { G.combo = 0; G.rank = -1; }
+    updateCombo();
     // The play camera only ever scrolls forward; in a room you have to walk back.
     // It runs before the player because clampToArena derives the room's walls from
     // it, and a camera that lags the body by a frame pins him against a stale wall.
     G.camX = clamp(G.player.x - W / 2, 0, G.camMax);
-    const panelOpen = !!G.hubPanel;
+    const panelOpen = !!G.hubPanel, seated = !!G.hubSeat;
     // BACKSPACE backs out of a panel or leaves the room for the title; ESC pauses
     if (!panelOpen && !G.hubSeat && input.pressed('back')) { audio.sfx('blip'); goTitle(); return; }
     const pick = updateHub();
     // A panel owns the buttons while it is up, and keeps them until they are let go.
     // Without the latch, C to back out also throws a parry whose recovery eats the
     // next punch.
-    if (panelOpen && !G.hubPanel) hubGate = true;
+    if (panelOpen && !G.hubPanel || seated && !G.hubSeat) hubGate = true;   // standing up from the sofa latches too
     if (hubGate && !['parry', 'jump', 'attack', 'use'].some((a) => input.held(a))) hubGate = false;
     if (!panelOpen && !G.hubPanel && !hubGate && !G.hubSeat) updatePlayer(G.player);
     updateProps();
@@ -527,11 +614,11 @@ function update() {
     if (pick >= 0) {
       if (STAGES[pick].departureRoute) {
         G.pendingDestination = pick;
-        audio.destinationSelected();
+        audio.sfx('go');
         hubGate = true;
         loadTravel();
       } else {
-        audio.sfx('go');
+        audio.destinationSelected();
         G.pendingDestination = null;
         audio.fadeMusic(0.5);
         transitionTo(() => { G.meter = hubMeter; startStage(pick); }, 34);
@@ -544,41 +631,23 @@ function update() {
     }
     return;
   }
-  if (G.state === 'travel' || G.state === 'loading') {
+  if (G.state === 'travel') {
     G.time++;
-    if (G.state === 'travel') {
-      if (updateTravel()) {
-        const target = G.travel.targetStage;
-        transitionTo(() => {
-          G.meter = hubMeter;
-          startStage(target, true); // prepare the actual level before the loading card becomes ready
-          G.loadingAge = 0; G.loadingGate = true;
-          setState('loading');
-        }, 30);
-      }
-    } else {
-      if (!input.held('use')) G.loadingGate = false;
-      if (travelReady) G.loadingAge++;
-      if (travelReady && !G.loadingGate && input.pressed('use')) {
-        transitionTo(() => { resetStory(); setState('intro'); audio.music(G.stage.music); }, 24);
-      }
+    if (updateTravel()) {
+      const target = G.travel.targetStage;
+      transitionTo(() => { G.meter = hubMeter; startStage(target); }, 30);
     }
-    return;
-  }
-  if(G.state==='chapter-card'){
-    if(!input.held('use'))G.india.cardReleased=true;
-    if(G.india.cardReleased&&input.pressed('use')){setState('intro');G.audio.music(G.stage.music);}
     return;
   }
   if (G.state === 'intro') {
     const introT = G.rawTime - G.stateT;
     const station = G.stage.id === 'train';
-    if(G.stage.chapter){updateIndiaIntro(introT);updateEffects();if(introT>=G.stage.introTicks){G.player.state='idle';G.player.invuln=90;G.player.invulnFlashAfter=G.time+90;setState('play');}return;}
+    if(G.stage.chapter){updateIndiaIntro(introT);updateEffects();if(introT>=G.stage.introTicks){if(G.player.state!=='idleanim')G.player.state='idle';G.player.invuln=90;G.player.invulnFlashAfter=G.time+90;setState('play');}return;}
     if (G.stage.arrival === 'motorcycle') updateMotorcycleArrival(introT);
     else if (station) { updateStationArrival(introT); updateEffects(); }
     const introLife = G.stage.arrival === 'motorcycle' ? ENTRANCE_LAST_FRAME : station ? STATION_LAST_FRAME : 130;
     if (G.rawTime - G.stateT > introLife || input.pressed('attack')) {
-      if (station) { updateStationArrival(STATION_LAST_FRAME); G.effects.length = 0; }
+      if (station) { updateStationArrival(STATION_LAST_FRAME, true); G.effects.length = 0; }
       // Skipping has to land on the same picture as finishing: the man standing by the
       // parked bike, engine off (it loops, and nothing else ever stops it).
       if (G.stage.arrival === 'motorcycle') finishMotorcycleArrival();
@@ -593,6 +662,8 @@ function update() {
     if (G.shake > 0) { G.shake *= 0.85; if (G.shake < 0.3) G.shake = 0; }
     const t = G.rawTime - G.stateT;
     const b = G.boss;
+    // A Delhi arena keeps living through its boss's reveal (kitchen fires, boiling pots, lamps).
+    if (b?.delhi) G.time++;
     const speech=bossIntroDialogue(b,t,G.camX);
     if(speech)updateDialogue(speech.text,speech.age,speech);
     // The arena was designed at camLock; the camera arrives there during the reveal
@@ -604,21 +675,22 @@ function update() {
       if (t > startAt && b.x > stop) b.x -= b.key === 'yadav' ? 1.25 : 0.9;
       if (b.key === 'rana' && (t === 52 || t === 132)) audio.sfx('heavy');
     }
-    const life = b && b.key === 'conductor' ? 300 : b && b.key === 'vikram' ? 315 : b && b.key === 'rana' ? 230 : b && b.key === 'yadav' ? 210 : 195;
+    const life = b && b.key === 'conductor' ? 300 : b && b.key === 'neta' ? b.delhi.introTicks : b && b.key === 'rana' ? 230 : b && b.key === 'yadav' ? 210 : b?.delhi?.introTicks || 195;
     if (t >= life || (b?.key!=='conductor' && t > 75 && input.pressed('attack'))) {
+      // skipped reveals drop the line; one that simply ran out finishes it over the fight
+      G.bossSpeech = t >= life ? carryIntroDialogue(b, t) : null;
       if(b?.key==='conductor'){Object.assign(b,{x:5935,y:218,face:-1,state:'idle',t:0,atkCd:60});}
-      if(b?.key==='vikram'){b.x=G.camLock+364;b.y=218;b.face=-1;b.state='idle';b.t=0;b.atkCd=60;}
+      b?.delhi?.endIntro?.(b);
       setState('play');
       // A miniboss reveal has a wave running behind it and has to hand that back; the
-      // terminal boss does not, and its music is the level's own rather than the shared
-      // one every miniboss and mid-boss shares.
+      // terminal boss does not. Minibosses keep the stage theme; only the level boss has its own.
       if (G.introResume) {
         G.waveActive = G.introResume.waveActive;
         G.locked = G.introResume.locked;
         G.introResume = null;
-        if(b?.key!=='conductor')audio.music(G.stage.bossMusic);
+
       } else {
-        audio.music(b?.key==='conductor'?stageTrack():(G.stage.bossMusicFinal || G.stage.bossMusic));
+        audio.music(b?.mini||b?.key==='conductor'?minibossTrack(b):G.stage.bossMusic);
       }
     }
     return;
@@ -628,7 +700,7 @@ function update() {
     updateResults(clearT);
     if(trainClear&&clearT>=45&&!clearJinglePlayed){clearJinglePlayed=true;audio.jingle('clear');}
     // Require a release after the tally is ready, followed by a new F/LB edge.
-    if(trainClear&&clearT>=195&&!input.held('use'))trainClearUseReady=true;
+    if(trainClear&&clearT>=RESULTS_CONTINUE&&!input.held('use'))trainClearUseReady=true;
     // Once, on arrival. This ran every frame the tally was on screen, so walking away from
     // a cleared act wrote localStorage 60 times a second until you came back.
     if (!clearSaved) {
@@ -640,7 +712,7 @@ function update() {
       G.actBest[G.stageIndex] = Math.max(G.actBest[G.stageIndex] || 0, G.score);
       persist();
     }
-    if (trainClear ? (clearT>=195&&trainClearUseReady&&input.pressed('use')) : (clearT>150&&input.pressed('attack'))) {
+    if (trainClear ? (clearT>=RESULTS_CONTINUE&&trainClearUseReady&&input.pressed('use')) : (clearT>150&&input.pressed('attack'))) {
       if(trainClear){audio.stopRoomAudio?.();audio.stopSamples?.();}
       audio.sfx('blip');
       // The tally promises the next act, so the next act is what comes: straight on,
@@ -679,7 +751,7 @@ function update() {
       transitionTo(() => {
         setState('play');
         audio.music(G.boss && !G.boss.dead
-          ? (G.boss.key==='conductor' ? stageTrack() : G.boss.mini ? G.stage.bossMusic : (G.stage.bossMusicFinal || G.stage.bossMusic))
+          ? (G.boss.mini || G.boss.key==='conductor' ? minibossTrack(G.boss) : G.stage.bossMusic)
           : stageTrack());
       }, 20);
       return;
@@ -696,8 +768,8 @@ function update() {
     if (G.parrySlow & 1) return false;
   }
   G.time++;
-  if (G.comboT > 0 && --G.comboT === 0) { G.combo = 0; G.rank = -1; }
-  if (G.rankT > 0) G.rankT--;
+  if (G.bossSpeech) { const s = G.bossSpeech; if (++s.age >= s.life || G.boss !== s.boss || s.boss.dead) G.bossSpeech = null; }
+  updateCombo();
 
   // the cut onto the train holds the world still for a second of black
   if (updateTrain()) { if(G.train?.endingDone)checkBossClear(); return; }
@@ -706,6 +778,7 @@ function update() {
   updateProps();
   updateEnemies();
   if (G.boss) updateBoss();
+  updateCombatWarnings();
   updateShots();
   updateEffects();
   updateMotes();
@@ -723,7 +796,9 @@ function update() {
 
 // ---- render ----
 function drawShadow(ctx, e, camX) {
-  drawContactShadow(ctx, e.x - camX, e.y, e.shadowR || 14, e.z || 0);
+  // a body squatting up on a berth throws its shadow on the mattress, not on the floor below
+  const berth = e.perchZ > 0 && e.z >= e.perchZ - .5;
+  drawContactShadow(ctx, e.x - camX, berth ? e.y - e.z : e.y, e.shadowR || 14, berth ? 0 : e.z || 0);
 }
 
 function render() {
@@ -739,26 +814,24 @@ function render() {
 
   switch (G.state) {
     case 'welcome': drawWelcome(ctx); break;
+    case 'gsboot': drawGigastationBoot(ctx, G.rawTime - G.stateT); break;
     case 'title': drawTitle(ctx); break;
+    case 'loading': break;   // black under the load screen
     case 'hub':
       drawStage(ctx, G.camX);
       drawHubWall(ctx, G.camX);   // posters are wall, so you can stand in front of them
       drawWorld(ctx);
       drawFG(ctx, G.camX);
       drawHubUI(ctx);
+      if (!G.hubPanel) drawTrackToast(ctx, 20);
 
       break;
     case 'travel':
       drawTravel(ctx);
 
       break;
-    case 'loading':
-      drawTravelLoading(ctx, travelReady);
-
-      break;
-    case 'chapter-card':drawIndiaCard(ctx);break;
     case 'intro':
-      if(G.stage.chapter){drawIndiaIntro(ctx,G.rawTime-G.stateT);if(G.india?.review.fx!==false)drawEffects(ctx,G.camX);break;}
+      if(G.stage.chapter){drawIndiaIntro(ctx,G.rawTime-G.stateT);if(G.india?.review.fx!==false)drawEffects(ctx,G.camX);drawIndiaIntroOverlay(ctx,G.rawTime-G.stateT);break;}
       if (G.stage.arrival === 'motorcycle') drawMotorcycleArrival(ctx);
       else if (G.stage.id === 'train') drawStationArrival(ctx);
       else drawIntro(ctx);
@@ -795,13 +868,16 @@ function render() {
         ctx.scale(c.zoom, c.zoom);
         ctx.translate(-focusX, -focusY);
       }
+      // A carriage lurch (the emergency chain): a slight zoom, tilt and slide that springs back.
+      if (G.lurch) { const l = G.lurch, k = Math.exp(-l.t / 9) * Math.sin(Math.min(l.t, 40) * .45 + .6); ctx.translate(W / 2, H / 2); ctx.rotate(l.dir * .012 * k); ctx.scale(1.035, 1.035); ctx.translate(-W / 2 + l.dir * 7 * k, -H / 2); }
       drawStage(ctx, G.camX);
       drawWorld(ctx);
       drawFG(ctx, G.camX);
       drawTrainOverlay(ctx, G.camX);
       ctx.restore();
       drawIndiaPerformance(ctx);
-      if(!G.train?.cinematic&&!G.india?.cinematic)drawHUD(ctx);
+      if (G.bossSpeech) { const s = G.bossSpeech; drawDialogue(ctx, { ...s, x: s.boss.x - G.camX, remaining: s.life - s.age }); }
+      if(!G.train?.cinematic&&!G.india?.cinematic){drawInfernoFrame(ctx);drawHUD(ctx);}
 
     }
   }
@@ -821,12 +897,10 @@ function render() {
       const col = c.color || '#ffd94a';
       drawTextShadow(ctx, c.title, (W - textWidth(c.title, 2)) / 2, 22, col, 2);
     }
-    if (!G.paused) c.t++;
-    if (c.t >= c.life) G.cinematic = null;
   }
   if (G.flash > 0) {
     ctx.setTransform(RS, 0, 0, RS, 0, 0);
-    ctx.fillStyle = 'rgba(255,250,230,0.35)';
+    ctx.fillStyle = 'rgba(255,250,230,0.13)';
     ctx.fillRect(0, 0, W, H);
   }
   if (G.fade > 0) {
@@ -842,43 +916,52 @@ function render() {
   if (G.paused) { ctx.setTransform(RS, 0, 0, RS, 0, 0); drawPause(ctx); }
 }
 
+// Pickups: a lassi, a plate of chaat, and CHAD's own portrait for the 1-up, as in Streets of
+// Rage. A soft contact shadow keeps a small drop readable on a busy floor.
+function drawPickup(ctx, pk, camX) {
+  const bob = Math.sin(pk.t * 0.1) * 2, x = Math.round(pk.x - camX);
+  const img = fx(pk.kind === 'shake' ? 'pick_lassi' : pk.kind === 'life' ? 'hud_life' : 'pick_chaat', 0);
+  ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(x, Math.round(pk.y + 1), 8, 2.5, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  if (img) {
+    const w = frameW(img), h = frameH(img);
+    blit(ctx, img, x - w / 2, Math.round(pk.y - h + 2 + bob));
+  } else {
+    const spr = pk.kind === 'shake' ? SPR.shake : SPR.plate;
+    blit(ctx, spr, x - frameW(spr) / 2, Math.round(pk.y - frameH(spr) + 3 + bob));
+  }
+}
+
 function drawWorld(ctx) {
   const camX = G.camX;
   // lingering floor hazards go under everything else
   drawZones(ctx, camX);
   drawRagnarokGround(ctx, camX);
-  // pickups: real objects now - a chilli, a lassi, a plate of chaat - instead of a
-  // strobing orange square and a grey disc.
-  for (const pk of G.pickups) {
-    const bob = Math.sin(pk.t * 0.1) * 2;
-    const name = pk.kind === 'shake' ? 'pick_lassi' : 'pick_chaat';
-    const img = fx(name, 0);
-    const x = Math.round(pk.x - camX);
-    if (img) {
-      const w = frameW(img), h = frameH(img);
-      blit(ctx, img, x - w / 2, Math.round(pk.y - h + 2 + bob));
-    } else {
-      const spr = pk.kind === 'shake' ? SPR.shake : SPR.plate;
-      blit(ctx, spr, x - frameW(spr) / 2, Math.round(pk.y - frameH(spr) + 3 + bob));
-    }
-  }
+  // Dropped bribe notes lie flat on the floor; food and 1-ups stand up and sort with the room.
+  for (const pk of G.pickups) if (pk.kind === 'bribe') for (let n = 0; n < 3; n++) note(ctx, n, pk.x - camX + n * 3 - 3, pk.y - 3 - n, .2 + n * .5, .12);
+  drawSuperUnder(ctx);
   // shadows first
   if (!G.hubSeat) drawShadow(ctx, G.player, camX);
   for (const e of G.enemies) if (!['bandar', 'bull'].includes(e.kind)) drawShadow(ctx, e, camX);
   if (G.boss && !G.boss.removeMe) drawShadow(ctx, G.boss, camX);
   // y-sorted entities (props included, so you can stand behind a crate). G.actors is
-  // scenery that draws itself - the lair's tiger - and CHAD drops out of the list while
+  // scenery that draws itself - the lair's lion - and CHAD drops out of the list while
   // he is sat on the sofa, because the seated art draws him.
   const ents = [...G.enemies, ...(G.india?.review.props===false?[]:G.props), ...G.actors];
+  // Pickups sort a hair in front of their own lane, so a drop is never hidden behind the
+  // spot it fell from, and a prop further forward still stands in front of it.
+  for (const pk of G.pickups) if (pk.kind !== 'bribe') ents.push({ kind: 'pickup', y: pk.y, sortBias: 0.5, draw: c => drawPickup(c, pk, camX) });
   if (!G.hubSeat&&!G.india?.cinematic&&!G.india?.finalPose) ents.push(G.player);
-  if (G.boss && !G.boss.removeMe) ents.push(G.boss);
-  ents.sort((a, b) => a.y - b.y);
-  const drawEnt = (e) => {
-    if (e.draw) e.draw(ctx, camX);
-    else if (e.kind === 'player') drawPlayer(ctx, e, camX);
-    else if (e.kind === 'boss') drawBoss(ctx, camX);
-    else if (e.kind === 'prop') drawProp(ctx, e, camX);
-    else drawEnemy(ctx, e, camX);
+  if (G.boss && !G.boss.removeMe) ents.push(G.boss, ...(G.boss.delhi?.sceneProps?.(G.boss) || []));
+  // A floored CHAD is never lost behind a cart or a wreck: he sorts a lane-width forward.
+  // sortBias: a body that should give way in its own lane (the Dredger's grab behind CHAD).
+  const depth = e => e.y + (e.sortBias || 0) + (e === G.player && ['down', 'getup'].includes(e.state) ? 40 : 0);
+  ents.sort((a, b) => depth(a) - depth(b));
+  const drawEnt = (e, c = ctx) => {
+    if (e.draw) e.draw(c, camX);
+    else if (e.kind === 'player') drawPlayer(c, e, camX);
+    else if (e.kind === 'boss') drawBoss(c, camX);
+    else if (e.kind === 'prop') drawProp(c, e, camX);
+    else drawEnemy(c, e, camX);
   };
   for (const e of ents) drawEnt(e);
   // cheap glossy-floor reflections (mirrored around each entity's ground line)
@@ -888,7 +971,7 @@ function drawWorld(ctx) {
   for (const e of ents) {
     // props opt in: on street dirt a reflected crate looks wrong, on the lair's
     // polished granite the heavy bag not reflecting is the thing that looks wrong
-    if (e.state === 'dying' || (e.kind === 'prop' && !e.reflect)) continue;
+    if (e.state === 'dying' || e.kind === 'pickup' || (e.kind === 'prop' && !e.reflect)) continue;
     const gy = Math.round(e.y + 3);
     ctx.save();
     ctx.translate(0, Math.round(gy * 1.5));
@@ -900,6 +983,8 @@ function drawWorld(ctx) {
   ctx.restore();
   drawShots(ctx, camX);
   if(G.india?.review.fx!==false)drawEffects(ctx, camX);
+  drawSuperOver(ctx, c => { drawEnt(G.player, c); drawEnt(G.player.specialTarget, c); });
+  drawBlindOverlay(ctx);
 }
 
 // ---- fixed-timestep loop ----
@@ -918,7 +1003,13 @@ function frame(now) {
 
 // boot: load PNG assets + AI frames first (posters/title/sprites need them), then start
 loadSave();
-Promise.all([manifestReady, titleReady, loadAssets(), loadAIFrames(), loadSFX(), loadFX(), loadFG(), loadAmbience(), loadCrowd(), loadStory(), location.search.includes('auto=') ? loadTravel() : Promise.resolve()]).then(() => {
+showLoader('core');
+const artBoot = LOAD_ALL ? [loadAssets(), loadAIFrames()] : [loadAssets('core'), loadAIFrames('core')];
+Promise.all([...artBoot, ...[manifestReady, titleReady, loadFX(), loadFG(), loadAmbience(), loadCrowd(), loadStory()].map((p) => track('core', p)), loadSFX(), location.search.includes('auto=') ? loadTravel() : Promise.resolve()]).then(() => {
+  for (const pack of LOAD_ALL ? PACKS : ['core']) markReady(pack);
+  hideLoader();
+  // The chapters stream in behind the menus, in campaign order.
+  if (!LOAD_ALL) loadPack('train').then(() => loadPack('india'));
   initStage(0); // build background layers + motes so the title can scroll them
   const scripted = location.search.includes('auto=');
   setState(scripted ? 'title' : 'welcome');
@@ -930,6 +1021,7 @@ Promise.all([manifestReady, titleReady, loadAssets(), loadAIFrames(), loadSFX(),
 // ---- debug / test hook ----
 window.__game = {
   G, BOSSES, STAGES,
+  bootScene:(t=0)=>{setState('gsboot');G.stateT=0;G.rawTime=t;G.freezeTime=true;},
   indiaScene:(id='delhi',name='market',t=0)=>{
     audio.stopSamples();audio.stopRoomAudio();debugResetInput();resetRun();
     startStage(STAGES.findIndex(s=>s.id===id));setState('play');G.freezeTime=true;
@@ -938,12 +1030,14 @@ window.__game = {
     const ix=Math.max(0,INDIA_AREAS[id].indexOf(name));G.camX=Math.min(ix*810,G.camMax);
     G.player.x=G.camX+150;G.player.y=236;G.india.t=t;
     if(name==='intro'){setState('intro');G.stateT=G.rawTime-t;for(let i=0;i<=t;i++){updateIndiaIntro(i);updateEffects();}}
-    if(name==='card')setState('chapter-card');
-    if(['vendor','closer','dredger','vendor-finish','dredger-finish','closer-finish','finish','clear'].includes(name)){
-      const cinematic=name.endsWith('-finish')||name==='finish';
-      const key=name==='finish'||name==='clear'?(id==='refund'?'closer':'dredger'):name.replace('-finish','');
+    if(['vendor','closer','dredger','vendor-intro','dredger-intro','closer-intro','vendor-finish','dredger-finish','closer-finish','finish','clear'].includes(name)){
+      const cinematic=name.endsWith('-finish')||name==='finish',intro=name.endsWith('-intro');
+      const key=name==='finish'||name==='clear'?(id==='refund'?'closer':'dredger'):name.replace(/-(finish|intro)$/,'');
       G.camLock=key==='vendor'?2670:key==='closer'?5900:6000;G.camX=G.camLock;
       G.player.x=G.camX+90;G.boss=createBoss(key,G.camX+270,226);G.locked=true;G.boss.mini=key==='vendor';
+      if(id==='delhi')G.india.bullDone=true; // a real run met the market bull at x 950, long before these arenas
+      // The reveal as play reaches it: the boss enters at the arena's right edge.
+      if(intro){Object.assign(G.boss,{x:G.camLock+W-40,y:211});if(key==='vendor')G.introResume={waveActive:false,locked:true};if(key==='closer')spawnEnemy('ic_security',G.camLock+325,clamp(234,laneMin(G.camLock+325),laneMax(G.camLock+325)));setState('bossintro');G.boss.delhi?.intro?.(G.boss,0);audio.music(key==='vendor'?minibossTrack(G.boss):G.stage.bossMusic);}
       if(cinematic||name==='clear'){
         if(key==='dredger')G.boss.delhi.operatorPhase(G.boss);
         render();G.boss.hp=0;G.boss.dead=true;G.boss.finishStarted=G.india.startCinematic(key+'-finish',G.boss);
@@ -956,6 +1050,16 @@ window.__game = {
     }
     render();
   },
+  // Review adapters can reposition or replace a boss after their scene loader runs.
+  // Resolve from the final runtime state, using the campaign's actual track definitions.
+  syncSceneMusic:()=>{
+    if(['clear','ending','gameover'].includes(G.state)){audio.music(null);return;}
+    const c=G.india?.cinematic||G.train?.cinematic,b=c?.boss||G.boss;
+    const trainBoss=['shera-finish','knockout','escape','roof'].includes(c?.kind);
+    const conductor=c?.kind==='inspector-finish'||b?.key==='conductor';
+    const slot=trainBoss?G.stage.bossMusic:conductor?minibossTrack({key:'conductor'}):b&&(!b.dead||c)?(b.mini||b.key==='vendor'?minibossTrack(b):G.stage.bossMusic):stageTrack();
+    audio.music(slot);
+  },
   playStage:(id='delhi')=>{resetRun();startStage(STAGES.findIndex(s=>s.id===id));G.freezeTime=false;},
   trainScene: (name='yard',t=0) => {
     audio.stopSamples();audio.stopRoomAudio();debugResetInput();resetRun();startStage(0);setState('play');G.fade=0;G.shake=0;G.hitstop=0;G.slowmo=0;G.parrySlow=0;G.freezeTime=true;
@@ -965,23 +1069,23 @@ window.__game = {
     else if(name==='train-arrival'){G.train.arrival=t;G.camX=2400;G.player.x=2650;G.train.t=t;}
     else if(name==='intro'){setState('intro');G.stateT=G.rawTime-t;updateStationArrival(t);}
     else if(name==='inspector-finish'){G.camX=G.camLock=5760;G.player.x=5880;G.player.y=218;G.train.aboard=true;const b=createBoss('conductor',5930,218);Object.assign(b,{x:5930,y:218,dead:true,hp:0});startTrainCinematic('inspector-finish');G.train.cinematic.t=t;G.train.officeDeskBroken=t>=198;}
-    else if(name==='knockout'){G.camX=G.camLock=8640;G.player.x=8820;G.player.y=218;G.train.aboard=G.train.climbed=true;const b=createBoss('vikram',8860,218);b.roof=b.dead=true;b.hp=0;G.train.knockoutBody=true;startTrainCinematic('knockout');G.train.cinematic.t=t;}
+    else if(name==='knockout'){G.camX=G.camLock=8640;G.player.x=8820;G.player.y=218;G.train.aboard=G.train.climbed=true;const b=createBoss('neta',8860,218);b.delhi.toRoof(b);b.dead=true;b.hp=0;G.train.knockoutBody=true;startTrainCinematic('knockout');G.train.cinematic.t=t;}
     else if(['boarding','roof-transition','escape'].includes(name)){G.train.aboard=name!=='boarding';G.train.scene=2;startTrainCinematic(name==='roof-transition'?'roof':name);G.train.cinematic.t=t;if(name==='roof-transition')Object.assign(G.train.cinematic,{fromX:7920,fromY:218,fromCam:7680,fromBossX:7996,fromBossY:218});if(name==='boarding'){G.train.arrival=240;G.camX=2400;Object.assign(G.train.cinematic,{fromX:2705,fromY:218,fromCam:2400});}}
     else if(name==='clear'){G.train.aboard=true;G.train.endingDone=true;G.train.cinematic={kind:'escape',t:FINALE_TICKS};G.clearStats={grading:snapshotGrade(),hits:G.stats.hits,kos:G.stats.kos,bonus:G.lives*500,combo:G.bestCombo};setState('clear');G.stateT=G.rawTime-t;}
     else if(name==='conductor'){audio.music(G.stage.musicB||G.stage.music);G.camX=G.camLock=5760;G.player.x=5850;G.train.aboard=true;createBoss('conductor',6100,218);G.locked=true;setState('bossintro');}
-    else if(name==='seth-intro'){G.camX=G.camLock=7680;G.player.x=7950;G.player.y=218;G.train.aboard=true;createBoss('vikram',8120,218);G.locked=true;setState('bossintro');}
-    else if(name==='roof-guards'){G.camX=G.camLock=8160;G.player.x=8265;G.train.aboard=G.train.climbed=true;const b=createBoss('vikram',9010,218);b.roof=b.trainWaiting=true;b.set=SPR.nr_vikram_roof;G.locked=true;updateBoss();}
-    else if(name==='boss'||name==='boss-roof'){G.camX=G.camLock=name==='boss'?7680:8640;G.train.aboard=true;G.train.scene=2;G.train.climbed=name==='boss-roof';G.player.y=218;G.player.x=G.camX+120;const b=createBoss('vikram',G.camX+330,218);b.roof=name==='boss-roof';if(b.roof)b.set=SPR.nr_vikram_roof;G.locked=true;}
-    if(name==='escape'){G.train.knockoutBody=true;const b=createBoss('vikram',ROOF_X+850,218);Object.assign(b,{dead:true,hp:0,t:71,roof:true});}
+    else if(name==='neta-intro'){G.camX=G.camLock=7680;G.player.x=7950;G.player.y=218;G.train.aboard=true;createBoss('neta',8120,218);G.locked=true;setState('bossintro');}
+    else if(name==='shera-finish'){G.train.aboard=true;G.train.scene=2;G.camX=G.camLock=7680;G.player.x=7920;G.player.y=218;const b=createBoss('neta',7996,218);b.delhi.enrage(b,.001);startTrainCinematic('shera-finish');b.delhi.toRoof(b);G.train.cinematic.t=t;Object.assign(G.train.cinematic,{fromX:7920,fromY:218,fromCam:7680,fromBossX:7996,fromBossY:218});}
+    else if(name==='roof-guards'){G.camX=G.camLock=8160;G.player.x=8265;G.train.aboard=G.train.climbed=true;const b=createBoss('neta',8980,218);b.delhi.toRoof(b,.7);b.trainWaiting=true;G.locked=true;updateBoss();}
+    else if(['boss','boss-roof','boss-enraged','neta-abandon'].includes(name)){G.camX=G.camLock=name==='boss-roof'?8640:7680;G.train.aboard=true;G.train.scene=2;G.train.climbed=name==='boss-roof';G.player.y=218;G.player.x=G.camX+120;const b=createBoss('neta',G.camX+330,218);if(name==='boss-roof')b.delhi.toRoof(b);if(name==='boss-enraged')b.delhi.enrage(b);if(name==='neta-abandon')b.delhi.demo(b,'abandon');G.locked=true;}
+    if(name==='escape'){G.train.knockoutBody=true;const b=createBoss('neta',ROOF_X+850,218);b.delhi.toRoof(b);Object.assign(b,{dead:true,hp:0,t:71});}
     G.train.vistaX=G.train.vistaTarget=vistaTargetFor(name==='roof-transition'||name==='escape'?ROOF_X:G.player.x);G.train.motionT=G.train.vistaX/.12;resetTrainVista(G.train,['roof-transition','knockout','escape'].includes(name)?ROOF_X:G.player.x);
     if(G.train.cinematic?.entry){const c=G.train.cinematic,e=c.entry;c.entry=null;c.t=e.start;render();e.snapshot?.getContext('2d').drawImage(canvas,0,0);c.entry=e;seekTrainFinish(t);}
-    if(['conductor','seth-intro'].includes(name)&&t>0)window.__game.step(t);
+    if(['conductor','neta-intro','neta-abandon'].includes(name)&&t>0)window.__game.step(t);
     render();
   },
   trainCheckpoint: restoreTrainCheckpoint,
   travelReady: () => travelReady,
   travel: (phase = 'elevator', running = false) => { enterHub(true); beginTravel(0, phase); if (running) startElevatorRide(); setState('travel'); G.fade = 0; },
-  loading: () => { startStage(0, true); G.loadingAge = 0; G.loadingGate = true; setState('loading'); G.fade = 0; loadTravel(); },
   start: () => { startGame(); },
   hub: () => { enterHub(true); },
   state: () => G.state,
@@ -1031,8 +1135,6 @@ if (autoMode) {
     window.__game.travel(autoMode.slice(7) || 'elevator', true);
     step(parseInt(params.get('t') || '1', 10));
     G.freezeTime = true; G.fade = 0;
-  } else if (autoMode === 'loading') {
-    window.__game.loading(); G.freezeTime = false;
   } else if (autoMode === 'play') {
     startAt(stageParam);
     G.player.x = 300; G.camX = 130;
@@ -1352,29 +1454,87 @@ if (autoMode) {
         }
         t('hub-baitfish-face-forwards', moving > 500 && wrong === 0);
       }
-      // the tiger, drawing himself and living at the hearth
-      t('hub-tiger-present', G.actors.length === 1
+      // the lion, drawing himself and living with CHAD
+      t('hub-lion-present', G.actors.length === 1
         && G.actors.every((a) => typeof a.draw === 'function'));
       {
-        const tg = hubTiger();
-        // he gets up in STAGES. A cat that goes from flat out to walking on one frame is a
-        // switch, so the order matters more than the timing: head up, sit, stretch, walk.
-        G.player.x = tg.x - 400;
-        tg.state = 'lie'; tg.t = 0; tg.alert = 0; tg.target = tg.x;
-        const order = ['lie'];
-        petsWatch(tg.x, 260);
-        for (let i = 0; i < 500 && tg.state !== 'walk'; i++) {
-          step(1);
+        const tg = hubLion();
+        // every change of drawing, for the whole of this block, must be one the art was
+        // made for (hub.js lionLinks): a clip's own in-betweens or a gait frame, never a cut
+        const links = lionLinks(), cuts = [];
+        let lastPose = hubLionPose(), lastX = tg.x, skid = 0;
+        const tick = (n = 1) => {
+          for (let i = 0; i < n; i++) {
+            step(1);
+            const p = hubLionPose();
+            if (p !== lastPose && !links.has(lastPose + '>' + p)) cuts.push(lastPose + '>' + p);
+            // in a gait x moves only on the frame switch, in step with the planted paw
+            if (/^[wr]\d$/.test(p) && p === lastPose && tg.x !== lastX) skid++;
+            lastPose = p; lastX = tg.x;
+          }
+        };
+        const force = (state, pose) => {
+          Object.assign(tg, { state, pose, anim: null, t: 0, alert: 0, hurry: false, target: tg.x });
+          lastPose = pose; lastX = tg.x;
+        };
+        // he is wherever CHAD is when the room opens, not across it
+        tg.placed = false; tick(1); lastX = tg.x; skid = 0;
+        t('hub-lion-starts-near-chad', Math.abs(tg.x - G.player.x) <= 110);
+        // he gets up in STAGES: head up, the stretch, on his feet, then off
+        G.player.x = clamp(tg.x - 400, 60, 1860);
+        if (Math.abs(G.player.x - tg.x) < 300) G.player.x = tg.x + 400;
+        force('lie', 'lie');
+        const order = ['lie'], poses = new Set();
+        petsWatch(G.player.x, 260);
+        tg.target = G.player.x + (tg.x < G.player.x ? -80 : 80);
+        for (let i = 0; i < 600 && tg.state !== 'walk' && tg.state !== 'run'; i++) {
+          tick(1);
+          poses.add(hubLionPose());
           if (order[order.length - 1] !== tg.state) order.push(tg.state);
         }
-        t('hub-tiger-gets-up-in-stages', order.join(',') === 'lie,wake,sit,stretch,walk');
-        // and he lives WITH CHAD: park the man at the far end and the tiger turns up
+        t('hub-lion-gets-up-in-stages', order.slice(0, 3).join(',') === 'lie,wake,stand' && poses.has('stretch')
+          && poses.has('lie_lift'));
+        // far off, he bounds rather than strolls
+        t('hub-lion-bounds-when-far', tg.state === 'run');
+        // and he lives WITH CHAD: park the man at the far end and the lion turns up
         G.player.x = 220;
         let closest = 9999;
-        for (let i = 0; i < 12000; i++) { step(1); closest = Math.min(closest, Math.abs(tg.x - 220)); }
-        t('hub-tiger-follows-him', closest < 200);
+        for (let i = 0; i < 3000; i++) { tick(1); closest = Math.min(closest, Math.abs(tg.x - 220)); }
+        t('hub-lion-follows-him', closest < 200);
         // and settles beside him rather than walking through him
-        t('hub-tiger-settles-beside-him', Math.abs(tg.x - 220) > 20 && Math.abs(tg.x - 220) < 320);
+        const beside = Math.abs(tg.x - 220) > 20 && Math.abs(tg.x - 220) < 220;
+        t('hub-lion-settles-beside-him' + (beside ? '' : ` x${tg.x | 0} ${tg.state} ${tg.pose} target${tg.target | 0}`), beside);
+        t('hub-lion-walk-steps-with-paws' + (skid ? ' ' + skid : ''), skid === 0);
+        // no roar and no cigar: nothing he can do goes through those drawings any more
+        t('hub-lion-no-roar-or-cigar', ![...links].some((l) => /roar|paw_|drag|exhale/.test(l)));
+        // the combo pulls him over to watch when it reaches six, once, not on every tick
+        force('sit', 'sit');
+        G.combo = 6; tick(1);
+        const called = tg.alert > 200;
+        tg.alert = 0; tick(5);
+        t('hub-lion-combo-watch-once', called && tg.alert === 0);
+        G.combo = 0; tick(1);
+        // the super: he bounds off to the end of the room on HIS side of CHAD
+        force('sit', 'sit');
+        G.player.x = tg.x - 120;
+        petsScatter();
+        t('hub-lion-scatters-own-side', tg.target > G.player.x && tg.hurry);
+        // and on arrival, 150-190 px off, turns round to face CHAD and watches: in shot,
+        // clear of the fight
+        force('sit', 'sit');
+        G.player.x = tg.x - 30;
+        petsScatter();
+        let watchAt = -1;
+        for (let i = 0; i < 360 && watchAt < 0; i++) {
+          tick(1);
+          if (!tg.anim && !tg.hurry && (tg.state === 'stand' || tg.state === 'sit')
+            && (G.player.x - tg.x) * tg.face > 0) watchAt = i;
+        }
+        const off = Math.abs(tg.x - G.player.x);
+        const watching = watchAt > 0 && watchAt < 300 && off >= 140 && off <= 210;
+        t('hub-lion-super-watch-distance-time' + (watching ? '' : ` ${off | 0}px ${watchAt}t`), watching);
+        t('hub-lion-never-cuts' + (cuts.length ? '(' + cuts.slice(0, 4).join(' ') + ')' : ''), cuts.length === 0);
+        force('sit', 'sit');
       }
       // the master suite: she shifts about on her own and speaks now and then. She does
       // NOT react to him, so walking up must change nothing.
@@ -1452,11 +1612,7 @@ if (autoMode) {
       step(['jet-board','takeoff','flight','india-approach','landing','disembark','papers'].reduce((n,phase)=>n+TRAVEL_DURATIONS[phase],0)-G.travel.t);
       t('arrival-returns-control', G.travel.phase === 'arrival-exit');
       step(2); G.travel.x=968; G.travel.y=208; tap('use'); step(35);
-      t('airport-exit-reaches-loading', G.state === 'loading' && G.stage.id === 'train');
-      step(180); tap('attack'); step(30);
-      t('loading-waits-for-use', G.state === 'loading');
-      tap('use'); step(30);
-      t('loading-enters-train-intro', G.state === 'intro' && G.stage.id === 'train');
+      t('airport-exit-enters-train-intro', G.state === 'intro' && G.stage.id === 'train');
 
       enterHub(true);
       {
@@ -1469,7 +1625,7 @@ if (autoMode) {
       }
       // the room pauses like a stage does, and a paused room is frozen solid
       {
-        const tg = hubTiger();
+        const tg = hubLion();
         tap('pause');
         const frozenT = G.time, frozenX = tg.x;
         step(60);
@@ -1483,9 +1639,8 @@ if (autoMode) {
 
       setState('title');
       startGame(STAGES.findIndex((s) => s.id === 'delhi'));
-      t('delhi-loading-card', G.state === 'chapter-card');
-      step(2); tap('use'); step(2); t('intro-state', G.state === 'intro');
-      step(G.stage.introTicks+2); t('play-state', G.state === 'play');
+      t('intro-state', G.state === 'intro');
+      step(1); step(G.stage.introTicks+2); t('play-state', G.state === 'play'); // the intro variant sets its length on its first tick
       t('delhi-arrival', G.stage.id === 'delhi' && G.stage.arrival === 'market');
       // One act, deliberately: the rest were cut to be rebuilt one at a time. What still
       // has to hold is that every act names a boss that exists.
@@ -1585,7 +1740,11 @@ if (autoMode) {
         G.player.x = prop.x - 20; G.player.y = prop.y; G.player.face = 1;
         prop.hurt(999, 1);
         t('prop-breaks', prop.broken === true);
+        const zones0 = (G.zones || []).length;
+        step(60);
+        t('broken-prop-bursts-and-leaves-nothing', !G.effects.some(e => e.type === 'propChunk' || e.type === 'propFlash') && (G.zones || []).length <= zones0);
       }
+      t('breakables-leave-no-floor-hazard', Object.values(PROP_TYPES).every(T => !T.burst));
       G.pickups.length = 0;
       const lootEnemy = spawnEnemy('goonda', G.player.x + 30, G.player.y);
       lootEnemy.hurt(999, 1, true, true);
@@ -1630,6 +1789,7 @@ if (autoMode) {
       G.stage.lanes = [];
       G.stage.pits = [{ x0: 0, x1: 99999, y: FLOOR_TOP + 20 }];
       {
+        G.player.x = G.camX + 200;   // mid-screen, wherever the previous check left him
         const lip = laneMin(G.player.x);
         const wet = spawnEnemy('goonda', G.player.x + 40, lip + 6);
         wet.hp = 400; wet.maxhp = 400;
@@ -1664,12 +1824,30 @@ if (autoMode) {
       {
         const others = Object.entries(PROP_TYPES).filter(([k, T]) => T.drop === 'life');
         const lifeKinds = others.map(([k]) => k).sort().join(',');
-        t('train-one-up-preserved', STAGES.find(s=>s.id==='train').props.filter(q=>PROP_TYPES[q.kind].drop==='life').length===1);
+        const dropOf = (q) => ('drop' in q ? q.drop : PROP_TYPES[q.kind].drop);
+        t('train-one-up-preserved', STAGES.find(s=>s.id==='train').props.filter(q=>dropOf(q)==='life').length===1);
+        t('one-up-rare', STAGES.flatMap(s=>s.props||[]).filter(q=>dropOf(q)==='life').length===1);
+        // Health economy (tools/verification/breakables_balance.cjs): no food in the harmless opening
+        // fight, a lassi (prop or recovery) in the last 900 px before every boss or miniboss, and one
+        // within 600 px after each miniboss, outside its arena.
+        const lassiAt = (s, a, b) => s.props.some(q=>dropOf(q)==='shake'&&q.x>=a&&q.x<b) || s.waves.some(q=>q.recovery&&q.x>=a&&q.x<b);
+        t('no-food-in-opening-fight', STAGES.every(s=>!s.props.some(q=>dropOf(q)&&dropOf(q)!=='life'&&Math.abs(q.x-s.waves[0].x)<240)));
+        t('lassi-before-every-boss', STAGES.every(s=>s.waves.filter(q=>q.boss||q.miniboss).every(q=>lassiAt(s,q.x-900,q.x))));
+        t('lassi-after-every-miniboss', STAGES.every(s=>s.waves.filter(q=>q.miniboss).every(q=>s.props.some(r=>dropOf(r)==='shake'&&r.x>(q.camX??q.x-60)+480&&r.x<q.x+600))));
+        {
+          const bare = (G.stage.props || []).find(q => 'drop' in q && q.drop === null);
+          if (bare) {
+            G.pickups.length = 0;
+            const pr = createProp(bare.kind, bare.x, bare.y, bare.z);
+            pr.hurt(999, 1);
+            t('score-only-placement-drops-nothing', pr.broken && G.pickups.length === 0);
+          } else t('score-only-placement-drops-nothing', false);
+        }
         G.pickups.length = 0;
         // Isolate the expiry check from live wave spawns and knockback pickup collection.
         G.enemies.length=0;G.spawnQueue=[];G.waveActive=false;G.waveIndex=G.stage.waves.length-1;
         G.player.dying=false;G.player.state='idle';G.player.vx=G.player.vy=G.player.z=0;
-        G.player.invuln=1000;
+        G.player.invuln=1000;G.player.x=G.camX+160;
         const box = createProp('nr_contraband', G.player.x + 120, G.player.y);
         G.props.push(box);
         box.hurt(999, 1);
@@ -1691,9 +1869,11 @@ if (autoMode) {
         t('delhi-eight-connected-areas', INDIA_AREAS.delhi.length===8 && st.width===6480);
         t('delhi-two-boss-fights',w.filter(q=>q.miniboss||q.boss).length===2 && w.at(-1).boss);
         t('waves-are-ordered-and-inside-the-route',w.every((q,i)=>q.x>=0&&q.x<st.width&&(!i||q.x>w[i-1].x)));
-        t('culvert-is-short-and-clear',!w.some(q=>q.x>3240&&q.x<4050)&&810/82.8<12);
+        // The culvert stays a short passage: one small dock-crew introduction at most, no reserves.
+        const culvert=w.filter(q=>q.x>3240&&q.x<4050);
+        t('culvert-is-short-and-clear',culvert.length<=1&&culvert.every(q=>!q.boss&&!q.miniboss&&q.spawns.length<=3&&!q.reserves?.length)&&810/82.8<12);
         t('delhi-fresh-enemy-families',w.flatMap(q=>q.spawns).every(k=>k.startsWith('ic_')));
-        t('delhi-healing-placed-along-route',st.props.filter(q=>PROP_TYPES[q.kind].drop==='shake').length>=6);
+        t('delhi-healing-placed-along-route',st.props.filter(q=>('drop' in q?q.drop:PROP_TYPES[q.kind].drop)==='shake').length>=6);
       }
 
       // ---- a miniboss with a designed arena gets a real reveal ----
@@ -1707,7 +1887,7 @@ if (autoMode) {
         step(3);
         t('miniboss-gets-a-reveal', G.state === 'bossintro' && !!G.boss && G.boss.mini === true);
         t('miniboss-arena-is-designed', Math.round(G.camLock) === wv.camX);
-        step(210);
+        step((G.boss.delhi?.introTicks || 195) + 15);
         // and the wave it interrupted is handed back rather than lost
         t('miniboss-reveal-returns-the-wave',
           G.state === 'play' && G.waveActive === true && G.locked === true);
@@ -1729,32 +1909,35 @@ if (autoMode) {
           G.player.hp = 100; G.player.state = 'idle'; G.player.invuln = 0; G.player.z = 0; G.player.vz = 0;
           G.player.x = ws[i].x + 2; G.player.y = 215; G.camX = Math.max(0, ws[i].x - 255);
           step(3);
-          if (G.state === 'bossintro') step(210);
+          if (G.state === 'bossintro') step((G.boss?.delhi?.introTicks || 195) + 15);
           G.enemies.length = 0;
           return G.boss;
         };
         let b=jump('vendor');
-        t('vendor-arrives-with-cart-and-valve',!!b.cart&&!!b.valve&&G.props.includes(b.station));
-        b.cart.hurt(9999,1,true,true);step(2);
-        t('vendor-loses-rush-permanently',b.cartGone&&b.cart.broken);
+        t('vendor-arrives-with-his-kitchen',G.props.includes(b.kadai)&&b.fightProps.length===1&&b.phase===1);
         b.hurt(9999,1,true,true);step(INDIA_FINISHERS['vendor-finish'].ticks+80);
-        // THE DREDGER: the bucket, the crew, the cab, the winch, the man
+        // THE DREDGER: the grab, the crew, the cab glass, the man
         b = jump('dredger');
         t('dredger-rests-out-of-reach', !!b && b.phase === 'machine' && b.z >= 60);
         t('dredger-arena-is-the-pontoon', G.camX === G.camLock && b.reflectTarget.x - G.camX < W);
         let crew = false;
         for (let i = 0; i < 400 && !crew; i++) { step(1); crew = G.enemies.some((e) => e.trainType === 'ic_docker'); }
         t('dredger-always-has-crew', crew);
-        G.shots = [{ kind: 'wrench', x: b.rail.x - 60, y: 215, z: 0, vx: -3, vz: 0, dmg: 9, t: 0, life: 400,
+        // The glass takes several cracks: a returned wrench is one, a returned swing two.
+        const glass0 = b.glass;
+        G.shots = [{ kind: 'wrench', x: b.reflectTarget.x - 60, y: 215, z: 0, vx: -3, vz: 0, dmg: 9, t: 0, life: 400,
           source: b, parryClass: 'reflect', reflected: true }];
         for (let i = 0; i < 150 && G.shots.length; i++) step(1);
-        t('dredger-reflected-scrap-cracks-the-cab', b.glass === 2 && G.shots.length === 0);
-        b.winch.hurt(999, 1); step(200);
-        const stopped = b.winchGone === true && ['grounded','windup','hose'].includes(b.state) && b.z === 0;
-        step(400);
-        t('dredger-winch-stops-the-bucket', stopped && ['grounded','windup','hose'].includes(b.state) && b.z === 0);
-        b.hurt(b.hp - 80, 1, false, false); step(5);
-        t('dredger-operator-comes-out', b.phase === 'operator' && b.label === 'THE THEKEDAR' && b.maxhp === 360);
+        t('dredger-reflected-scrap-cracks-the-cab', b.glass === glass0 - 1 && G.shots.length === 0);
+        G.enemies.length = 0; b.state = 'swing'; b.t = 10; b.pattern = 'grabswing'; b.z = 20; b.parried(0, 1); step(60);
+        t('dredger-parried-swing-returns-to-sender', b.glass === glass0 - 3 && b.z === 0 && b.state === 'stagger');
+        // Lethal grab damage cuts it loose for MAGNET MODE; lethal magnet damage then sends the man down.
+        b.componentApplying = true; b.hurt(b.hp, 1, true, false); b.componentApplying = false;
+        for (let i = 0; i < 400 && !(b.rig === 'magnet' && b.state === 'idle'); i++) step(1);
+        t('dredger-cuts-loose-to-the-magnet', b.rig === 'magnet' && b.phase === 'machine');
+        G.enemies.length = 0; G.shots = []; b.state = 'slammed'; b.t = 0; b.z = 0; b.hurt(9999, 1, true, false);
+        for (let i = 0; i < 400 && !(b.phase === 'operator' && b.hp === b.maxhp); i++) step(1);
+        t('dredger-operator-comes-out', b.phase === 'operator' && b.label === 'THE THEKEDAR' && b.hp === b.maxhp && b.maxhp >= 300);
         b.hurt(9999, 1, true, true); step(80);
         t('dredger-dies-as-a-man', b.dead === true && b.state === 'dying');
         // hand the suite a quiet street again
@@ -1767,12 +1950,12 @@ if (autoMode) {
         setState('play');
       }
 
-      t('river-music-follows-geography',G.stage.music==='stage1a'&&G.stage.musicB==='stage1b'&&G.stage.musicBX===4050);
+      t('river-music-follows-geography',G.stage.music==='delhi_a'&&G.stage.musicB==='delhi_b'&&G.stage.musicBX===4050);
 
       // Fresh train route invariants. Detailed cinematic checks live in train_rebuild_check.cjs.
       {
         startStage(0);setState('play');G.fade=0;
-        t('train-is-act-one',G.stage.id==='train'&&G.stage.boss==='vikram'&&!!G.train);
+        t('train-is-act-one',G.stage.id==='train'&&G.stage.boss==='neta'&&!!G.train);
         t('train-office-enforcers-before-inspector',G.stage.waves.filter(w=>!w.boss).length===13&&G.stage.waves[7].spawns.length===2&&G.stage.waves[8].miniboss==='conductor');
         t('train-floor-clears-seats',laneMin(3300)===205&&laneMax(3300)===241);
         t('train-floor-clears-counter',laneMin(5500)===194);
@@ -1931,12 +2114,11 @@ if (autoMode) {
         && (!G.boss.def.cart || (!!G.boss.cart && G.props.includes(G.boss.cart))));
       // "a breakable in the world that deletes a pattern for good" used to be asserted
       // on RAJA's rickshaw. No stage names him any more, so the contract is asserted
-      // where it is actually reachable - on the thela's cart above, and on the dredger's
-      // winch below once that fight exists. Kept as an explicit check rather than a
+      // where it is actually reachable - on the thela's cart above. Kept as an explicit check rather than a
       // guarded block that silently stops running when the boss changes.
       t('boss-breakable-contract-is-covered',
         PROP_TYPES.thelacart.hp > 0 && (!G.boss.def.cart || G.boss.cartGone !== undefined));
-      step(205);
+      step((G.boss?.delhi?.introTicks || 195) + 10);
       t('boss-intro-ends', G.state === 'play');
       // The rest of the boss state machine, which used to be asserted on YADAV in Act IV:
       // armour at full health, enrage on the way through half, and death.
@@ -1944,21 +2126,27 @@ if (autoMode) {
         G.boss.hurt(Math.ceil(G.boss.maxhp / 2) + 1, 1, false, false);
         t('boss-half-health-policy', G.boss.delhi?.noRage ? G.boss.enraged === false : G.boss.enraged === true);
         G.boss.hurt(9999, 1, true, true);
+        // The Dredger's steel only gives on the deck; break it the way its cab does.
+        if(G.boss.phase==='machine'){const b=G.boss;b.componentApplying=true;b.hurt(9999,1,true,false);b.componentApplying=false;   // the grab: cut loose to the magnet
+          for(let i=0;i<400&&!(b.rig==='magnet'&&b.state==='idle');i++)step(1);
+          G.enemies.length=0;G.shots=[];b.state='slammed';b.t=0;b.z=0;b.hurt(9999,1,true,false);   // the magnet: the man comes down
+          for(let i=0;i<400&&!(b.phase==='operator'&&b.hp===b.maxhp);i++)step(1);}
         if(G.boss.phase==='operator'&&!G.boss.dead){G.hitstop=0;step(2);G.boss.hurt(9999,1,true,true);}
         t('boss-dies', G.boss.dead === true);
       }
       G.enemies.length = 0; G.spawnQueue = [];
-      step(1000);
+      // The finisher's hit-stops stretch it past its tick count; wait for the tally itself.
+      for (let i = 0; i < 1400 && G.state !== 'clear'; i++) step(1);
       t('act1-clear', G.state === 'clear');
-      step(200); debugPress('use'); step(4); debugRelease('use'); step(36);
+      step(RESULTS_CONTINUE); debugPress('use'); step(4); debugRelease('use'); step(36);
       // the tally goes straight on to the next act, the arcade way; home is after the last
-      t('delhi-clear-goes-to-refund', G.state === 'chapter-card' && G.stage.id === 'refund');
-      startStage(0); setState('clear'); debugPress('use'); step(200);
+      t('delhi-clear-goes-to-refund', G.state === 'intro' && G.stage.id === 'refund');
+      startStage(0); setState('clear'); debugPress('use'); step(RESULTS_CONTINUE);
       t('train-clear-held-use-waits',G.state==='clear'&&!G.transition);
       debugRelease('use'); step(1); debugPress('attack'); step(4); debugRelease('attack'); step(36);
       t('train-clear-attack-ignored',G.state==='clear'&&!G.transition);
       debugPress('use'); step(4); debugRelease('use'); step(36);
-      t('train-clear-goes-to-delhi', G.state === 'chapter-card' && G.stage.id === 'delhi');
+      t('train-clear-goes-to-delhi', G.state === 'intro' && G.stage.id === 'delhi');
       G.stageIndex = 0; enterHub(false);
       t('clear-brings-home-a-relic', G.hubRelicKey === STAGES[0].boss && G.hubRelicT > 0);
       // Clearing an act is the one thing that writes the save, so this is the point at

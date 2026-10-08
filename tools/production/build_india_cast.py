@@ -13,15 +13,10 @@ from PIL import Image, ImageFilter, ImageDraw
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'assets/sources/production/stages'
 FRAMES = ROOT / 'assets/frames'
-DELHI = {'brawler', 'runner', 'enforcer', 'heavy', 'kitchen', 'docker', 'vendor'}
-KEYS = ['brawler', 'runner', 'enforcer', 'heavy', 'kitchen', 'docker',
-        'headset', 'operator', 'thrower', 'security', 'cabinet', 'lead', 'vendor', 'closer', 'closer_damaged']
-HEIGHT = {'heavy':94,'cabinet':92,'vendor':98,'closer':96,'closer_damaged':96,'enforcer':90,'security':90,'docker':90}
-# The model omitted the extra idle on some rows. Preserve the actual poses,
-# rather than cutting them into a fictitious six-column grid.
-SHORT_ROW = {'vendor':{1:[6,7,8,10,11],2:[12,13,15,16,17]},
-             'docker':{1:[6,7,8,10,11]},'enforcer':{1:[6,7,8,10,11]},
-             'headset':{1:[6,7,8,10,11]},'cabinet':{1:[6,7,8,10,11]}}
+# Delhi's street cast comes from build_delhi_street_cast.py, the vendor from build_vendor_kitchen.py.
+# Refund Tower's office families come from build_refund_cast.py; the closer is registered here.
+KEYS = ['closer', 'closer_damaged']
+HEIGHT = {'closer':96,'closer_damaged':96}
 
 def matte(image, checker=False):
     a = np.array(image.convert('RGBA'))
@@ -97,17 +92,14 @@ def main():
     counts={}
     for name in KEYS:
         key='ic_'+name
-        stage='dirty_delhi' if name in DELHI else 'refund_tower'
-        source=SOURCE/stage/'rebuild'
-        image=matte(Image.open(source/f'{key}_{"common" if name=="vendor" else "performance"}.png'),name=='brawler')
-        rows=[[8,9,10],[11,12,13],[16,17,18],[19,20,21]] if name=='vendor' else [SHORT_ROW.get(name,{}).get(row,list(range(row*6,row*6+6))) for row in range(4)]
-        cells=grid(image,rows)
-        body_heights=[cells[i].getbbox()[3]-cells[i].getbbox()[1] for i in ([8,9,10] if name=='vendor' else range(8))]
+        source=SOURCE/'refund_tower/rebuild'
+        image=matte(Image.open(source/f'{key}_performance.png'))
+        cells=grid(image,[list(range(row*6,row*6+6)) for row in range(4)])
+        body_heights=[cells[i].getbbox()[3]-cells[i].getbbox()[1] for i in range(8)]
         scale=HEIGHT.get(name,86)*2/float(np.median(body_heights))
         outdir=FRAMES/key;outdir.mkdir(exist_ok=True)
         files={}
         for i,im in cells.items():
-            if name=='vendor' and i in [22,23]: continue # rejected: second person baked into pose
             frame=register(im,scale,i<8)
             path=outdir/f'performance_{i:02}.png';frame.save(path)
             files[i]=str(path.relative_to(FRAMES))
@@ -119,23 +111,21 @@ def main():
                 'getup':poses(20,21,8),'grab':poses(22) or poses(11),
                 'throw':poses(22,23) or poses(12,13),'ram':poses(11,12,13),
                 'beam':poses(14,15,15,13),'call':poses(14,15,15),'seated':poses(20)}
-        if name=='thrower':states['atk']=poses(14,15,13)
         gait_cells=grid(matte(Image.open(source/f'{key}_gait.png')),[list(range(4)),list(range(4,8))])
         gh=[im.getbbox()[3]-im.getbbox()[1] for im in gait_cells.values()]
         gait_scale=HEIGHT.get(name,86)*2/float(np.median(gh))
         for i,im in gait_cells.items():register(im,gait_scale,True).save(outdir/f'gait_{i:02}.png')
         states['walk']=states['run']=[f'{key}/gait_{i:02}.png' for i in range(8)]
-        if name in ('vendor','closer','closer_damaged'):
-            actions=matte(Image.open(source/f'{key}_actions.png'))
-            action_cells=grid(actions,[list(range(i*3,i*3+3)) for i in range(4)])
-            # The action sheet uses a different cell size. One common scale from
-            # its upright poses retains crouch and leaning height naturally.
-            ah=[action_cells[i].getbbox()[3]-action_cells[i].getbbox()[1] for i in [0,3,5,9,10,11]]
-            action_scale=HEIGHT[name]*2/float(np.median(ah))
-            for i,im in action_cells.items():
-                register(im,action_scale,wide=name=='vendor').save(outdir/f'action_{i:02}.png')
-            for row,state in enumerate(['ladle','utensil','rush','valve'] if name=='vendor' else ['boxing','handset','shove','call']):
-                states[state]=[f'{key}/action_{i:02}.png' for i in range(row*3,row*3+3)]
+        actions=matte(Image.open(source/f'{key}_actions.png'))
+        action_cells=grid(actions,[list(range(i*3,i*3+3)) for i in range(4)])
+        # The action sheet uses a different cell size. One common scale from
+        # its upright poses retains crouch and leaning height naturally.
+        ah=[action_cells[i].getbbox()[3]-action_cells[i].getbbox()[1] for i in [0,3,5,9,10,11]]
+        action_scale=HEIGHT[name]*2/float(np.median(ah))
+        for i,im in action_cells.items():
+            register(im,action_scale).save(outdir/f'action_{i:02}.png')
+        for row,state in enumerate(['boxing','handset','shove','call']):
+            states[state]=[f'{key}/action_{i:02}.png' for i in range(row*3,row*3+3)]
         manifest[key]=states
         allfiles=list(dict.fromkeys(f for fs in states.values() for f in fs))
         for p in outdir.glob('*.png'):

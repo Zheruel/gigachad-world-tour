@@ -32,7 +32,9 @@ Who Wants Some 1
 This is Some Serious Ass Kickin'!
 It's Game Time!
 Let's Get It On!
-Eat Shit and Die 1""",
+Eat Shit and Die 1
+Swallow This!
+The Price is Wrong... Bitch!""",
  'threats': """Don't Mess with Me
 I'm Not Gonna Fight You... I'm Gonna Kick Your Ass
 It's Payback Time
@@ -53,7 +55,8 @@ It's My Way or... Hell, It's My Way
 Let's Settle This Once and for All!
 When You Get to Hell... Tell 'em Duke Sent Ya
 Good, Bad... I'm the Guy with the Gun
-It's a Good Day to Die""",
+It's a Good Day to Die
+Hmhmhm, Payback Time""",
 'explosions': """Time to Blow This Joint
 Time to Blow Shit Up
 Rest in Pieces 1
@@ -132,7 +135,8 @@ Looks Like This One's History
 I am the King of the World, Baby
 That's How We Do It!
 Who's That Handsome Devil
-Killing is my Business... and Business is Good""",
+Killing is my Business... and Business is Good
+Looks Like You've Gotten Ahead of Yourself, There""",
 }
 USES = {
 'combat': 'Attack, combo or elite encounter punctuation; avoid repeating on ordinary hits.',
@@ -170,12 +174,12 @@ def main():
         if not args.source_dir:
             subprocess.run(['bsdtar','-xf',args.archive,'-C',str(source)],check=True)
         jobs=[(cat,title,source/(title+'.mp3')) for cat,lines in SELECTION.items() for title in lines.splitlines()]
-        assert len(jobs)==125
+        assert len(jobs)==129
         for _,_,path in jobs:
             if not path.is_file(): raise FileNotFoundError(path)
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
             clips=list(pool.map(build_one,jobs))
-        assert len({c['sha256'] for c in clips})==125
+        assert len({c['sha256'] for c in clips})==len(jobs)
         # Legacy performances carry their original bytes and stable slot aliases.
         # Preserve them on every rebuild; only archive-derived entries are regenerated.
         previous=json.loads((OUT/'catalog.json').read_text()) if (OUT/'catalog.json').is_file() else {}
@@ -192,5 +196,5 @@ def main():
             selectionBasis='Distinct reusable filename-labelled lines; duration and decode checks. Delivery quality and exact transcript require listening review.',
             existingVoiceAssets='Preserved legacy takes are catalogued with legacySlots; stable game slot IDs retain their original recordings.',clips=clips)
         (OUT/'catalog.json').write_text(json.dumps(catalog,indent=2,ensure_ascii=False)+'\n')
-        print(f'Built 125 curated archive clips plus {len(legacy)} preserved legacy takes: {len(clips)} total clips ({sum(c["duration"] for c in clips):.1f}s). Listening verification remains pending.')
+        print(f'Built {len(jobs)} curated archive clips plus {len(legacy)} preserved legacy takes: {len(clips)} total clips ({sum(c["duration"] for c in clips):.1f}s). Listening verification remains pending.')
 if __name__=='__main__': main()

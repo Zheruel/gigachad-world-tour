@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=requ
  const p=await browser.newPage({viewport:{width:1000,height:700}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.goto('http://localhost:8011/?auto=walk');await p.waitForFunction(()=>window.__game?.G.state==='play');
  const checks=await p.evaluate(async()=>{
-  const {drawDisplayTitle,loadDisplayType}=await import('/js/display_type.js'),{RESULTS_LAYOUT,resultPortraitFrame}=await import('/js/results.js');await loadDisplayType();
+  const {drawDisplayTitle,loadDisplayType}=await import('/js/display_type.js'),{RESULTS_LAYOUT,resultPortraitFrame,RESULTS_RANK:R}=await import('/js/results.js');await loadDisplayType();
   const out=[],check=(n,v)=>out.push([n,!!v]);
   for(const [text,cx,cy,h,w]of [['CHAD WINS',240,26,22,330],...['S','A','B','C'].map(r=>['RANK '+r,74,202,30,32])]){
    const c=document.createElement('canvas');c.width=480;c.height=270;const x=c.getContext('2d');drawDisplayTitle(x,text,cx,cy,{height:h,maxWidth:w,anchor:[.5,.5]});
@@ -15,20 +15,20 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=requ
    check(text+' centered gold face',Math.abs((minX+maxX+1)/2-cx)<=1&&Math.abs((minY+maxY+1)/2-cy)<=1);
    if(text==='CHAD WINS')check('title clears inner header border',minY>=RESULTS_LAYOUT.title.y&&maxY<RESULTS_LAYOUT.title.y+RESULTS_LAYOUT.title.h);
   }
-  check('all twelve authored poses used',new Set(Array.from({length:360},(_,t)=>resultPortraitFrame(t+45))).size===12);
-  check('arms folded before rank stamp',resultPortraitFrame(164)===7&&resultPortraitFrame(165)===8);
-  check('arms stay folded after the rank',Array.from({length:960},(_,t)=>resultPortraitFrame(t+165)).every(f=>f>=8));
-  check('breathing repeats deterministically',Array.from({length:240},(_,t)=>resultPortraitFrame(t+165)===resultPortraitFrame(t+405)).every(Boolean));
+  check('eleven close-up frames used (cell 7 retired)',(s=>s.size===11&&!s.has(7))(new Set(Array.from({length:600},(_,t)=>resultPortraitFrame(t+45)))));
+  check('cigar lit before the rank stamps',resultPortraitFrame(R-1)===5&&resultPortraitFrame(R)===5);
+  check('cigar stays in after the rank',Array.from({length:960},(_,t)=>resultPortraitFrame(t+R)).every(f=>[5,10,11].includes(f)));
+  check('every pose holds at least four ticks',(()=>{let run=1,min=99;for(let t=46;t<R+480;t++){if(resultPortraitFrame(t)===resultPortraitFrame(t-1))run++;else{min=Math.min(min,run);run=1;}}return min>=4;})());
   return out;
  });
  const out='tmp/review/results-registered';fs.mkdirSync(out,{recursive:true});
- // Every three ticks through arm folding, then all breathing holds.
- for(const t of [...Array.from({length:21},(_,i)=>108+i*3),205,245,285,325,365,404,405]){
+ // Every three ticks through the performance, then the idle loop.
+ for(const t of [...Array.from({length:66},(_,i)=>48+i*3),232,245,262,300,325,340,365,420,469]){
   const b64=await p.evaluate(t=>{const g=__game;g.trainScene('clear',t);g.G.results={rank:'B',cues:new Set()};g.G.clearStats={hits:238,kos:47,combo:18,bonus:1500};g.G.score=42650;g.render();const c=document.createElement('canvas');c.width=480;c.height=270;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(document.querySelector('#game'),0,0,480,270);return c.toDataURL().split(',')[1]},t);
   fs.writeFileSync(`${out}/${t}.png`,Buffer.from(b64,'base64'));
  }
  for(const rank of ['S','A','B','C']){
-  await p.evaluate(rank=>{__game.trainScene('clear',240);__game.G.results={rank,cues:new Set()};__game.render()},rank);
+  await p.evaluate(rank=>{__game.trainScene('clear',290);__game.G.results={rank,cues:new Set()};__game.render()},rank);
   await p.locator('#game').evaluate(c=>{c.style.width='960px';c.style.height='540px'});await p.locator('#game').screenshot({path:`${out}/rank-${rank}-2x.png`});
  }
  assert.deepEqual(errors,[]);console.log({checks,errors});assert(checks.every(c=>c[1]));

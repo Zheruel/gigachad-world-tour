@@ -12,7 +12,7 @@ report=R/'tmp/review/edge-audit/candidates.json'
 reviewed=[]
 for r in json.loads(report.read_text()):
  p=r['path']
- if '/frames/' in p or any(x in p for x in ['/props/','/prop_', '/bartender_', '/passenger_seated','/passengers.png','/office_stand.png','/office_life.png','/chad_cinema.png','/roof_escape.png']):reviewed.append(p)
+ if '/frames/' in p or any(x in p for x in ['/props/','/prop_', '/bartender_', '/passenger_seated','/passengers.png','/office_stand.png','/office_life.png','/chad_cinema.png']):reviewed.append(p)
 # Repeat from selected originals, even once the runtime detector stops flagging them.
 if S.exists():reviewed+=['assets/'+str(p.relative_to(S)) for p in S.rglob('*.png')]
 changed=[]

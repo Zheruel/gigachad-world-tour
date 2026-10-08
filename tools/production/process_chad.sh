@@ -34,5 +34,10 @@ $PY tools/production/process_char.py super_express --height 192 --fill .786 --re
   --src-prefix super_express --out-prefix chad_meteor_lariat \
   --src-dir assets/sources/production/chad_v3/ --no-outline
 
+# Last step for the combat sets: CHAD's gold 48-colour palette and sel-out outline (chad_style.md).
+for f in assets/frames/chad_{parry_counter,combo_power_a,combo_power_b,ragnarok_ground,ragnarok_air,meteor_lariat}_*.png; do
+  $PY tools/production/chad_palette.py "$f" "$f"
+done
+
 $PY tools/production/build_manifest.py --prune
 $PY tools/production/process_ambience.py

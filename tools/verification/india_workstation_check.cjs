@@ -2,9 +2,10 @@
 // geometry without changing the production 70-tick activation or attack budget.
 const fs=require('node:fs'),assert=require('node:assert/strict'),{chromium}=require('playwright');
 const OUT='tmp/review/workstations';
+const base=process.env.GAME_URL||`http://localhost:${process.env.PORT||8011}`;
 (async()=>{fs.mkdirSync(OUT,{recursive:true});const browser=await chromium.launch({channel:'chrome',headless:true});try{
  const page=await browser.newPage({viewport:{width:1000,height:580}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://localhost:8011/?auto=walk');await page.waitForFunction(()=>__game?.G.state==='play');
+ await page.goto(`${base}/?auto=walk`);await page.waitForFunction(()=>__game?.G.state==='play');
  const report=await page.evaluate(async()=>{
   const g=__game,G=g.G,m=await import('./js/india_office.js'),{ASSETS}=await import('./js/assets.js');
   const checks=[],check=(name,value)=>checks.push([name,!!value]);
@@ -27,7 +28,8 @@ const OUT='tmp/review/workstations';
   const n=setup();m.queueOfficeWorker(n.kind);g.press('pause');g.step(1);g.release('pause');const t=n.t;g.step(20);check('pause holds chair and entry timeline',G.paused&&n.t===t);g.press('pause');g.step(1);g.release('pause');g.step(1);check('resume continues entry once',!G.paused&&n.t>t);
   setup();const assetKeys=['ic_office_life','ic_office_stand','ic_office_chair'],saved=assetKeys.map(k=>ASSETS[k]);assetKeys.forEach(k=>ASSETS[k]=null);m.queueOfficeWorker(G.india.office[0].kind);for(let i=0;i<70;i++){m.updateOfficeWorkers();g.render();}check('missing artwork still completes entry',G.enemies.length===1&&G.india.pendingEntries===0);assetKeys.forEach((k,i)=>ASSETS[k]=saved[i]);
   setup();m.queueOfficeWorker(G.india.office[0].kind);for(let i=0;i<27;i++)m.updateOfficeWorkers();const snapshot=JSON.stringify(G.india.office),pending=G.india.pendingEntries;g.render();g.render();check('render does not mutate office state',JSON.stringify(G.india.office)===snapshot&&G.india.pendingEntries===pending);
-  const ctx=document.createElement('canvas').getContext('2d');let chairs=0,actors=0;const draw=ctx.drawImage.bind(ctx);ctx.drawImage=(im,...args)=>{if(im===ASSETS.ic_office_chair)chairs++;draw(im,...args);};
+  const ctx=document.createElement('canvas').getContext('2d');let chairs=0,actors=0;   // whole chairs only: a seated worker's near armrest is a second, cropped pass
+ const draw=ctx.drawImage.bind(ctx);ctx.drawImage=(im,...args)=>{if(im===ASSETS.ic_office_chair&&args.length===4)chairs++;draw(im,...args);};
   G.camX=0;m.drawOfficeWorkers(ctx,0,()=>actors++,()=>actors++);const visible=G.india.office.filter(n=>n.x>=-90&&n.x<=570).length;check('one rendered chair per visible workstation',chairs===visible);
   chairs=actors=0;G.india.review.chairs=false;m.drawOfficeWorkers(ctx,0,()=>actors++,()=>actors++);check('chair isolation leaves workers visible',chairs===0&&actors===visible);
   chairs=actors=0;G.india.review.chairs=true;G.india.review.workers=false;m.drawOfficeWorkers(ctx,0,()=>actors++,()=>actors++);check('worker isolation leaves one chair',chairs===visible&&actors===0);
@@ -46,7 +48,7 @@ const OUT='tmp/review/workstations';
   // Record both presentation sizes; the capture is reproducible review evidence.
   for(const scale of [1,2]){
    const context=await browser.newContext({viewport:{width:480*scale,height:270*scale},recordVideo:{dir:`${OUT}/playback-${scale}x`,size:{width:480*scale,height:270*scale}}});
-   const live=await context.newPage();await live.goto('http://localhost:8011/?auto=walk');await live.waitForFunction(()=>__game?.G.state==='play');
+   const live=await context.newPage();await live.goto(`${base}/?auto=walk`);await live.waitForFunction(()=>__game?.G.state==='play');
    await live.addStyleTag({content:`html,body{margin:0!important;padding:0!important;overflow:hidden!important}#game{position:fixed!important;inset:0!important;width:${480*scale}px!important;height:${270*scale}px!important;margin:0!important;max-width:none!important;max-height:none!important}`});
    for(let index=0;index<12;index++)await live.evaluate(async(index)=>{
     const g=__game,G=g.G,m=await import('./js/india_office.js');g.indiaScene('refund','office');G.boss=null;G.enemies=[];G.props=[];G.flash=G.shake=0;

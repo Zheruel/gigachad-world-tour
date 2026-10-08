@@ -64,7 +64,9 @@ export const G = {
   combo: 0,          // current hit chain
   comboT: 0,         // frames left before the chain drops
   rank: -1,          // index into RANKS the chain last reached
-  rankT: 0,          // frames the rank word has left on the HUD
+  rankT: 0,          // milestone-entry clock for the style HUD
+  rankVoiceT: 0,     // brief settling time before announcing the latest rank
+  comboHitAt: -999,  // simulation tick of the last hit, for the HUD pulse
   bestCombo: 0,
   waveIndex: -1,
   waveActive: false,
@@ -85,7 +87,7 @@ export const G = {
   hubStation: null,  // which one: 'lounge' or 'bar'
   hubRelicT: 0,      // frames left of the "you came home with this" beat
   hubRelicKey: null, // which boss that relic came off
-  actors: [],        // scenery that draws itself and y-sorts with the fighters (the tiger)
+  actors: [],        // scenery that draws itself and y-sorts with the fighters (the lion)
   bestComboAll: 0,   // best combo across every run, for the lair's records panel
   actBest: {},       // stage index -> best score, same
   shakePoster: 0,    // frames of "that one is locked" wobble
@@ -154,7 +156,8 @@ export function airborne(e) {
 export const WALL_PAD = 14;
 export const SPLAT_SPEED = 1.5;   // |vx| above this splats instead of just stopping
 
-export function arenaMin() { return G.camX + WALL_PAD + (G.arenaSqueeze || 0); }
+// A live boss can pad its left wall (arenaLeftPad): a body knocked down against it stays on screen.
+export function arenaMin() { return G.camX + WALL_PAD + (G.arenaSqueeze || 0) + (G.boss && !G.boss.dead && G.boss.arenaLeftPad || 0); }
 export function arenaMax() { return G.camX + W - WALL_PAD - (G.arenaSqueeze || 0); }
 
 // Clamps a body inside the arena. Returns 0 for no wall contact, or -1/+1 for
@@ -203,9 +206,10 @@ export function laneMin(x) {
   for (const p of pits) if (x >= p.x0 && x < p.x1) return p.y;
   return FLOOR_TOP;
 }
+// A live boss can also raise the front of the lane (laneBot): nobody stands under its health bar.
 export function laneMax(x) {
-  const l = laneAt(x);
-  return l ? l.bot : FLOOR_BOT;
+  const l = laneAt(x), bot = l ? l.bot : FLOOR_BOT, cap = G.boss && !G.boss.dead && G.boss.laneBot;
+  return cap ? Math.min(bot, cap) : bot;
 }
 
 // Puts a body back on the lane and returns -1 when it went over the lip of a real
@@ -224,7 +228,7 @@ export function clampToLane(e) {
     return l && l.edge && helpless ? 1 : 0;
   }
   if (e.y >= lo) return 0;
-  const fell = lo > FLOOR_TOP && helpless && G.stage?.id !== 'train';
+  const fell = lo > FLOOR_TOP && helpless && G.stage?.id !== 'train' && !laneAt(e.x)?.solidBack;
   e.y = lo;
   return fell ? -1 : 0;
 }
@@ -242,29 +246,44 @@ export function addMeter(n) {
 // (audio/voice/rank_<key>_1.wav and _2). Reaching a rank says it; from B up, if the
 // announcer is missing, Duke has something to say instead.
 export const RANKS = [
-  { at: 3, letter: 'D', word: 'DISMAL', key: 'dismal', color: '#c8c0e0' },
-  { at: 6, letter: 'C', word: 'CRAZY', key: 'crazy', color: '#ffd94a' },
+  { at: 3, letter: 'D', word: 'WARMING UP', key: null, color: '#c8c0e0' },
+  { at: 6, letter: 'C', word: 'CHAD ENERGY', key: null, color: '#ffd94a' },
   { at: 10, letter: 'B', word: 'BADASS', key: 'badass', color: '#ffb040' },
   { at: 15, letter: 'A', word: 'APOCALYPTIC', key: 'apocalyptic', color: '#ff7a3a' },
   { at: 22, letter: 'S', word: 'SAVAGE', key: 'savage', color: '#ff4f6a' },
   { at: 30, letter: 'SS', word: 'SICK SKILLS', key: 'sickskills', color: '#e060ff' },
-  { at: 40, letter: 'SSS', word: 'SMOKIN\' SEXY STYLE', key: 'sss', color: '#fff2a0' },
+  { at: 40, letter: 'SSS', word: 'GIGACHAD', key: 'sss', color: '#fff2a0' },
 ];
+
+export const COMBO_TICKS = 150;
+export function resetCombo() {
+  G.audio?.stopStyleVoice?.();
+  G.combo = G.comboT = G.rankT = G.rankVoiceT = 0;
+  G.rank = -1;
+  G.comboHitAt = -999;
+}
+export function updateCombo() {
+  if (G.comboT > 0 && --G.comboT === 0) resetCombo();
+  if (G.rankT > 0) G.rankT--;
+  if (G.rankVoiceT > 0 && --G.rankVoiceT === 0) {
+    const key = RANKS[G.rank]?.key;
+    if (key) G.audio?.styleVoice?.([`rank_${key}_1`, `rank_${key}_2`]);
+  }
+}
 
 // Player landed a hit: extend the combo chain, return the new count.
 export function bumpCombo() {
   G.combo++;if(G.grading)G.grading.combo=Math.max(G.grading.combo,G.combo);
-  G.comboT = 100;
+  G.comboT = COMBO_TICKS;
+  G.comboHitAt = G.time;
   if (G.combo > G.bestCombo) G.bestCombo = G.combo;
   const r = RANKS.findIndex((k) => k.at === G.combo);
   if (r >= 0) {
     G.rank = r; G.rankT = 90;
-    if (G.audio) {
-      const k = RANKS[r].key;
-      const said = G.audio.voiceRandom([`rank_${k}_1`, `rank_${k}_2`], 900, 0);
-      if (!said && r >= 2) G.audio.voiceRandom(DUKE_COMBO, 1600);
-    }
+    G.audio?.stopStyleVoice?.();
+    // Multi-target hits can cross several thresholds together. Announce only
+    // the settled badge; a busy dialogue drops the line instead of queuing it.
+    G.rankVoiceT = RANKS[r].key ? 6 : 0;
   }
   return G.combo;
 }
-const DUKE_COMBO = ['duke_combo_1', 'duke_combo_2', 'duke_combo_3', 'duke_combo_4', 'duke_combo_5', 'duke_combo_6', 'duke_gotta_hurt', 'duke_look_good'];

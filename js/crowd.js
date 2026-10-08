@@ -51,11 +51,6 @@ export const KIND_META = {
 export const PLANES = { facade: 0.82, street: 0.94 };
 export const HERO_H = 96;
 
-export function expectedHeight(kind) {
-  const m = KIND_META[kind];
-  return m ? Math.round(HERO_H * PLANES[m.plane] * m.pose) : 0;
-}
-
 // how close a fight has to get before the market notices it
 const REACT_NEAR = 96;
 const REACT_CLOSE = 52;
@@ -86,8 +81,6 @@ export function loadCrowd() {
 
 export function crowdKey(d) { return `${d.kind}@${d.x}`; }
 export function crowdOverrides() { return overrides; }
-export function setOverride(key, o) { overrides[key] = { ...overrides[key], ...o }; }
-
 // Turn a stage's authored crowd list into live actors.
 export function initCrowd(list) {
   G.crowd = (list || []).map((d, i) => {
@@ -121,49 +114,6 @@ export function initCrowd(list) {
       react: 0,
     };
   });
-}
-
-// Pigeons on the street that scatter when you walk into them. Real sprites this
-// time - the old ones were three grey rectangles with a 3x1 bar for a 'wing'.
-export function initBirds(list) {
-  G.birds = (list || []).map((b) => ({
-    homeX: b.x, homeY: b.y, x: b.x, y: b.y,
-    vx: 0, vy: 0, flying: false, t: 0, phase: (b.x | 0) % 40,
-  }));
-}
-
-export function updateBirds() {
-  const p = G.player;
-  if (!G.birds) return;
-  for (const b of G.birds) {
-    if (!b.flying) {
-      // scatter when something big gets close
-      if (p && Math.abs(p.x - b.x) < 40 && Math.abs(p.y - b.y) < 26) {
-        b.flying = true; b.t = 0;
-        b.vx = (b.x < p.x ? -1 : 1) * (1.1 + Math.random() * 0.9);
-        b.vy = -(0.9 + Math.random() * 0.6);
-      }
-      continue;
-    }
-    b.t++;
-    b.x += b.vx; b.y += b.vy; b.vy += 0.012;
-    if (b.t > 190) {              // settle back once the street is clear again
-      b.flying = false; b.t = 0;
-      b.x = b.homeX; b.y = b.homeY; b.vx = 0; b.vy = 0;
-    }
-  }
-}
-
-export function drawBirds(ctx, camX) {
-  if (!G.birds) return;
-  for (const b of G.birds) {
-    // perched, or alternating flap frames in the air
-    const f = fx('bird', b.flying ? 1 + (((G.rawTime + b.phase) >> 2) & 1) : 0);
-    if (!f) continue;
-    const sx = Math.round(b.x - camX);
-    if (sx < -20 || sx > 500) continue;
-    blit(ctx, f, sx - frameW(f) / 2, Math.round(b.y) - frameH(f));
-  }
 }
 
 // How near the fighting is to this actor: 0 nothing, 1 nearby, 2 right on top of it.
@@ -227,13 +177,6 @@ function frameOf(a) {
 }
 
 function actorPlane(a) { return a.y <= FLOOR_TOP ? 'facade' : 'street'; }
-
-// What this actor is actually drawn at, so a test can check the art against the size
-// the table says it should be rather than trusting the pipeline ran.
-export function crowdDrawnHeight(a) {
-  const f = FRAMES[a.kind] && FRAMES[a.kind][0];
-  return f ? Math.round(frameH(f) * (a.scale || 1)) : 0;
-}
 
 export function drawCrowd(ctx, camX, plane) {
   if (!G.crowd) return;

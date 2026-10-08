@@ -10,6 +10,8 @@ from pathlib import Path
 import json
 import numpy as np
 from PIL import Image, ImageDraw, ImageOps, ImageFilter
+from sprite_edges import harden
+from chad_palette import lock
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'assets/sources/production/stages'
@@ -65,10 +67,6 @@ def silhouettes(path, rows, checker=False):
 
 
 SHEETS = {
- 'operator_limp': {'stage':'dirty_delhi','rows':2,'height':170,'standing':list(range(8)),
-  'names':['left-contact','left-weight','right-pass','right-reach','right-contact','right-weight','left-pass','left-reach'],
-  'hips':[(.5525,.5213),(.5566,.5392),(.6647,.5086),(.5604,.5127),(.4792,.51),(.545,.524),(.6257,.5076),(.5102,.5038)],
-  'mirror':[]},
  'chad_cart_push': {'stage':'dirty_delhi','rows':2,'height':170,'standing':[], 'scale':.52,
   # Physical scale matches the selected finisher sheet's head, forearm and boot
   # dimensions; bent pushing poses intentionally stand below the 85px guard.
@@ -81,14 +79,6 @@ SHEETS = {
   'hips':[(.43,.56),(.39,.55),(.39,.55),(.45,.58),(.51,.57),(.44,.54),(.42,.55),(.50,.55),(.45,.66),(.54,.60),(.42,.56),(.47,.55),(.51,.60),(.47,.55),(.49,.55),(.48,.55)],
   'hands':[(.58,.24),(.87,.31),(.88,.30),(.96,.26),(.96,.27),(.82,.46),(.92,.32),(.35,.19),(.95,.03),(.08,.19),(.95,.17),(.96,.17),(.38,.06),(.87,.34),(.44,.19),(.68,.57)],
   'mirror':[]},
- 'vendor_finish': {'stage':'dirty_delhi','rows':3,'height':190,'standing':[0,2,3],
-  'names':['stagger','body-hit','head-hit','collar-react','lift','flight','curl','counter-impact','tumble','ground-impact','slump','sprawl'],
-  'hips':[(.48,.55),(.50,.52),(.51,.54),(.5,.55),(.44,.55),(.49,.62),(.53,.51),(.48,.50),(.44,.51),(.45,.56),(.38,.62),(.41,.56)],
-  'mirror':[0,1,2,3,4,6]},
- 'operator_finish': {'stage':'dirty_delhi','rows':2,'height':170,'standing':[0,2],
-  'names':['stagger','body-hit','head-hit','collar-crouch','lift','flight','tumble','sprawl'],
-  'hips':[(.45,.55),(.64,.47),(.32,.53),(.53,.57),(.47,.53),(.48,.67),(.36,.55),(.38,.54)],
-  'mirror':[4]},
  'closer_cascade': {'stage':'refund_tower','rows':3,'height':180,'standing':[0,2,3],
   'names':['stagger','body-hit','head-hit','collar-react','lift','flight','curl','desk-impact','tumble','ground-impact','slump','sprawl'],
   'hips':[(.5,.51),(.58,.51),(.43,.49),(.50,.54),(.44,.55),(.45,.56),(.46,.52),(.47,.49),(.48,.63),(.36,.48),(.34,.62),(.39,.51)],
@@ -124,6 +114,8 @@ def build():
                 rgb[:,:,0][affected]-=spill[affected];rgb[:,:,2][affected]-=spill[affected]
                 a[:,:,:3]=rgb.clip(0,255).astype('uint8')
             tile=Image.fromarray(a)
+            # CHAD sheets last: binary alpha + sel-out edges, then the gold 48-colour palette (chad_style.md).
+            if name.startswith('chad_'):tile=lock(harden(tile))
             atlas.alpha_composite(tile,(i%4*256,i//4*256))
             f={'index':i,'name':s['names'][i],'hip':[round((x+hx*size[0])/2,2),round((y+hy*size[1])/2,2)],'bounds':[round(x/2,2),round(y/2,2),round(size[0]/2,2),round(size[1]/2,2)]}
             if hand:f['hand']=[round((x+hand[0]*size[0])/2,2),round((y+hand[1]*size[1])/2,2)]

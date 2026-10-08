@@ -1,7 +1,7 @@
 import { drawDialogue, updateDialogue } from './room_dialogue.js';
 import { drawElevatorDoor, ELEVATOR_X, ELEVATOR_BOUNDS } from './travel.js';
 import { drawElevatorGuide } from './elevator.js';
-import { hasCleared } from './progress.js';
+import { earnedTrophies, trophyForStage } from './trophies.js';
 // hub.js - THE LAIR: CHAD's penthouse, the room you walk around between acts. 1440
 // logical px, three screens wide, in 90s neon over old-money walnut and brass.
 //
@@ -12,7 +12,7 @@ import { hasCleared } from './progress.js';
 // Nothing in the room is painted into the plate. Wall-mounted and wall-standing things
 // are drawn here in the wall plane, before drawWorld, so CHAD occludes all of them and
 // none of them is a combat target; the heavy bag is an ordinary G.props entry; the
-// tiger goes on G.actors so drawWorld y-sorts him with everybody else.
+// lion goes on G.actors so drawWorld y-sorts him with everybody else.
 //
 // The glass is a HOLE. tools/production/build_lair_wide.py keys the window out of the plate, so
 // the city shows through it as TWO layers at different parallax - bg_lair_sky_far and
@@ -26,11 +26,14 @@ import { hasCleared } from './progress.js';
 import { G, W, H, METER_MAX, clamp, rand, irand } from './engine.js';
 import { Pix, frameW, frameH, blit, drawText, drawTextShadow, textWidth } from './sprites.js';
 import { ASSETS } from './assets.js';
+import { LION_RIG } from './lion_rig.js';
 import { STAGES } from './stages.js';
 import { BOSSES } from './bosses.js';
 import { input } from './input.js';
-import { spawnCigarSmoke, spawnPop, spawnSpark } from './effects.js';
+import { spawnCigarSmoke, spawnPop, spawnSpark, spawnDust } from './effects.js';
 import { CHAPTERS, openPanel, updateHubPanel, drawHubPanel } from './hubpanels.js';
+import { carryCigarSmoke } from './cigar_smoke.js';
+import { drawStyleRank } from './style_hud.js';
 
 export { CHAPTERS };
 
@@ -209,7 +212,7 @@ export const LAIR_ART = [
   // the master suite. The rug lies on the floor, so it sits forward of the wall base and
   // CHAD walks over it; everything else stands against the panelling.
   // A sabretooth pelt, head mounted and snarling at the LEFT. Russet with a black mane
-  // rather than white: the tiger sleeps in this room too, and the dark mane is what
+  // rather than gold: the lion sleeps in this room too, and the dark mane is what
   // frames the ivory fangs so they still read at this size. It lies forward of the wall
   // base, out into the walking lane, because that is where a rug in front of a fire goes.
   // The oil over the hearth, covering the plate's overmantel mirror (frame 1528-1600,
@@ -237,6 +240,26 @@ const LOUNGE_MOUTH = [69, 9];
 
 function loungePoint(point) {
   return [LOUNGE.x - LOUNGE.w / 2 + point[0], LOUNGE.y - LOUNGE.h + point[1]];
+}
+
+// His cigar smokes on the sofa (cigar_smoke.js): a thin trickle off the lit end through every
+// authored pose, the drag at his lips (key pose 4) flares the ember, and the head-back exhale
+// on the last pose blows two rings and a plume off his mouth.
+const SMOKE_DRAG = SMOKE_HOLDS.slice(0, 4).reduce((a, b) => a + b, 0);
+let loungeFx = null;
+function loungeSmoke() {
+  if (loungeFx && !loungeFx.gone && G.effects.includes(loungeFx)) return;
+  let seen = -1;
+  loungeFx = carryCigarSmoke((smoke) => {
+    if (!(G.hubSeat > 0 && G.hubStation === 'lounge')) return null;
+    const t = G.hubSeat % SMOKE_CYCLE;
+    if (G.hubSeat !== seen) {
+      seen = G.hubSeat;
+      if (t === SMOKE_DRAG) smoke.drag(SMOKE_HOLDS[4]);
+      if (t === SMOKE_EXHALE) smoke.exhale();
+    }
+    return { ember: loungePoint(LOUNGE_CIGAR_TIPS[loungeFrameIndex()]), mouth: loungePoint(LOUNGE_MOUTH), face: 1, trickleEvery: 14 };
+  });
 }
 
 
@@ -698,11 +721,28 @@ export function createBag() {
     pivotY: CEIL_MOUNT,
     hp: 9999, maxhp: 9999, broken: false, dead: false,
     state: 'idle', face: 1, t: 0, flash: 0, shakeT: 0,
-    swing: 0, swingV: 0, hits: 0,
+    swing: 0, swingV: 0, swingCap: SWING_MAX, hits: 0,
+    // CHAD's super takes the bag as its target (player.js startSuper); anchored keeps the
+    // super from launching or flooring it the way it would a body
+    superTarget: true, anchored: true, superReachY: 44,
     hurt(dmg, dir) {
       bag.flash = 4;
       bag.hits++;
-      bag.swingV = clamp(bag.swingV + (dir || 1) * (0.0016 + dmg * 0.00012), -0.007, 0.007);
+      if (bag.superApplying) {
+        // every blow of the super rocks it; the last one throws it right up the chain
+        const finish = !!bag.superImpact?.finish;
+        bag.swingCap = Math.max(bag.swingCap, finish ? SWING_SUPER : 0.16);
+        bag.swingV = clamp(bag.swingV + (dir || 1) * (finish ? 0.034 : 0.006), -0.05, 0.05);
+        bag.shakeT = finish ? 16 : 6;
+        bag.flash = finish ? 8 : 5;
+        if (finish) {
+          G.audio.sfx('slam');
+          spawnDust(bag.x, bag.y, 4);
+          for (let i = 0; i < 3; i++) spawnSpark(bag.x + rand(-10, 10), bag.y - 30 - rand(0, 40));
+        }
+      } else {
+        bag.swingV = clamp(bag.swingV + (dir || 1) * (0.0016 + dmg * 0.00012), -0.007, 0.007);
+      }
       spawnPop(bag.x, bag.y - 90, String(dmg));
       G.audio.sfx('armor');
     },
@@ -714,12 +754,16 @@ export function createBag() {
 // A bag on 180px of chain is a slow pendulum. The angle is clamped rather than the
 // impulse: a big hit should pin it at full travel instead of sending it round.
 const SWING_MAX = 0.10;    // rad; about 18 logical px of travel at the bag's foot
+// A super's last blow is allowed past that: the stop opens up and eases back as it settles.
+const SWING_SUPER = 0.34;
 function swingBag(bag) {
   if (!bag) return;
+  const cap = bag.swingCap || SWING_MAX;
+  bag.swingCap = Math.max(SWING_MAX, cap - 0.0007);
   bag.swingV += -bag.swing * 0.004;
   bag.swingV *= 0.992;
-  bag.swing = clamp(bag.swing + bag.swingV, -SWING_MAX, SWING_MAX);
-  if (Math.abs(bag.swing) >= SWING_MAX) bag.swingV *= 0.6;
+  bag.swing = clamp(bag.swing + bag.swingV, -cap, cap);
+  if (Math.abs(bag.swing) >= cap) bag.swingV *= 0.6;
   if (Math.abs(bag.swing) < 1e-4 && Math.abs(bag.swingV) < 1e-4) { bag.swing = 0; bag.swingV = 0; }
 }
 
@@ -1281,164 +1325,401 @@ function drawBed(ctx, camX) {
   drawDialogue(ctx,{text:bed.line,x:x+33,bottom:BED.y-BED.h+6,age,remaining:bed.lineT,width:146});
 }
 
-// ----------------------------------------------------------------- the tiger
+// ------------------------------------------------------------------ the lion
 // Not a prop (nothing can hit him) and not an enemy, so he goes on G.actors, which
-// drawWorld y-sorts by calling whatever the entry's own draw() says. White on purpose:
-// the room is walnut and black granite and a dark animal sinks into it - which is also
-// why the doberman that used to share the room with him is gone. One animal padding
-// about reads as a pet; two reads as a kennel.
+// drawWorld y-sorts by calling whatever the entry's own draw() says. Golden on purpose:
+// the room is walnut and black granite and a dark animal sinks into it. Aviators and a
+// gold Cuban-link chain, because he is CHAD's. He does not smoke and he does not roar.
 //
-// He lives WITH CHAD rather than in one spot: he settles wherever the man has ended up,
-// gets up and comes after him when he wanders off, and re-settles now and then for no
-// reason. He had a den on the hearth rug for a while and it fixed him to one object -
-// most of the room never saw him at all.
+// He lives WITH CHAD: he settles near wherever the man has ended up, gets up and comes
+// after him when he wanders off (bounding when it is far), re-settles now and then, and
+// comes over to watch the big moments - a long combo on the bag, the flex - and clears
+// off to a safe distance for the super, then turns round to watch it.
 //
-// What he never does is CUT between poses. Lying down he breathes; woken his head comes
-// up and the rest of him does not; to get up he sits, then stretches, then walks. Same
-// rule as the bed poses: two unrelated drawings swapped on a timer read as a cut however
-// long each one is held.
-const tiger = {
-  x: 1290, y: 226, face: -1, state: 'lie', t: 0, target: 1290,
-  frame: 0, phase: 0, alert: 0, snarl: 0, roam: 600,
+// What he never does is CUT. Every change of pose is either a clip of authored in-betweens
+// (lying -> head up -> rising -> sitting; sitting -> getting up -> standing; the stretch
+// in and out; the turn round through a front view; pulling up out of the bound) or a
+// switch the rig says is safe. tools/production/build_lair_lion.py measures, for each of
+// those switches, how far his x has to move so the paws or haunches that stay planted
+// stay exactly where they were (LION_RIG.edge), and the walk and bound strides so x moves
+// in step with the planted paw at each frame switch and never between (no skating).
+const RIG = LION_RIG;
+const lion = {
+  x: 1290, y: 226, ty: 226, face: -1, state: 'lie', t: 0, pose: 'lie', anim: null,
+  target: 1290, alert: 0, roam: 600, growlCd: 0, lastDist: 9999, placed: false, hurry: false,
+  gait: 'walk', fi: 0, ft: 0, lastCombo: 0,
 };
-const SPEED = 0.42;
-const SIT_HOLD = 90;         // frames of sitting before he commits to getting up
-const STRETCH_HOLD = 64;
-const SETTLE = 900;          // sitting this long with nothing happening and he lies down
-const NEAR = 96;             // a body length: close enough that he notices you
-const FOLLOW = 300;          // further off than this and he gets up and comes after him
-const ROAM = [1200, 3000];   // and he re-settles this often anyway, for no reason at all
+const MIN_MOVE = 24;          // closer than this to where he wants to be and he stays put
+const NEAR = 96;              // a body length: walking up this close wakes him
+const FOLLOW = 200;           // further off than this and he gets up and comes after CHAD
+const RUN_FROM = 220;         // further than this to go and he bounds instead of walking
+const SETTLE = 900;           // sitting this long with nothing happening and he lies down
+const ROAM = [1200, 3000];    // and he re-settles this often anyway, for no reason at all
+const WALK_HOLD = 6;          // ticks per walk frame; x moves by the frame's stride at the switch
+const BOUND = 3;             // bound speed, logical px a tick (it runs from far off)
+const SPRINT = 4.5;          // the super's sprint
+const SPRINT_OFF = 170;      // where the sprint ends: this far from CHAD, then he turns to watch
+const LION_LANES = [214, 238];
 
-// Something happened over there. His head comes up wherever he is - that part is not
-// gated on distance, because an animal that ignores a noise across the room is furniture -
-// but he only walks over if he was near enough to care.
-export function petsWatch(x, urgency) {
-  tiger.alert = Math.max(tiger.alert, urgency === undefined ? 150 : urgency);
-  if (Math.abs(tiger.x - x) > 190) return;
-  tiger.target = clamp(x + (tiger.x < x ? -56 : 56), 90, HUB_WIDTH - 90);
-  if (tiger.state === 'lie') { tiger.state = 'wake'; tiger.t = 0; }
+// ---- clips. [pose, ticks]; 'flip' turns him round (mid-way through a front view).
+const C = {
+  wakeUp: [['lie_lift', 8], ['wake', 1]],
+  lieBack: [['lie_lift', 10], ['lie', 1]],
+  riseToSit: [['rise1', 6], ['rise1b', 5], ['rise2', 6], ['sit', 1]],
+  stretch: [['stretch_lift', 8], ['stretch_in', 7], ['bow_a', 5], ['bow_a2', 5], ['stretch', 40], ['bow_c', 5], ['bow_b', 5], ['stretch_out', 7],
+    ['stretch_up', 8], ['stand', 3]],
+  standUp: [['sit_up', 9], ['stand', 2]],
+  sitDown: [['stand_sit', 9], ['sit', 1]],
+  lieDown: [['rise2', 9], ['rise1b', 8], ['rise1', 9], ['wake', 40], ['lie_lift', 10], ['lie', 1]],
+  // round through a three-quarter view to a symmetric front view, which is where he flips
+  turnStand: [['turn', 4], ['turn_front', 4], 'flip', ['turn_front', 3], ['turn', 4], ['stand', 2]],
+  turnSit: [['sit_turn', 5], ['sit_front', 4], 'flip', ['sit_front', 3], ['sit_turn', 5], ['sit', 2]],
+  land: [['r_land', 6], ['r_land2', 5], ['r_land3', 4], ['stand', 2]],        // pulling up out of the bound
+};
+
+// Which pose each clip starts from, so the verify suite can hold him to "never cuts":
+// every change of drawing must be a step inside a clip, a clip leaving its resting pose,
+// or a gait frame.
+const FROM = { wakeUp: 'lie', lieBack: 'wake', riseToSit: 'wake', stretch: 'wake', standUp: 'sit',
+  sitDown: 'stand', lieDown: 'sit', turnStand: 'stand', turnSit: 'sit', land: 'r3' };
+function lionLinks() {
+  const links = new Set();
+  for (const [name, clip] of Object.entries(C)) {
+    let prev = FROM[name];
+    for (const s of clip) {
+      if (s === 'flip') continue;
+      if (s[0] !== prev) links.add(prev + '>' + s[0]);
+      prev = s[0];
+    }
+  }
+  for (const [g, l] of [['walk', 'w'], ['run', 'r']]) {
+    const n = RIG[g].stride.length;
+    for (let i = 0; i < n; i++) links.add(l + i + '>' + l + ((i + 1) % n));
+    for (const i of RIG[g].stop) { links.add('stand>' + l + i); if (g === 'walk') links.add(l + i + '>stand'); }
+    for (const i of RIG[g].start || []) links.add('stand>' + l + i);
+  }
+  return links;
 }
 
-// he clears out when the room goes up, and shows his teeth about it on the way
+function play(clip, then) {
+  lion.anim = { steps: clip, i: 0, t: 0, then };
+}
+
+// Change the drawing. The rig's edge moves x so that whatever stays planted does not move.
+// how far a clip moves x (in the direction he faces as it starts) through its edges and flips
+function clipDx(clip, from) {
+  let x = 0, f = 1, p = from;
+  for (const s of clip) {
+    if (s === 'flip') { x += 2 * f * (RIG.pivot?.[p] || 0); f = -f; continue; }
+    x += f * edgeDx(p, s[0]);
+    p = s[0];
+  }
+  return x;
+}
+
+function edgeDx(a, b) {
+  const e = RIG.edge;
+  if (e[a + '>' + b] !== undefined) return e[a + '>' + b];
+  return e[b + '>' + a] === undefined ? 0 : -e[b + '>' + a];
+}
+
+function setPose(p) {
+  if (p === lion.pose) return;
+  lion.x += lion.face * edgeDx(lion.pose, p);
+  lion.pose = p;
+}
+
+function enter(state) {
+  lion.state = state;
+  lion.t = 0;
+  // lying down beside CHAD is not CHAD walking up to him
+  if (state === 'lie') lion.lastDist = Math.abs(G.player.x - lion.x);
+  if (state === 'sit' || state === 'lie') lion.hurry = false;
+}
+
+// Turn round mid-way through a front view. The art is mirrored about the lion's x, so x
+// moves by twice the pose's own centre (LION_RIG.pivot) and the body turns on the spot.
+function flip() {
+  lion.x += 2 * lion.face * (RIG.pivot?.[lion.pose] || 0);
+  lion.face = -lion.face;
+}
+
+function stepAnim() {
+  const a = lion.anim;
+  if (!a) return false;
+  // a turn whose reason goes away before he is half round unwinds the way it came
+  if ((a.steps === C.turnStand || a.steps === C.turnSit) && a.i > 0 && a.t === 0
+    && !a.steps.slice(0, a.i).includes('flip') && !turnWanted()) {
+    a.steps = [...a.steps.slice(0, a.i).reverse(), [a.then, 2]];
+    a.i = 1;
+  }
+  let s = a.steps[a.i];
+  while (s === 'flip') { flip(); s = a.steps[++a.i]; }
+  if (a.t === 0) setPose(s[0]);
+  const hold = lion.hurry ? Math.max(1, Math.ceil(s[1] / 2)) : s[1];
+  if (++a.t >= hold) {
+    a.i++; a.t = 0;
+    while (a.steps[a.i] === 'flip') { flip(); a.i++; }
+    if (a.i >= a.steps.length) { lion.anim = null; enter(a.then); }
+  }
+  return true;
+}
+
+// ---- his breathing while he sleeps, and where he is in the stereo field for the growl
+// 0 or 1 px, and only ever up: the back rises off the floor, the floor never moves
+const lionBreath = () => Math.round((1 - Math.cos(lion.t * 0.022)) / 2);
+const BREATH_BAND = 12;       // logical px above the floor that stay planted while he breathes
+const lionPan = () => clamp((lion.x - G.camX - W / 2) / (W / 2), -1, 1) * 0.6;
+const vary = () => 0.95 + Math.random() * 0.1;     // +-5% pitch on every call
+
+// ---- asking him to do things
+// Something happened over there. His head comes up wherever he is, but he only walks
+// over if he was near enough to care.
+export function petsWatch(x, urgency) {
+  lion.alert = Math.max(lion.alert, urgency === undefined ? 150 : urgency);
+  if (Math.abs(lion.x - x) > 190) return;
+  const t = clamp(x + (lion.x < x ? -60 : 60), 90, HUB_WIDTH - 90);
+  if (Math.abs(t - lion.x) > MIN_MOVE) lion.target = t;
+}
+
+// The room goes up: he sprints off to a safe distance on HIS side of CHAD (never through
+// him or the bag), still in shot, then turns round to face him and watches the super out.
 function petsScatter() {
-  tiger.target = HUB_WIDTH - 140;
-  tiger.state = 'walk';
-  tiger.t = 0;
-  tiger.alert = 0;
-  tiger.snarl = 40;
+  const side = lion.x < G.player.x ? -1 : 1;
+  lion.target = clamp(G.player.x + side * rand(150, 190), 90, HUB_WIDTH - 90);
+  if (Math.abs(lion.x - G.player.x) > 190) lion.target = lion.x;   // far enough already
+  lion.hurry = Math.abs(lion.target - lion.x) > MIN_MOVE;
+  lion.alert = 240;
 }
 
 // Coming back from Delhi to find him mid-prowl on whatever timer he happened to be on is
 // the one moment the room reads as a simulation that was left running.
-function resetTiger() {
-  tiger.x = 1290; tiger.y = 226; tiger.face = -1;
-  tiger.state = 'lie'; tiger.t = 0; tiger.target = 1290;
-  tiger.frame = 0; tiger.phase = 0; tiger.alert = 0; tiger.snarl = 0;
-  tiger.roam = irand(...ROAM);
+function resetLion() {
+  Object.assign(lion, {
+    x: 1290, y: 226, ty: 226, face: -1, state: 'lie', t: 0, pose: 'lie', anim: null, target: 1290,
+    alert: 0, roam: irand(...ROAM), growlCd: 0, lastDist: 9999, placed: false, hurry: false,
+    gait: 'walk', fi: 0, ft: 0, lastCombo: 0,
+  });
 }
 
-// The one place that says which drawing to use, so nothing else has to know the poses.
-function tigerPose() {
-  if (tiger.snarl > 0) return 'snarl';
-  switch (tiger.state) {
-    case 'walk': return String(tiger.frame);
-    case 'lie': return 'lie';
-    case 'wake': return 'wake';
-    case 'stretch': return 'stretch';
-    default: return 'sit';
-  }
-}
+// The one place that says which drawing is up.
+function lionPose() { return lion.pose; }
 
 // Somewhere new to be: beside CHAD, on whichever side he is already on, so settling down
-// never means walking through him. Returns false when he is happy where he is.
+// never means walking through him. Returns true when there is somewhere worth going.
 function resettle(player) {
-  if (tiger.roam > 0 && Math.abs(player.x - tiger.x) < FOLLOW) return false;
-  const side = tiger.x < player.x ? -1 : 1;
-  tiger.target = clamp(player.x + side * rand(48, 150), 90, HUB_WIDTH - 90);
-  tiger.roam = irand(...ROAM);
-  return Math.abs(tiger.target - tiger.x) > 3;
+  if (lion.roam > 0 && Math.abs(player.x - lion.x) < FOLLOW) return false;
+  const side = lion.x < player.x ? -1 : 1;
+  // somewhere 60-150 px off CHAD on his own side, ahead of him if it can be (no turning
+  // away and back for a few steps), and not a shuffle of under 60 px
+  const lo = clamp(player.x + Math.min(side * 60, side * 150), 90, HUB_WIDTH - 90);
+  const hi = clamp(player.x + Math.max(side * 60, side * 150), 90, HUB_WIDTH - 90);
+  const a = lion.face > 0 ? Math.max(lo, lion.x + 60) : lo, b = lion.face > 0 ? hi : Math.min(hi, lion.x - 60);
+  let t = a <= b ? rand(a, b) : rand(lo, hi);
+  if (Math.abs(t - lion.x) < 60) t = lion.x;
+  lion.target = t;
+  lion.ty = clamp(player.y + (Math.random() < 0.5 ? -1 : 1) * rand(6, 14), ...LION_LANES);
+  lion.roam = irand(...ROAM);
+  return Math.abs(lion.target - lion.x) > MIN_MOVE;
 }
 
-function updatePet() {
-  tiger.t++;
-  if (tiger.alert > 0) tiger.alert--;
-  if (tiger.snarl > 0) tiger.snarl--;
-  if (tiger.roam > 0) tiger.roam--;
-  const player = G.player;
+const toGo = () => lion.target - lion.x;
+// what a turn is for: the spot he is going to, or CHAD, is behind him
+const turnWanted = () => (Math.abs(toGo()) > MIN_MOVE && Math.sign(toGo()) !== lion.face) || chadBehind(G.player);
+const chadBehind = (player) => (player.x - lion.x) * lion.face < -24;
 
-  switch (tiger.state) {
-    case 'lie':
-      // down on his side, facing the room. The only thing moving is his ribs.
-      tiger.face = player.x < tiger.x ? -1 : 1;
-      // He lifts his head when you walk up to him. This is the one place a proximity
-      // trigger is right rather than lazy: it is all a lying cat does, and the room
-      // already uses it for the sleepers in the suite. What it must NOT do is get him up.
-      if (tiger.alert > 0 || Math.abs(player.x - tiger.x) < NEAR || resettle(player)) {
-        tiger.state = 'wake'; tiger.t = 0;
+// ---- the gaits: x moves by the frame's measured stride when the frame changes
+function startGait() {
+  const far = Math.abs(toGo()) > RUN_FROM || lion.hurry;
+  lion.gait = far ? 'run' : 'walk';
+  const g = RIG[lion.gait];
+  lion.fi = g.stop[0];
+  lion.ft = 0;
+  if (lion.hurry) {
+    const plan = planSprint();
+    if (!plan) { lion.target = lion.x; lion.hurry = false; return enter('stand'); }
+    lion.fi = plan.k;
+    lion.target = plan.x;
+  }
+  setPose((far ? 'r' : 'w') + lion.fi);
+  enter(lion.gait);
+}
+
+// The super's sprint: it can only end on the gathered frame and the landing, so its length
+// is planned to the frame - which bound frame he springs off into and how many whole bounds -
+// to finish SPRINT_OFF from CHAD, in the room. With no such spot he stays where he stands.
+function planSprint() {
+  const g = RIG.run, n = g.stride.length, stop = g.stop[0];
+  const cycle = g.stride.reduce((a, b) => a + b, 0);
+  const land = clipDx(C.land, 'r' + stop);
+  // he runs away from CHAD, so he turns back round to watch him
+  const turn = clipDx(C.turnStand, 'stand');
+  let best = null;
+  for (const k of g.start || [stop]) {
+    let part = 0;
+    for (let i = k; i !== stop; i = (i + 1) % n) part += g.stride[i];
+    for (let c = k === stop ? 1 : 0; c <= 6; c++) {
+      const x = lion.x + lion.face * (edgeDx('stand', 'r' + k) + part + c * cycle + land);
+      if (x < 90 || x > HUB_WIDTH - 90) break;
+      const off = Math.abs(x + lion.face * turn - G.player.x);
+      if (!best || Math.abs(off - SPRINT_OFF) < Math.abs(best.off - SPRINT_OFF)) best = { k, x, off };
+    }
+  }
+  return best;
+}
+
+function stepGait() {
+  // a hurry (the super) is a sprint: the same bound, turned over faster
+  // The bound's frames are held in proportion to their strides, so the body carries on at
+  // an even speed through the gather and the reach instead of loping frame by frame.
+  const g = RIG[lion.gait];
+  const hold = lion.gait === 'run'
+    ? clamp(Math.round(g.stride[lion.fi] / (lion.hurry ? SPRINT : BOUND)), 2, 7) : WALK_HOLD;
+  const letter = lion.gait === 'run' ? 'r' : 'w';
+  if (++lion.ft < hold) return;
+  lion.ft = 0;
+  const left = toGo() * lion.face;           // still to go, in the direction he faces
+  // he can only stop on a frame whose legs are closest to standing: he does when the
+  // next such frame would take him further past the spot than this one leaves him short
+  if (g.stop.includes(lion.fi)) {
+    let run = 0, k = lion.fi;
+    do { run += g.stride[k]; k = (k + 1) % g.stride.length; } while (!g.stop.includes(k));
+    if (left < run / 2) {
+      // near enough is where he stays: no two-step shuffle to make up the difference
+      if (Math.abs(toGo()) < 3 * MIN_MOVE) {
+        lion.target = lion.x + (lion.gait === 'run' ? lion.face * clipDx(C.land, lion.pose) : 0);
+      }
+      lion.hurry = false;
+      if (lion.gait === 'run') return play(C.land, 'stand');
+      setPose('stand');
+      enter('stand');
+      return;
+    }
+  }
+  lion.x += lion.face * g.stride[lion.fi];
+  lion.fi = (lion.fi + 1) % g.stride.length;
+  lion.pose = letter + lion.fi;              // same body, no edge: the stride is the move
+  lion.y += clamp(lion.ty - lion.y, -0.6, 0.6);
+}
+
+// ---- the brain: runs only between clips
+function think(player) {
+  const d = Math.abs(player.x - lion.x);
+  switch (lion.state) {
+    case 'lie': {
+      // his head comes up when CHAD walks UP to him (not when he lay down next to him),
+      // with one low rumble so you know he knows
+      const approach = d < NEAR && lion.lastDist >= NEAR;
+      lion.lastDist = d;
+      if (lion.alert > 0 || approach || ((lion.t > 600 || d > FOLLOW) && resettle(player))) {
+        if (approach && !lion.growlCd && !lion.alert) {
+          G.audio.roomSfxAt?.('lion_growl', 0.4 * vary(), lionPan(), vary());
+          lion.growlCd = 1500;
+        }
+        play(C.wakeUp, 'wake');
       }
       return;
-
+    }
     case 'wake':
-      // head up and watching, everything below the neck still on the floor
-      tiger.face = player.x < tiger.x ? -1 : 1;
-      if (tiger.t > 40 && (tiger.alert > 90 || Math.abs(tiger.target - tiger.x) > 3)) {
-        tiger.state = 'sit'; tiger.t = 0;
-      } else if (tiger.t > 150 && tiger.alert <= 0
-                 && Math.abs(player.x - tiger.x) > NEAR) {
-        tiger.state = 'lie'; tiger.t = 0;
-      }
+      if (Math.abs(toGo()) > MIN_MOVE) return play(lion.hurry ? C.riseToSit : C.stretch, lion.hurry ? 'sit' : 'stand');
+      if (lion.alert > 90) return play(C.riseToSit, 'sit');
+      if (lion.t > 300 && lion.alert <= 0) { lion.lastDist = d; return play(C.lieBack, 'lie'); }
       return;
 
     case 'sit':
-      tiger.face = player.x < tiger.x ? -1 : 1;
-      if (tiger.t > SIT_HOLD && Math.abs(tiger.target - tiger.x) > 3) {
-        tiger.state = 'stretch'; tiger.t = 0;
-      } else if (tiger.t > SETTLE && tiger.alert <= 0) {
-        tiger.state = 'lie'; tiger.t = 0;
-      } else if (tiger.t > 120) {
-        resettle(player);
+      if (Math.abs(toGo()) > MIN_MOVE) return play(C.standUp, 'stand');
+      if (lion.t > 16 && chadBehind(player)) return play(C.turnSit, 'sit');
+      if (lion.t > SETTLE && lion.alert <= 0) { lion.lastDist = d; return play(C.lieDown, 'lie'); }
+      // a settled lion stays settled a while, unless CHAD has properly gone off
+      if (lion.t > (d > FOLLOW + 120 ? 60 : 240)) resettle(player);
+      return;
+
+    case 'stand': {
+      const go = toGo();
+      if (Math.abs(go) > MIN_MOVE) {
+        if (Math.sign(go) !== lion.face) return play(C.turnStand, 'stand');
+        return startGait();
       }
-      return;
-
-    case 'stretch':
-      // chest down, hindquarters up, and it HOLDS. A stretch you can miss is not one.
-      if (tiger.t > STRETCH_HOLD) { tiger.state = 'walk'; tiger.t = 0; }
-      return;
+      if (chadBehind(player)) return play(C.turnStand, 'stand');
+      // the super still going off: he stays on his feet, facing it, and watches
+      if (player.state === 'special') return;
+      return play(C.sitDown, 'sit');
+    }
   }
-
-  const dx = tiger.target - tiger.x;
-  if (Math.abs(dx) < 3) { tiger.state = 'sit'; tiger.t = 0; return; }
-  tiger.face = dx < 0 ? -1 : 1;
-  tiger.x += Math.sign(dx) * SPEED;
-  tiger.y += (clamp(player.y + 14, 214, 238) - tiger.y) * 0.02;
-  tiger.phase += SPEED;
-  tiger.frame = (tiger.phase / 5 | 0) % 6;
 }
+
+function updatePet() {
+  const player = G.player;
+  if (!lion.placed) {
+    // he is wherever CHAD is when the room opens, not across it
+    lion.placed = true;
+    lion.x = clamp(player.x + (player.x < HUB_WIDTH - 200 ? 100 : -100), 90, HUB_WIDTH - 90);
+    lion.y = lion.ty = clamp(player.y + 6, ...LION_LANES);
+    lion.target = lion.x;
+    lion.face = player.x < lion.x ? -1 : 1;
+    lion.lastDist = Math.abs(player.x - lion.x);
+  }
+  lion.t++;
+  if (lion.alert > 0) lion.alert--;
+  if (lion.roam > 0) lion.roam--;
+  if (lion.growlCd > 0) lion.growlCd--;
+  // the combo pulls him over to watch at every six - on the change, not every tick
+  if (G.combo !== lion.lastCombo) {
+    if (G.combo >= 6 && G.combo % 6 === 0) petsWatch(player.x, 220);
+    lion.lastCombo = G.combo;
+  }
+  if (stepAnim()) return;
+  if (lion.state === 'walk' || lion.state === 'run') return stepGait();
+  think(player);
+}
+
 function drawPet(ctx, camX) {
-  const img = ASSETS['lair_tiger_' + tigerPose()] || ASSETS.lair_tiger_lie;
-  if (!img) return;
-  const w = frameW(img), h = frameH(img);
-  const x = Math.round(tiger.x - camX), y = Math.round(tiger.y);
-  if (x + w < -20 || x - w > W + 20) return;
-  // he breathes in his sleep. One pixel on a slow sine, and it is the whole difference
-  // between a sleeping animal and a rug.
-  const breath = tiger.state === 'lie' ? Math.round(Math.sin(tiger.t * 0.022)) : 0;
-  // the art faces right, so -1 is the one that needs flipping
-  if (tiger.face === -1) {
+  if (!lion.placed) return;               // not until he has been put beside CHAD
+  const pose = lion.pose;
+  const img = ASSETS['lair_lion_' + pose] || ASSETS.lair_lion_sit || ASSETS.lair_lion_lie;
+  const x = Math.round(lion.x - camX), y = Math.round(lion.y);
+  if (x < -120 || x > W + 120) return;
+  const breath = pose === 'lie' ? lionBreath() : 0;
+  if (!G.reflecting) {
+    const [sc, hw] = RIG.shadow[pose] || [0, 30];
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.beginPath();
+    ctx.ellipse(x + lion.face * sc, y, hw + 3, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (img) {
+    const w = frameW(img), h = frameH(img);
+    // the art faces right, so -1 is the one that needs flipping
     ctx.save();
-    ctx.scale(-1, 1);
-    blit(ctx, img, -x - w / 2, y - h + breath);
+    if (lion.face === -1) ctx.scale(-1, 1);
+    const dx = lion.face === -1 ? -x - w / 2 : x - w / 2;
+    if (breath) {
+      // Breathing lifts the body above the planted band by a pixel; the seam row is
+      // stretched over the gap, so the belly and paws stay on the granite.
+      const s = img._as || 1, split = h - BREATH_BAND;
+      ctx.drawImage(img, 0, split * s, img.width, BREATH_BAND * s, dx, y - BREATH_BAND, w, BREATH_BAND);
+      ctx.drawImage(img, 0, (split - 1) * s, img.width, s, dx, y - BREATH_BAND - 1 - breath, w, breath + 1);
+      ctx.drawImage(img, 0, 0, img.width, (split - 1) * s, dx, y - h - breath, w, split - 1);
+    } else {
+      blit(ctx, img, dx, y - h);
+    }
     ctx.restore();
   } else {
-    blit(ctx, img, x - w / 2, y - h + breath);
+    // no art: a readable golden block with a darker mane, so the room still has him
+    ctx.fillStyle = '#c98a2e';
+    ctx.fillRect(x - 30, y - 30, 60, 22);
+    ctx.fillStyle = '#7a3f14';
+    ctx.fillRect(x + lion.face * 18 - 10, y - 44, 20, 22);
   }
 }
 
-export const hubTiger = () => tiger;
+export const hubLion = () => lion;
+export const hubLionPose = () => lionPose();
+export { petsScatter, lionLinks };   // the verify suite and the review captures
 
 // G.actors entries draw themselves; y is what drawWorld sorts on.
 const petActors = [{
-  get y() { return tiger.y; },
+  get y() { return lion.y; },
   reflect: true,
   draw: drawPet,
 }];
@@ -1455,7 +1736,7 @@ export function hubSay(text) {
 }
 
 export function resetHub() {
-  resetTiger();
+  resetLion();
   resetTank();
   resetBed();
   G.actors = petActors.slice();
@@ -1475,8 +1756,7 @@ export function updateHub() {
   updatePet();
   if (G.hubRelicT > 0) G.hubRelicT--;
   if (G.hubFlex > 0 && --G.hubFlex === 0) G.player.state = 'idle';
-  // the combo pulls them in, and RAGNAROK sends them to opposite ends of the room
-  if (G.combo >= 6 && G.combo % 6 === 0) petsWatch(G.player.x, 220);
+  // the super sends him off to a safe distance, where he turns round to watch it
   if (G.player.state === 'special' && G.player.t === 1) petsScatter();
 
   // He is on the sofa or under a bar: input is frozen, the player sprite is hidden and
@@ -1488,16 +1768,7 @@ export function updateHub() {
       if (G.hubSeat === DRINK_AAAH) spawnPop(barAt, G.player.y - 104, 'AAAH');
       if (G.hubSeat > DRINK_END) { G.hubSeat = 0; G.hubStation = null; return -1; }
     } else {
-      // A small ember wisp follows the cigar through every authored pose. The larger
-      // exhale is separate and leaves his mouth on the final key pose.
-      if (G.hubSeat % 14 === 0) {
-        const [x, y] = loungePoint(LOUNGE_CIGAR_TIPS[loungeFrameIndex()]);
-        spawnCigarSmoke(x, y, 1);
-      }
-      if (G.hubSeat % SMOKE_CYCLE === SMOKE_EXHALE) {
-        const [x, y] = loungePoint(LOUNGE_MOUTH);
-        for (let i = 0; i < 5; i++) spawnCigarSmoke(x + rand(-2, 2), y, 1);
-      }
+      loungeSmoke();
     }
     if (G.hubSeat > 24 && anyKey()) {
       G.hubSeat = 0;
@@ -1526,6 +1797,8 @@ export function updateHub() {
       pose(96);
       G.hubFlex = 96;
       G.audio.voice('duke_look_good', 2200);
+      // the lion comes over to watch
+      petsWatch(fixtureAt('mirror').x - 20, 200);
     } else if (sel === 'bar' || sel === 'lounge') {
       G.hubSeat = 1;
       G.hubStation = sel;
@@ -1608,26 +1881,19 @@ function drawFixtureArt(ctx, camX, d, img) {
   if (d.flip) ctx.restore();
 }
 
-// The alcove is painted into the plate, three lit glass shelves; what changes is what
-// is standing on them. One relic per boss CHAD has put down - the thing he took off
-// that boss - so the shelf reads as a record of the fights. Shelf y measured off the
-// plate; the bays fill left to right, top down, in the order you beat them.
+// One trophy per cleared level, in campaign order. The save's stable stage IDs
+// supply the collection, including clears earned before these sculptures existed.
 // Surface y is where a relic's feet go, measured off the plate's glass shelves. The
 // tightest bay is the top one at 25 logical of headroom, which is what caps relic
 // height in tools/production/process_props.py.
-const beatenBosses = () => Object.keys(BOSSES)
-  .map((k) => ({ k, act: STAGES.findIndex((s) => s.boss === k) }))
-  .filter((b) => b.act >= 0 && hasCleared(G, b.act))
-  .sort((a, b) => a.act - b.act);
-
 function drawAlcove(ctx, camX) {
   const ox = TROPHY_WALL[0] - camX;
   if (ox > W || ox + (TROPHY_WALL[1] - TROPHY_WALL[0]) < 0) return;
-  const beaten = beatenBosses();
+  const beaten = earnedTrophies(G, STAGES);
   const slots = RELIC_SLOTS;
   beaten.forEach((b, n) => {
     if (n >= slots.length) return;
-    const img = ASSETS['lair_relic_' + b.k];
+    const img = ASSETS[b.trophy?.shelf] || ASSETS['lair_relic_' + b.k];
     if (!img) return;
     const [sx, sy] = slots[n];
     // the newest one drops into place instead of just being there
@@ -1775,29 +2041,27 @@ export function drawHubUI(ctx) {
   ctx.fillRect(8, 252, mw + 2, 8);
   ctx.fillStyle = G.meter >= METER_MAX ? '#ffd94a' : '#3a8ad0';
   ctx.fillRect(9, 253, Math.round(mw * G.meter / METER_MAX), 6);
-  drawTextShadow(ctx, G.meter >= METER_MAX ? 'SPACE: RAGNAROK' : 'METER', 8, 242,
+  drawTextShadow(ctx, G.meter >= METER_MAX ? 'SPACE: SUPER' : 'METER', 8, 242,
     G.meter >= METER_MAX ? '#ffd94a' : '#8a82a0', 1);
 
   drawTextShadow(ctx, 'THE LAIR', 8, 8, '#ffd94a', 1);
   const hs = 'HI ' + String(G.hiscore).padStart(6, '0');
   drawTextShadow(ctx, hs, W - 8 - textWidth(hs, 1), 8, '#ffd94a', 1);
 
-  if (G.combo >= 2) {
-    const c = G.combo + ' HITS';
-    drawTextShadow(ctx, c, W / 2 - textWidth(c, 2) / 2, 36 + Math.sin(G.rawTime * 0.4),
-      G.combo >= 10 ? '#ff7a3a' : '#ffd94a', 2);
-  }
+  drawStyleRank(ctx);
 
   if (G.hubPanel) { drawHubPanel(ctx); return; }
 
   // the relic you just came home with, named
   if (G.hubRelicT > 0 && G.hubRelicKey) {
     const b = BOSSES[G.hubRelicKey];
+    const trophy = trophyForStage(STAGES.find(s => s.boss === G.hubRelicKey));
     ctx.save();
     ctx.globalAlpha = Math.min(1, G.hubRelicT / 40);
-    const t1 = 'TAKEN FROM';
+    const t1 = trophy ? 'TROPHY EARNED' : 'TAKEN FROM';
+    const name = trophy?.name || b.name;
     drawTextShadow(ctx, t1, (W - textWidth(t1, 1)) / 2, 60, '#8ad8ff', 1);
-    drawTextShadow(ctx, b.name, (W - textWidth(b.name, 2)) / 2, 72, '#ffd94a', 2);
+    drawTextShadow(ctx, name, (W - textWidth(name, 2)) / 2, 72, '#ffd94a', 2);
     ctx.restore();
   }
 
@@ -1815,19 +2079,42 @@ export function drawHubUI(ctx) {
     const LOW = { bag: 100, lounge: 118, curl: 84, bench: 112 };
     const y = LOW[f.id] === undefined ? 26 : LOW[f.id];
     if (!f.key) upArrow(ctx, x, y + 10 + bob, '#ffd94a');
-    const hint = (f.key || 'F') + ': ' + f.hint;
+    const fresh = f.id === 'hifi' && G.tracksUnseen?.length;
+    const hint = (f.key || 'F') + ': ' + f.hint + (fresh ? '  NEW!' : '');
     drawTextShadow(ctx, hint, x - textWidth(hint, 1) / 2, y + bob, '#f8f0e0', 1);
+    if (fresh) drawTextShadow(ctx, 'NEW!', x + textWidth(hint, 1) / 2 - textWidth('NEW!', 1), y + bob,
+      ((G.rawTime >> 3) & 1) ? '#ff7a3a' : '#ffd94a', 1);
+  }
+  // music heard on the road waits on the hi-fi: flag it from anywhere in the room. The tag
+  // stays on screen, pinned to the edge with an arrow when the hi-fi is out of view.
+  if (G.tracksUnseen?.length && G.hubSel !== 'hifi') {
+    const hx = Math.round(fixtureAt('hifi').x - G.camX), bob = Math.round(Math.sin(G.rawTime * 0.12) * 2);
+    const x = clamp(hx, 17, W - 18), off = hx < x ? -1 : hx > x ? 1 : 0, y = 118 + bob;
+    const col = ((G.rawTime >> 3) & 1) ? '#ff7a3a' : '#ffd94a', tag = 'NEW';
+    ctx.fillStyle = 'rgba(6,4,10,0.8)';
+    ctx.fillRect(x - 10, y, 21, 9);
+    ctx.fillStyle = '#ff7a3a';
+    ctx.fillRect(x - 10, y, 21, 1);
+    drawTextShadow(ctx, tag, x - textWidth(tag, 1) / 2 + 1, y + 2, col, 1);
+    if (off) {
+      ctx.fillStyle = col;
+      const tip = x + off * 16;   // points at the hi-fi, widening back towards the tag
+      for (let i = 0; i < 4; i++) ctx.fillRect(tip - off * i, y + 4 - i, 1, 1 + i * 2);
+    }
   }
 
   // The title screen used to carry the full control list. It belongs here instead: this is
   // the room you stand in before you go anywhere, and everything in the list can be tried
-  // on the spot - there is a bag to hit and a mirror to flex at.
+  // on the spot - there is a bag to hit and a mirror to flex at. It is what player.js and
+  // input.js really do: C is a held guard and a tapped parry, red-cue attacks cannot be
+  // guarded or parried at all, and there is no grab. Centred beside the meter, not under it.
   const foot = [
-    'ARROWS MOVE   F USE/GRAB   Z ATTACK   X JUMP   C GUARD   SPACE SUPER',
-    'DOUBLE TAP TO DASH   TAP C ON IMPACT TO PARRY   RED CUE: EVADE',
-    'TAP Z OR X WHILE DOWN TO GET UP FAST   ESC PAUSE   BACKSPACE TITLE',
+    'ARROWS MOVE  Z ATTACK  X JUMP  HOLD C GUARD  SPACE SUPER  F USE',
+    'DOUBLE TAP DASH  TAP C AS A HIT LANDS: PARRY  RED CUE: DODGE IT',
+    'KNOCKED DOWN? TAP Z OR X  ESC PAUSE  BACKSPACE TITLE',
   ];
+  const footMid = (136 + W - 6) / 2;
   for (let i = 0; i < foot.length; i++) {
-    drawTextShadow(ctx, foot[i], (W - textWidth(foot[i], 1)) / 2, 246 + i * 9, '#686098', 1);
+    drawTextShadow(ctx, foot[i], Math.round(footMid - textWidth(foot[i], 1) / 2), 244 + i * 9, '#686098', 1);
   }
 }

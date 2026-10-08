@@ -35,8 +35,26 @@ def build():
         alpha = alpha * alpha * (3 - 2 * alpha)
         mask = Image.fromarray(np.tile((alpha*255).astype('uint8'), (540, 1)))
         route.paste(patch, (i*1620-810, 0), mask)
+    # Ghee Pappu's kitchen is painted brighter than its neighbours: settle it back so the
+    # fighters carry the arena, easing to nothing at the neighbouring panels' centres.
+    x = np.arange(route.width, dtype=float); c = NAMES.index('vendor') * 1620 + 810
+    w = np.clip(1 - np.abs(x - c) / 1620, 0, 1); w = w * w * (3 - 2 * w)
+    a = np.asarray(route).astype(float) * (1 - .14 * w)[None, :, None]
+    route = Image.fromarray(a.clip(0, 255).astype('uint8'))
     for i, name in enumerate(NAMES):
         route.crop((i*1620, 0, (i+1)*1620, 540)).save(OUT / f'{name}.png', optimize=True)
+
+    # The ladles, skimmer and chilli garlands on Pappu's back wall (painted out of vendor.png)
+    # become one layer the game sways: same fit and settle as the panel, crisp alpha.
+    layer = Image.new('RGBA', Image.open(SOURCE / 'vendor.png').size)
+    layer.alpha_composite(Image.open(SOURCE / 'vendor_hanging.png'), (1120, 225))
+    layer = np.asarray(layer.resize((1620, 540), Image.Resampling.LANCZOS)).astype(float)
+    layer[..., :3] *= (1 - .14 * w[NAMES.index('vendor') * 1620:][:1620])[None, :, None]
+    layer[..., 3] = np.where(layer[..., 3] > 127, 255, 0)
+    hang = Image.fromarray(layer.clip(0, 255).astype('uint8')); x0, y0, x1, y1 = hang.getbbox()
+    box = (x0 - x0 % 2, y0 - y0 % 2, x1 + x1 % 2, y1 + y1 % 2)  # even, so it lands on whole logical px
+    hang.crop(box).save(OUT / 'vendor_hanging.png', optimize=True)
+    print('vendor_hanging box (panel 2x px):', box)
 
     # The selected source uses a neutral checker matte, including the lattice
     # holes. Remove that neutral high-value matte without keying brass highlights.

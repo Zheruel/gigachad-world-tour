@@ -19,20 +19,20 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=requ
  }
  const p=setup();let previous=-1;const seen=new Set();for(let i=0;i<100;i++){const v=chooseCombo(p);ok('no immediate repeat',v!==previous);previous=v;seen.add(v);}ok('all variants reachable',seen.size===2);
  for(const offset of [-70,70])for(const broken of [false,true]){
-  g.trainScene('conductor',300);G.enemies=[];G.train.officeDeskBroken=broken;const b=G.boss;b.guard=0;b.shieldActive=false;b.hp=1;b.state='idle';G.player.x=b.x+offset;G.player.y=b.y;
+  g.trainScene('conductor',300);G.enemies=[];G.train.officeDeskBroken=broken;const b=G.boss;b.guard=0;b.hp=1;b.pulls=2;b.state='idle';G.player.x=b.x+offset;G.player.y=b.y;
   b.hurt(999,offset<0?1:-1,true,false);ok('inspector death starts finisher',G.train.cinematic?.kind==='inspector-finish');
   const before=G.train.cinematic.t;G.paused=true;g.step(30);ok('finisher pauses',G.train.cinematic.t===before);G.paused=false;g.step(390);
   ok('finisher releases from either side',!G.train.cinematic&&G.state==='play'&&!!G.train.inspectorBody);
   const score=G.score;g.step(20);ok('finisher rewards once',G.score===score);
  }
- g.trainScene('inspector-finish');g.step(370);ok('inspector returns control',!G.train.cinematic&&G.state==='play'&&G.train.officeDeskBroken);
+ g.trainScene('inspector-finish');g.step(400);ok('inspector returns control',!G.train.cinematic&&G.state==='play'&&G.train.officeDeskBroken);
  return checks;
  });console.log(JSON.stringify({checks:out.length,failures:out.filter(x=>!x[1]),errors}));
  const dir='tmp/review/combat-variety';fs.mkdirSync(dir,{recursive:true});
  for(const scene of ['inspector-finish','roof-transition','knockout'])for(const t of [0,30,54,82,98,111,150,177,198,215,330]){
  await page.evaluate(({scene,t})=>{__game.trainScene(scene,t);__game.render();},{scene,t});await page.locator('canvas').first().screenshot({path:`${dir}/${scene}-${t}.png`});
  }
- const missing=await browser.newPage();await missing.route(/super_barrage|super_electric|chad_(inspector_pair|seth_pair)_|office_desk_broken|arcade_fragments/,r=>r.abort());
+ const missing=await browser.newPage();await missing.route(/super_barrage|super_electric|office_desk_broken|arcade_fragments/,r=>r.abort());
  await missing.goto('http://localhost:8011/?auto=walk');await missing.waitForFunction(()=>window.__game?.G.state==='play');
  const fallback=await missing.evaluate(async()=>{const g=__game,G=g.G,{startSuper,updatePlayer}=await import('./js/player.js');g.trainScene('general');G.enemies=[];G.boss=null;G.meter=100;const e=g.spawn('nr_tough',40,0);e.hp=100;e.state='idle';G.player.face=1;startSuper(G.player);for(let i=0;i<101;i++)updatePlayer(G.player);g.render();const superOK=G.player.state==='idle'&&e.hp===64;g.trainScene('inspector-finish');g.step(380);g.render();return superOK&&!G.train.cinematic;});
  assert(fallback,'missing new artwork must permit completion');await missing.close();

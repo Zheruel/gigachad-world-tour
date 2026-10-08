@@ -1,9 +1,16 @@
-"""Separate results frame, foreground badge and registered cigar performance."""
+"""Separate results frame and foreground badge, and register CHAD's victory close-ups."""
 from pathlib import Path
-import json
 import numpy as np
 from PIL import Image,ImageDraw,ImageFilter
 ROOT=Path(__file__).resolve().parents[2]
+import sys;sys.path.insert(0,str(Path(__file__).parent))
+from keying import key,components
+from build_station_life import despill
+# Close-up cells are the portrait window at 2x (354x348 device px). Sources are 3x2 sheets of
+# 512px square cells with the belt on the bottom edge; SCALE sets the zoom, (SX,SY) is where a
+# source cell's top-left lands. Cell order is the index js/results.js plays.
+CELL_W,CELL_H,COLS,SCALE,SX,SY=354,348,4,.64,-10,20
+SHEETS=['results_victory.png','results_victory_b.png','results_victory_c.png']
 SRC=ROOT/'assets/sources/production/ui';OUT=ROOT/'assets/ui'
 def defringe(im):
  """Replace matte-contaminated edge RGB with adjacent interior ink, preserving alpha."""
@@ -21,6 +28,19 @@ def defringe(im):
  a[edge&(a[:,:,:3].max(2).astype(int)-a[:,:,:3].min(2)<65)]=0
  a[a[:,:,3]==0,:3]=0
  return Image.fromarray(a)
+# Per-cell repairs (cell px): cigar tips unlit until the Zippo lights them; the flex-laugh cell
+# re-registered onto the flex; generation crop edges cut hard where the pillars cover them.
+UNLIT={4:(209,161,8),9:(211,156,6)};SHIFT={8:(21,0)};CLIP={3:(30,288),6:(0,288),8:(30,288)}
+def fix_cells(cells):
+ for i,(cx,cy,rad) in UNLIT.items():
+  a=np.array(cells[i]).astype(float);yy,xx=np.indices(a.shape[:2])
+  hot=(((xx-cx)/rad)**2+((yy-cy)/rad)**2<=1)&(a[:,:,0]>140)&(a[:,:,1]<190)&(a[:,:,2]<110)&(a[:,:,3]>0)&(xx<cx+6)
+  lum=a[:,:,:3].mean(2)[hot]/255;a[hot,:3]=np.stack([60+70*lum,54+62*lum,50+56*lum],1)
+  cells[i]=Image.fromarray(a.astype('uint8'))
+ for i,(dx,dy) in SHIFT.items():
+  c=Image.new('RGBA',cells[i].size);c.alpha_composite(cells[i].crop((max(0,-dx),max(0,-dy),CELL_W-max(0,dx),CELL_H-max(0,dy))),(max(0,dx),max(0,dy)));cells[i]=c
+ for i,(x0,x1) in CLIP.items():
+  a=np.array(cells[i]);a[:,:x0]=0;a[:,x1:]=0;cells[i]=Image.fromarray(a)
 def main():
  bg=Image.open(SRC/'results_empty.png').convert('RGBA').resize((960,540),Image.Resampling.LANCZOS)
  bg.save(OUT/'results_card.png')
@@ -28,53 +48,42 @@ def main():
  d=ImageDraw.Draw(foreground)
  d.polygon([(0,371),(18,379),(28,368),(45,359),(54,348),(88,351),(98,346),(123,341),(147,343),(176,352),(188,348),(199,365),(211,375),(235,392),(229,437),(207,477),(215,508),(225,540),(0,540)],fill=255)
  rgb=np.array(bg)[:,:,:3].astype(float);r,g,b=rgb.transpose(2,0,1)
- colors=((r>80)&(r>g*1.1)&(g>b*1.4))|((r>50)&(r>g*1.8)&(r>b*1.8))
+ yy,xx=np.indices(r.shape)
+ # Gold laurel, plus the red ribbons (not the curtain folds showing right of the laurel).
+ colors=(((r>80)&(r>g*1.1)&(g>b*1.4))|((r>50)&(r>g*1.8)&(r>b*1.8)))&~((xx>190)&(yy<470)&(g<r*.42))
  mask=np.array(foreground)>0
- yy,xx=np.indices(mask.shape);face=((xx-128)/68)**2+((yy-414)/68)**2<=1
- foreground=Image.fromarray(((mask&colors)|face).astype('uint8')*255)
+ face=((xx-128)/68)**2+((yy-414)/68)**2<=1
+ keep=(mask&colors)|face
+ # Drop loose flecks the colour key picks up off the curtain.
+ for q in components(keep):
+  if len(q)<40:keep[q[:,0],q[:,1]]=False
+ foreground=Image.fromarray(keep.astype('uint8')*255)
  fg=bg.copy();fg.putalpha(foreground);fg.save(OUT/'results_badge.png')
- fold=Image.open(SRC/'results_fold.png').convert('RGBA')
- breathe=Image.open(SRC/'results_portrait.png').convert('RGBA');cells=[]
- for im,i in [(fold,i) for i in range(8)]+[(breathe,i) for i in range(4,8)]:
-  # Some elbows extend beyond the nominal cell. Preserve the full silhouette,
-  # then discard disconnected fragments from the neighbouring cell.
-  c=im.crop((i%4*384,i//4*512,i%4*384+432,i//4*512+512));a=np.array(c);rgb=a[:,:,:3].astype(int)
-  mask=(rgb.min(2)>65)&(rgb.max(2)-rgb.min(2)<45)
-  flood=Image.fromarray(mask.astype('uint8')*255).copy()
-  for point in [(x,0) for x in range(432)]+[(x,511) for x in range(432)]+[(0,y) for y in range(512)]+[(431,y) for y in range(512)]:
-   if flood.getpixel(point)==255:ImageDraw.floodfill(flood,point,128)
-  # Raised forearms enclose the checker matte. Remove those large islands,
-  # while retaining the small neutral highlights inside the hair and glasses.
-  for yy,xx in zip(*np.where(np.array(flood)==255)):
-   if flood.getpixel((int(xx),int(yy)))!=255:continue
-   ImageDraw.floodfill(flood,(int(xx),int(yy)),64)
-   component=np.array(flood)==64
-   if component.sum()>=512:a[component]=0
-   stamped=np.array(flood);stamped[component]=32;flood=Image.fromarray(stamped).copy()
-  a[np.array(flood)==128]=0
-  body=Image.fromarray((a[:,:,3]>0).astype('uint8')*255).copy()
-  ImageDraw.floodfill(body,(180,300),128)
-  a[np.array(body)!=128]=0
-  cells.append(defringe(Image.fromarray(a)))
- # Register all heads to pose 0 using the shared hair shape, never normalize bodies.
- ref=np.array(cells[0])
- template=ref[75:125:2,140:260:2,:3].astype(float);valid=ref[75:125:2,140:260:2,3]>128
- shifts=[];out=Image.new('RGBA',(346*4,410*3))
- for i,c in enumerate(cells):
-  a=np.array(c);best=(float('inf'),0,0)
-  for dy in range(-44,13):
-   for dx in range(-20,21):
-    region=a[75+dy:125+dy:2,140+dx:260+dx:2,:3].astype(float)
-    score=np.abs(region-template)[valid].mean()
-    if score<best[0]:best=(score,dx,dy)
-  _,dx,dy=best;shifts.append([dx,dy])
-  f=Image.new('RGBA',(432,512));f.alpha_composite(c,(-dx,10-dy))
-  # Prepare at the actual 2x canvas size instead of nearest-neighbour minification.
-  f=f.resize((346,410),Image.Resampling.LANCZOS)
-  clean=np.array(f);clean[clean[:,:,3]<12]=0;f=Image.fromarray(clean)
-  out.alpha_composite(f,(i%4*346,i//4*410))
+ cells=[]
+ for name in SHEETS:
+  if not (SRC/name).exists():continue
+  sheet=Image.fromarray(despill(np.array(key(Image.open(SRC/name).convert('RGB')))))
+  w,h=sheet.size
+  for r in range(2):
+   for c in range(3):
+    im=sheet.crop((round(c*w/3),round(r*h/2),round((c+1)*w/3),round((r+1)*h/2)))
+    a=np.array(im);parts=components(a[:,:,3]>24)
+    keep=np.zeros(a.shape[:2],bool)
+    for q in parts[:1]+[q for q in parts[1:] if len(q)>=400]:keep[q[:,0],q[:,1]]=True
+    a[~keep]=0;im=Image.fromarray(a).resize((round(im.width*SCALE),round(im.height*SCALE)),Image.Resampling.LANCZOS)
+    cell=Image.new('RGBA',(CELL_W,CELL_H));cell.alpha_composite(im,(SX,CELL_H-im.height+SY)) if SX>=0 else cell.paste(im,(SX,CELL_H-im.height+SY),im)
+    cells.append(cell)
+ # The smoking loop (5 rest, 10 drag, 11 exhale) comes from results_victory_c.png so its three
+ # frames share one head: scaled and placed onto the original cell 5's outline.
+ if (SRC/'results_victory_c.png').exists() and len(cells)>=18:
+  c=cells[12:15];del cells[12:]
+  def box(im):return np.array(im.getchannel('A').point(lambda v:255 if v>24 else 0).getbbox())
+  ref,own=box(cells[5]),box(c[0]);k=(ref[2]-ref[0])/(own[2]-own[0])
+  for n,im in zip([5,10,11],c):
+   im=im.resize((round(CELL_W*k),round(CELL_H*k)),Image.Resampling.LANCZOS);cell=Image.new('RGBA',(CELL_W,CELL_H))
+   cell.paste(im,(round((ref[0]+ref[2])/2-(own[0]+own[2])/2*k),round(ref[1]-own[1]*k)),im);cells[n]=cell
+ fix_cells(cells)
+ out=Image.new('RGBA',(CELL_W*COLS,CELL_H*((len(cells)+COLS-1)//COLS)))
+ for i,cell in enumerate(cells):out.paste(cell,(i%COLS*CELL_W,i//COLS*CELL_H))
  out.save(OUT/'results_portrait.png')
- (ROOT/'tmp/review').mkdir(exist_ok=True)
- (ROOT/'tmp/review/results-registration.json').write_text(json.dumps(shifts))
- print('Head registration:',shifts)
 if __name__=='__main__':main()

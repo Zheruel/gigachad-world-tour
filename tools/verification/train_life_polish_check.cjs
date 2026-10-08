@@ -11,7 +11,7 @@ const out='tmp/review/train-life-polish/verify';fs.mkdirSync(out,{recursive:true
   G.enemies=[];for(let i=0;i<104;i++){tr.t++;life.updateTrainLife(tr);}ok('reaction returns to routine',tr.stationLife[0].alert===-1);
   G.enemies=[{x:1338,y:220,state:'attack',dead:false}];life.updateTrainLife(tr);ok('reaction cooldown prevents chatter',tr.stationLife[0].alert===-1);
   G.enemies=[];tr.t=600;G.enemies=[{x:1338,y:220,state:'attack',dead:true}];life.updateTrainLife(tr);ok('defeated actors cannot frighten staff',tr.stationLife[0].alert===-1);
-  const record=[],prior=G.audio.roomSfxAt;G.audio.roomSfxAt=(...a)=>record.push(a);G.enemies=[];tr.arrival=-1;tr.t=425;G.camX=6320;life.updateTrainLife(tr);
+  const record=[],prior=G.audio.roomSfxAt;G.audio.roomSfxAt=(...a)=>record.push(a);G.enemies=[];tr.arrival=-1;tr.t=490;G.camX=6320;life.updateTrainLife(tr);
   ok('page cue uses spatial helper quietly',record.length===1&&record[0][0]==='room_page'&&record[0][1]<.065&&record[0][2]>0);
   record.length=0;G.camX=0;life.updateTrainLife(tr);ok('offscreen routines stay silent',record.length===0);
   for(const kind of ['intro','boarding','roof','escape']){tr.cinematic={kind,t:0};const before=JSON.stringify(tr.stationLife);life.updateTrainLife(tr);ok(kind+' preserves approved cinematic state',before===JSON.stringify(tr.stationLife)&&record.length===0);}
@@ -27,11 +27,11 @@ const out='tmp/review/train-life-polish/verify';fs.mkdirSync(out,{recursive:true
  for(const [row,scene]of ['hall','platform','ac'].entries())for(let pose=0;pose<4;pose++){
   await p.evaluate(([row,scene,pose])=>{__game.trainScene(scene,0);const G=__game.G,tr=G.train,offset=[130,270,75][row];tr.t=(row===2?[0,500,565,0]:[0,300,500,0])[pose]-offset;tr.arrival=-1;if(pose===3)tr.stationLife[row].alert=0;G.fade=G.flash=G.shake=0;__game.render()},[row,scene,pose]);await capture(`life-${scene}-${pose}`);
  }
- for(const scene of ['conductor','boss-roof'])for(const state of ['windup','charge'])for(let t=0;t<=57;t+=3){
-  await p.evaluate(([scene,state,t])=>{__game.trainScene(scene,scene==='conductor'?300:0);const G=__game.G;G.state='play';G.props=[];G.boss.fightProps=[];Object.assign(G.boss,{state,pattern:'charge',t,x:G.camX+290,y:220,face:-1,shieldActive:false,trainWaiting:false});G.fade=G.flash=G.shake=0;__game.render()},[scene,state,t]);await capture(`${scene}-${state}-${t}`);
+ for(const scene of ['conductor','boss-roof'])for(const state of ['windup',scene==='conductor'?'swing':'charge'])for(let t=0;t<=57;t+=3){
+  await p.evaluate(([scene,state,t])=>{__game.trainScene(scene,scene==='conductor'?300:0);const G=__game.G;G.state='play';G.props=[];G.boss.fightProps=[];Object.assign(G.boss,{state,pattern:scene==='conductor'?'swing':'charge',t,x:G.camX+290,y:220,face:-1,trainWaiting:false});G.fade=G.flash=G.shake=0;__game.render()},[scene,state,t]);await capture(`${scene}-${state}-${t}`);
  }
- for(const [scene,state,t,shield]of [['boss-roof','windup',20,false],['boss-roof','sweep',14,false],['boss-roof','sweep',27,false],['conductor','windup',20,true],['conductor','charge',15,true],['conductor','stagger',0,true]]){
-  await p.evaluate(([scene,state,t,shield])=>{__game.trainScene(scene,scene==='conductor'?300:0);const G=__game.G;G.state='play';G.boss.fightProps=[];Object.assign(G.boss,{state,pattern:scene==='boss-roof'?'sweep':'charge',t,shieldActive:shield,guardFlash:state==='stagger'?4:0,x:G.camX+290,y:220,face:-1,trainWaiting:false});G.fade=G.flash=G.shake=0;__game.render()},[scene,state,t,shield]);await capture(`${scene}-contact-${state}-${t}`);
+ for(const [scene,state,t]of [['boss-roof','windup',20],['boss-roof','sweep',14],['boss-roof','sweep',27],['conductor','windup',20],['conductor','swing',8],['conductor','stagger',0]]){
+  await p.evaluate(([scene,state,t])=>{__game.trainScene(scene,scene==='conductor'?300:0);const G=__game.G;G.state='play';G.boss.fightProps=[];Object.assign(G.boss,{state,pattern:scene==='boss-roof'?'sweep':'swing',t,guardFlash:state==='stagger'?4:0,x:G.camX+290,y:220,face:-1,trainWaiting:false});G.fade=G.flash=G.shake=0;__game.render()},[scene,state,t]);await capture(`${scene}-contact-${state}-${t}`);
  }
  assert.deepEqual(errors,[]);fs.writeFileSync(path.join(out,'checks.json'),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks:checks.length,chargeFrames:160,lifeFrames:24,weaponContacts:12,errors}));
 }finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});

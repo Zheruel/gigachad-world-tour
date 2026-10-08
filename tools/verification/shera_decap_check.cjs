@@ -1,0 +1,18 @@
+// Decapitation head trajectory, headless state, pause/fallback/handoff and frame-by-frame visual QA.
+const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=require('playwright');
+(async()=>{const b=await chromium.launch({channel:'chrome',headless:true});try{
+ const page=await b.newPage({viewport:{width:960,height:540}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto((process.env.GAME_URL||'http://localhost:8011')+'/?auto=walk');await page.waitForFunction(()=>__game?.G.state==='play');
+ const checks=await page.evaluate(async()=>{const g=__game,G=g.G,{sheraHead,SHERA_DECAP:B}=await import('/js/shera_gore.js'),{getAIFrame}=await import('/js/aiframes.js'),{ASSETS}=await import('/js/assets.js'),out=[],ok=(n,v)=>out.push([n,!!v]);
+ ok('six headless reactions loaded',getAIFrame('nr_neta_guard','rage_decap')?.f.length===11);ok('matching head loaded',!!ASSETS.shera_severed_head);
+ ok('head appears only after uppercut',!sheraHead(104,376)&&!!sheraHead(105,376));
+ let previous=null,max=0,visible=true;for(let t=105;t<=200;t++){const p=sheraHead(t,376);visible&&=p.x>=290&&p.x<=465&&p.y>=44&&p.y<=215;if(previous)max=Math.max(max,Math.hypot(p.x-previous.x,p.y-previous.y));previous=p;}ok('head remains inside visible room throughout flight',visible);ok('trajectory has no position discontinuity',max<10);
+ ok('ceiling is a single ricochet',sheraHead(B.ceiling-1,376).y>sheraHead(B.ceiling,376).y&&sheraHead(B.ceiling+1,376).y>sheraHead(B.ceiling,376).y);
+ ok('head rests unchanged after bounce',JSON.stringify(sheraHead(168,376))===JSON.stringify(sheraHead(250,376)));
+ for(const t of [105,124,156,200]){g.trainScene('shera-finish',31);const c=G.train.cinematic;c.entry=null;c.t=t;const old=JSON.stringify(c);g.render();g.render();ok('render pure '+t,old===JSON.stringify(c));G.paused=true;g.step(30);ok('pause holds '+t,c.t===t);G.paused=false;}
+ return out;});assert(checks.every(x=>x[1]),JSON.stringify(checks.filter(x=>!x[1])));
+ const dir='tmp/review/shera-decap/'+(process.env.ROUND||'round1');fs.mkdirSync(dir,{recursive:true});const times=[80,95,...Array.from({length:82},(_,i)=>100+i),198,220,240];
+ for(const t of times){await page.evaluate(t=>{__game.trainScene('shera-finish',31);const G=__game.G,c=G.train.cinematic;c.entry=null;c.t=t;G.freezeTime=true;G.paused=false;G.shake=G.flash=G.fade=0;__game.render();},t);await page.locator('#game').screenshot({path:`${dir}/${String(t).padStart(3,'0')}-2x.png`});}
+ // Inspect both sides with real KO triggers and retain once-only roof progression.
+ for(const side of [-1,1]){assert(await page.evaluate(side=>{__game.trainScene('boss-enraged');const G=__game.G,b=G.boss;G.player.x=b.x+side*130;G.hitstop=0;b.hurt(9999,side,true,true);for(let i=0;i<1000&&!G.train.climbed;i++){G.hitstop=0;__game.step(1);}return G.train.climbed&&!G.train.cinematic&&G.boss.roof;},side));}
+ const missing=await b.newPage();await missing.route(/decap_\d+\.png|severed_head\.png/,r=>r.abort());await missing.goto((process.env.GAME_URL||'http://localhost:8011')+'/?auto=walk');await missing.waitForFunction(()=>__game?.G.state==='play');assert(await missing.evaluate(()=>{__game.trainScene('shera-finish',0);for(let i=0;i<800;i++){__game.G.hitstop=0;__game.step(1);}return __game.G.train.climbed&&!__game.G.train.cinematic;}));await missing.close();assert.deepEqual(errors,[]);fs.writeFileSync(`${dir}/checks.json`,JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks:checks.length+3,frames:times.length,dir,errors}));
+}finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});

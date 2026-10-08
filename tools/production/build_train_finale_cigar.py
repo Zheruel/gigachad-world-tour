@@ -1,28 +1,10 @@
-"""Register the generated finale cigar, smoke and red bundle performances."""
+"""Register the finale dynamite bundle and smoke puffs (CHAD's finale cells come from build_train_finale_escape.py)."""
 from PIL import Image
 import numpy as np
 from build_train_rebuild import SOURCE,OUT,atlas
-from build_train_enemy_performances import extract
 from build_train_coaches import clean_edge
 
-def register(c,scale):
-    c=c.resize((round(c.width*scale),round(c.height*scale)),Image.Resampling.NEAREST)
-    a=np.array(c);ys,xs=np.where(a[round(c.height*.25):round(c.height*.48),:,3]>32)
-    anchor=float(np.median(xs));f=Image.new('RGBA',(320,240))
-    f.alpha_composite(c,(round(160-anchor),233-c.height))
-    return clean_edge(f)
-
 def main():
-    cells=extract(Image.open(SOURCE/'finale_cigar.png'),4)
-    order=[0,1,2,3,4,14,6,5,10,9,13,15]
-    # The acting row and gait rows were authored at three camera scales.
-    # Each group shares one upright landmark scale; no pose is stretched.
-    frames=[register(cells[i],170/cells[0 if i<4 else 4 if i<8 else 14].height) for i in order]
-    atlas(frames,OUT/'finale_cigar.png')
-    review=Image.new('RGB',(640,360),'#24202a')
-    for i,f in enumerate(frames):
-        f=f.resize((160,120),Image.Resampling.NEAREST);review.paste(f,((i%4)*160,(i//4)*120),f)
-    review.save('/tmp/finale_cigar_review.png')
     # Standalone prop shares the authored six-stick placement design.
     src=Image.open(SOURCE/'finale_dynamite.png').convert('RGBA')
     a=np.array(src);a[(a[:,:,0]>130)&(a[:,:,2]>100)&(a[:,:,1]<120),3]=0

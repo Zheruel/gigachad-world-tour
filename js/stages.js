@@ -19,25 +19,29 @@ export function dusk(camX) { return clamp((camX - DUSK_FROM) / (DUSK_TO - DUSK_F
 // ------------------------------------------------------------- definitions
 export const STAGES = [
   {
-    id:'train',num:'1-1',name:'THE NIGHT TRAIN',sub:'ACT I - NIGHT SERVICE TO DELHI',arrival:'station',departureRoute:'india',loadingArt:'loading_train',
-    width:9120,floorW:9120,music:'stage2a',musicB:'stage2b',musicBX:2880,bossMusic:'boss',bossMusicFinal:'boss2',boss:'vikram',introVoice:true,
-    init:initTrain,areas:[],skyLayers:[],lanes:[{x0:0,x1:2880,top:211,bot:241},{x0:2880,x1:3840,top:205,bot:241},{x0:3840,x1:5280,top:209,bot:241,berth:115},{x0:5280,x1:5760,top:194,bot:241},{x0:5760,x1:6240,top:202,bot:241},{x0:6240,x1:8160,top:202,bot:241},{x0:8160,x1:9120,top:181,bot:220}],
+    id:'train',num:'1-1',name:'THE NIGHT TRAIN',sub:'ACT I - NIGHT SERVICE TO DELHI',arrival:'station',departureRoute:'india',
+    width:9120,floorW:9120,music:'train_a',musicB:'train_b',musicBX:2880,bossMusic:'train_boss',boss:'neta',introVoice:true,
+    init:initTrain,areas:[],skyLayers:[],lanes:[{x0:0,x1:2880,top:211,bot:241},{x0:2880,x1:3840,top:205,bot:241},{x0:3840,x1:5280,top:209,bot:241,berth:120,pillars:[3886,4096,4389,4576,4747,4853,5024,5211]},{x0:5280,x1:5760,top:194,bot:241},{x0:5760,x1:6240,top:202,bot:241},{x0:6240,x1:8160,top:202,bot:241},{x0:8160,x1:9120,top:181,bot:220}],
     lamps:[],lampCol:'255,200,120',lampA:0,rim:null,moteCount:0,moteStyle:'dust',gradeA:0,glows:[],birds:[],fg:[],ambience:[],emitters:[],events:[],
-    props:[{kind:'nr_case',x:570,y:227},{kind:'nr_trolley',x:1270,y:222},{kind:'nr_case',x:2140,y:230},{kind:'nr_table',x:3110,y:215},{kind:'nr_case',x:3720,y:227},{kind:'nr_table',x:4560,y:212},{kind:'nr_urn',x:5490,y:203},{kind:'nr_contraband',x:6080,y:225},{kind:'nr_case',x:6760,y:226},{kind:'nr_table',x:7500,y:221},{kind:'nr_case',x:8030,y:208}],
+    // Health follows the damage (tools/verification/breakables_balance.cjs): the station fights are
+    // light, so its first suitcase and the trolley are score only; a lassi after the platform fight,
+    // chaat in the coaches, the pantry urn's lassi before the inspector, the 1-up in his office, then
+    // a lassi straight after him, one after the AC fight, chaat before the captain, a lassi before Netaji.
+    props:[{kind:'nr_case',x:570,y:227,drop:null},{kind:'nr_trolley',x:1270,y:222,drop:null},{kind:'nr_case',x:2140,y:230},{kind:'nr_table',x:3110,y:215},{kind:'nr_table',x:4560,y:212},{kind:'nr_crate',x:5490,y:206},{kind:'nr_contraband',x:6080,y:225},{kind:'nr_case',x:6400,y:226},{kind:'nr_case',x:6760,y:226},{kind:'nr_table',x:7640,y:221},{kind:'nr_case',x:7840,y:208}],
     waves:[
-      {x:550,spawns:['nr_tough','nr_tough','nr_tough','nr_tough','nr_tough']},
-      {x:850,spawns:['nr_tough','nr_runner','nr_tough','nr_bruiser','nr_tough','nr_runner']},
-      {x:1550,spawns:['nr_bruiser','nr_bruiser','nr_tough','nr_runner','nr_runner','nr_tough','nr_bruiser'],elite:true},
-      {x:2380,spawns:['nr_runner','nr_tough','nr_heavy','nr_tough','nr_bruiser','nr_tough','nr_runner','nr_tough']},
-      {x:3290,spawns:['nr_tough','nr_tough','nr_runner','nr_heavy','nr_tough','nr_runner','nr_tough','nr_tough']},
-      {x:4170,spawns:['nr_ambusher','nr_tough','nr_runner','nr_ambusher','nr_runner','nr_ambusher','nr_tough']},
-      {x:4890,spawns:['nr_heavy','nr_ambusher','nr_bruiser','nr_tough','nr_runner','nr_runner','nr_tough']},
-      {x:5805,spawns:['nr_guard','nr_guard'],camX:5760},
-      {x:5880,spawns:[],elite:true,miniboss:'conductor',intro:true,camX:5760},
-      {x:6520,spawns:['nr_guard','nr_guard','nr_runner','nr_tough','nr_guard','nr_runner','nr_tough']},
-      {x:6910,spawns:['nr_guard','nr_bruiser','nr_guard','nr_runner','nr_guard','nr_runner']},
-      {x:7370,spawns:['nr_guard','nr_guard','nr_heavy','nr_guard','nr_guard','nr_runner','nr_guard']},
-      {x:7760,spawns:['nr_guard','nr_guard','nr_bruiser','nr_guard','nr_guard','nr_bruiser','nr_guard']},
+      {x:550,spawns:['nr_brawler','nr_brawler','nr_brawler']},
+      {x:850,spawns:['nr_brawler','nr_brawler','nr_brawler','nr_brawler']},
+      {x:1550,spawns:['nr_chai','nr_brawler','nr_brawler','nr_chai','nr_brawler']},
+      {x:2380,spawns:['nr_paan','nr_brawler','nr_chai','nr_brawler','nr_paan']},
+      {x:3290,spawns:['nr_tte','nr_brawler','nr_brawler','nr_chai','nr_paan','nr_brawler']},
+      {x:4170,spawns:['nr_rack','nr_brawler','nr_rack','nr_brawler','nr_rack']},
+      {x:4890,spawns:['nr_tte','nr_rack','nr_paan','nr_chai','nr_brawler','nr_rack','nr_brawler']},
+      {x:5805,spawns:['nr_tte','nr_tte'],camX:5760},
+      {x:5880,spawns:[],miniboss:'conductor',intro:true,camX:5760,playerAt:[5850,218]},
+      {x:6520,spawns:['nr_commando','nr_commando','nr_brawler','nr_chai']},
+      {x:6910,spawns:['nr_commando','nr_commando','nr_tte','nr_chai','nr_paan']},
+      {x:7370,spawns:['nr_commando','nr_commando','nr_tte','nr_paan','nr_commando','nr_commando']},
+      {x:7760,spawns:['nr_captain','nr_commando','nr_commando']},
       {x:7950,spawns:[],boss:true,camX:7680},
     ],
     build:()=>({}),ambient:()=>{},
@@ -74,7 +78,7 @@ export function initStageObj(st) {
   G.waveIndex = -1;
   G.waveActive = false;
   G.spawnQueue = [];
-  G.spawnCd = 0;
+  G.spawnCd = 0; G.spawnSide = false;   // entry sides alternate from the same start every stage, so replays match
   G.goTimer = 0;
   G.motes = [];
   for (let i = 0; i < st.moteCount; i++) {
@@ -86,7 +90,7 @@ export function initStageObj(st) {
     });
   }
   G.props = (st.props || []).map((d) => createProp(d.kind, d.x, d.y, d.z));
-  // lair leftovers that must not survive into a fight: its tiger, and CHAD sat down
+  // lair leftovers that must not survive into a fight: its lion, and CHAD sat down
   G.actors = [];
   G.hubSeat = 0;
   initAmbience(st);

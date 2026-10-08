@@ -2,7 +2,7 @@ import {updateDaze,drawDaze} from './daze.js';
 // Shared boss lifecycle; stage modules own their encounter patterns and presentation.
 import { G, W, FLOOR_TOP, FLOOR_BOT, clamp, irand, addScore, diff, clampToArena, clampToLane, laneMin, laneMax, fall, inAir } from './engine.js';
 import { SPR, getFrame, blit, frameW, frameH } from './sprites.js';
-import { spawnSpark, spawnDust, spawnShock, impact, spawnPop, spawnRing } from './effects.js';
+import { spawnSpark, spawnDust, spawnShock, impact, screenFlash, spawnPop, spawnRing } from './effects.js';
 import { hurtPlayer, grabPlayer } from './player.js';
 import { spawnShot, spawnArc } from './shots.js';
 import { spawnEnemy } from './enemies.js';
@@ -14,35 +14,36 @@ import { getAIFrame } from './aiframes.js';
 
 export const BOSSES = {
   vendor: {
-    name: 'THE VENDOR', title: 'NO REFUNDS', taunt: 'YOU BREAK IT. YOU BUY IT.',
+    name: 'GHEE PAPPU', title: 'NO REFUNDS', taunt: "YOU'RE NEXT ON THE MENU.",
     set: 'ic_vendor', rageSet: 'ic_vendor', hp: 680, speed: .82,
-    w: 54, h: 92, shadowR: 19, score: 4000, mini: true,
-    patterns: ['ladle', 'utensil', 'valve', 'rush'],
+    w: 58, h: 103, shadowR: 22, score: 4000, mini: true,
+    patterns: ['string', 'naan', 'scoop', 'breath', 'flop'],
   },
   closer: {
-    name: 'THE CLOSER', title: 'FINAL ESCALATION', taunt: 'THIS CALL IS BEING RECORDED.',
+    name: 'THE CLOSER', title: 'KING OF REFUNDS', taunt: 'YOUR CALL IS IMPORTANT TO US.',
     set: 'ic_closer', rageSet: 'ic_closer', hp: 600, speed: .98,
-    w: 48, h: 90, shadowR: 17, score: 9000,
-    patterns: ['boxing', 'handset', 'shove', 'call'],
+    w: 52, h: 104, shadowR: 20, score: 9000,
+    patterns: ['boxing', 'handset', 'call', 'deal'],
   },
   conductor: {
     name:'HEAD CONDUCTOR',title:'CASH ONLY',taunt:'YOUR TICKET IS NOT VALID.',
-    set:'nr_conductor',rageSet:'nr_conductor',hp:210,speed:.85,w:46,h:88,shadowR:16,score:2500,mini:true,
-    patterns:['punch','whistle'],lines:['CASH ONLY'],
+    set:'nr_conductor',rageSet:'nr_conductor',hp:680,speed:.85,w:52,h:98,shadowR:16,score:2500,mini:true,
+    patterns:['denied','seized','boxswing','brake'],lines:['CASH ONLY'],
   },
   // ---- THE NIGHT TRAIN ----
-  vikram: {
-    name:'COMMISSIONER SETH', title:'THE PROCESSING FEE', taunt:'YOUR FARE DOES NOT INCLUDE MY FEE.',
-    set:'nr_vikram',rageSet:'nr_vikram_roof',hp:560,speed:.9,w:50,h:92,shadowR:17,score:8000,
-    patterns:['cane','pistol','grab'],rageLine:'TAKE IT OUTSIDE.',
+  // Shera (the bodyguard) fights inside with this hp; Netaji's own bar lives in train_neta.js.
+  neta: {
+    name:'NETAJI', title:'EVERYONE HAS A PRICE', taunt:'SHERA! TEACH HIM OUR RATES.',
+    set:'nr_neta_guard',rageSet:'nr_neta',hp:540,speed:.8,w:57,h:114,shadowR:24,score:8000,
+    patterns:['pound','bullrush','quake'],rageLine:'',
   },
   dredger: {
-    name: 'THE DREDGER', title: 'WHAT EATS THE RIVER', taunt: 'THE RIVER IS A CONTRACT',
-    set: 'thekedar', rageSet: 'thekedar', portrait: 'portrait_thekedar',
-    hp: 1200, speed: 0.70, w: 60, h: 66, shadowR: 28, score: 9000,
-    patterns: ['sweep', 'bucketdrop', 'hose', 'swing'],
+    name: 'THE DREDGER', title: 'WHAT EATS THE RIVER', taunt: 'OYE, GYM BOY! THIS RIVER IS MY CONTRACT!',
+    set: 'dl_thekedar', rageSet: 'dl_thekedar', portrait: 'portrait_thekedar',
+    hp: 900, speed: 0.70, w: 64, h: 70, shadowR: 30, score: 9000,
+    patterns: ['grabswing', 'grabdrop', 'grabscoop', 'grabdump', 'wrenchcombo', 'sack', 'grabcall'],
     rageLine: 'THE ARM COMES DOWN',
-    lines: ['(the winch screams)', '(chain rattle over the water)'],
+    lines: ['(the cable screams)', '(chain rattle over the water)'],
   },
   raja: {
     name: 'RICKSHAW RAJA', title: 'KING OF THE METER', taunt: 'NO CHANGE. ONLY PAIN.',
@@ -91,7 +92,7 @@ export function createBoss(key, x, y) {
     hurt(dmg, dir, heavy, launch) { hurtBoss(b, dmg, dir, heavy, launch); },
     protectedStagger: 0, superLocked: false,
     damageGuard(amount=1) { if(b.backupProtected||!b.maxGuard||b.guard<=0)return; b.guard=Math.max(0,b.guard-amount);b.guardFlash=8;if(b.guard===0)b.breakGuard(); },
-    breakGuard() { if(b.backupProtected)return;b.guard=0;b.protectedStagger=Math.max(b.protectedStagger,90);b.state='stagger';b.t=0;b.vx=0;b.atkCd=90;G.audio.sfx('heavy');spawnPop(b.x,b.y-b.h-8,'GUARD BREAK'); },
+    breakGuard() { if(b.backupProtected)return;b.guard=0;b.protectedStagger=Math.max(b.protectedStagger,90);b.state='stagger';b.t=0;b.vx=0;b.atkCd=90;G.audio.sfx('armor');spawnPop(b.x,b.y-(b.popH||b.h)-8,'GUARD BREAK',{stack:true}); },
     parried(dmg, dir) { if(b.backupProtected)return;
       if(b.key==='yadav'){b.posture--;if(b.posture<=0){b.posture=b.maxPosture;b.protectedStagger=90;}}
       b.protectedStagger=Math.max(b.protectedStagger,45);
@@ -110,7 +111,11 @@ export function createBoss(key, x, y) {
 }
 
 export function hurtBoss(b, dmg, dir, heavy, launch) {
-  if (b.dead || b.backupProtected || (b.superLocked&&!b.superApplying) || (b.key === 'vikram' && G.train?.cinematic)) return;
+  if (b.dead || b.backupProtected || (b.superLocked&&!b.superApplying) || (b.key === 'neta' && G.train?.cinematic)) return;
+  // Bosses never fall to a dice roll. Train bosses fall only to a heavy that lands in an
+  // opening they were already in; the others own their knockdowns in their fight modules.
+  const train = b.key === 'conductor' || b.key === 'neta';
+  const floored = train && heavy && (b.protectedStagger > 0 || b.state === 'stagger') && !b.superApplying && !b.counterApplying && !b.parryApplying && (b.delhi?.canFloor ? b.delhi.canFloor(b) : true);
   if(heavy&&!b.superApplying&&!b.parryApplying&&!b.counterApplying)b.damageGuard(.35);
   if(b.delhi?.beforeHurt&&b.delhi.beforeHurt(b,dmg,dir,heavy,launch)===false)return;
   if (b.armor > 0 && !launch) {
@@ -127,7 +132,7 @@ export function hurtBoss(b, dmg, dir, heavy, launch) {
   if (!b.enraged && b.hp <= b.maxhp / 2 && !(b.delhi && b.delhi.noRage)) {
     b.enraged = true;
     if (!(b.delhi && b.delhi.noRageSet)) b.set = SPR[b.def.rageSet] || b.set;
-    G.flash = 4; G.shake = 6;
+    screenFlash(); G.shake = 6;
     spawnPop(b.x, b.y - b.z - b.h - 6, b.def.rageLine);
     G.audio.sfx('enrage');
     if (b.delhi && b.delhi.onEnrage) b.delhi.onEnrage(b);
@@ -139,21 +144,19 @@ export function hurtBoss(b, dmg, dir, heavy, launch) {
     b.vx = dir * 2.4; b.vz = 3.6; b.z = Math.max(b.z, 0.1);
     addScore(b.def.score);
     spawnPop(b.x, b.y - 74, '+' + b.def.score);
-    G.audio.sfx('ko');
     G.audio.sfx('bdie');
-    impact(true);
+    impact(true); screenFlash();
     G.shake = 8;
     if (G.player.grabbedBy === b) { G.player.grabbedBy = null; G.player.state = 'idle'; }
     if (b.delhi && b.delhi.onDeath) b.delhi.onDeath(b);
+  } else if (floored) {
+    b.protectedStagger = 0; b.state = 'down'; b.t = 0; if (b.maxGuard && b.guard === 0) b.guard = b.maxGuard;
+    b.vx = dir * 1.8; b.vz = 2.8; b.z = Math.max(b.z, 0.1);
+    if (b.delhi && b.delhi.onDown) b.delhi.onDown(b);
   } else if (b.protectedStagger>0 || b.superLocked) {
     b.state='stagger'; b.vx=0;
   } else if (own) {
     // handled
-  } else if (heavy && Math.random() < 0.3) {
-    b.state = 'down'; b.t = 0;
-    b.vx = dir * 1.8; b.vz = 2.8; b.z = Math.max(b.z, 0.1);
-    if (G.player.grabbedBy === b) { G.player.grabbedBy = null; G.player.state = 'idle'; }
-    if (b.delhi && b.delhi.onDown) b.delhi.onDown(b);
   } else if (b.state !== 'grabhold' && (!b.enraged || Math.random() < 0.5)) {
     b.state = 'hurt'; b.t = 0;
     b.vx = dir * 0.8;
@@ -181,10 +184,12 @@ export function updateBoss() {
   updateDaze(b);
   if(b.superLocked&&p.state!=='special'){b.superLocked=false;b.superApplying=false;}
   if(b.superLocked)return;
+  b.delhi?.beforeUpdate?.(b);
   if(b.pendingSuperDefeat){b.pendingSuperDefeat=false;hurtBoss(b,b.hp,p.face,true,false);return;}
   if(b.protectedStagger>0&&!b.dead){
     if(b.flash>0)b.flash--;if(b.guardFlash>0)b.guardFlash--;
-    b.protectedStagger--;b.state='stagger';b.t=0;b.vx=0;b.vz=0;b.z=0;
+    b.protectedStagger--;b.state='stagger';b.t=0;b.vx=0;b.vz=0;
+    if(!b.delhi?.staggerTick?.(b))b.z=0;
     if(!b.protectedStagger){if(b.maxGuard&&b.guard===0)b.guard=b.maxGuard;b.state=b.delhi?'recover':'idle';b.atkCd=45;b.delhi?.afterOpening?.(b);}
     return;
   }
@@ -195,8 +200,15 @@ export function updateBoss() {
   if (b.state === 'down' && b.t > 240) { b.z = 0; b.vz = 0; b.vx = 0; b.state = 'idle'; b.t = 0; b.atkCd = 40; }
   if (b.state !== 'dying' && b.state !== 'down' && b.state !== 'grabhold' && !(b.delhi && b.delhi.keepFace && b.delhi.keepFace(b))) b.face = p.x < b.x ? -1 : 1;
   const px0 = b.x, py0 = b.y;
+  const refundWalking=G.stage?.id==='refund'&&['idle','setup-shove','setup-handset'].includes(b.state);
+  if(G.stage?.id==='refund'){b.refundWalkK=1;b.refundTickX=px0;b.refundTickY=py0;}
   if (b.delhi && b.delhi.update(b)) {
-    b.moved = G.stage?.id==='train'?Math.hypot(b.x-px0,b.y-py0):Math.abs(b.x-px0); b.stridePhase += b.moved;
+    b.moved = (['train','refund'].includes(G.stage?.id)||b.key==='vendor')?Math.hypot(b.x-px0,b.y-py0):Math.abs(b.x-px0); b.stridePhase += b.moved;if(b.key==='vendor'&&Math.abs(b.x-px0)>.01)b.stepDir=Math.sign(b.x-px0);
+    if(G.stage?.id==='refund'){
+      const distance=Math.hypot(b.x-px0,b.y-py0)*(Math.sign((b.x-px0)*b.face)||b.refundWalkDirection||1);
+      if(b.state==='shove')b.refundPushPos=(b.refundPushPos||0)+distance;
+      else if(refundWalking)b.refundWalkPos=(b.refundWalkPos||0)+distance*(b.refundWalkK||1);
+    }
     if(b.trainWaiting)return;
     if(!['backup_retreat','backup_call','backup_wait','backup_return'].includes(b.state))clampToLane(b);
     clampToArena(b, 0);

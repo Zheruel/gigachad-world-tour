@@ -5,7 +5,8 @@ import {ASSETS} from './assets.js';
 import {hurtPlayer} from './player.js';
 import {spawnDust,spawnSpark} from './effects.js';
 
-const KINDS={ic_cart:'cart',ic_boiler:'steam',ic_cargo:'cargo',ic_cabinet:'cart',ic_monitor:'electric',ic_server:'electric'};
+// Hazards live in intact props only: a broken prop bursts and leaves no hazard behind.
+const KINDS={ic_cart:'cart',ic_boiler:'steam',ic_cargo:'cargo',ic_cabinet:'cart'};
 const TELL=54, ACTIVE=42;
 function redThreat(){
   return G.enemies.some(e=>!e.dead&&['windup','attack'].includes(e.state)&&
@@ -44,6 +45,8 @@ function harm(node,x,y,rx,damage,heavy=false){
 }
 function attach(pr){
   const s=state(),kind=KINDS[pr.prop];
+  // Delhi cargo is an ordinary breakable stack, with no self-moving hazard.
+  if(G.stage?.id==='delhi'&&kind==='cargo')return;
   if(!kind||pr.indiaBossProp||G.enemies.some(e=>e.rig===pr))return;
   if(pr.indiaEnvironment){if(!s.nodes.includes(pr.indiaEnvironment))s.nodes.push(pr.indiaEnvironment);return;}
   const n={prop:pr,kind,mode:'rest',t:0,cooldown:0,demoDone:false,spent:pr.broken,
@@ -64,10 +67,21 @@ function attach(pr){
     if(pr.broken){
       n.vx=0;pr.swing=0;
       if(s.active===n)finish(n);
-      if(kind==='electric'){n.pending=true;n.spent=false;n.cooldown=0;}
-      else n.spent=true;
+      n.spent=true;
     }
   };
+}
+// Where a slipping cargo pallet will sweep: its own footprint plus the 48px it slides.
+export function inCargoPath(pr,who){
+  return Math.abs(who.y-pr.y)<12&&who.x>pr.x-pr.w*.5-10&&who.x<pr.x+48+pr.w*.5+10;
+}
+// A dock hand knocks the chock out: the ordinary cargo warning starts now instead of on its
+// own clock. `dry` only asks whether it could (nothing else warning, not spent, no boss).
+export function pullChock(pr,dry=false){
+  const s=state(),n=s&&s.nodes.find(q=>q.prop===pr);
+  if(!n||n.kind!=='cargo'||n.mode!=='rest'||n.spent||pr.broken||s.active||G.boss||redThreat()||!visible(pr))return false;
+  if(!dry){n.demoDone=true;n.cooldown=0;begin(n);record({t:s.t,kind:'cargo',event:'chock',x:pr.x});}
+  return true;
 }
 export function initIndiaEnvironment(){
   if(!G.stage?.chapter||!G.india)return;
@@ -113,44 +127,55 @@ export function updateIndiaEnvironment(){
       harm(n,pr.x,n.lane,pr.w*.5+10,8,true);
       if(n.t%7===0)spawnDust(pr.x-pr.w*.35,pr.y,2);
     }
-    if(n.kind==='electric'){
-      harm(n,pr.x,n.lane,33,6);
-      if(n.t%8===0)spawnSpark(pr.x+Math.sin(n.t)*13,pr.y-12);
-    }
     if(n.t>=ACTIVE)finish(n);
   }
   if(s.active||G.boss||redThreat())return;
   for(const n of s.nodes){
     if(n.cooldown>0||n.spent||!visible(n.prop))continue;
-    if(n.kind==='electric'&&n.pending){n.pending=false;begin(n);break;}
     if(['steam','cargo'].includes(n.kind)&&!n.prop.broken){
       if(!n.demoDone){begin(n,true);break;}
       if(G.waveActive){begin(n);break;}
     }
   }
 }
+// The warning on the floor: a soft glow over the exact footprint the hazard will sweep (steam: its jet;
+// cargo: the pallet plus its slide), with chevrons running the way it goes. Amber while it warns, a
+// hotter orange fading out while it acts. Drawn under props and actors, like the Dredger's deck paint.
+function drawHazardFloor(ctx,n,camX){
+  const pr=n.prop,d=n.face<0?-1:1;
+  const [a0,a1]=n.kind==='steam'?[n.origin+12,n.origin+98]
+    :n.kind==='cargo'?[n.origin-pr.w/2-10,n.origin+(n.demo?16:48)*d+pr.w/2+10]:[pr.x-33,pr.x+33];
+  const x0=Math.round(Math.min(a0,a1)-camX),x1=Math.round(Math.max(a0,a1)-camX),cy=Math.round(n.lane),w=x1-x0;
+  const tell=n.mode==='tell',k=tell?clamp(n.t/TELL,0,1):1-clamp(n.t/ACTIVE,0,1),pulse=.85+.15*Math.sin(n.t*.3);
+  const rgb=tell?'240,150,60':'250,96,40',a=(tell?.24+.22*k:.36*k)*pulse;
+  const g=ctx.createRadialGradient(0,0,0,0,0,1);
+  g.addColorStop(0,`rgba(${rgb},${a})`);g.addColorStop(.6,`rgba(${rgb},${a*.55})`);g.addColorStop(1,`rgba(${rgb},0)`);
+  ctx.save();ctx.translate((x0+x1)/2,cy);ctx.scale(w/2+6,9);ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);ctx.restore();
+  if(!tell&&k<.5)return;
+  // Chevrons: a bright wave running the slide direction, fading at both ends of the footprint.
+  const step=14,fade=x=>clamp(Math.min(x-x0,x1-x)/18,0,1);
+  for(let x=x0+8;x<x1-5;x+=step){
+    const f=fade(x);if(f<=.05)continue;
+    const wave=Math.max(0,Math.cos(((x-x0)*d-n.t*1.4)/step*1.2)),al=f*(tell?.45+.25*k+.3*wave:.6*k);
+    ctx.globalAlpha=al;ctx.beginPath();
+    ctx.moveTo(x-d*2.5,cy-3);ctx.lineTo(x-d*.5,cy-3);ctx.lineTo(x+d*2,cy);ctx.lineTo(x-d*.5,cy+3);ctx.lineTo(x-d*2.5,cy+3);ctx.lineTo(x-d*.5,cy);ctx.closePath();
+    ctx.fillStyle=wave>.75&&tell?'#ffeec4':'#f0a24a';ctx.fill();ctx.strokeStyle='#4a1e0a';ctx.lineWidth=.5;ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
 export function drawIndiaEnvironment(ctx,camX){
   const s=state();if(!s||G.india.review?.environment===false)return;
   for(const n of s.nodes){
     if(n.mode==='rest')continue;
-    const pr=n.prop,x=(n.kind==='steam'?n.origin+55:pr.x)-camX,y=n.lane;
-    const width=n.kind==='steam'?86:n.kind==='cargo'?pr.w+64:66;
+    const y=n.lane;
     ctx.save();
-    const warning=n.mode==='tell';
-    ctx.fillStyle=warning?'rgba(235,148,66,.23)':'rgba(242,91,37,.18)';
-    ctx.fillRect(Math.round(x-width/2),Math.round(y-5),width,10);
-    ctx.fillStyle=warning?'#d8a65e':'#e57d42';
-    for(let i=0;i<width;i+=12)ctx.fillRect(Math.round(x-width/2+i),Math.round(y+5),6,1);
+    drawHazardFloor(ctx,n,camX);
     if(n.kind==='steam'&&n.mode==='active'){
       const im=ASSETS.ic_steam;
       if(im){
         const frame=Math.min(7,Math.floor(n.t/6)),fw=im.width/4,fh=im.height/2;
         ctx.drawImage(im,(frame%4)*fw,Math.floor(frame/4)*fh,fw,fh,Math.round(n.origin+12-camX),Math.round(y-56),96,56);
       }
-    }
-    if(n.kind==='electric'){
-      const alpha=warning?.3:.75;ctx.strokeStyle=`rgba(141,192,230,${alpha})`;ctx.lineWidth=1;
-      const shift=(n.t%9)-4;ctx.beginPath();ctx.moveTo(x-19,y-8);ctx.lineTo(x-5,y-17+shift);ctx.lineTo(x+3,y-9);ctx.lineTo(x+22,y-19);ctx.stroke();
     }
     ctx.restore();
   }

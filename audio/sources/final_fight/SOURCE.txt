@@ -1,0 +1,6 @@
+Final Fight (Arcade, Capcom 1989) voice and effect samples, from The Sounds Resource:
+  voice/  https://sounds.spriters-resource.com/arcade/finalfight/asset/554084/  (zip sha256 e80750133eadf7257e10128cd32a123adfeab1c3e5bc07e22bf8d3ec60e59d9a)
+  sfx/    https://sounds.spriters-resource.com/arcade/finalfight/asset/554085/  (zip sha256 565b03197f7135194cf5b3a141c940e4c9295e7bc726b927c2af7d892a953eee)
+Ripped by geometricentric; file names are the ripper's labels. 7576 Hz originals, unmodified.
+Used for the Head Conductor's voice and a few impacts (tools/production/build_conductor_audio.py -> audio/sfx/cond_*.wav).
+Local-only project; the user handles licensing of these banks.

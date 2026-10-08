@@ -1,4 +1,5 @@
 import { hasCleared } from './progress.js';
+import { trophyForStage } from './trophies.js';
 // hubpanels.js - the screens the lair fixtures open. One panel per fixture id, all
 // driven off G.hubPanel / G.hubAct so js/hub.js only has to say which one is up.
 //
@@ -12,6 +13,7 @@ import { BOSSES } from './bosses.js';
 import { ASSETS } from './assets.js';
 import { input } from './input.js';
 import { audio } from './audio.js';
+import { musicGroups, trackOpen, drawCassette, saveTracks } from './music_library.js';
 
 // ------------------------------------------------------------------ chapters
 // Chapters are grouped off the "1-3" style stage numbers, so adding a 2-1 stage to
@@ -50,7 +52,7 @@ const chapterLocked = (c) => actLocked(c.acts[0]);
 const unlockedCount = (c) => c.acts.filter((i) => !actLocked(i)).length;
 
 // ---------------------------------------------------------------- open/close
-// ESC closes a panel. It is the pause key everywhere else in the room, and main.js skips
+// X (the prompts' key) closes a panel; ESC, C and Backspace also do. ESC is pause elsewhere and main.js skips
 // the pause toggle while a panel is up, so the two can never both fire on one press.
 const cancel = () => input.pressed('back') || input.pressed('pause')
   || input.pressed('parry') || input.pressed('jump');
@@ -58,6 +60,13 @@ const cancel = () => input.pressed('back') || input.pressed('pause')
 export function openPanel(id) {
   G.hubPanel = id;
   G.hubAct = 0;
+  if (id === 'hifi') {
+    // open on what the room is playing, and show NEW on what arrived since the last visit
+    const at = jukeboxList().findIndex((t) => t.slot === playingSlot());
+    G.hubAct = Math.max(0, at);
+    G.jukeboxFresh = G.tracksUnseen.slice();
+    if (G.tracksUnseen.length) { G.tracksUnseen = []; saveTracks(); }
+  }
   if (id === 'map') {
     // land on the newest unlocked chapter and its newest unlocked act - that is
     // almost always the one you came back to the lair to play
@@ -122,15 +131,22 @@ function updateMap() {
 }
 
 function updateJukebox() {
-  const list = audio.tracks();
-  // the list runs down one column then down the next, so left/right is a column jump
-  const d = stepY() + stepX() * JB_ROWS;
-  if (d) {
-    const next = clamp(G.hubAct + d, 0, list.length - 1);
-    if (next !== G.hubAct) { G.hubAct = next; G.audio.sfx('blip'); }
+  const list = jukeboxList();
+  if (!list.length) return;
+  G.hubAct = clamp(G.hubAct, 0, list.length - 1);
+  // up/down walk the tracks (the headers are not stops); left/right jump a whole place
+  let next = clamp(G.hubAct + stepY(), 0, list.length - 1);
+  const dx = stepX();
+  if (dx) {
+    const g = list[G.hubAct].group, first = list.findIndex((t) => t.group === g);
+    if (dx < 0) next = G.hubAct > first ? first : Math.max(0, list.findIndex((t) => t.group === list[Math.max(0, first - 1)].group));
+    else { const after = list.findIndex((t, i) => i > G.hubAct && t.group !== g); if (after >= 0) next = after; }
   }
-  if (input.pressed('attack') && list.length) {
-    G.hubTrack = list[G.hubAct];
+  if (next !== G.hubAct) { G.hubAct = next; G.audio.sfx('blip'); }
+  if (input.pressed('attack')) {
+    const t = list[G.hubAct];
+    if (!trackOpen(t)) { G.shakePoster = 12; G.audio.sfx('whiff'); return; }
+    G.hubTrack = t.slot;
     audio.play(G.hubTrack);
   }
 }
@@ -200,7 +216,7 @@ function drawMap(ctx) {
   ctx.fillRect(0, 0, W, 44);
   ctx.fillRect(0, 227, W, H - 227);
   panelFrame(ctx, 'WORLD TOUR', 'CHOOSE YOUR GROUND',
-    'Z  START     ESC  BACK     ARROWS  CHOOSE', 0);
+    'Z  START     X  BACK     ARROWS  CHOOSE', 0);
 
   const c = CHAPTERS[G.hubChapter];
   const cardH = 32 + c.acts.length * 15;
@@ -274,47 +290,92 @@ function drawMap(ctx) {
 }
 
 // -------------------------------------------------------------- jukebox panel
-// Names for the chiptunes in js/audio.js SONGS; the slot ids are positional.
-const TRACK_NAMES = {
-  lair: 'NEON SHADOWS', lobby: 'MARBLE LOBBY HUSTLE', title: 'ATTRACT',
-  stage1a: 'CHANDNI CHOWK RUN', stage1b: 'THE RIVER ANSWERS', boss: 'NO REFUNDS', boss1: 'WHAT EATS THE RIVER',
-  stage2a: 'PLATFORM ONE', stage2b: 'THE 22:40 SOUTH', boss2: 'THE COUPLER',
-  ending: 'VICTORY',
-};
-// Five slots now that the tour is one act, so they fit in a single column.
-const JB_ROWS = 7;
+// Names, groups and locks live in js/music_library.js. The cursor walks tracks only; the
+// rows (a header per place, then its tracks) scroll to keep it in view.
+const jukeboxList = () => musicGroups().flatMap((g) => g.tracks);
+// G.stage IS the lair while this panel is up, so its own slot is the default. Importing
+// it from hub.js would be a cycle - hub.js imports this file.
+const playingSlot = () => G.hubTrack || (G.stage && G.stage.music);
+const JB_X = 20, JB_R = 290, JB_TOP = 52, JB_ROW = 11, JB_VIS = 15;
+
+function jukeboxRows() {
+  const rows = [];
+  let n = 0;
+  for (const g of musicGroups()) {
+    rows.push({ head: g });
+    for (const t of g.tracks) rows.push({ track: t, n: n++ });
+  }
+  return rows;
+}
 
 function drawJukebox(ctx) {
-  panelFrame(ctx, 'SOUND TEST', 'CHAD PICKS THE TRACK', 'Z  SET     ESC  BACK');
-  const list = audio.tracks();
-  list.forEach((slot, i) => {
-    const on = i === G.hubAct;
-    const cx = 26 + ((i / JB_ROWS) | 0) * 220;
-    const y = 58 + (i % JB_ROWS) * 17;
-    if (on) {
-      ctx.fillStyle = 'rgba(255,217,74,0.14)';
-      ctx.fillRect(cx - 4, y - 4, 190, 15);
-      drawText(ctx, '>', cx - 2, y, '#ffd94a', 1);
+  panelFrame(ctx, 'SOUND TEST', 'CHAD PICKS THE TRACK', 'Z  SET     ARROWS  CHOOSE     X  BACK');
+  const rows = jukeboxRows(), list = jukeboxList();
+  const playing = playingSlot();
+  const cur = rows.findIndex((r) => r.track && r.n === G.hubAct);
+  // centred on the cursor, so the header above the first track of a place stays in view
+  const maxTop = Math.max(0, rows.length - JB_VIS);
+  const top = clamp(cur - (JB_VIS >> 1), 0, maxTop);
+  const fresh = G.jukeboxFresh || [];
+
+  rows.slice(top, top + JB_VIS).forEach((r, i) => {
+    const y = JB_TOP + i * JB_ROW;
+    if (r.head) {
+      const g = r.head, open = g.tracks.filter(trackOpen).length;
+      drawTextShadow(ctx, g.title, JB_X, y, '#d838a0', 1);
+      const count = open + '/' + g.tracks.length;
+      const cx = JB_R - textWidth(count, 1);
+      drawTextShadow(ctx, count, cx, y, open === g.tracks.length ? '#3adc8a' : '#8a82a0', 1);
+      ctx.fillStyle = 'rgba(216,56,160,0.35)';
+      ctx.fillRect(JB_X + textWidth(g.title, 1) + 5, y + 2, cx - JB_X - textWidth(g.title, 1) - 10, 1);
+      return;
     }
-    drawText(ctx, String(i + 1).padStart(2, '0'), cx + 10, y, '#8ad8ff', 1);
+    const t = r.track, on = r.n === G.hubAct, open = trackOpen(t), isPlaying = open && t.slot === playing;
+    const wob = (on && G.shakePoster > 0) ? ((G.rawTime & 1) ? 2 : -2) : 0;
+    const x = JB_X + 6 + wob;
+    if (on) {
+      ctx.fillStyle = G.shakePoster > 0 ? 'rgba(216,40,56,0.3)' : 'rgba(255,217,74,0.14)';
+      ctx.fillRect(JB_X, y - 3, JB_R - JB_X + 4, JB_ROW);
+      drawText(ctx, '>', x - 4, y, open ? '#ffd94a' : '#d82838', 1);
+    }
+    drawText(ctx, String(r.n + 1).padStart(2, '0'), x + 4, y, open ? '#8ad8ff' : '#4a4658', 1);
     // the one the room is set to, so the panel says what is playing rather than only what
     // the cursor is over - the two are different as soon as you move the cursor off it
-    // G.stage IS the lair while this panel is up, so its own slot is the default. Importing
-    // it from hub.js would be a cycle - hub.js imports this file.
-    const playing = slot === (G.hubTrack || (G.stage && G.stage.music));
-    if (playing) drawText(ctx, '*', cx + 25, y, '#3adc8a', 1);
-    drawText(ctx, TRACK_NAMES[slot] || slot.toUpperCase(), cx + 32, y,
-      playing ? '#3adc8a' : (on ? '#f8f0e0' : '#a89ec0'), 1);
+    if (isPlaying) drawText(ctx, '*', x + 16, y, '#3adc8a', 1);
+    drawText(ctx, open ? t.name : '??????', x + 24, y,
+      isPlaying ? '#3adc8a' : !open ? '#6a6478' : (on ? '#f8f0e0' : '#a89ec0'), 1);
+    let tag = null, col = '#6a6478';
+    if (!open) tag = t.hint || t.group.place;
+    else if (fresh.includes(t.slot) && ((G.rawTime >> 4) & 1)) { tag = 'NEW'; col = '#ff7a3a'; }
+    else if (fresh.includes(t.slot)) { tag = 'NEW'; col = '#ffd94a'; }
+    if (tag) drawText(ctx, tag, JB_R - textWidth(tag, 1) + wob, y, col, 1);
   });
+  // more above / below
+  ctx.fillStyle = '#d838a0';
+  const ax = JB_R - 2;
+  if (top > 0) for (let i = 0; i < 3; i++) ctx.fillRect(ax - i, JB_TOP - 6 + i, i * 2 + 1, 1);
+  if (top < maxTop) for (let i = 0; i < 3; i++) ctx.fillRect(ax - i, JB_TOP + JB_VIS * JB_ROW - 2 - i, i * 2 + 1, 1);
+
+  // the deck: what is on, whatever the cursor is over
+  ctx.fillStyle = 'rgba(138,130,160,0.22)';
+  ctx.fillRect(300, 50, 1, 170);
+  const now = list.find((t) => t.slot === playing);
+  const cx = 386;
+  drawCassette(ctx, cx - 60, 56, 120, now ? now.name : '', G.rawTime, !!now);
+  const lines = [['NOW PLAYING', '#8a82a0'], [now ? now.name : '-', '#ffd94a'], [now ? now.group.title : '', '#8ad8ff']];
+  lines.forEach(([s, col], i) => drawTextShadow(ctx, s, cx - textWidth(s, 1) / 2, 140 + i * 10, col, 1));
+  const opened = list.filter(trackOpen).length;
+  const tally = 'COLLECTED ' + opened + '/' + list.length;
+  drawTextShadow(ctx, tally, cx - textWidth(tally, 1) / 2, 176, opened === list.length ? '#3adc8a' : '#a89ec0', 1);
 
   // a bank of VU bars, so the panel does something while a track plays
-  const cx = W / 2 - 60;
-  for (let i = 0; i < 24; i++) {
+  const vx = cx - 57;
+  for (let i = 0; i < 20; i++) {
     const h = 2 + Math.abs(Math.sin(G.rawTime * 0.07 + i * 0.7)) * 22
       * (0.4 + Math.abs(Math.sin(G.rawTime * 0.013 + i)) * 0.6);
     for (let s = 0; s < h; s += 3) {
       ctx.fillStyle = s > 17 ? '#ff4a4a' : (s > 11 ? '#ffd94a' : '#3adc8a');
-      ctx.fillRect(cx + i * 5, 218 - s, 3, 2);
+      ctx.fillRect(vx + i * 6, 218 - s, 4, 2);
     }
   }
 }
@@ -327,7 +388,7 @@ const GALLERY = Object.keys(BOSSES)
   .sort((a, b) => a.act - b.act);
 
 function drawGallery(ctx) {
-  panelFrame(ctx, 'TROPHY WALL', 'EVERY MAN CHAD PUT DOWN', 'ARROWS  BROWSE     ESC  BACK');
+  panelFrame(ctx, 'TROPHY WALL', 'ONE LEVEL. ONE TROPHY.', 'ARROWS  BROWSE     X  BACK');
 
   // filmstrip of small cards, the selected one blown up below
   const cw = 44, gap = 6;
@@ -344,7 +405,8 @@ function drawGallery(ctx) {
     g.addColorStop(1, beat ? '#141e3c' : '#0e0e16');
     ctx.fillStyle = g;
     ctx.fillRect(x, 56, cw, 52);
-    const img = SPR[b.set] && getFrame(SPR[b.set], 'idle', 0, 1);
+    const trophy = trophyForStage(STAGES[entry.act]);
+    const img = ASSETS[trophy?.detail] || (SPR[b.set] && getFrame(SPR[b.set], 'idle', 0, 1));
     if (img) {
       const s = Math.min((cw - 6) / frameW(img), 48 / frameH(img));
       const dw = Math.round(frameW(img) * s), dh = Math.round(frameH(img) * s);
@@ -363,13 +425,14 @@ function drawGallery(ctx) {
 
   const entry = GALLERY[G.hubAct];
   const b = BOSSES[entry.k];
+  const trophy = trophyForStage(STAGES[entry.act]);
   const beat = hasCleared(G, entry.act);
-  const name = beat ? b.name : 'UNKNOWN';
+  const name = beat ? trophy?.name || b.name : 'UNKNOWN';
   drawTextShadow(ctx, name, (W - textWidth(name, 2)) / 2, 120, beat ? '#ffd94a' : '#6a6478', 2);
-  const title = beat ? b.title : 'NOT YET BEATEN';
+  const title = beat ? (trophy ? b.name + ' DEFEATED' : b.title) : 'NOT YET BEATEN';
   drawTextShadow(ctx, title, (W - textWidth(title, 1)) / 2, 136, '#8ad8ff', 1);
   if (beat) {
-    const q = '"' + b.taunt + '"';
+    const q = trophy?.description || '"' + b.taunt + '"';
     drawTextShadow(ctx, q, (W - textWidth(q, 1)) / 2, 154, '#c8c0e0', 1);
     const st = STAGES[entry.act];
     const where = st.num + '  ' + st.name;

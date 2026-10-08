@@ -7,10 +7,10 @@ BASE=ROOT/'audio/voice/duke'
 catalog=json.loads((BASE/'catalog.json').read_text())
 clips=catalog['clips']
 curated=[c for c in clips if not c.get('legacySlots')]
-assert len(curated)==125 and len(clips)>=125
+assert len(curated)==129 and len(clips)>=129
 assert len({c['id'] for c in clips})==len(clips)
 assert len({c['file'] for c in clips})==len(clips)
-assert len({c['sha256'] for c in curated})==125
+assert len({c['sha256'] for c in curated})==129
 assert {c['category'] for c in clips}>={'combat','threats','explosions','entrances','reactions','victory'}
 assert {c['file'] for c in clips}=={str(p.relative_to(BASE)) for p in BASE.rglob('*') if p.suffix.lower() in {'.mp3','.wav'}}
 assert any(c['transcript']=="This Train is Goin' Nowhere Fast" for c in clips)
@@ -28,11 +28,11 @@ def check(c):
     return hashlib.sha256(raw).hexdigest()
 with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
     hashes=list(pool.map(check,clips))
-assert len({h for c,h in zip(clips,hashes) if not c.get('legacySlots')})==125
+assert len({h for c,h in zip(clips,hashes) if not c.get('legacySlots')})==129
 # Verify migrated aliases against the game registry rather than retired file locations.
 registry=(ROOT/'js/audio.js').read_text()
 registered=dict(re.findall(r"\b([a-zA-Z_][\w]*)\s*:\s*['\"](audio/voice/[^'\"]+)['\"]",registry))
 for c in clips:
     for slot in c.get('legacySlots',[]):
         assert registered.get(slot)==f"audio/voice/duke/{c['file']}", (slot,c['file'],registered.get(slot))
-print(f'PASS: 125 unique archive clips plus {len(clips)-125} legacy takes; all decode, match catalog hashes and preserve registered aliases.')
+print(f'PASS: 129 unique archive clips plus {len(clips)-129} legacy takes; all decode, match catalog hashes and preserve registered aliases.')

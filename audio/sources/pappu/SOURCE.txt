@@ -1,0 +1,25 @@
+Sources for the vendor_* sound effects (tools/production/build_pappu_audio.py). All files here are CC0 (public domain).
+Freesound files are the site previews, reused unmodified; licence read from each sound page.
+
+freesound_157296_husky70_coughing_cough.mp3  https://freesound.org/people/husky70/sounds/157296/  CC0 1.0
+freesound_209002_OwlStorm_pots_and_pans_clatter_1.mp3  https://freesound.org/people/OwlStorm/sounds/209002/  CC0 1.0
+freesound_260554_LookIMadeAThing_basic_fire_whoosh.mp3  https://freesound.org/people/LookIMadeAThing/sounds/260554/  CC0 1.0
+freesound_337148_MrDrPrFr_slap.mp3  https://freesound.org/people/MrDrPrFr/sounds/337148/  CC0 1.0
+freesound_353124_BenjaminNelan_frying_pan_sizzle.mp3  https://freesound.org/people/BenjaminNelan/sounds/353124/  CC0 1.0
+freesound_369295_georgisound_coughing.mp3  https://freesound.org/people/georgisound/sounds/369295/  CC0 1.0
+freesound_435643_neilraouf_burner_gas_flame.mp3  https://freesound.org/people/neilraouf/sounds/435643/  CC0 1.0
+freesound_442773_qubodup_big_water_splash.mp3  https://freesound.org/people/qubodup/sounds/442773/  CC0 1.0
+freesound_473721_Joao_Janz_frying_pan_noise_3.mp3  https://freesound.org/people/Joao_Janz/sounds/473721/  CC0 1.0
+freesound_504626_leonelmail_body_fall_v_hvy_dirt.mp3  https://freesound.org/people/leonelmail/sounds/504626/  CC0 1.0
+freesound_635110_RadioCounseling_crowd_gasp.mp3  https://freesound.org/people/RadioCounseling/sounds/635110/  CC0 1.0
+freesound_734629_Vrymaa_body_fall_heavy.mp3  https://freesound.org/people/Vrymaa/sounds/734629/  CC0 1.0
+freesound_767635_interstellarcat_food_sizzling_in_a_pan.mp3  https://freesound.org/people/interstellarcat/sounds/767635/  CC0 1.0
+
+OpenGameArt packs (CC0 1.0):
+oga_100cc0_*       https://opengameart.org/content/100-cc0-sfx
+oga_cast_iron_*    https://opengameart.org/content/33-metal-clang-sounds-cast-iron-pans
+oga_fire_*         https://opengameart.org/content/fire-crackling
+oga_loops_*        https://opengameart.org/content/30-cc0-sfx-loops
+oga_moresounds_*   https://opengameart.org/content/202-more-sound-effects
+
+Streets of Rage 2 effects and Duke/Andore voice samples come from the existing licensed banks under audio/sources.

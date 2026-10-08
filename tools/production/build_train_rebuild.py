@@ -1,6 +1,5 @@
 """Process selected GPT Image artwork; keyed windows and registered animation frames."""
 from pathlib import Path
-import json
 from collections import deque
 import numpy as np
 from PIL import Image, ImageEnhance, ImageOps
@@ -9,7 +8,6 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'assets/sources/production/stages/night_train/rebuild'
 OUT = ROOT / 'assets/stages/night_train/rebuild'
 PLATES = ['yard','hall','platform','general','sleeper','pantry','ac','private','private_damaged','roof','rural','industry','river']
-CAST = ['vikram','vikram_roof']
 
 def keyed(im):
     a=np.array(im.convert('RGBA')); r,g,b=[a[:,:,i].astype(float) for i in range(3)]
@@ -84,6 +82,21 @@ def atlas(frames,path):
     for i,f in enumerate(frames):out.paste(f,(i*w,0))
     out.save(path)
 
+def chad_identity(path,n,size=(224,224)):
+    """Cells redrawn with GPT Image from the gold CHAD frames (chad_sidle, chad_idle_shades, chad_swlk, chad_victory),
+    each registered on the builder's cell silhouette, replace those cells (SOURCE/<sheet>_cells/NN.png); then the sheet's
+    colour statistics are matched to the gold frames so skin, hair and denim read as the gameplay CHAD."""
+    d=SOURCE/f'{path.stem}_cells'
+    if not d.is_dir():return
+    sheet=Image.open(path).convert('RGBA');w,h=size
+    for f in sorted(d.glob('*.png')):
+        i=int(f.stem);sheet.paste(Image.new('RGBA',size),(i*w,0));sheet.alpha_composite(Image.open(f).convert('RGBA'),(i*w,0))
+    gold=[p for k in ('sidle','idle_shades','swlk') for p in sorted((ROOT/'assets/frames').glob(f'chad_{k}*.png'))]
+    ref=np.concatenate([np.array(Image.open(p).convert('RGBA')).reshape(-1,4) for p in gold]);ref=ref[ref[:,3]>=250][:,:3].astype(float)
+    a=np.array(sheet).astype(float);m=a[:,:,3]>=250;px=a[m][:,:3]
+    a[:,:,:3]=np.clip((a[:,:,:3]-px.mean(0))/px.std(0)*ref.std(0)+ref.mean(0),0,255)
+    Image.fromarray(a.round().astype(np.uint8)).save(path)
+
 def neutral_key(im):
     # These two generated sheets returned a neutral checkerboard instead of
     # alpha. Remove only its bright, achromatic pixels; retain warm highlights.
@@ -91,10 +104,10 @@ def neutral_key(im):
     a[(rgb.min(2)>195)&((rgb.max(2)-rgb.min(2))<18),3]=0
     return Image.fromarray(a)
 
-def build_entry():
-    OUT.mkdir(parents=True,exist_ok=True)
-    im=Image.open(SOURCE/'yard_booth.png').convert('RGBA')
-    ImageEnhance.Brightness(im).enhance(1.13).resize((1920,540),Image.Resampling.NEAREST).save(OUT/'yard.png')
+# CHAD stands 178 px (2x) like the gold frames; his sheets end on the gold palette (chad_cutscene.finish).
+CHAD_CROWN=178
+
+def chad_entry():
     im=neutral_key(Image.open(SOURCE/'chad_entry.png'))
     cells=[crop(clean_actor(cell(im,i,4,2))) for i in range(8)]
     # The clerk is on CHAD's left in the station view.
@@ -104,6 +117,18 @@ def build_entry():
         c=c.resize((round(c.width*scale),round(c.height*scale)),Image.Resampling.NEAREST)
         f=Image.new('RGBA',(224,224));f.alpha_composite(c,((224-c.width)//2,217-c.height));frames.append(f)
     atlas(frames,OUT/'chad_entry.png')
+    chad_identity(OUT/'chad_entry.png',8)
+
+def chad_cinema():
+    im=Image.open(SOURCE/'chad_cinema.png');cells=[cell(im,i) for i in range(12)];cells[9]=ImageOps.mirror(cells[9])
+    atlas(register(cells,(224,224),174),OUT/'chad_cinema.png')
+    chad_identity(OUT/'chad_cinema.png',12)
+
+def build_entry():
+    OUT.mkdir(parents=True,exist_ok=True)
+    im=Image.open(SOURCE/'yard_booth.png').convert('RGBA')
+    ImageEnhance.Brightness(im).enhance(1.13).resize((1920,540),Image.Resampling.NEAREST).save(OUT/'yard.png')
+    chad_entry()
     im=Image.open(SOURCE/'ticket_clerk.png').convert('RGBA');frames=[]
     # Keep the raised hand in frame 1; the generated cell widths differ slightly.
     for x0,x1,cx in [(0,510,263),(510,1090,800),(1090,1570,1320),(1570,2079,1850)]:
@@ -137,31 +162,10 @@ def main():
     for name in ['rural_near','industry_near','river_near']:
         im=Image.open(SOURCE/(name+'.png')).convert('RGBA')
         im.resize((1920,540),Image.Resampling.NEAREST).save(OUT/(name+'.png'))
-    manifest_path=ROOT/'assets/frames/manifest.json';manifest=json.loads(manifest_path.read_text())
-    states={'idle':[0,1],'walk':[2,3,4,5],'atk':[6,7,8],'hurt':[9],'down':[10],'jump':[11],'perch':[11],'block':[6]}
-    for name in CAST:
-        im=Image.open(SOURCE/(name+'.png'));frames=register([cell(im,i) for i in range(12)])
-        directory=ROOT/'assets/frames'/('nr_'+name);directory.mkdir(exist_ok=True)
-        for i,f in enumerate(frames):f.save(directory/f'{i}.png')
-        manifest['nr_'+name]={state:[f'nr_{name}/{i}.png' for i in ids] for state,ids in states.items()}
-        walk_source=SOURCE/(name+'_walk.png')
-        if walk_source.exists() and not name.startswith('vikram'):
-            walk_im=Image.open(walk_source)
-            walk=register([cell(walk_im,i,4,2) for i in range(8)])
-            for i,f in enumerate(walk):f.save(directory/f'walk_{i}.png')
-            manifest['nr_'+name]['walk']=[f'nr_{name}/walk_{i}.png' for i in range(8)]
-            for i in [2,3,4,5]:(directory/f'{i}.png').unlink(missing_ok=True)
-    manifest_path.write_text(json.dumps(manifest,indent=2)+'\n')
-    im=Image.open(SOURCE/'vikram_actions.png')
-    cells=[cell(im,i) for i in range(12)];cells[9]=ImageOps.mirror(cells[9]);frames=register(cells)
-    directory=ROOT/'assets/frames/nr_vikram'
-    for i,f in enumerate(frames):f.save(directory/f'action_{i}.png')
-    for state,ids in {'pistol':[0,1,2,3,4],'grab':[5,6,7],'climb':[8,9],'block':[11]}.items():
-        manifest['nr_vikram'][state]=[f'nr_vikram/action_{i}.png' for i in ids]
-    manifest_path.write_text(json.dumps(manifest,indent=2)+'\n')
-    for name,size,height in [('chad_cinema',(224,224),174),('passengers',(224,256),150)]:
+    # The final boss duo's frames, props and lair relic: build_train_neta.py.
+    chad_cinema()
+    for name,size,height in [('passengers',(224,256),150)]:
         im=Image.open(SOURCE/(name+'.png'));cells=[cell(im,i) for i in range(12)]
-        if name=='chad_cinema':cells[9]=ImageOps.mirror(cells[9])
         atlas(register(cells,size,height),OUT/(name+'.png'))
     build_entry()
     im=Image.open(SOURCE/'props.png')
@@ -170,7 +174,6 @@ def main():
         c=crop(cell(im,i));target=[100,100,148,148,130,130,70,70,120,72,114,114][i];c=c.resize((target,round(c.height*target/c.width)),Image.Resampling.NEAREST);
         from build_train_prop_edges import clean_prop_edges
         c=clean_prop_edges(c);c.save(OUT/(name+'.png'))
-        if name=='prop_nr_contraband':c.resize((40,round(c.height*40/c.width)),Image.Resampling.NEAREST).save(OUT/'relic_vikram.png')
     im=Image.open(SOURCE/'train_exterior.png');out=Image.new('RGBA',(1024,896))
     cars=[]
     for i in range(4):
@@ -192,13 +195,19 @@ def main():
         # The fire sheet has dark magenta spill around smoke; unlike clothing,
         # nothing in this effect should contain purple pigment.
         spill=(b>g*1.35)&(r>g*1.35)&(b>60);a[spill,3]=0
+        # Fainter violet tints left in the smoke become neutral grey of the same brightness.
+        tint=(a[:,:,3]>0)&(r>g+18)&(b>g+18);lum=(r*.3+g*.59+b*.11).clip(0,255).astype(np.uint8)
+        for j in range(3):a[:,:,j][tint]=lum[tint]
         frames.append(Image.fromarray(a).resize((320,256),Image.Resampling.NEAREST))
     atlas(frames,OUT/'explosion.png')
     from build_train_connections import main as connections
     connections()
 if __name__=='__main__':
     import sys
-    if '--entry-only' in sys.argv:
+    if '--chad' in sys.argv:  # CHAD sheets only: cinema, entry and (build_train_connections) board
+        from build_train_connections import chad_board
+        chad_cinema();chad_entry();chad_board()
+    elif '--entry-only' in sys.argv:
         from build_train_connections import main as connections
         connections()
     else:main()

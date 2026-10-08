@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- Temporary Dredger test bench: every move and transition of the fight, one click each, playable. Delete with tools/review/dredger_lab.js once the fight is signed off. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dredger Lab</title>
+<style>
+:root{--bg:#120e0c;--panel:#1c1613;--line:#3a2c22;--ink:#efe2cf;--dim:#a8957d;--hot:#f2a73a;--green:#6dff82;--red:#ff5a4a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.35 system-ui,sans-serif;display:grid;grid-template-columns:290px 1fr;height:100vh;overflow:hidden}
+aside{background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:12px 10px 24px}
+h1{font-size:15px;margin:0 0 2px;color:var(--hot);letter-spacing:.04em}.sub{color:var(--dim);font-size:12px;margin:0 0 10px}
+h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin:14px 0 5px;border-bottom:1px solid var(--line);padding-bottom:3px}
+aside button{display:block;width:100%;text-align:left;background:#251c17;color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:6px 8px;margin:3px 0;cursor:pointer;font:inherit}
+aside button:hover{border-color:var(--hot)}aside button[aria-current=true]{background:#3a2616;border-color:var(--hot)}
+aside button small{display:block;color:var(--dim);font-size:11px;margin-top:1px}
+main{display:flex;flex-direction:column;align-items:center;padding:12px;gap:8px;overflow:auto;min-width:0}
+#wrap{position:relative;background:#000;border:1px solid var(--line)}iframe{display:block;border:0;width:960px;height:540px;image-rendering:pixelated}
+#loading[hidden]{display:none}#loading{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);color:var(--dim)}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center}
+.bar button,.bar select{background:#251c17;color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:5px 10px;font:inherit;cursor:pointer}
+.bar button.primary{background:var(--hot);color:#1a0f05;border-color:var(--hot);font-weight:600}
+.bar label{color:var(--dim);display:flex;gap:4px;align-items:center}
+#now{font-weight:600;color:var(--hot)}#hint{color:var(--dim);font-size:12px;text-align:center;max-width:960px}
+#readout{font:12px/1.5 ui-monospace,monospace;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;width:min(960px,100%);display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2px 16px}
+#readout b{color:var(--dim);font-weight:400}.ok{color:var(--green)}.warn{color:var(--red)}
+@media (max-width:900px){body{grid-template-columns:1fr;grid-template-rows:auto 1fr;overflow:auto;height:auto}aside{max-height:40vh}iframe{width:100%;height:auto;aspect-ratio:16/9}#wrap{width:100%}}
+</style></head><body>
+<aside><h1>DREDGER LAB</h1><p class="sub">Temporary test bench · click a beat, then play it with the keyboard.</p><div id="list"></div></aside>
+<main>
+ <div id="now">Loading the game…</div>
+ <div id="wrap"><iframe id="game" title="Dredger fight" src="tools/review/runtime.html?auto=walk" allow="autoplay;gamepad"></iframe><div id="loading">Loading…</div></div>
+ <div class="bar">
+  <button id="play" class="primary">Play</button><button id="restart">Restart beat</button><button id="step">Step 1 frame</button>
+  <label>Speed <select id="speed"><option value=".25">¼×</option><option value=".5">½×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+  <label><input type="checkbox" id="god"> CHAD can't die</label><label><input type="checkbox" id="sound" checked> Sound</label>
+ </div>
+ <div id="hint">Click the game, then: arrows / WASD move · Z attack · X jump · C parry (green cues) · V super. Buttons on the left reset the fight to that beat.</div>
+ <div id="readout"></div>
+</main>
+<script type="module" src="tools/review/dredger_lab.js"></script>
+</body></html>

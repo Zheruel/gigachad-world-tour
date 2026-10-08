@@ -1,34 +1,42 @@
 {
   "source": "Streets of Rage 2 (Sega Genesis) sound effects, ripped set from The Sounds Resource asset 359 (media/assets/391/393998.zip). Used under the project's stated licence agreement for these sounds.",
-  "note": "All local WAV files are catalogued, including the voice bank. Role labels describe current game assignments, not verified original SOR2 names. verifiedByEar remains false until auditioned and confirmed. Use sfxlab.html to compare sources; rebuild runtime files with tools/production/build_sfx.sh after changing map.",
+  "note": "Source names describe original SOR2 uses only when confirmed. Current game assignments are listed separately as roles. Identification evidence survives recataloguing. Use review.html?scenario=tools/audio to audition originals and runtime effects.",
   "rawDir": "audio/sources/streets_of_rage_2",
   "map": {
-    "punch": "02",
-    "heavy": "05",
-    "kick": "00",
+    "punch": "V00",
+    "heavy": "V03",
+    "kick": "V02",
     "whiff": "04",
     "land": "32",
     "slam": "31",
     "ko": "16",
     "throw": "13",
-    "grab": "22",
     "dash": "49",
     "jump": "23",
     "pickup": "37",
     "blip": "48",
-    "armor": "15",
+    "armor": "10",
     "enrage": "26",
     "super": "26",
-    "phurt": "25",
+    "phurt": "V00",
     "weapon": "11",
-    "go": "29",
+    "go": "25",
     "ehurt1": "V00",
     "ehurt2": "V01",
     "ehurt3": "V02",
     "ehurt4": "V03",
-    "edie1": "V20",
-    "edie2": "V19",
-    "bdie": "V48"
+    "edie1": "V10",
+    "edie2": "V11",
+    "bdie": "V11",
+    "pickup_health": "37",
+    "break": "31",
+    "break_wood": "31",
+    "break_metal": "31",
+    "dialogue_typing": "48",
+    "entrance_slam": "31",
+    "entrance_heavy": "05",
+    "grab": "22",
+    "advance": "25"
   },
   "catalog": [
     {
@@ -36,11 +44,21 @@
       "file": "00.wav",
       "bank": "effect",
       "seconds": 0.229,
-      "roles": [
-        "kick"
-      ],
-      "label": "kick",
-      "verifiedByEar": false
+      "roles": [],
+      "label": "Attack swing",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "loc_C01A / Init_Run, line 15603; ordinary attack start, not contact.",
+        "confidence": "high",
+        "soundCommands": [
+          "$420"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "01",
@@ -48,19 +66,45 @@
       "bank": "effect",
       "seconds": 0.329,
       "roles": [],
-      "label": "Unassigned source 01",
-      "verifiedByEar": false
+      "label": "Jump",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Init_Jump, line 15349.",
+        "confidence": "high",
+        "soundCommands": [
+          "$421"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "02",
       "file": "02.wav",
       "bank": "effect",
       "seconds": 0.099,
-      "roles": [
-        "punch"
-      ],
-      "label": "punch",
-      "verifiedByEar": false
+      "roles": [],
+      "label": "Landing",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Init_Land, line 15827.",
+        "confidence": "high",
+        "soundCommands": [
+          "$422"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "neta_cash",
+        "neta_denied",
+        "pistol"
+      ]
     },
     {
       "id": "03",
@@ -68,8 +112,23 @@
       "bank": "effect",
       "seconds": 0.345,
       "roles": [],
-      "label": "Unassigned source 03",
-      "verifiedByEar": false
+      "label": "Pipe swing",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "loc_BF9E, line 15565, selects ani_Pipe_Attack; Init_WeaponHit also uses this command.",
+        "confidence": "high",
+        "soundCommands": [
+          "$423"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "bone_crack",
+        "shera_squeeze"
+      ]
     },
     {
       "id": "04",
@@ -79,8 +138,22 @@
       "roles": [
         "whiff"
       ],
-      "label": "whiff",
-      "verifiedByEar": false
+      "label": "Weapon throw",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Obj_WeaponThrow, line 16342; also grenade and knife launch routines.",
+        "confidence": "high",
+        "soundCommands": [
+          "$424"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "shera_chain"
+      ]
     },
     {
       "id": "05",
@@ -88,10 +161,24 @@
       "bank": "effect",
       "seconds": 0.446,
       "roles": [
-        "heavy"
+        "entrance_heavy"
       ],
-      "label": "heavy",
-      "verifiedByEar": false
+      "label": "Thrown body collision",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Chk_KO_Throw_Character / loc_51F6, line 6846, airborne body collides with another character.",
+        "confidence": "high",
+        "soundCommands": [
+          "$425"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "train_blast"
+      ]
     },
     {
       "id": "06",
@@ -99,8 +186,22 @@
       "bank": "effect",
       "seconds": 0.674,
       "roles": [],
-      "label": "Unassigned source 06",
-      "verifiedByEar": false
+      "label": "Body slam",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Obj_KnockOut / loc_C34C, line 15988; Obj_BackGrab / loc_CEF0, line 17084; Enemy_Knockout / loc_EAF4, line 19659.",
+        "confidence": "high",
+        "soundCommands": [
+          "$426"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "shera_hammer"
+      ]
     },
     {
       "id": "07",
@@ -108,8 +209,23 @@
       "bank": "effect",
       "seconds": 0.351,
       "roles": [],
-      "label": "Unassigned source 07",
-      "verifiedByEar": false
+      "label": "Food pickup",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Update_HPBar_Apple / Update_HPBar_Chicken, lines 6091 and 6102.",
+        "confidence": "high",
+        "soundCommands": [
+          "$427"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "bone_crack",
+        "shera_heave"
+      ]
     },
     {
       "id": "08",
@@ -117,8 +233,20 @@
       "bank": "effect",
       "seconds": 1.653,
       "roles": [],
-      "label": "Unassigned source 08",
-      "verifiedByEar": false
+      "label": "Extra life",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Update_Lives_PickUp, line 6075; extra life awarded by score at line 2596.",
+        "confidence": "high",
+        "soundCommands": [
+          "$428"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "09",
@@ -126,17 +254,48 @@
       "bank": "effect",
       "seconds": 1.07,
       "roles": [],
-      "label": "Unassigned source 09",
-      "verifiedByEar": false
+      "label": "Item pickup",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Chk_PickUpItem, line 6057; score-item collection, line 6065.",
+        "confidence": "high",
+        "soundCommands": [
+          "$429"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "shera_chain",
+        "shera_snag"
+      ]
     },
     {
       "id": "10",
       "file": "10.wav",
       "bank": "effect",
       "seconds": 0.301,
-      "roles": [],
-      "label": "Unassigned source 10",
-      "verifiedByEar": false
+      "roles": [
+        "armor"
+      ],
+      "label": "Blocked hit",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Chk_EnemyCollision / loc_4E2A, line 6465; Chk_CharacterCollision, line 6747, block flag.",
+        "confidence": "high",
+        "soundCommands": [
+          "$42A"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "shera_step"
+      ]
     },
     {
       "id": "11",
@@ -146,8 +305,20 @@
       "roles": [
         "weapon"
       ],
-      "label": "weapon",
-      "verifiedByEar": false
+      "label": "Electra whip swing",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Obj_Electra / loc_15C20, line 29907, starts attack animation 36.",
+        "confidence": "high",
+        "soundCommands": [
+          "$42B"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "12",
@@ -155,8 +326,20 @@
       "bank": "effect",
       "seconds": 1.615,
       "roles": [],
-      "label": "Unassigned source 12",
-      "verifiedByEar": false
+      "label": "Electric hit",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "AttackCollision_Electra: animation 38 maps to byte_2AD0 with sound byte 2C; particle collision byte_2F94 also uses 2C.",
+        "confidence": "high",
+        "soundCommands": [
+          "$42C"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "13",
@@ -166,8 +349,22 @@
       "roles": [
         "throw"
       ],
-      "label": "throw",
-      "verifiedByEar": false
+      "label": "Whip hit",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "AttackCollision_Electra: animation 36 maps to byte_2AB0 with sound byte 2D.",
+        "confidence": "high",
+        "soundCommands": [
+          "$42D"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "neta_denied"
+      ]
     },
     {
       "id": "14",
@@ -175,19 +372,41 @@
       "bank": "effect",
       "seconds": 1.335,
       "roles": [],
-      "label": "Unassigned source 14",
-      "verifiedByEar": false
+      "label": "Breakable smash",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Destructible collision sound table after sub_10C28, lines 23035-23043, default break sound.",
+        "confidence": "high",
+        "soundCommands": [
+          "$42E"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "15",
       "file": "15.wav",
       "bank": "effect",
       "seconds": 0.218,
-      "roles": [
-        "armor"
-      ],
-      "label": "armor",
-      "verifiedByEar": false
+      "roles": [],
+      "label": "Blade hit",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Axel knife/sword attack collision frames byte_2578 / byte_25B4 use 2F; sub_4B92, line 6255, also uses 42F.",
+        "confidence": "high",
+        "soundCommands": [
+          "$42F"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "16",
@@ -197,8 +416,20 @@
       "roles": [
         "ko"
       ],
-      "label": "ko",
-      "verifiedByEar": false
+      "label": "Axel defensive special",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "word_AE0E, line 13755, defensive-special sound table, Axel entry.",
+        "confidence": "high",
+        "soundCommands": [
+          "$430"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "17",
@@ -206,8 +437,20 @@
       "bank": "effect",
       "seconds": 0.999,
       "roles": [],
-      "label": "Unassigned source 17",
-      "verifiedByEar": false
+      "label": "Max defensive special",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "word_AE0E, line 13755, defensive-special sound table, Max entry.",
+        "confidence": "high",
+        "soundCommands": [
+          "$431"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "18",
@@ -215,8 +458,20 @@
       "bank": "effect",
       "seconds": 0.723,
       "roles": [],
-      "label": "Unassigned source 18",
-      "verifiedByEar": false
+      "label": "Blaze defensive special",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "word_AE0E, line 13755, defensive-special sound table, Blaze entry.",
+        "confidence": "high",
+        "soundCommands": [
+          "$432"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "19, 21",
@@ -224,8 +479,24 @@
       "bank": "effect",
       "seconds": 0.943,
       "roles": [],
-      "label": "Unassigned source 19, 21",
-      "verifiedByEar": false
+      "label": "Skate special / skating",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "word_AE0E, line 13755, defensive-special sound table, Skate entry. Source recording is shared with 21. Init_Run, Skate-specific branch, lines 15434 and 15470. Source recording is shared with 19.",
+        "confidence": "high",
+        "soundCommands": [
+          "$433",
+          "$435"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "neta_cash",
+        "neta_denied"
+      ]
     },
     {
       "id": "20",
@@ -233,8 +504,20 @@
       "bank": "effect",
       "seconds": 1.144,
       "roles": [],
-      "label": "Unassigned source 20",
-      "verifiedByEar": false
+      "label": "Slide",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Max blitz start, line 15384; Signal slide, line 30953; Zamza slide, line 32297; Shiva slide, line 43837.",
+        "confidence": "high",
+        "soundCommands": [
+          "$434"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "22",
@@ -244,8 +527,22 @@
       "roles": [
         "grab"
       ],
-      "label": "grab",
-      "verifiedByEar": false
+      "label": "Knife throw",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Jack sub_14B28, line 28662, spawns Knife object and launches it.",
+        "confidence": "high",
+        "soundCommands": [
+          "$436"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "shera_squeeze"
+      ]
     },
     {
       "id": "23",
@@ -255,8 +552,20 @@
       "roles": [
         "jump"
       ],
-      "label": "jump",
-      "verifiedByEar": false
+      "label": "Menu cursor",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Mode_SelectMode, lines 8440-8484; character select, line 8678; options, line 21547.",
+        "confidence": "high",
+        "soundCommands": [
+          "$437"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "24",
@@ -264,8 +573,22 @@
       "bank": "effect",
       "seconds": 1.175,
       "roles": [],
-      "label": "Unassigned source 24",
-      "verifiedByEar": false
+      "label": "Menu confirm",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Mode selection, line 8514; character selection, line 8731.",
+        "confidence": "high",
+        "soundCommands": [
+          "$438"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "neta_paid"
+      ]
     },
     {
       "id": "25",
@@ -273,10 +596,23 @@
       "bank": "effect",
       "seconds": 0.488,
       "roles": [
-        "phurt"
+        "advance",
+        "go"
       ],
-      "label": "phurt",
-      "verifiedByEar": false
+      "label": "GO beep",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_8188, lines 10415-10427: GO indicator visible transition calls PlaySound with $439.",
+        "confidence": "high",
+        "soundCommands": [
+          "$439"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "confidence": "high",
+      "layers": []
     },
     {
       "id": "26",
@@ -287,8 +623,20 @@
         "enrage",
         "super"
       ],
-      "label": "enrage / super",
-      "verifiedByEar": false
+      "label": "Hakuyo fireball launch",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_18B7C, line 33892, attack animation 38 at launch frame A; Hakuyo fireball attack startup.",
+        "confidence": "high",
+        "soundCommands": [
+          "$43A"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "27",
@@ -296,8 +644,20 @@
       "bank": "effect",
       "seconds": 1.377,
       "roles": [],
-      "label": "Unassigned source 27",
-      "verifiedByEar": false
+      "label": "Jet pack thrust",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Obj_Jet, line 35171; sub_1A314, line 35796; sub_1A45C, line 35908, flying/dive/boost states.",
+        "confidence": "high",
+        "soundCommands": [
+          "$43B"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "28",
@@ -305,19 +665,41 @@
       "bank": "effect",
       "seconds": 1.009,
       "roles": [],
-      "label": "Unassigned source 28",
-      "verifiedByEar": false
+      "label": "Big Ben fire breath",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_17190, line 31709, spawns fire visual in front of Big Ben mouth.",
+        "confidence": "high",
+        "soundCommands": [
+          "$43C"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "29",
       "file": "29.wav",
       "bank": "effect",
       "seconds": 0.554,
-      "roles": [
-        "go"
-      ],
-      "label": "go",
-      "verifiedByEar": false
+      "roles": [],
+      "label": "Big Ben / Fog action effect",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "medium",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Big Ben sub_1744A, line 31940, switches to entrance/action animation 30; Fog grenade release, line 39179. Original callers confirmed; precise audible semantic is not independently verified.",
+        "confidence": "medium",
+        "soundCommands": [
+          "$43D"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "30",
@@ -325,8 +707,20 @@
       "bank": "effect",
       "seconds": 0.848,
       "roles": [],
-      "label": "Unassigned source 30",
-      "verifiedByEar": false
+      "label": "Robot projectile launch",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_1DF60, line 40694, spawns projectile/Particle object with directional velocity.",
+        "confidence": "high",
+        "soundCommands": [
+          "$43E"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "31",
@@ -334,10 +728,31 @@
       "bank": "effect",
       "seconds": 0.459,
       "roles": [
+        "break",
+        "break_metal",
+        "break_wood",
+        "entrance_slam",
         "slam"
       ],
-      "label": "slam",
-      "verifiedByEar": false
+      "label": "Bear / Abadede counter hit",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "medium",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "AttackCollision_R_Bear animation 30 and AttackCollision_Abadede animation 40 use sound byte 3F; Shiva collision frames also use 3F. Exact audible label inferred from collision context.",
+        "confidence": "medium",
+        "soundCommands": [
+          "$43F"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "pistol",
+        "shera_hammer",
+        "shera_quake",
+        "train_blast"
+      ]
     },
     {
       "id": "32",
@@ -347,17 +762,45 @@
       "roles": [
         "land"
       ],
-      "label": "land",
-      "verifiedByEar": false
+      "label": "Robot landing",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_1D9F0, lines 40190 and 40219, clears airborne height and restores landing animation.",
+        "confidence": "high",
+        "soundCommands": [
+          "$440"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "shera_step"
+      ]
     },
     {
       "id": "33",
       "file": "33.wav",
       "bank": "effect",
       "seconds": 1.103,
-      "roles": [],
-      "label": "Unassigned source 33",
-      "verifiedByEar": false
+      "roles": [
+        "warn_evade"
+      ],
+      "label": "Robot energy hit",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "medium",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_1E33E, line 41106, calls collision routine sub_4B92 and plays $441 on confirmed impact. Robot energy/projectile collision.",
+        "confidence": "medium",
+        "soundCommands": [
+          "$441"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "34",
@@ -365,8 +808,22 @@
       "bank": "effect",
       "seconds": 1.07,
       "roles": [],
-      "label": "Unassigned source 34",
-      "verifiedByEar": false
+      "label": "Unidentified effect",
+      "verifiedByEar": false,
+      "verifiedByCode": false,
+      "confidence": "low",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Sound-test command mapping establishes $442. No original immediate caller or attack collision sound byte found in inspected gameplay code.",
+        "confidence": "low",
+        "soundCommands": [
+          "$442"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "shera_snag"
+      ]
     },
     {
       "id": "35",
@@ -374,8 +831,20 @@
       "bank": "effect",
       "seconds": 0.99,
       "roles": [],
-      "label": "Unassigned source 35",
-      "verifiedByEar": false
+      "label": "Unidentified effect",
+      "verifiedByEar": false,
+      "verifiedByCode": false,
+      "confidence": "low",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Sound-test command mapping establishes $443. No original immediate caller or attack collision sound byte found in inspected gameplay code.",
+        "confidence": "low",
+        "soundCommands": [
+          "$443"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "36",
@@ -383,8 +852,20 @@
       "bank": "effect",
       "seconds": 0.554,
       "roles": [],
-      "label": "Unassigned source 36",
-      "verifiedByEar": false
+      "label": "Mr X gunfire",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_1F0FE, line 42261, creates Mr X bullet object with directional velocity.",
+        "confidence": "high",
+        "soundCommands": [
+          "$444"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "37",
@@ -392,10 +873,26 @@
       "bank": "effect",
       "seconds": 0.15,
       "roles": [
-        "pickup"
+        "pickup",
+        "pickup_health",
+        "warn_parry"
       ],
-      "label": "pickup",
-      "verifiedByEar": false
+      "label": "Score countdown tick",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_8ED6 / loc_8F08, line 11660, decrements score tally until zero and sounds alternating ticks.",
+        "confidence": "high",
+        "soundCommands": [
+          "$445"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "neta_paid"
+      ]
     },
     {
       "id": "38",
@@ -403,8 +900,20 @@
       "bank": "effect",
       "seconds": 0.95,
       "roles": [],
-      "label": "Unassigned source 38",
-      "verifiedByEar": false
+      "label": "Time up / match end",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Mode_InGame / loc_7986, line 9859, time expiry; versus match end / loc_10556, line 22499.",
+        "confidence": "high",
+        "soundCommands": [
+          "$446"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "39",
@@ -412,8 +921,20 @@
       "bank": "effect",
       "seconds": 0.821,
       "roles": [],
-      "label": "Unassigned source 39",
-      "verifiedByEar": false
+      "label": "Shiva special hit",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "AttackCollision_Shiva animation 3C: byte_3034 sound byte 47 at active attack frames.",
+        "confidence": "high",
+        "soundCommands": [
+          "$447"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "40",
@@ -421,8 +942,20 @@
       "bank": "effect",
       "seconds": 4.046,
       "roles": [],
-      "label": "Unassigned source 40",
-      "verifiedByEar": false
+      "label": "Tower elevator motor",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Stage 8 initialization loc_A220 / loc_A252, lines 13178 and 13192.",
+        "confidence": "high",
+        "soundCommands": [
+          "$448"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "41",
@@ -430,8 +963,25 @@
       "bank": "effect",
       "seconds": 0.912,
       "roles": [],
-      "label": "Unassigned source 41",
-      "verifiedByEar": false
+      "label": "Tower elevator stop",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Stage 8 foreground movement loc_37D6, line 4956, target camera height reached.",
+        "confidence": "high",
+        "soundCommands": [
+          "$449"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "shera_hammer",
+        "shera_ko",
+        "shera_quake",
+        "shera_roar"
+      ]
     },
     {
       "id": "42",
@@ -439,8 +989,22 @@
       "bank": "effect",
       "seconds": 2.54,
       "roles": [],
-      "label": "Unassigned source 42",
-      "verifiedByEar": false
+      "label": "Factory elevator motor",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Stage 7 initialization loc_9B76, line 12672, before elevator sequence.",
+        "confidence": "high",
+        "soundCommands": [
+          "$44A"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "shera_quake"
+      ]
     },
     {
       "id": "43",
@@ -448,8 +1012,20 @@
       "bank": "effect",
       "seconds": 0.779,
       "roles": [],
-      "label": "Unassigned source 43",
-      "verifiedByEar": false
+      "label": "Factory elevator stop",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Stage 7 foreground movement loc_3796, line 4924, target camera height reached.",
+        "confidence": "high",
+        "soundCommands": [
+          "$44B"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "44a",
@@ -457,8 +1033,20 @@
       "bank": "effect",
       "seconds": 2.612,
       "roles": [],
-      "label": "Unassigned source 44a",
-      "verifiedByEar": false
+      "label": "Z. Kusanor action effect",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "medium",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Obj_Abadede Stage 7 variant uses Pal_Z_Kusanor (line25810). Its idle/action paths loc_12CE2 / loc_12CF4 (lines25921/25929) and sub_13954 (line27131) call sub_13A34, which plays $450 only for Stage 7 (line27205), layered with PSG $74F. Actor/context confirmed; precise audible semantic not independently verified.",
+        "confidence": "medium",
+        "soundCommands": [
+          "$450"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "44b",
@@ -466,8 +1054,20 @@
       "bank": "effect",
       "seconds": 4.651,
       "roles": [],
-      "label": "Unassigned source 44b",
-      "verifiedByEar": false
+      "label": "Z. Kusanor action effect",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "medium",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Obj_Abadede Stage 7 variant uses Pal_Z_Kusanor (line25810). Its idle/action paths loc_12CE2 / loc_12CF4 (lines25921/25929) and sub_13954 (line27131) call sub_13A34, which plays $450 only for Stage 7 (line27205), layered with PSG $74F. Actor/context confirmed; precise audible semantic not independently verified.",
+        "confidence": "medium",
+        "soundCommands": [
+          "$450"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "45",
@@ -475,8 +1075,20 @@
       "bank": "effect",
       "seconds": 2.252,
       "roles": [],
-      "label": "Unassigned source 45",
-      "verifiedByEar": false
+      "label": "Vehelits call",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "medium",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "loc_20934 / loc_2099C, lines 44276 and 44317, timed Stage 3 Vehelits action/call.",
+        "confidence": "medium",
+        "soundCommands": [
+          "$451"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "46",
@@ -484,8 +1096,20 @@
       "bank": "effect",
       "seconds": 0.931,
       "roles": [],
-      "label": "Unassigned source 46",
-      "verifiedByEar": false
+      "label": "Vehelits hurt / death",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_20B4C / loc_20B58, line 44473, damage; loc_20AA8, line 44414, knockback; loc_20BA0, line 44501, death.",
+        "confidence": "high",
+        "soundCommands": [
+          "$452"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "47",
@@ -493,8 +1117,20 @@
       "bank": "effect",
       "seconds": 0.985,
       "roles": [],
-      "label": "Unassigned source 47",
-      "verifiedByEar": false
+      "label": "Oil barrel break",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_10C28 destructible sound table, line 23038: command $453 at object ID $60 / OilBarrel; table offsets account for loc_10C76 instruction bytes.",
+        "confidence": "high",
+        "soundCommands": [
+          "$453"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "48",
@@ -502,10 +1138,23 @@
       "bank": "effect",
       "seconds": 0.64,
       "roles": [
-        "blip"
+        "blip",
+        "dialogue_typing"
       ],
-      "label": "blip",
-      "verifiedByEar": false
+      "label": "Crate break",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_10C28 destructible sound table, line 23040: command $454 at object ID $88 / Crate3.",
+        "confidence": "high",
+        "soundCommands": [
+          "$454"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "49",
@@ -515,499 +1164,774 @@
       "roles": [
         "dash"
       ],
-      "label": "dash",
-      "verifiedByEar": false
+      "label": "Sandbag break",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_10C28 destructible sound table, line 23039: command $456 at object ID $7E / Sandbag4.",
+        "confidence": "high",
+        "soundCommands": [
+          "$456"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "V00",
       "file": "V00.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.382,
       "roles": [
-        "ehurt1"
+        "ehurt1",
+        "phurt",
+        "punch"
       ],
-      "label": "ehurt1",
-      "verifiedByEar": false
+      "label": "Light hit impact",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Axel first-jab collision byte_243C sound byte 00; Get_AttackCollisionData sets PCM command $200.",
+        "confidence": "high",
+        "soundCommands": [
+          "$200"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "confidence": "high",
+      "layers": []
     },
     {
       "id": "V01",
       "file": "V01.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.409,
       "roles": [
         "ehurt2"
       ],
-      "label": "ehurt2",
-      "verifiedByEar": false
+      "label": "Hit impact 2",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Axel second-jab collision byte_2444 sound byte 01; PCM command $201.",
+        "confidence": "high",
+        "soundCommands": [
+          "$201"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "V02",
       "file": "V02.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.438,
       "roles": [
-        "ehurt3"
+        "ehurt3",
+        "kick"
       ],
-      "label": "ehurt3",
-      "verifiedByEar": false
+      "label": "Strong hit impact",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Axel finisher collision byte_2454 sound byte 02; flying kick also uses this PCM sample.",
+        "confidence": "high",
+        "soundCommands": [
+          "$202"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "shera_hurt"
+      ]
     },
     {
       "id": "V03",
       "file": "V03.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.494,
       "roles": [
-        "ehurt4"
+        "ehurt4",
+        "heavy"
       ],
-      "label": "ehurt4",
-      "verifiedByEar": false
+      "label": "Heavy hit impact",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Axel alternate finisher collision byte_2464 sound byte 03; PCM command $203.",
+        "confidence": "high",
+        "soundCommands": [
+          "$203"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "shera_hurt2"
+      ]
     },
     {
       "id": "V04",
       "file": "V04.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.658,
       "roles": [],
-      "label": "Unassigned source V04",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V05",
       "file": "V05.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.802,
       "roles": [],
-      "label": "Unassigned source V05",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": [
+        "shera_roar"
+      ]
     },
     {
       "id": "V06",
       "file": "V06.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.612,
       "roles": [],
-      "label": "Unassigned source V06",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V07",
       "file": "V07.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.509,
       "roles": [],
-      "label": "Unassigned source V07",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V08",
       "file": "V08.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.402,
       "roles": [],
-      "label": "Unassigned source V08",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V09",
       "file": "V09.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.304,
       "roles": [],
-      "label": "Unassigned source V09",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": [
+        "shera_grunt"
+      ]
     },
     {
       "id": "V10",
       "file": "V10.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.937,
-      "roles": [],
-      "label": "Unassigned source V10",
-      "verifiedByEar": false
+      "roles": [
+        "edie1"
+      ],
+      "label": "Male enemy death 1",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_E692, lines 19094-19134: ordinary enemy death chooses random bit plus $20A and plays the result.",
+        "confidence": "high",
+        "soundCommands": [
+          "$20A"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "V11",
       "file": "V11.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.952,
-      "roles": [],
-      "label": "Unassigned source V11",
-      "verifiedByEar": false
+      "roles": [
+        "bdie",
+        "edie2"
+      ],
+      "label": "Male enemy death 2 / boss death",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_E692 random ordinary death selection; Enemy_Death / loc_E7F8, lines 19241-19258, plays $20B for flagged boss/Shiva death.",
+        "confidence": "high",
+        "soundCommands": [
+          "$20B"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "V12",
       "file": "V12.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.401,
       "roles": [],
-      "label": "Unassigned source V12",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V13",
       "file": "V13.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.216,
       "roles": [],
-      "label": "Unassigned source V13",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V14",
       "file": "V14.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.47,
       "roles": [],
-      "label": "Unassigned source V14",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V15",
       "file": "V15.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.598,
       "roles": [],
-      "label": "Unassigned source V15",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": [
+        "shera_heave"
+      ]
     },
     {
       "id": "V16",
       "file": "V16.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.212,
       "roles": [],
-      "label": "Unassigned source V16",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V17",
       "file": "V17.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.679,
       "roles": [],
-      "label": "Unassigned source V17",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": [
+        "neta_heckle"
+      ]
     },
     {
       "id": "V18",
       "file": "V18.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.9,
       "roles": [],
-      "label": "Unassigned source V18",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V19",
       "file": "V19.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.984,
-      "roles": [
-        "edie2"
-      ],
-      "label": "edie2",
-      "verifiedByEar": false
+      "roles": [],
+      "label": "Jack laugh / taunt",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Jack loc_14716, line 28249, loops command $213 during animation 38.",
+        "confidence": "high",
+        "soundCommands": [
+          "$213"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": [
+        "neta_laugh"
+      ]
     },
     {
       "id": "V20",
       "file": "V20.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 1.179,
-      "roles": [
-        "edie1"
-      ],
-      "label": "edie1",
-      "verifiedByEar": false
+      "roles": [],
+      "label": "Fog attack yell",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Fog sub_1CA04 and associated attack paths, lines 38938, 39002, 39028 and 39134, play $214; not death.",
+        "confidence": "high",
+        "soundCommands": [
+          "$214"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "V21",
       "file": "V21.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.48,
       "roles": [],
-      "label": "Unassigned source V21",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V22",
       "file": "V22.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 1.096,
       "roles": [],
-      "label": "Unassigned source V22",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V23",
       "file": "V23.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 1.026,
       "roles": [],
-      "label": "Unassigned source V23",
-      "verifiedByEar": false
+      "label": "Female death scream",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "sub_E692 Electra object ID $10 branch plays $217; Blaze death table word_BC78 also uses $217.",
+        "confidence": "high",
+        "soundCommands": [
+          "$217"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "V24",
       "file": "V24.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.506,
       "roles": [],
-      "label": "Unassigned source V24",
-      "verifiedByEar": false
+      "label": "Skate death scream",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Obj_Death, lines15213-15218, reads word_BC78. Table lines15226-15229 contains Max $223, Axel $234, Blaze $217, Skate $218.",
+        "confidence": "high",
+        "soundCommands": [
+          "$218"
+        ],
+        "method": "Original game code"
+      },
+      "layers": []
     },
     {
       "id": "V25",
       "file": "V25.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.679,
       "roles": [],
-      "label": "Unassigned source V25",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V26",
       "file": "V26.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.433,
       "roles": [],
-      "label": "Unassigned source V26",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V27",
       "file": "V27.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.291,
       "roles": [],
-      "label": "Unassigned source V27",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V28",
       "file": "V28.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.473,
       "roles": [],
-      "label": "Unassigned source V28",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V29",
       "file": "V29.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.775,
       "roles": [],
-      "label": "Unassigned source V29",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V30",
       "file": "V30.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.383,
       "roles": [],
-      "label": "Unassigned source V30",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V31",
       "file": "V31.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.834,
       "roles": [],
-      "label": "Unassigned source V31",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V32",
       "file": "V32.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.42,
       "roles": [],
-      "label": "Unassigned source V32",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V33",
       "file": "V33.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 1.055,
       "roles": [],
-      "label": "Unassigned source V33",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": [
+        "neta_gloat"
+      ]
     },
     {
       "id": "V34",
       "file": "V34.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.41,
       "roles": [],
-      "label": "Unassigned source V34",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V35",
       "file": "V35.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.65,
       "roles": [],
-      "label": "Unassigned source V35",
-      "verifiedByEar": false
+      "label": "Max death grunt",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Obj_Death, lines15213-15218, reads word_BC78; Max entry $223 at line15226.",
+        "confidence": "high",
+        "soundCommands": [
+          "$223"
+        ],
+        "method": "Original game code"
+      },
+      "layers": []
     },
     {
       "id": "V36",
       "file": "V36.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.323,
       "roles": [],
-      "label": "Unassigned source V36",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V37",
       "file": "V37.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.948,
       "roles": [],
-      "label": "Unassigned source V37",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V38",
       "file": "V38.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.777,
       "roles": [],
-      "label": "Unassigned source V38",
-      "verifiedByEar": false
+      "label": "Blaze offensive special shout",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Init_Supermove / loc_AE4C, lines13772-13777: character index4 (Blaze) plays $226 on forward/offensive special.",
+        "confidence": "high",
+        "soundCommands": [
+          "$226"
+        ],
+        "method": "Original game code"
+      },
+      "layers": []
     },
     {
       "id": "V39",
       "file": "V39.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.33,
       "roles": [],
-      "label": "Unassigned source V39",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V40",
       "file": "V40.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.988,
       "roles": [],
-      "label": "Unassigned source V40",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": [
+        "shera_ko"
+      ]
     },
     {
       "id": "V41",
       "file": "V41.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.951,
       "roles": [],
-      "label": "Unassigned source V41",
-      "verifiedByEar": false
+      "label": "Max offensive special shout",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Init_Supermove / loc_AE16, lines13759-13770: character index0 (Max) plays $229 on forward/offensive special.",
+        "confidence": "high",
+        "soundCommands": [
+          "$229"
+        ],
+        "method": "Original game code"
+      },
+      "layers": []
     },
     {
       "id": "V42",
       "file": "V42.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 1.148,
       "roles": [],
-      "label": "Unassigned source V42",
-      "verifiedByEar": false
+      "label": "Skate offensive special shout",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Init_Supermove / loc_AE64, lines13779-13785: character index6 (Skate) plays $22A on forward/offensive special.",
+        "confidence": "high",
+        "soundCommands": [
+          "$22A"
+        ],
+        "method": "Original game code"
+      },
+      "layers": []
     },
     {
       "id": "V43",
       "file": "V43.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.372,
       "roles": [],
-      "label": "Unassigned source V43",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V44",
       "file": "V44.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.37,
       "roles": [],
-      "label": "Unassigned source V44",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V45",
       "file": "V45.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 1.359,
       "roles": [],
-      "label": "Unassigned source V45",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V46",
       "file": "V46.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 1.236,
       "roles": [],
-      "label": "Unassigned source V46",
-      "verifiedByEar": false
+      "label": "Abadede grab attack shout",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Obj_Abadede loc_138F6, lines27095-27114: checks held-player flags, sets grab attack animation44, plays $22E.",
+        "confidence": "high",
+        "soundCommands": [
+          "$22E"
+        ],
+        "method": "Original game code"
+      },
+      "layers": [
+        "shera_roar"
+      ]
     },
     {
       "id": "V47",
       "file": "V47.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.577,
       "roles": [],
-      "label": "Unassigned source V47",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V48",
       "file": "V48.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 1.962,
-      "roles": [
-        "bdie"
-      ],
-      "label": "bdie",
-      "verifiedByEar": false
+      "roles": [],
+      "label": "Mr X laugh / taunt",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Mr X loc_1E972, line 41532; sub_1ECF8, line 41881, when both players inactive, play $230.",
+        "confidence": "high",
+        "soundCommands": [
+          "$230"
+        ],
+        "method": "Original game code; original-event semantics are conservative where noted."
+      },
+      "layers": []
     },
     {
       "id": "V49",
       "file": "V49.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 1.095,
       "roles": [],
-      "label": "Unassigned source V49",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V50",
       "file": "V50.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.384,
       "roles": [],
-      "label": "Unassigned source V50",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V51",
       "file": "V51.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.339,
       "roles": [],
-      "label": "Unassigned source V51",
-      "verifiedByEar": false
+      "label": "Unidentified PCM sample",
+      "verifiedByEar": false,
+      "layers": []
     },
     {
       "id": "V52",
       "file": "V52.wav",
-      "bank": "voice",
+      "bank": "pcm",
       "seconds": 0.643,
       "roles": [],
-      "label": "Unassigned source V52",
-      "verifiedByEar": false
+      "label": "Axel death scream",
+      "verifiedByEar": false,
+      "verifiedByCode": true,
+      "confidence": "high",
+      "verification": {
+        "source": "https://github.com/gsaurus/sor-disassemblies/blob/master/Assemblies/Streets%20of%20Rage%202%20(U)%20%5B!%5D.asm",
+        "evidence": "Obj_Death, lines15213-15218, reads word_BC78; Axel entry $234 at line15227.",
+        "confidence": "high",
+        "soundCommands": [
+          "$234"
+        ],
+        "method": "Original game code"
+      },
+      "layers": []
     }
   ],
   "finaleAssignments": {
@@ -1119,10 +2043,77 @@
       }
     },
     "conductorIntro": {
-      "paper": "room_page",
-      "chair": "room_chair",
-      "footsteps": "entrance_boot",
-      "note": "Paper and chair are synthesized Foley; timing tested, listening approval pending."
+      "count": [
+        "cond_note_1",
+        "cond_note_2"
+      ],
+      "lid": "cond_lid",
+      "chair": "cond_chair",
+      "stand": "cond_grunt_*",
+      "desk": "cond_desk",
+      "footsteps": [
+        "cond_step_1",
+        "cond_step_2"
+      ],
+      "ticks": {
+        "count": [
+          4,
+          13,
+          22
+        ],
+        "lid": 30,
+        "chair": 62,
+        "stand": 68,
+        "desk": 88,
+        "footsteps": [
+          132,
+          150,
+          176,
+          194
+        ]
+      },
+      "note": "js/train_conductor.js INTRO_CUES; synthesized Foley, listening approval pending."
+    },
+    "nightTrainPlatformArrival": {
+      "arrival": {
+        "slot": "train_arrive",
+        "source": "synthesized rolling, brake squeal and air release (build_train_arrival_audio.py)",
+        "verifiedByEar": false,
+        "tick": 0,
+        "durationTicks": 297
+      }
+    },
+    "conductorFinisher": {
+      "quote": {
+        "slot": "duke_suck_it_down",
+        "tick": 104,
+        "catalog": "audio/voice/duke/catalog.json",
+        "verifiedByEar": false
+      },
+      "impacts": {
+        "grab": 50,
+        "paper": 74,
+        "stuff": 98,
+        "haymaker": 152,
+        "desk": 198
+      },
+      "conductor": {
+        "choke": [
+          56,
+          64
+        ],
+        "wad": 74,
+        "notesBurst": 154,
+        "fall": 157,
+        "stampClatter": 192,
+        "deskCrash": 199,
+        "papers": [
+          205,
+          232
+        ],
+        "groan": 222,
+        "note": "js/train_finishers.js INSPECTOR_CUES"
+      }
     }
   },
   "composites": {
@@ -1157,6 +2148,329 @@
       ],
       "label": "Short dry pistol report; processed impact and low body",
       "verifiedByEar": false
+    },
+    "bone_crack": {
+      "inputs": [
+        {
+          "source": "03",
+          "delayMs": 0,
+          "volume": 0.8,
+          "filter": "highpass=f=900,atrim=duration=0.16,afade=t=out:st=0.06:d=0.1"
+        },
+        {
+          "source": "07",
+          "delayMs": 0,
+          "volume": 0.7,
+          "filter": "atrim=duration=0.22,afade=t=out:st=0.1:d=0.12"
+        }
+      ],
+      "label": "Shera finisher rib/jaw crack: bright snap (03) over a low body thud (07)",
+      "verifiedByEar": false
+    },
+    "shera_step": {
+      "inputs": [
+        {
+          "source": "32",
+          "delayMs": 0,
+          "volume": 0.9,
+          "filter": "asetrate=30870,aresample=44100,lowpass=f=900,atrim=duration=0.2,afade=t=out:st=0.08:d=0.12"
+        },
+        {
+          "source": "10",
+          "delayMs": 0,
+          "volume": 0.5,
+          "filter": "asetrate=35280,aresample=44100,lowpass=f=500,atrim=duration=0.18,afade=t=out:st=0.06:d=0.12"
+        }
+      ],
+      "label": "Shera boot fall: land (32) and thump (10) pitched down and low-passed",
+      "verifiedByEar": false
+    },
+    "shera_grunt": {
+      "inputs": [
+        {
+          "source": "V09",
+          "delayMs": 0,
+          "volume": 1,
+          "filter": "asetrate=17199,aresample=22050,lowpass=f=3500"
+        }
+      ],
+      "label": "Shera effort grunt: the OOF voice (V09) pitched down",
+      "verifiedByEar": false
+    },
+    "shera_heave": {
+      "inputs": [
+        {
+          "source": "V15",
+          "delayMs": 0,
+          "volume": 1.4,
+          "filter": "asetrate=16317,aresample=22050,lowpass=f=3000"
+        },
+        {
+          "source": "07",
+          "delayMs": 40,
+          "volume": 0.49,
+          "filter": "lowpass=f=700"
+        }
+      ],
+      "label": "Shera wind-up shout: the HA! voice (V15) pitched down over a low swell (07)",
+      "verifiedByEar": false
+    },
+    "shera_hammer": {
+      "inputs": [
+        {
+          "source": "31",
+          "delayMs": 0,
+          "volume": 0.9
+        },
+        {
+          "source": "41",
+          "delayMs": 0,
+          "volume": 0.8,
+          "filter": "asetrate=37485,aresample=44100,lowpass=f=900"
+        },
+        {
+          "source": "06",
+          "delayMs": 10,
+          "volume": 0.5
+        }
+      ],
+      "label": "Shera hammer impact: slam (31), deep boom (41) and body thud (06)",
+      "verifiedByEar": false
+    },
+    "shera_quake": {
+      "inputs": [
+        {
+          "source": "31",
+          "delayMs": 0,
+          "volume": 0.8
+        },
+        {
+          "source": "41",
+          "delayMs": 0,
+          "volume": 0.8,
+          "filter": "asetrate=35280,aresample=44100"
+        },
+        {
+          "source": "42",
+          "delayMs": 60,
+          "volume": 0.55,
+          "filter": "lowpass=f=700,atrim=duration=1.1,afade=t=out:st=0.5:d=0.6"
+        }
+      ],
+      "label": "Shera quake landing: slam, deep boom and a floor rumble (42)",
+      "verifiedByEar": false
+    },
+    "shera_roar": {
+      "inputs": [
+        {
+          "source": "V05",
+          "delayMs": 0,
+          "volume": 1,
+          "filter": "asetrate=17199,aresample=22050,lowpass=f=4000"
+        },
+        {
+          "source": "V46",
+          "delayMs": 60,
+          "volume": 0.6,
+          "filter": "asetrate=15876,aresample=22050"
+        },
+        {
+          "source": "41",
+          "delayMs": 0,
+          "volume": 0.45,
+          "filter": "asetrate=35280,aresample=44100,lowpass=f=600"
+        }
+      ],
+      "label": "Shera UNPAID roar: growl (V05) and scream (V46) pitched down over a low boom (41)",
+      "verifiedByEar": false
+    },
+    "shera_hurt": {
+      "inputs": [
+        {
+          "source": "V02",
+          "delayMs": 0,
+          "volume": 1,
+          "filter": "asetrate=17640,aresample=22050"
+        }
+      ],
+      "label": "Shera hurt grunt: the enemy grunt (V02, ehurt3) pitched down",
+      "verifiedByEar": false
+    },
+    "shera_hurt2": {
+      "inputs": [
+        {
+          "source": "V03",
+          "delayMs": 0,
+          "volume": 1,
+          "filter": "asetrate=17199,aresample=22050"
+        }
+      ],
+      "label": "Shera hurt grunt, second take: V03 (ehurt4) pitched down",
+      "verifiedByEar": false
+    },
+    "shera_squeeze": {
+      "inputs": [
+        {
+          "source": "22",
+          "delayMs": 0,
+          "volume": 2.4,
+          "filter": "asetrate=33075,aresample=44100,lowpass=f=2500"
+        },
+        {
+          "source": "03",
+          "delayMs": 90,
+          "volume": 1.35,
+          "filter": "highpass=f=900,atrim=duration=0.16,afade=t=out:st=0.06:d=0.1"
+        }
+      ],
+      "label": "Bear-hug squeeze: grab (22) pitched down with a crack (03)",
+      "verifiedByEar": false
+    },
+    "shera_chain": {
+      "inputs": [
+        {
+          "source": "09",
+          "delayMs": 0,
+          "volume": 1.12,
+          "filter": "atrim=duration=0.6,afade=t=out:st=0.35:d=0.25"
+        },
+        {
+          "source": "04",
+          "delayMs": 0,
+          "volume": 0.84,
+          "filter": "asetrate=35280,aresample=44100"
+        }
+      ],
+      "label": "Chain sweep: metal link rattle (09) over a whiff (04)",
+      "verifiedByEar": false
+    },
+    "shera_snag": {
+      "inputs": [
+        {
+          "source": "34",
+          "delayMs": 0,
+          "volume": 1.12,
+          "filter": "atrim=duration=0.55,afade=t=out:st=0.25:d=0.3"
+        },
+        {
+          "source": "09",
+          "delayMs": 40,
+          "volume": 0.63,
+          "filter": "atrim=duration=0.3,afade=t=out:st=0.1:d=0.2"
+        }
+      ],
+      "label": "Chain snag on his forearm: clang (34) and rattle (09)",
+      "verifiedByEar": false
+    },
+    "shera_ko": {
+      "inputs": [
+        {
+          "source": "V40",
+          "delayMs": 0,
+          "volume": 1,
+          "filter": "asetrate=15435,aresample=22050,lowpass=f=3000"
+        },
+        {
+          "source": "41",
+          "delayMs": 250,
+          "volume": 0.4,
+          "filter": "asetrate=35280,aresample=44100"
+        }
+      ],
+      "label": "Shera out on his feet: long groan (V40) pitched down, a low boom under it",
+      "verifiedByEar": false
+    },
+    "neta_laugh": {
+      "inputs": [
+        {
+          "source": "V19",
+          "delayMs": 0,
+          "volume": 1.8
+        }
+      ],
+      "label": "Netaji laugh (V19, MWAHAHAHA)",
+      "verifiedByEar": false
+    },
+    "neta_gloat": {
+      "inputs": [
+        {
+          "source": "V33",
+          "delayMs": 0,
+          "volume": 1.44
+        }
+      ],
+      "label": "Netaji giggle (V33, HEHEHE)",
+      "verifiedByEar": false
+    },
+    "neta_heckle": {
+      "inputs": [
+        {
+          "source": "V17",
+          "delayMs": 0,
+          "volume": 1,
+          "filter": "asetrate=23152,aresample=22050"
+        }
+      ],
+      "label": "Netaji heckle (V17, Come on!)",
+      "verifiedByEar": false
+    },
+    "neta_cash": {
+      "inputs": [
+        {
+          "source": "02",
+          "delayMs": 0,
+          "volume": 1.25,
+          "filter": "asetrate=57330,aresample=44100,highpass=f=1500"
+        },
+        {
+          "source": "19, 21",
+          "delayMs": 20,
+          "volume": 1.5,
+          "filter": "highpass=f=2000,atrim=duration=0.25,afade=t=out:st=0.1:d=0.15"
+        }
+      ],
+      "label": "Cash bundle slapped into a palm: bright slap (02) and paper flutter (19,21)",
+      "verifiedByEar": false
+    },
+    "neta_paid": {
+      "inputs": [
+        {
+          "source": "37",
+          "delayMs": 0,
+          "volume": 2.56
+        },
+        {
+          "source": "24",
+          "delayMs": 70,
+          "volume": 1.6,
+          "filter": "atrim=duration=0.6,afade=t=out:st=0.2:d=0.4"
+        }
+      ],
+      "label": "PAID cha-ching: pickup blip (37) into a bell chord (24)",
+      "verifiedByEar": false
+    },
+    "neta_denied": {
+      "inputs": [
+        {
+          "source": "19, 21",
+          "delayMs": 0,
+          "volume": 1.2,
+          "filter": "atrim=duration=0.6,afade=t=out:st=0.3:d=0.3"
+        },
+        {
+          "source": "13",
+          "delayMs": 0,
+          "volume": 0.75,
+          "filter": "asetrate=39690,aresample=44100"
+        },
+        {
+          "source": "02",
+          "delayMs": 0,
+          "volume": 0.9
+        }
+      ],
+      "label": "DENIED: bundle knocked loose, paper scatter (19,21) over a throw (13) and slap (02)",
+      "verifiedByEar": false
     }
   },
   "generated": {
@@ -1176,6 +2490,1656 @@
       "provenanceVerified": true,
       "verifiedByEar": true,
       "verification": "User listened to the isolated preview and confirmed: This is it."
+    },
+    "cond_grunt_1": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "attack effort",
+      "source": "audio/sources/final_fight/voice/03_punch_grunt.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_grunt_2": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "attack effort",
+      "source": "audio/sources/final_fight/voice/04_throw_grunt.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_grunt_3": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "attack effort / getting up",
+      "source": "audio/sources/final_fight/voice/21_grunt_unknown.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_hurt_1": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "hit reaction",
+      "source": "audio/sources/final_fight/voice/2C_generic_hurt1.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_hurt_2": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "hit reaction",
+      "source": "audio/sources/final_fight/voice/2D_generic_hurt2.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_yell": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "VOID, knockdown, dive onto the box",
+      "source": "audio/sources/final_fight/voice/29_andore_1.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_laugh": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "SEIZED meter, count taunt, victory",
+      "source": "audio/sources/final_fight/voice/3D_belger_laugh.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_fall": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "finisher launch; first 1.7 s bent down to 0.78x",
+      "source": "audio/sources/final_fight/voice/3E_belger_fall.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_ohno": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "first loaded box knocked loose",
+      "source": "audio/sources/final_fight/voice/2E_oh_my_god.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_whistle": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "EMERGENCY chain, phase-2 call",
+      "source": "audio/sources/final_fight/voice/27_damnd_whistle.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_crash": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "finisher desk collapse",
+      "source": "audio/sources/final_fight/sfx/17_break_1.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_box_hit": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "cash box impact; attack only, 0.42 s",
+      "source": "audio/sources/final_fight/sfx/19_metal_bang.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_thud": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "body and luggage impacts",
+      "source": "audio/sources/final_fight/sfx/18_thud.wav",
+      "origin": "Final Fight (Arcade), The Sounds Resource; see audio/sources/final_fight/SOURCE.txt",
+      "verifiedByEar": false
+    },
+    "cond_stamp": {
+      "recipe": "tools/production/build_conductor_audio.py --combat",
+      "label": "Wood and rubber stamp impact with arcade body thump",
+      "source": "audio/sources/final_fight/sfx/18_thud.wav + synthesized wooden/rubber transient",
+      "verifiedByEar": false
+    },
+    "cond_ink": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "stamp inked on the pad (DENIED wind-up)",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_punch": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "ticket punch (TOO EARLY)",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_note_1": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "banknote flick",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_note_2": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "banknote flick, longer",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_coins_1": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "loose change, small",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_coins_2": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "loose change, handful",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_chain_1": {
+      "recipe": "tools/production/build_conductor_audio.py --combat",
+      "label": "Short chain-link rattle; 140 ms, fits the reach cadence",
+      "source": "audio/sources/final_fight/sfx/0F_clink.wav",
+      "verifiedByEar": false
+    },
+    "cond_chain_2": {
+      "recipe": "tools/production/build_conductor_audio.py --combat",
+      "label": "Chain pulled taut; link rattle and a low metal clunk",
+      "source": "audio/sources/final_fight/sfx/0F_clink.wav + audio/sources/final_fight/sfx/19_metal_bang.wav",
+      "verifiedByEar": false
+    },
+    "cond_latch": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "handle shackle re-hooked; seize catch",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_lid": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "cash-box lid clack",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_scrape": {
+      "recipe": "tools/production/build_conductor_audio.py --combat",
+      "label": "Short, quiet luggage friction; 480 ms",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_chair": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "office chair shoved back",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_step_1": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "leather shoe step",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_step_2": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "leather shoe step",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_desk": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "hand on the desk",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_clatter": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "stamp knocked to the floor",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_papers": {
+      "recipe": "tools/production/build_conductor_audio.py",
+      "label": "papers and notes fluttering",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "neta_roof_yelp1": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: squeaky \"ow\" (V16 up ~3 semitones)",
+      "sources": [
+        "V16"
+      ],
+      "rawDir": "audio/sources/streets_of_rage_2",
+      "verifiedByEar": false
+    },
+    "neta_roof_yelp2": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: yelped \"ah!\" (V34 up)",
+      "sources": [
+        "V34"
+      ],
+      "rawDir": "audio/sources/streets_of_rage_2",
+      "verifiedByEar": false
+    },
+    "neta_roof_yelp3": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: winded squeak (V09 up)",
+      "sources": [
+        "V09"
+      ],
+      "rawDir": "audio/sources/streets_of_rage_2",
+      "verifiedByEar": false
+    },
+    "neta_roof_whimper": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: whiny \"hmm\" whimper (V50 up, trembling)",
+      "sources": [
+        "V50"
+      ],
+      "rawDir": "audio/sources/streets_of_rage_2",
+      "verifiedByEar": false
+    },
+    "neta_roof_beg": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: pleading gibberish blips (V13 up, doubled)",
+      "sources": [
+        "V13"
+      ],
+      "rawDir": "audio/sources/streets_of_rage_2",
+      "verifiedByEar": false
+    },
+    "neta_roof_laugh": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: nervous giggle (V33 down a touch)",
+      "sources": [
+        "V33"
+      ],
+      "rawDir": "audio/sources/streets_of_rage_2",
+      "verifiedByEar": false
+    },
+    "neta_roof_scream": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: panicked scream (V23)",
+      "sources": [
+        "V23"
+      ],
+      "rawDir": "audio/sources/streets_of_rage_2",
+      "verifiedByEar": false
+    },
+    "neta_roof_ko": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: long falling wail for the knockout (V05)",
+      "sources": [
+        "V05"
+      ],
+      "rawDir": "audio/sources/streets_of_rage_2",
+      "verifiedByEar": false
+    },
+    "neta_roof_thud": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: belly-flop body thud (07 over 32)",
+      "sources": [
+        "07",
+        "32"
+      ],
+      "rawDir": "audio/sources/streets_of_rage_2",
+      "verifiedByEar": false
+    },
+    "neta_roof_whip": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: pistol-butt crack (03 snap over 02 hit)",
+      "sources": [
+        "03",
+        "02"
+      ],
+      "rawDir": "audio/sources/streets_of_rage_2",
+      "verifiedByEar": false
+    },
+    "neta_roof_click": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: dry hammer fall on an empty chamber (synthesized)",
+      "verifiedByEar": false
+    },
+    "neta_roof_spin": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: cylinder swung out and spun: ratchet clicks (synthesized)",
+      "verifiedByEar": false
+    },
+    "neta_roof_drop": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: brass rounds spilling and tinkling on the roof (synthesized)",
+      "verifiedByEar": false
+    },
+    "neta_roof_snap": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: cylinder snapped shut (synthesized)",
+      "verifiedByEar": false
+    },
+    "neta_roof_cash": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: banknote fan rustle (synthesized)",
+      "verifiedByEar": false
+    },
+    "neta_roof_step": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: soft leather-shoe scuff (panicked footsteps) (synthesized)",
+      "verifiedByEar": false
+    },
+    "neta_roof_gulp": {
+      "recipe": "tools/production/build_neta_roof_audio.py",
+      "label": "Rooftop Netaji: nervous gulp (synthesized)",
+      "verifiedByEar": false
+    },
+    "finale_blast_big": {
+      "recipe": "tools/production/build_finale_audio.py",
+      "label": "Delhi finale blast 1: Final Fight explode + shatter roll + sub drop",
+      "verifiedByEar": false
+    },
+    "finale_blast_a": {
+      "recipe": "tools/production/build_finale_audio.py",
+      "label": "Delhi finale major blast: Final Fight explode + sub thump",
+      "verifiedByEar": false
+    },
+    "finale_blast_b": {
+      "recipe": "tools/production/build_finale_audio.py",
+      "label": "Delhi finale major blast: lower Final Fight explode + fire tail",
+      "verifiedByEar": false
+    },
+    "finale_blast_glass": {
+      "recipe": "tools/production/build_finale_audio.py",
+      "label": "Delhi finale window-bank blast: Final Fight explosion shatter",
+      "verifiedByEar": false
+    },
+    "finale_pop": {
+      "recipe": "tools/production/build_finale_audio.py",
+      "label": "Delhi finale secondary flash: short high Final Fight explode",
+      "verifiedByEar": false
+    },
+    "finale_crackle": {
+      "recipe": "tools/production/build_finale_audio.py",
+      "label": "Delhi finale sparks: Final Fight fire crackle",
+      "verifiedByEar": false
+    },
+    "finale_gore": {
+      "recipe": "tools/production/build_finale_audio.py",
+      "label": "Delhi finale: Netaji torn apart (squelch, bone crack, wet spatter; synthesized + SOR2 crack)",
+      "verifiedByEar": false
+    },
+    "vendor_bed": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Kadai ambience loop: frying oil, slow bubbling and the gas ring (CC0 recordings), plays under the fight",
+      "sources": [
+        "freesound_353124",
+        "freesound_767635",
+        "oga_loops_water_boiling",
+        "freesound_435643"
+      ],
+      "peakMs": 438,
+      "seconds": 7.2,
+      "verifiedByEar": false,
+      "loop": true
+    },
+    "vendor_flame_bed": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Burning ghee loop: flame roar and crackle (CC0 recordings), the spilt kadai in the finisher",
+      "sources": [
+        "oga_fire_crackling_fire-1",
+        "freesound_435643"
+      ],
+      "peakMs": 802,
+      "seconds": 5.0,
+      "verifiedByEar": false,
+      "loop": true
+    },
+    "vendor_fry_pop_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Oil jumps (1): sizzle gated up with sharp pops",
+      "sources": [
+        "freesound_353124",
+        "freesound_767635"
+      ],
+      "peakMs": 78,
+      "seconds": 0.45,
+      "verifiedByEar": false
+    },
+    "vendor_fry_pop_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Oil jumps (2): sizzle gated up with sharp pops",
+      "sources": [
+        "freesound_353124",
+        "freesound_767635"
+      ],
+      "peakMs": 38,
+      "seconds": 0.5,
+      "verifiedByEar": false
+    },
+    "vendor_fry_pop_3": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Oil jumps (3): sizzle gated up with sharp pops",
+      "sources": [
+        "freesound_353124",
+        "freesound_767635"
+      ],
+      "peakMs": 52,
+      "seconds": 0.55,
+      "verifiedByEar": false
+    },
+    "vendor_stir_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Ladle stirring the oil (1): slosh, sizzle and a tink on the rim",
+      "sources": [
+        "freesound_353124",
+        "oga_100cc0_splash_02",
+        "oga_cast_iron_clang"
+      ],
+      "peakMs": 122,
+      "seconds": 0.6,
+      "verifiedByEar": false
+    },
+    "vendor_stir_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Ladle stirring the oil (2): slosh, sizzle and a tink on the rim",
+      "sources": [
+        "freesound_353124",
+        "oga_100cc0_splash_02",
+        "oga_cast_iron_clang"
+      ],
+      "peakMs": 52,
+      "seconds": 0.6,
+      "verifiedByEar": false
+    },
+    "vendor_ladle_in": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Skimmer goes into the oil: splash and sizzle",
+      "sources": [
+        "oga_100cc0_splash_01",
+        "freesound_353124"
+      ],
+      "peakMs": 8,
+      "seconds": 0.7,
+      "verifiedByEar": false
+    },
+    "vendor_fling_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Oil flung off the skimmer (1): swish and spatter",
+      "sources": [
+        "freesound_353124",
+        "synth"
+      ],
+      "peakMs": 72,
+      "seconds": 0.535,
+      "verifiedByEar": false
+    },
+    "vendor_fling_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Oil flung off the skimmer (2): swish and spatter",
+      "sources": [
+        "freesound_353124",
+        "synth"
+      ],
+      "peakMs": 118,
+      "seconds": 0.535,
+      "verifiedByEar": false
+    },
+    "vendor_fling_3": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Oil flung off the skimmer (3): swish and spatter",
+      "sources": [
+        "freesound_353124",
+        "synth"
+      ],
+      "peakMs": 72,
+      "seconds": 0.537,
+      "verifiedByEar": false
+    },
+    "vendor_oil_land_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Flung oil lands on the street (1): splat and sizzle",
+      "sources": [
+        "oga_100cc0_splash_02",
+        "freesound_353124"
+      ],
+      "peakMs": 178,
+      "seconds": 0.5,
+      "verifiedByEar": false
+    },
+    "vendor_oil_land_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Flung oil lands on the street (2): splat and sizzle",
+      "sources": [
+        "oga_100cc0_splash_02",
+        "freesound_353124"
+      ],
+      "peakMs": 48,
+      "seconds": 0.5,
+      "verifiedByEar": false
+    },
+    "vendor_dunk": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Head first into the hot ghee: splash, a roar of oil, bubbling and a sub thump",
+      "sources": [
+        "freesound_442773",
+        "freesound_353124",
+        "oga_loops_water_boiling",
+        "synth"
+      ],
+      "peakMs": 238,
+      "seconds": 2.4,
+      "verifiedByEar": false
+    },
+    "vendor_thrash": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Thrashing in the oil: heavy slop and hiss",
+      "sources": [
+        "oga_100cc0_splash_01",
+        "freesound_353124",
+        "synth"
+      ],
+      "peakMs": 38,
+      "seconds": 0.8,
+      "verifiedByEar": false
+    },
+    "vendor_scald": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Arm in the hot oil: a spit of splash and a hard hiss",
+      "sources": [
+        "oga_100cc0_splash_02",
+        "freesound_353124"
+      ],
+      "peakMs": 238,
+      "seconds": 0.8,
+      "verifiedByEar": false
+    },
+    "vendor_sizzle_back": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Searing on the hot counter and tawa",
+      "sources": [
+        "freesound_353124"
+      ],
+      "peakMs": 82,
+      "seconds": 1.2,
+      "verifiedByEar": false
+    },
+    "vendor_flare": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "The kadai flares up: fire whoosh, gas ring and a low whump",
+      "sources": [
+        "freesound_260554",
+        "freesound_435643",
+        "synth"
+      ],
+      "peakMs": 278,
+      "seconds": 1.8,
+      "verifiedByEar": false
+    },
+    "vendor_scorch": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "He rolls through the fire: whoosh and a scalded howl",
+      "sources": [
+        "freesound_260554",
+        "streets_of_rage_2/V03"
+      ],
+      "peakMs": 308,
+      "seconds": 1.6,
+      "verifiedByEar": false
+    },
+    "vendor_breath": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Fire breath: ignition whoosh into a steady gas roar (CC0 gas flame), gutters out",
+      "sources": [
+        "freesound_260554",
+        "freesound_435643",
+        "synth"
+      ],
+      "peakMs": 372,
+      "seconds": 1.5,
+      "verifiedByEar": false
+    },
+    "vendor_inhale": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "A big draw of breath before the fire",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 282,
+      "seconds": 0.34,
+      "verifiedByEar": false
+    },
+    "vendor_belly_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Belly meets CHAD (1): slap, thump and the SOR2 heavy under it",
+      "sources": [
+        "freesound_337148",
+        "streets_of_rage_2/05",
+        "synth"
+      ],
+      "peakMs": 18,
+      "seconds": 0.296,
+      "verifiedByEar": false
+    },
+    "vendor_belly_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Belly meets CHAD (2): slap, thump and the SOR2 heavy under it",
+      "sources": [
+        "freesound_337148",
+        "streets_of_rage_2/05",
+        "synth"
+      ],
+      "peakMs": 8,
+      "seconds": 0.291,
+      "verifiedByEar": false
+    },
+    "vendor_crush": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Guard crush: caved-in metal ring over a belly slam",
+      "sources": [
+        "oga_cast_iron_clang",
+        "freesound_337148",
+        "streets_of_rage_2/31"
+      ],
+      "peakMs": 8,
+      "seconds": 0.522,
+      "verifiedByEar": false
+    },
+    "vendor_flop_land_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Belly flop lands (1): body thud, belly slap, sub drop and a shockwave rumble",
+      "sources": [
+        "freesound_504626",
+        "freesound_734629",
+        "freesound_337148",
+        "streets_of_rage_2/32",
+        "synth"
+      ],
+      "peakMs": 2,
+      "seconds": 1.649,
+      "verifiedByEar": false
+    },
+    "vendor_flop_land_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Belly flop lands (2): body thud, belly slap, sub drop and a shockwave rumble",
+      "sources": [
+        "freesound_504626",
+        "freesound_734629",
+        "freesound_337148",
+        "streets_of_rage_2/32",
+        "synth"
+      ],
+      "peakMs": 2,
+      "seconds": 1.65,
+      "verifiedByEar": false
+    },
+    "vendor_flop_air": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "A whole man in the air: a low descending rush",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 462,
+      "seconds": 0.66,
+      "verifiedByEar": false
+    },
+    "vendor_grunt_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Pappu effort grunt (1): Final Fight wrestler voice pitched down with a chest",
+      "sources": [
+        "final_fight/voice/29_andore_1"
+      ],
+      "peakMs": 262,
+      "seconds": 0.42,
+      "verifiedByEar": false
+    },
+    "vendor_grunt_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Pappu effort grunt (2): Final Fight wrestler voice pitched down with a chest",
+      "sources": [
+        "final_fight/voice/2A_andore_2"
+      ],
+      "peakMs": 278,
+      "seconds": 0.42,
+      "verifiedByEar": false
+    },
+    "vendor_grunt_3": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Pappu effort grunt (3): Final Fight wrestler voice pitched down with a chest",
+      "sources": [
+        "final_fight/voice/29_andore_1"
+      ],
+      "peakMs": 178,
+      "seconds": 0.42,
+      "verifiedByEar": false
+    },
+    "vendor_hurt_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Pappu hurt grunt (1): SOR2 enemy voice V00 pitched down into a fat man",
+      "sources": [
+        "streets_of_rage_2/V00"
+      ],
+      "peakMs": 68,
+      "seconds": 0.503,
+      "verifiedByEar": false
+    },
+    "vendor_hurt_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Pappu hurt grunt (2): SOR2 enemy voice V02 pitched down into a fat man",
+      "sources": [
+        "streets_of_rage_2/V02"
+      ],
+      "peakMs": 112,
+      "seconds": 0.547,
+      "verifiedByEar": false
+    },
+    "vendor_hurt_3": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Pappu hurt grunt (3): SOR2 enemy voice V01 pitched down into a fat man",
+      "sources": [
+        "streets_of_rage_2/V01"
+      ],
+      "peakMs": 62,
+      "seconds": 0.536,
+      "verifiedByEar": false
+    },
+    "vendor_hurt_4": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Pappu hurt grunt (4): SOR2 enemy voice V03 pitched down into a fat man",
+      "sources": [
+        "streets_of_rage_2/V03"
+      ],
+      "peakMs": 82,
+      "seconds": 0.542,
+      "verifiedByEar": false
+    },
+    "vendor_groan_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Winded groan on the floor: Andore voice low and long",
+      "sources": [
+        "final_fight/voice/29_andore_1"
+      ],
+      "peakMs": 268,
+      "seconds": 0.732,
+      "verifiedByEar": false
+    },
+    "vendor_groan_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Winded groan on the floor (2): a second, lower take",
+      "sources": [
+        "final_fight/voice/2A_andore_2"
+      ],
+      "peakMs": 382,
+      "seconds": 0.882,
+      "verifiedByEar": false
+    },
+    "vendor_chuckle": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "A wheezing chuckle at a floored CHAD: Final Fight laugh pitched down",
+      "sources": [
+        "final_fight/voice/20_laugh_unknown"
+      ],
+      "peakMs": 248,
+      "seconds": 0.808,
+      "verifiedByEar": false
+    },
+    "vendor_roar_spicy": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "EXTRA SPICY roar: wrestler voice down an octave over an enemy growl and a sub swell",
+      "sources": [
+        "final_fight/voice/2A_andore_2",
+        "streets_of_rage_2/V05",
+        "synth"
+      ],
+      "peakMs": 308,
+      "seconds": 1.35,
+      "verifiedByEar": false
+    },
+    "vendor_roar_last": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "LAST ORDER roar: a doubled wrestler bellow, deeper, with a floor-shaking swell",
+      "sources": [
+        "final_fight/voice/29_andore_1",
+        "final_fight/voice/2A_andore_2",
+        "streets_of_rage_2/V11",
+        "synth"
+      ],
+      "peakMs": 672,
+      "seconds": 1.984,
+      "verifiedByEar": false
+    },
+    "vendor_roar_intro": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Squaring up: a short chesty HAH",
+      "sources": [
+        "final_fight/voice/29_andore_1",
+        "synth"
+      ],
+      "peakMs": 228,
+      "seconds": 0.6,
+      "verifiedByEar": false
+    },
+    "vendor_cough_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Smoky cough (1): CC0 cough recording pitched down",
+      "sources": [
+        "freesound_157296_husky7"
+      ],
+      "peakMs": 32,
+      "seconds": 0.393,
+      "verifiedByEar": false
+    },
+    "vendor_cough_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Smoky cough (2): CC0 cough recording pitched down",
+      "sources": [
+        "freesound_157296_husky7"
+      ],
+      "peakMs": 32,
+      "seconds": 0.376,
+      "verifiedByEar": false
+    },
+    "vendor_cough_3": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Smoky cough (3): CC0 cough recording pitched down",
+      "sources": [
+        "freesound_369295_georgi"
+      ],
+      "peakMs": 68,
+      "seconds": 0.508,
+      "verifiedByEar": false
+    },
+    "vendor_cough_4": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Smoky cough (4): CC0 cough recording pitched down",
+      "sources": [
+        "freesound_369295_georgi"
+      ],
+      "peakMs": 88,
+      "seconds": 0.5,
+      "verifiedByEar": false
+    },
+    "vendor_wheeze": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "A wheezing exhale after the fire breath: filtered breath with a thin reedy tone",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 402,
+      "seconds": 0.9,
+      "verifiedByEar": false
+    },
+    "vendor_burp": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "A long chilli-and-pakora belch: falling low buzz with a vocal rattle",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 68,
+      "seconds": 0.8,
+      "verifiedByEar": false
+    },
+    "vendor_swing_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Skimmer swings through the air (1): a fast rising swish",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 52,
+      "seconds": 0.24,
+      "verifiedByEar": false
+    },
+    "vendor_swing_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Skimmer swings through the air (2): a fast rising swish",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 52,
+      "seconds": 0.24,
+      "verifiedByEar": false
+    },
+    "vendor_swing_3": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Skimmer swings through the air (3): a fast rising swish",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 42,
+      "seconds": 0.24,
+      "verifiedByEar": false
+    },
+    "vendor_swing_big": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "The overhead skimmer chopping down: a heavy descending whoosh peaking at the strike",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 112,
+      "seconds": 0.3,
+      "verifiedByEar": false
+    },
+    "vendor_raise": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Skimmer hauled overhead: a metal strain and a rising swish",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 278,
+      "seconds": 0.45,
+      "verifiedByEar": false
+    },
+    "vendor_slam_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Skimmer slams the street (1): cast-iron clang, thud and grit",
+      "sources": [
+        "oga_cast_iron_clang",
+        "freesound_504626",
+        "streets_of_rage_2/31",
+        "synth"
+      ],
+      "peakMs": 2,
+      "seconds": 0.541,
+      "verifiedByEar": false
+    },
+    "vendor_slam_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Skimmer slams the street (2): cast-iron clang, thud and grit",
+      "sources": [
+        "oga_cast_iron_clang",
+        "freesound_504626",
+        "streets_of_rage_2/31",
+        "synth"
+      ],
+      "peakMs": 8,
+      "seconds": 0.529,
+      "verifiedByEar": false
+    },
+    "vendor_guard_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "He blocks on the skimmer/pan (1): a short cast-iron tang under the SOR2 armour hit",
+      "sources": [
+        "oga_cast_iron_clang",
+        "streets_of_rage_2/15"
+      ],
+      "peakMs": 8,
+      "seconds": 0.256,
+      "verifiedByEar": false
+    },
+    "vendor_guard_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "He blocks on the skimmer/pan (2): a short cast-iron tang under the SOR2 armour hit",
+      "sources": [
+        "oga_cast_iron_clang",
+        "streets_of_rage_2/15"
+      ],
+      "peakMs": 8,
+      "seconds": 0.236,
+      "verifiedByEar": false
+    },
+    "vendor_guard_3": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "He blocks on the skimmer/pan (3): a short cast-iron tang under the SOR2 armour hit",
+      "sources": [
+        "oga_cast_iron_clang",
+        "streets_of_rage_2/15"
+      ],
+      "peakMs": 8,
+      "seconds": 0.3,
+      "verifiedByEar": false
+    },
+    "vendor_rip": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Skimmer torn out of the street: a gritty scrape and a metal chirp",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 128,
+      "seconds": 0.45,
+      "verifiedByEar": false
+    },
+    "vendor_strain_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Heaving the stuck skimmer out (1): effort and metal scrape",
+      "sources": [
+        "final_fight/voice",
+        "synth"
+      ],
+      "peakMs": 188,
+      "seconds": 0.422,
+      "verifiedByEar": false
+    },
+    "vendor_strain_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Heaving the stuck skimmer out (2): effort and metal scrape",
+      "sources": [
+        "final_fight/voice",
+        "synth"
+      ],
+      "peakMs": 262,
+      "seconds": 0.422,
+      "verifiedByEar": false
+    },
+    "vendor_naan_throw_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Naan flicked off the palm (1): cloth snap and a small air rush",
+      "sources": [
+        "oga_moresounds_Cloth_05",
+        "synth"
+      ],
+      "peakMs": 48,
+      "seconds": 0.298,
+      "verifiedByEar": false
+    },
+    "vendor_naan_throw_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Naan flicked off the palm (2): cloth snap and a small air rush",
+      "sources": [
+        "oga_moresounds_Cloth_04",
+        "synth"
+      ],
+      "peakMs": 62,
+      "seconds": 0.299,
+      "verifiedByEar": false
+    },
+    "vendor_naan_throw_3": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Naan flicked off the palm (3): cloth snap and a small air rush",
+      "sources": [
+        "oga_moresounds_Cloth_07",
+        "synth"
+      ],
+      "peakMs": 52,
+      "seconds": 0.299,
+      "verifiedByEar": false
+    },
+    "vendor_naan_slap": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Naan smacks a face: a flat slap and cloth flap",
+      "sources": [
+        "freesound_337148",
+        "oga_moresounds_Cloth_05"
+      ],
+      "peakMs": 18,
+      "seconds": 0.195,
+      "verifiedByEar": false
+    },
+    "vendor_bump_whoosh": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Belly thrust: a push of air and cloth",
+      "sources": [
+        "synth",
+        "oga_moresounds_Cloth_07"
+      ],
+      "peakMs": 48,
+      "seconds": 0.218,
+      "verifiedByEar": false
+    },
+    "vendor_cloth_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Lungi hitched up: cloth rustle",
+      "sources": [
+        "oga_moresounds_Cloth_01"
+      ],
+      "peakMs": 118,
+      "seconds": 0.373,
+      "verifiedByEar": false
+    },
+    "vendor_cloth_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Wiping hands down the vest (1)",
+      "sources": [
+        "oga_moresounds_Cloth_07"
+      ],
+      "peakMs": 42,
+      "seconds": 0.168,
+      "verifiedByEar": false
+    },
+    "vendor_cloth_3": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Wiping hands down the vest (2)",
+      "sources": [
+        "oga_moresounds_Cloth_04"
+      ],
+      "peakMs": 42,
+      "seconds": 0.155,
+      "verifiedByEar": false
+    },
+    "vendor_skimmer_slap_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Skimmer slapped on his palm (1): slap over a metal tick",
+      "sources": [
+        "freesound_337148",
+        "oga_cast_iron_clang"
+      ],
+      "peakMs": 18,
+      "seconds": 0.247,
+      "verifiedByEar": false
+    },
+    "vendor_skimmer_slap_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Skimmer slapped on his palm (2): slap over a metal tick",
+      "sources": [
+        "freesound_337148",
+        "oga_cast_iron_clang"
+      ],
+      "peakMs": 18,
+      "seconds": 0.2,
+      "verifiedByEar": false
+    },
+    "vendor_plant": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Skimmer planted in the street as the name lands: a big clang, slam and low ring",
+      "sources": [
+        "oga_cast_iron_clang",
+        "streets_of_rage_2/31",
+        "freesound_504626",
+        "synth"
+      ],
+      "peakMs": 38,
+      "seconds": 0.9,
+      "verifiedByEar": false
+    },
+    "vendor_glug_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Gulping the chilli sauce (1)",
+      "sources": [
+        "oga_moresounds_Drink_02"
+      ],
+      "peakMs": 138,
+      "seconds": 0.283,
+      "verifiedByEar": false
+    },
+    "vendor_glug_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Gulping the chilli sauce (2)",
+      "sources": [
+        "oga_moresounds_Drink_03"
+      ],
+      "peakMs": 68,
+      "seconds": 0.214,
+      "verifiedByEar": false
+    },
+    "vendor_glug_3": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Gulping the chilli sauce (3)",
+      "sources": [
+        "oga_moresounds_Drink_01"
+      ],
+      "peakMs": 158,
+      "seconds": 0.335,
+      "verifiedByEar": false
+    },
+    "vendor_bottle": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Chilli bottle snatched off the shelf: a glassy tink",
+      "sources": [
+        "oga_cast_iron_clang",
+        "oga_100cc0_dishes_03"
+      ],
+      "peakMs": 108,
+      "seconds": 0.3,
+      "verifiedByEar": false
+    },
+    "vendor_spicy": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "The chilli hits: a choked cough and a hiss of steam",
+      "sources": [
+        "freesound_157296",
+        "freesound_353124"
+      ],
+      "peakMs": 192,
+      "seconds": 0.78,
+      "verifiedByEar": false
+    },
+    "vendor_spit": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Spitting out a pakora ptoo: air burst, tone and a wet splat",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 2,
+      "seconds": 0.19,
+      "verifiedByEar": false
+    },
+    "vendor_chew_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Crunching a hot pakora (1)",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 82,
+      "seconds": 0.161,
+      "verifiedByEar": false
+    },
+    "vendor_chew_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Crunching a hot pakora (2)",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 2,
+      "seconds": 0.143,
+      "verifiedByEar": false
+    },
+    "vendor_chew_3": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Crunching a hot pakora (3)",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 92,
+      "seconds": 0.153,
+      "verifiedByEar": false
+    },
+    "vendor_step_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Rubber chappal slap on the street (1)",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 8,
+      "seconds": 0.14,
+      "verifiedByEar": false
+    },
+    "vendor_step_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Rubber chappal slap on the street (2)",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 8,
+      "seconds": 0.14,
+      "verifiedByEar": false
+    },
+    "vendor_pot_clang": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "A heavy pot comes down on his head: a big clang and hollow tock",
+      "sources": [
+        "oga_cast_iron_clang",
+        "oga_100cc0_pot_02",
+        "synth"
+      ],
+      "peakMs": 8,
+      "seconds": 0.508,
+      "verifiedByEar": false
+    },
+    "vendor_pot_jam": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "The pot bounces and jams down over his eyes: a smaller clonk",
+      "sources": [
+        "oga_cast_iron_clang",
+        "oga_100cc0_pot_01"
+      ],
+      "peakMs": 8,
+      "seconds": 0.301,
+      "verifiedByEar": false
+    },
+    "vendor_crowd_ooh": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "The street winces: a small crowd gasp/ooh",
+      "sources": [
+        "freesound_635110"
+      ],
+      "peakMs": 68,
+      "seconds": 1.3,
+      "verifiedByEar": false
+    },
+    "vendor_gut_jab_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Jab into the belly (1): SOR2 punch over a flesh thump",
+      "sources": [
+        "streets_of_rage_2/02",
+        "freesound_337148",
+        "synth"
+      ],
+      "peakMs": 18,
+      "seconds": 0.299,
+      "verifiedByEar": false
+    },
+    "vendor_gut_jab_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Jab into the belly (2): SOR2 punch over a flesh thump",
+      "sources": [
+        "streets_of_rage_2/02",
+        "freesound_337148",
+        "synth"
+      ],
+      "peakMs": 8,
+      "seconds": 0.296,
+      "verifiedByEar": false
+    },
+    "vendor_gut_hook_1": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Hook that folds him (1): SOR2 heavy, flesh thump and the wind knocked out",
+      "sources": [
+        "streets_of_rage_2/05",
+        "streets_of_rage_2/V02",
+        "freesound_337148",
+        "synth"
+      ],
+      "peakMs": 18,
+      "seconds": 0.45,
+      "verifiedByEar": false
+    },
+    "vendor_gut_hook_2": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Hook that folds him (2): SOR2 heavy, flesh thump and the wind knocked out",
+      "sources": [
+        "streets_of_rage_2/05",
+        "streets_of_rage_2/V02",
+        "freesound_337148",
+        "synth"
+      ],
+      "peakMs": 2,
+      "seconds": 0.45,
+      "verifiedByEar": false
+    },
+    "vendor_rib_crack": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Rib crack: the shipped bone crack pitched down over a wet crunch and a gasp",
+      "sources": [
+        "audio/sfx/bone_crack",
+        "streets_of_rage_2/V02",
+        "synth"
+      ],
+      "peakMs": 8,
+      "seconds": 0.33,
+      "verifiedByEar": false
+    },
+    "vendor_vest_grab": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "CHAD seizes him by the vest: cloth grab and a startled grunt",
+      "sources": [
+        "oga_moresounds_Cloth_01",
+        "final_fight/voice/29_andore_1"
+      ],
+      "peakMs": 188,
+      "seconds": 0.28,
+      "verifiedByEar": false
+    },
+    "vendor_fling_cook": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Flung head first at the kadai: a heavy swish and a yell",
+      "sources": [
+        "synth",
+        "streets_of_rage_2/V03"
+      ],
+      "peakMs": 132,
+      "seconds": 0.493,
+      "verifiedByEar": false
+    },
+    "vendor_scream_dunk": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Screaming under the ghee: a muffled voice through the oil and bubbles",
+      "sources": [
+        "final_fight/voice/2A_andore_2",
+        "oga_loops_water_boiling",
+        "freesound_353124"
+      ],
+      "peakMs": 148,
+      "seconds": 0.5,
+      "verifiedByEar": false
+    },
+    "vendor_scream_pop": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Hauled out of the pan: a short scalded gasp-shriek",
+      "sources": [
+        "streets_of_rage_2/V05",
+        "synth"
+      ],
+      "peakMs": 112,
+      "seconds": 0.3,
+      "verifiedByEar": false
+    },
+    "vendor_land_butt": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Dumped on his backside off the rim: thud, oil slop and a groan",
+      "sources": [
+        "streets_of_rage_2/32",
+        "freesound_337148",
+        "oga_100cc0_splash_01",
+        "final_fight/voice/2A_andore_2"
+      ],
+      "peakMs": 18,
+      "seconds": 0.56,
+      "verifiedByEar": false
+    },
+    "vendor_jaw_break": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Super uppercut: SOR2 heavy over two pitched bone cracks, a sub thump and teeth pattering down",
+      "sources": [
+        "streets_of_rage_2/05",
+        "audio/sfx/bone_crack",
+        "synth"
+      ],
+      "peakMs": 22,
+      "seconds": 0.936,
+      "verifiedByEar": false
+    },
+    "vendor_scream_air": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Flying end over end: his scream falling away (SOR2 V20 pitched down and sliding lower)",
+      "sources": [
+        "streets_of_rage_2/V20"
+      ],
+      "peakMs": 492,
+      "seconds": 0.654,
+      "verifiedByEar": false
+    },
+    "vendor_counter_crack": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Slammed on his own counter: wood splitting, trays clattering, a body slam and hot metal sizzling",
+      "sources": [
+        "streets_of_rage_2/31",
+        "oga_100cc0_wooden",
+        "freesound_209002",
+        "freesound_337148",
+        "audio/sfx/bone_crack",
+        "synth"
+      ],
+      "peakMs": 2,
+      "seconds": 1.85,
+      "verifiedByEar": false
+    },
+    "vendor_roll": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Rolling off the counter: cloth drag and a rush",
+      "sources": [
+        "synth",
+        "oga_moresounds_Cloth_01"
+      ],
+      "peakMs": 122,
+      "seconds": 0.35,
+      "verifiedByEar": false
+    },
+    "vendor_drop_street": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Rolls off the counter and hits the street: a heavy body thud",
+      "sources": [
+        "freesound_504626",
+        "freesound_337148",
+        "streets_of_rage_2/32",
+        "synth"
+      ],
+      "peakMs": 2,
+      "seconds": 0.6,
+      "verifiedByEar": false
+    },
+    "vendor_kadai_tip": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Kicked stand skids and the kadai rocks over: a long metal scrape and creak, a low knock at the tip",
+      "sources": [
+        "oga_cast_iron_clang",
+        "synth"
+      ],
+      "peakMs": 708,
+      "seconds": 1.099,
+      "verifiedByEar": false
+    },
+    "vendor_ghee_spill": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "The kadai goes over: iron crash, a rush of ghee and the fire catching with a whoosh",
+      "sources": [
+        "oga_cast_iron_clang",
+        "freesound_260554",
+        "freesound_353124",
+        "synth"
+      ],
+      "peakMs": 38,
+      "seconds": 2.05,
+      "verifiedByEar": false
+    },
+    "vendor_exhale": {
+      "recipe": "tools/production/build_pappu_audio.py",
+      "label": "Out cold: his last long breath out",
+      "sources": [
+        "synth"
+      ],
+      "peakMs": 442,
+      "seconds": 0.9,
+      "verifiedByEar": false
+    },
+    "refund_ring": {
+      "recipe": "tools/production/build_refund_audio.py",
+      "label": "quiet electronic desk-phone ring",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "refund_terminal": {
+      "recipe": "tools/production/build_refund_audio.py",
+      "label": "brief CRT confirmation chirp",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "refund_cooling": {
+      "recipe": "tools/production/build_refund_audio.py",
+      "label": "looping ventilation and server motor",
+      "source": "synthesized Foley",
+      "verifiedByEar": false
+    },
+    "cond_coin_tick": {
+      "recipe": "tools/production/build_conductor_audio.py --combat",
+      "label": "Single quiet clink for meter transfer; 105 ms",
+      "source": "audio/sources/final_fight/sfx/0F_clink.wav",
+      "verifiedByEar": false
+    },
+    "cond_box_drop": {
+      "recipe": "tools/production/build_conductor_audio.py --combat",
+      "label": "Metal cash box landing, body thud with brief steel resonance",
+      "source": "audio/sources/final_fight/sfx/18_thud.wav + audio/sources/final_fight/sfx/19_metal_bang.wav",
+      "verifiedByEar": false
+    },
+    "cond_swing": {
+      "recipe": "tools/production/build_conductor_audio.py --combat",
+      "label": "Lower broad whoosh leading the heavy box contact",
+      "source": "audio/sfx/whiff.wav (approved legacy cue, pitched to 0.8x)",
+      "verifiedByEar": false
     }
+  },
+  "authored": {
+    "warn_parry": {
+      "source": "audio/sources/streets_of_rage_2/37.wav",
+      "file": "audio/sfx/warn_parry.wav",
+      "label": "Short high parry-warning chirp",
+      "builder": "tools/production/build_combat_ui_audio.py"
+    },
+    "warn_evade": {
+      "source": "audio/sources/streets_of_rage_2/33.wav",
+      "file": "audio/sfx/warn_evade.wav",
+      "label": "Low evade-warning chirp",
+      "builder": "tools/production/build_combat_ui_audio.py"
+    }
+  },
+  "runtimeLabels": {
+    "go": "Advance cue",
+    "advance": "Advance cue",
+    "phurt": "Player hit impact",
+    "punch": "Punch impact",
+    "heavy": "Heavy impact",
+    "kick": "Kick impact",
+    "whiff": "Punch whoosh",
+    "land": "Landing thud",
+    "slam": "Body slam",
+    "ko": "Knockout impact",
+    "throw": "Throw whoosh",
+    "dash": "Dash",
+    "jump": "Jump whoosh",
+    "pickup": "Item pickup",
+    "blip": "Menu cursor",
+    "armor": "Blocked hit",
+    "enrage": "Rage surge",
+    "super": "Super burst",
+    "weapon": "Weapon impact",
+    "ehurt1": "Light hit impact",
+    "ehurt2": "Second jab impact",
+    "ehurt3": "Hit impact \u00b7 heavy",
+    "ehurt4": "Hit impact \u00b7 crunch",
+    "edie1": "Enemy knockout \u00b7 A",
+    "edie2": "Enemy knockout \u00b7 B",
+    "bdie": "Boss knockout",
+    "warn_parry": "Parry warning",
+    "warn_evade": "Evade warning",
+    "pickup_health": "Health pickup",
+    "break": "Scenery smash",
+    "break_wood": "Wooden scenery break",
+    "break_metal": "Metal scenery break",
+    "dialogue_typing": "Dialogue typing",
+    "entrance_slam": "Entrance crash",
+    "entrance_heavy": "Entrance impact",
+    "grab": "Grab cue",
+    "cond_grunt_1": "Conductor \u00b7 Attack grunt 1",
+    "cond_grunt_2": "Conductor \u00b7 Attack grunt 2",
+    "cond_grunt_3": "Conductor \u00b7 Effort grunt",
+    "cond_hurt_1": "Conductor \u00b7 Pain grunt 1",
+    "cond_hurt_2": "Conductor \u00b7 Pain grunt 2",
+    "cond_yell": "Conductor \u00b7 Knockdown yell",
+    "cond_laugh": "Conductor \u00b7 Gloating laugh",
+    "cond_fall": "Conductor \u00b7 Finisher scream",
+    "cond_ohno": "Conductor \u00b7 Lost bribes reaction",
+    "cond_whistle": "Conductor \u00b7 Emergency whistle",
+    "cond_crash": "Conductor \u00b7 Desk collapse",
+    "cond_box_hit": "Conductor \u00b7 Cash-box strike",
+    "cond_box_drop": "Conductor \u00b7 Cash-box landing",
+    "cond_thud": "Conductor \u00b7 Body and luggage thud",
+    "cond_stamp": "Conductor \u00b7 Stamp impact",
+    "cond_ink": "Conductor \u00b7 Ink-pad dabs",
+    "cond_punch": "Conductor \u00b7 Ticket punch",
+    "cond_note_1": "Conductor \u00b7 Banknote flick 1",
+    "cond_note_2": "Conductor \u00b7 Banknote flick 2",
+    "cond_coins_1": "Conductor \u00b7 Small change spill",
+    "cond_coins_2": "Conductor \u00b7 Handful of change",
+    "cond_coin_tick": "Conductor \u00b7 Meter-transfer clink",
+    "cond_chain_1": "Conductor \u00b7 Chain reach rattle",
+    "cond_chain_2": "Conductor \u00b7 Chain pull clunk",
+    "cond_latch": "Conductor \u00b7 Handle and box latch",
+    "cond_lid": "Conductor \u00b7 Cash-box lid",
+    "cond_scrape": "Conductor \u00b7 Sliding luggage",
+    "cond_chair": "Conductor \u00b7 Chair scrape",
+    "cond_step_1": "Conductor \u00b7 Shoe step 1",
+    "cond_step_2": "Conductor \u00b7 Shoe step 2",
+    "cond_desk": "Conductor \u00b7 Palm on desk",
+    "cond_clatter": "Conductor \u00b7 Falling stamp",
+    "cond_papers": "Conductor \u00b7 Falling paperwork",
+    "cond_swing": "Conductor \u00b7 Cash-box whoosh"
+  },
+  "selectionNotes": {
+    "dash": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "dialogue_typing": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "entrance_slam": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "entrance_heavy": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "land": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "enrage": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "ko": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "punch": "User prefers the newer contact/blocked-hit sample; movement, menus, typing and scenery retain their restored legacy cues.",
+    "ehurt4": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "break": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "heavy": "User prefers the newer contact/blocked-hit sample; movement, menus, typing and scenery retain their restored legacy cues.",
+    "grab": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "jump": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "whiff": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "blip": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "ehurt1": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "weapon": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "pickup_health": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "break_metal": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "go": "SoR2 GO beep ($439, played as the GO indicator appears); replaces mislabeled Big Ben/Fog effect 29.",
+    "advance": "SoR2 GO beep ($439, played as the GO indicator appears); replaces mislabeled Big Ben/Fog effect 29.",
+    "throw": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "break_wood": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "kick": "User prefers the newer contact/blocked-hit sample; movement, menus, typing and scenery retain their restored legacy cues.",
+    "ehurt2": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "ehurt3": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "armor": "User prefers the newer contact/blocked-hit sample; movement, menus, typing and scenery retain their restored legacy cues.",
+    "slam": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "pickup": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "super": "User prefers the previous arcade sound setup; original sample and default playback level restored.",
+    "phurt": "User prefers the newer contact/blocked-hit sample; movement, menus, typing and scenery retain their restored legacy cues.",
+    "edie2": "Keep the revised enemy death scream while restoring the other legacy effects.",
+    "bdie": "Keep the revised enemy death scream while restoring the other legacy effects.",
+    "edie1": "Keep the revised enemy death scream while restoring the other legacy effects."
   }
 }

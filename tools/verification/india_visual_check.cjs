@@ -31,7 +31,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
    if(broken)for(const pr of G.props){pr.broken=pr.dead=true;pr.hp=0;}G.shake=0;__game.render();},[id,scene,broken]);
   await capture(`${id}-${scene}-props-${broken?'broken':'intact'}`);
  }
- for(const x of [500,1030,1500,1960,2370,4260,4820,5260]){
+ for(const x of [1300,1030,1500,1960,2370,4260,4820,5260]){
   await p.evaluate(x=>{__game.indiaScene('delhi','market',0);const G=__game.G;G.camX=x-240;G.player.x=x-90;G.shake=0;__game.render();},x);
   await capture('delhi-civilian-'+x);
  }

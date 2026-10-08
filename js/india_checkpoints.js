@@ -1,7 +1,7 @@
 import {snapshotGrade,restoreGrade} from './grading.js';
 // Checkpoint rollback for the two replacement India stages. Train retries remain
 // owned by train.js; these snapshots never alter their state or balance.
-import { G, W, clamp, laneMin, laneMax } from './engine.js';
+import { G, W, clamp, laneMin, laneMax, resetCombo } from './engine.js';
 import { createPlayer, releaseSuper, releaseGrab } from './player.js';
 import { createProp } from './props.js';
 import { debugResetInput } from './input.js';
@@ -22,10 +22,12 @@ function save(point) {
   s.retryPoint = {
     ...point, grading:snapshotGrade(), score: G.score, bestCombo: G.bestCombo,
     stats: { ...G.stats }, time: s.t,
-    wallBroken: s.wallBroken, bullDone: s.bullDone, marketBroken:s.marketBroken, damage:{...s.damage}, finishersDone:[...(s.finishersDone||[])], completedScenes:{...s.completedScenes},
+    wallBroken: s.wallBroken, refundBreachDone:!!s.refundBreachDone, bullDone: s.bullDone, marketBroken:s.marketBroken, damage:{...s.damage}, finishersDone:[...(s.finishersDone||[])], completedScenes:{...s.completedScenes},
     cues: [...s.cues], recoveryWaves: [...(s.recoveryWaves || [])],
     props: G.props.filter(p => !p.indiaBossProp).map(p => ({
-      kind: p.prop, x: p.x, y: p.y, z: p.z, hp: p.hp, broken: p.broken, dead: p.dead, decor:p.decor,
+      kind: p.prop, x: p.x, y: p.y, z: p.z, hp: p.hp, broken: p.broken, dead: p.dead, decor:p.decor, drop:p.drop,
+      // the kadai's wreck state after the vendor finisher
+      smashed:p.smashed, smashX:p.smashX, smashY:p.smashY, stoveDestroyed:p.stoveDestroyed, drained:p.drained,
     })),
   };
   s.checkpoint = point.at;
@@ -79,11 +81,12 @@ export function restoreIndiaCheckpoint() {
   G.stage.events?.forEach(event => { event.done = event.x <= saved.x; });
   G.props = saved.props.map(data => {
     const p = createProp(data.kind, data.x, data.y, data.z);
-    Object.assign(p, { hp: data.hp, broken: data.broken, dead: data.dead, decor:data.decor });
+    Object.assign(p, { hp: data.hp, broken: data.broken, dead: data.dead, decor:data.decor, drop:data.drop });
+    for (const k of ['smashed','smashX','smashY','stoveDestroyed','drained']) if (data[k] !== undefined) p[k] = data[k];
     return p;
   });
   G.score = saved.score; G.stats = { ...saved.stats }; G.bestCombo = saved.bestCombo;
-  G.combo = G.comboT = G.rankT = 0; G.rank = -1;
+  resetCombo();
   G.meter = 50;
   G.player = createPlayer();
   Object.assign(G.player, { x: clamp(saved.x, G.camX + 14, G.camX + W - 14),
@@ -95,8 +98,7 @@ export function restoreIndiaCheckpoint() {
   s.wallCracked=false;
   s.t = saved.time; s.cues = new Set(saved.cues);
   s.recoveryWaves = new Set(saved.recoveryWaves || []);
-  s.wallBroken = saved.wallBroken; s.bullDone = saved.bullDone;
-  s.retryBoss = saved.bossKey;
+  s.wallBroken = saved.wallBroken; s.refundBreachDone=!!saved.refundBreachDone; s.bullDone = saved.bullDone;
   G.audio.music(G.stage.musicB && saved.camX >= G.stage.musicBX ? G.stage.musicB : G.stage.music);
   return true;
 }

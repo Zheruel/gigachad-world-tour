@@ -11,9 +11,6 @@ export const DISPLAY_FILES={
  'WORLD TOUR':'assets/ui/headings/world-tour.png',
  'STAGE CLEAR':'assets/ui/headings/stage-clear.png',
  'GAME OVER':'assets/ui/headings/game-over.png',
- 'ACT 1 / INDIA':'assets/ui/headings/act-one-india.png',
- 'ACT 2 / INDIA':'assets/ui/headings/act-two-india.png',
- 'ACT 3 / INDIA':'assets/ui/headings/act-three-india.png',
  'REFUND TOWER':'assets/ui/headings/refund-tower.png',
  'THE CLOSER':'assets/ui/headings/the-closer.png',
 };

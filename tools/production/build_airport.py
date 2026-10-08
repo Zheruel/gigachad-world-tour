@@ -3,6 +3,7 @@
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 from process_char import key_green
+from chad_cutscene import finish as chad_finish
 import numpy as np
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -33,27 +34,22 @@ def sheet(folder,name,cols,rows,height=184,cell=(192,208)):
         assert x>=0 and x+img.width<=cell[0] and y>=0,(name,i,x,y,img.size)
         atlas.alpha_composite(img,(i*cell[0]+x,y))
     save(atlas,folder,name)
+    if name.startswith('chad_'):chad_finish(OUT/folder/(name+'.png'),cell)
+# CHAD stands 178 px (2x) like the gold frames; his sheets are locked to the gold palette (chad_cutscene.finish).
+CHAD_CROWN=178
 def duck_sheet():
-    raw=key_green(read('city','chad_boarding'));cw=raw.width//6
-    base=raw.crop((0,0,cw,raw.height)).getbbox();scale=184/(base[3]-base[1]);atlas=Image.new('RGBA',(768,208))
+    # Head-edited copy of city/chad_boarding (same six poses and layout, transparent background).
+    raw=key_green(read('airport','chad_duck'));cw=raw.width//6
+    base=raw.crop((0,0,cw,raw.height)).getbbox();scale=CHAD_CROWN/(base[3]-base[1]);atlas=Image.new('RGBA',(768,208))
     for i,col in enumerate([1,2,3]):
         f=raw.crop((col*cw,0,(col+1)*cw,raw.height));b=f.getbbox();feet=f.getchannel('A').crop((0,b[3]-25,cw,b[3])).getbbox();center=(feet[0]+feet[2])/2
         cutout=f.crop(b).resize((round((b[2]-b[0])*scale),round((b[3]-b[1])*scale)),Image.Resampling.LANCZOS)
         atlas.alpha_composite(cutout,(i*256+round(128-(center-b[0])*scale),200-cutout.height))
-    save(atlas,'airport','chad_duck')
+    save(atlas,'airport','chad_duck');chad_finish(OUT/'airport/chad_duck.png',(256,208))
 
 def departure_polish():
     sheet('airport','attendant_service',4,2,176,(224,200))
-    sheet('airport','chad_low_board',2,2,184,(256,208))
-    raw=key(read('airport','porter_work'));atlas=Image.new('RGBA',(8*224,200))
-    # Luggage is excluded from the foot anchor: it must not move the worker's body.
-    anchors=[228,175,166,129,226,171,161,129]
-    scale=174/441
-    for i,x in enumerate(anchors):
-        f=raw.crop((i%4*384,i//4*512,i%4*384+384,i//4*512+512));b=f.getbbox()
-        im=f.crop(b).resize((round((b[2]-b[0])*scale),round((b[3]-b[1])*scale)),Image.Resampling.LANCZOS)
-        cell=Image.new('RGBA',(224,200));cell.alpha_composite(im,(round(112-(x-b[0])*scale),192-im.height));atlas.alpha_composite(cell,(i*224,0))
-    save(atlas,'airport','porter_work')
+    sheet('airport','chad_low_board',2,2,CHAD_CROWN,(256,208))
     opened=key(read('airport','jet_sunset_open'));closed_source=key(read('airport','jet_sunset_closed'))
     # Use only the generated door change. All silhouette/wing/wheel pixels remain
     # from the open master, eliminating geometry drift between the two states.
@@ -72,11 +68,12 @@ def departure_polish():
     save(closed,'airport','departure_jet_body');save(gear,'airport','departure_jet_gear')
 
 def environments():
-    for folder,name in [('airport','private_apron'),('india','arrival_terminal')]:
+    # The Kesarganj arrival plate, approach vista and jet relight are built by build_india_arrival.py.
+    for folder,name in [('airport','private_apron')]:
         im=read(folder,name).resize((1920,540),Image.Resampling.LANCZOS);save(im,folder,name)
         # The architecture and apron share exact registration at rest.
         ground=Image.new('RGBA',im.size);ground.paste(im.crop((0,380,1920,540)),(0,380));save(ground,folder,name+'_ground')
-    for folder,name in [('airport','scenic_vista'),('india','approach_vista')]:
+    for folder,name in [('airport','scenic_vista')]:
         im=read(folder,name).resize((1280,720),Image.Resampling.LANCZOS);save(im,folder,name)
         # Foreground contour follows roof/mountain ridges; opaque city, no ghosting.
         overlay=im.copy();mask=Image.new('L',im.size)
@@ -97,5 +94,10 @@ def environments():
     a=body.getchannel('A');a.paste(0,(0,0),mask);body.putalpha(a)
     save(body,'airport','jet_body');save(gear,'airport','jet_gear')
 
+def chad_sheets():
+    duck_sheet();sheet('airport','chad_low_board',2,2,CHAD_CROWN,(256,208));sheet('airport','chad_stairs',3,2,CHAD_CROWN,(256,208))
+
 if __name__=='__main__':
-    environments();duck_sheet();departure_polish();sheet('airport','staff',4,2,174,(192,200));sheet('airport','chad_stairs',3,2,184,(256,208));sheet('india','official',3,2,172,(224,208))
+    import sys
+    if '--chad' in sys.argv:chad_sheets()  # CHAD sheets only
+    else:environments();duck_sheet();departure_polish();sheet('airport','staff',4,2,174,(192,200));sheet('airport','chad_stairs',3,2,CHAD_CROWN,(256,208))

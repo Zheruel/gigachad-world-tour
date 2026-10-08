@@ -10,10 +10,7 @@ share a screen position. These two do:
           - the bottom band, which is the sofa and the side table in both pictures and
           therefore is not dragged sideways by CHAD's arm.
 
-  tiger   a six frame prowl plus a five pose rest strip (lie, wake, sit, stretch,
-          snarl), all eleven on one canvas and one palette so he neither hops nor
-          changes colour when he lies down. White on purpose: the room is walnut and
-          black granite and a dark animal sinks into it.
+  (the lair's pet - the lion - has its own builder, build_lair_lion.py)
 
   tank    the shark's swim cycle. Centred rather than
           bottom-anchored - nothing in water stands on anything.
@@ -24,7 +21,7 @@ share a screen position. These two do:
           bed_fire/bed_rug/bed_wardrobe/bed_nightstand, which process_props.py owns.
           `rm assets/lair/bed_*.png` takes all of them.
 
-  ./.venv/bin/python tools/production/build_lair_extras.py [lounge|tiger|tank|bed]
+  ./.venv/bin/python tools/production/build_lair_extras.py [lounge|tank|bed|...]
 """
 import os
 import sys
@@ -41,7 +38,6 @@ OUT = "assets/lair/"
 
 SMOKE_POSES = 4  # lounge_chad is pose 0 of the smoke; smoke_1..3 are the draw
 SOFA_H = 46      # logical height of the empty sofa + side table
-TIGER_H = 58     # shoulder-to-ground on a big cat, against CHAD's 96
 SHARK_H = 42     # sized against the widened tank; ~57 logical nose to tail
 FIRE_W = 32      # the firebox interior is 59x35 logical; the flames clip at the lintel
 FENDER = (1530, 148, 68, 20)   # must match FENDER in js/hub.js
@@ -439,37 +435,6 @@ def build_fire():
           f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})")
 
 
-def build_tiger():
-    """The six frame prowl and the five rest poses, on ONE canvas and ONE palette.
-
-    The old set was three separate generations and came out as three different animals:
-    the walk frames' fur measured (238,234,234), neutral white, and the sit was
-    (249,235,214) - cream - with 16.2% of its pixels brown against the walk's 5%, because
-    it had been drawn a different harness. So the rest poses are one strip generated
-    against a frame of the finished walk, and everything is quantized together here.
-
-    Scaled by a STANDING pose, never by each pose's own target height. The last rest pose
-    is the tiger standing square and snarling, so matching its height to the walk's makes
-    the sit, the lie and the stretch come out at whatever they should be RELATIVE to that.
-    Told their heights instead, a lying tiger and a sitting one end up the same size - the
-    same mistake that made a police cap the size of a payphone on the trophy shelf.
-
-    place() puts all eleven on one canvas with one ground line, so the room can swap poses
-    without any y bookkeeping and he cannot hop when he sits down.
-    """
-    walk = slice_strip(SRC + "tiger_walk.png", 6)
-    walk = [rescale(f, TIGER_H * RS / max(g.height for g in walk)) for f in walk]
-    rest = slice_strip(SRC + "tiger_rest.png", 5)
-    rest = [rescale(f, max(g.height for g in walk) / rest[4].height) for f in rest]
-    frames = finish_set(place(walk + rest), 48)
-    names = [str(i) for i in range(6)] + ["lie", "wake", "sit", "stretch", "snarl"]
-    os.makedirs(OUT, exist_ok=True)
-    for name, f in zip(names, frames):
-        f.save(f"{OUT}tiger_{name}.png")
-    print(f"{OUT}tiger_*.png  {frames[0].width}x{frames[0].height}  "
-          f"(logical {round(frames[0].width / RS)}x{round(frames[0].height / RS)})")
-
-
 def build_tank():
     """The swimmers are centred on the canvas, not bottom-anchored: nothing in water
     stands on anything, and the shark's tail sweep must not shunt the body up and down.
@@ -701,10 +666,10 @@ def churn(frames):
 
 
 if __name__ == "__main__":
-    jobs = sys.argv[1:] or ["lounge", "tiger", "tank", "bed", "fire", "fender",
+    jobs = sys.argv[1:] or ["lounge", "tank", "bed", "fire", "fender",
                             "bar", "bardrink", "tankframe", "tenants"]
     for j in jobs:
-        {"lounge": build_lounge, "tiger": build_tiger,
+        {"lounge": build_lounge,
          "bar": build_bar, "bardrink": build_bardrink,
          "tankframe": build_tankframe, "tenants": build_tenants,
          "tank": build_tank,

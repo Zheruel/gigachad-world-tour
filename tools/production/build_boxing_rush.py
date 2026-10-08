@@ -3,6 +3,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 from collections import deque
+from sprite_edges import harden
+from chad_palette import lock
 
 def largest_component(mask):
     remaining=mask.copy();best=[]
@@ -29,7 +31,7 @@ def build_guard():
     red=(data[:,:,0]>180)&(data[:,:,1]<35)&(data[:,:,2]<35);data[red,3]=0
     data[~largest_component(data[:,:,3]>24),3]=0;pose=Image.fromarray(data);bounds=pose.getbbox();scale=.465
     f=Image.new('RGBA',(256,248));p=pose.resize((round(pose.width*scale),round(pose.height*scale)),Image.Resampling.LANCZOS)
-    f.alpha_composite(p,(round(128-133*scale),round(241-bounds[3]*scale)));f.save(ROOT/'assets/frames/chad_boxing_rush_00.png')
+    f.alpha_composite(p,(round(128-133*scale),round(241-bounds[3]*scale)));lock(harden(f)).save(ROOT/'assets/frames/chad_boxing_rush_00.png')
 
 def main():
     build_guard()
