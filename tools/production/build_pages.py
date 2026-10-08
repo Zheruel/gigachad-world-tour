@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Build the GitHub Pages site: the tracked runtime files, plus a .webp beside every PNG under assets/.
+"""Build the GitHub Pages site: the tracked runtime files, plus a compressed copy of each image and sample.
 
     python3 tools/production/build_pages.py [out_dir=_site] [--jobs N]
 
 Colour is lossy for opaque images and for large transparent layers (stage plates, props, cards);
 character frames and small sprites are lossless. Alpha is always exact, so silhouettes and
-outlines never change. The PNGs ship too (index.html and anything outside
-js/asset_url.js still use them); the build turns WEBP on in its copy of js/asset_url.js.
-Needs cwebp (libwebp) and Pillow.
+outlines never change. Runtime WAVs under audio/ get a VBR MP3 (browsers trim LAME's encoder
+delay, so onsets and loops line up). The sources ship too (index.html and anything outside
+js/asset_url.js still use them); the build turns COMPRESSED on in its copy of js/asset_url.js.
+Needs cwebp (libwebp), lame and Pillow.
 """
 import os, shutil, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
@@ -18,6 +19,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 SKIP = ('assets/sources/', 'audio/sources/', 'tools/production/', 'tools/verification/', 'docs/', '.claude/', '.github/')
 LOSSY = ['-q', '90', '-alpha_q', '100', '-m', '6', '-sharp_yuv', '-metadata', 'none']
 LOSSLESS = ['-lossless', '-z', '6', '-metadata', 'none']
+MP3 = ['lame', '--quiet', '-V', '2']
 
 
 def runtime_files():
@@ -41,6 +43,12 @@ def to_webp(out, rel):
     return os.path.getsize(src), os.path.getsize(dst)
 
 
+def to_mp3(out, rel):
+    src, dst = os.path.join(out, rel), os.path.join(out, rel[:-4] + '.mp3')
+    subprocess.run([*MP3, src, dst], check=True)
+    return os.path.getsize(src), os.path.getsize(dst)
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     jobs = int(sys.argv[sys.argv.index('--jobs') + 1]) if '--jobs' in sys.argv else os.cpu_count()
@@ -52,17 +60,23 @@ def main():
         os.makedirs(os.path.dirname(os.path.join(out, f)), exist_ok=True)
         shutil.copy2(os.path.join(ROOT, f), os.path.join(out, f))
     pngs = [f for f in files if f.startswith('assets/') and f.endswith('.png')]
+    wavs = [f for f in files if f.startswith('audio/') and f.endswith('.wav')]
+    clash = [f for f in wavs if f[:-4] + '.mp3' in files]
+    if clash:
+        sys.exit(f'an .mp3 already sits beside {clash[0]}')
     with ThreadPoolExecutor(jobs) as pool:
-        sizes = list(pool.map(lambda f: to_webp(out, f), pngs))
+        images = list(pool.map(lambda f: to_webp(out, f), pngs))
+        samples = list(pool.map(lambda f: to_mp3(out, f), wavs))
     url = os.path.join(out, 'js/asset_url.js')
     with open(url) as fh:
         code = fh.read()
-    if 'const WEBP = false;' not in code:
-        sys.exit('js/asset_url.js no longer has the WEBP switch')
+    if 'const COMPRESSED = false;' not in code:
+        sys.exit('js/asset_url.js no longer has the COMPRESSED switch')
     with open(url, 'w') as fh:
-        fh.write(code.replace('const WEBP = false;', 'const WEBP = true;'))
-    png, webp = sum(s[0] for s in sizes), sum(s[1] for s in sizes)
-    print(f'{len(files)} files, {len(pngs)} images: {png / 1e6:.1f} MB PNG -> {webp / 1e6:.1f} MB WebP')
+        fh.write(code.replace('const COMPRESSED = false;', 'const COMPRESSED = true;'))
+    mb = lambda sizes, i: sum(s[i] for s in sizes) / 1e6
+    print(f'{len(files)} files; {len(pngs)} images {mb(images, 0):.1f} -> {mb(images, 1):.1f} MB WebP; '
+          f'{len(wavs)} samples {mb(samples, 0):.1f} -> {mb(samples, 1):.1f} MB MP3')
 
 
 if __name__ == '__main__':

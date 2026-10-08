@@ -3,6 +3,7 @@
 
 import {PAPPU_SFX} from './vendor_sound_bank.js';
 import { LOAD_ALL, track } from './loading.js';
+import { assetURL } from './asset_url.js';
 let ac = null, master = null, musicGain = null, sfxGain = null;
 let unlocked = false;
 
@@ -200,7 +201,7 @@ function travelLoop(kind) {
 export async function loadSFX() {
   await Promise.all(SFX_FILES.map((name) => track('core', (async () => {
     try {
-      const r = await fetch(SFX_PATHS[name] || `audio/${isVoice(name) ? 'voice' : 'sfx'}/${name}.wav`);   // ordinary HTTP caching: repeat visits skip ~300 revalidations
+      const r = await fetch(assetURL(SFX_PATHS[name] || `audio/${isVoice(name) ? 'voice' : 'sfx'}/${name}.wav`));   // ordinary HTTP caching: repeat visits skip ~300 revalidations
       if (!r.ok) return;
       (sampleBytes || (sampleBytes = {}))[name] = await r.arrayBuffer();
     } catch (e) { /* no sample: the synth fallback covers it */ }
