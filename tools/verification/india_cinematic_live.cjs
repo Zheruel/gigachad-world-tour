@@ -11,7 +11,8 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{chromium}=requ
  await p.waitForFunction(()=>['duke_who_wants_some','duke_turn_up_heat','duke_safety_inspections','duke_checks_cash'].every(n=>__game.G.audio.has(n)));
  const dir='tmp/review/india-setpieces/live';fs.mkdirSync(dir,{recursive:true});const results=[];
  const delhiIntro=await p.evaluate(()=>import('/js/delhi_intro.js').then(m=>m.DELHI_INTRO_TICKS));
- for(const [stage,scene,ticks,exit]of [['delhi','intro',delhiIntro,'play'],['delhi','vendor-finish',500,'play'],['delhi','dredger-finish',800,'clear'],['refund','closer-finish',840,'clear'],['refund','intro',480,'play']]){
+ const refundIntro=await p.evaluate(()=>import('/js/refund_intro.js').then(m=>m.CB.end));
+ for(const [stage,scene,ticks,exit]of [['delhi','intro',delhiIntro,'play'],['delhi','vendor-finish',500,'play'],['delhi','dredger-finish',800,'clear'],['refund','closer-finish',840,'clear'],['refund','intro',refundIntro,'play']]){
   const result=await p.evaluate(async({stage,scene,ticks})=>{
    const g=__game,G=g.G;g.indiaScene(stage,scene,0);G.audio.music(scene==='intro'||scene==='vendor-finish'?G.stage.music:G.stage.bossMusic);await reviewAudio.resume();
    const canvas=document.querySelector('canvas'),stream=new MediaStream([...canvas.captureStream(60).getTracks(),...reviewAudio.reviewBus.stream.getAudioTracks()]);
