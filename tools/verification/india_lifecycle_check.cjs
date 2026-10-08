@@ -19,14 +19,14 @@ const assert=require('node:assert/strict'),{chromium}=require('playwright');
     const raw=G.rawTime;g.step(12);check(`intro pass${pass} pauses at${at}`,G.paused&&G.rawTime===raw);
     g.press('pause');g.step(1);g.release('pause');g.step(2);
    }
-   g.step(510);check(`intro pass${pass} completes once`,G.state==='play'&&G.india.wallBroken);
-   check(`intro pass${pass} quote once`,voices.slice(before).filter(x=>x==='duke_time_to_crash_this_party').length===1);
+   g.step(950);check(`intro pass${pass} completes once`,G.state==='play'&&G.india.wallBroken);
+   check(`intro pass${pass} quote once`,voices.slice(before).filter(x=>x==='duke_failure_to_communicate').length===1);
    const n=voices.length,t=G.india.t,cues=[...G.india.cues].join('|');for(let i=0;i<12;i++)g.render();
    check('render does not advance choreography or sound',G.india.t===t&&voices.length===n&&[...G.india.cues].join('|')===cues);
   }
   const removed={};for(const key of Object.keys(ASSETS).filter(k=>k.startsWith('ic_'))){removed[key]=ASSETS[key];delete ASSETS[key];}
   const v=G.audio.voice;G.audio.voice=()=>false;
-  g.indiaScene('refund','intro',0);g.step(485);check('missing chapter art/audio cannot trap entrance',G.state==='play'&&G.india.wallBroken);
+  g.indiaScene('refund','intro',0);g.step(960);check('missing chapter art/audio cannot trap entrance',G.state==='play'&&G.india.wallBroken);
   g.indiaScene('refund','finish',0);g.step(1000);check('missing chapter art/audio reaches held victory',G.state==='clear'&&G.india.endingDone);
   Object.assign(ASSETS,removed);G.audio.voice=v;
   for(const id of ['delhi','refund'])for(let area=0;area<8;area++){

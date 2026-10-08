@@ -5,8 +5,7 @@ import { INDIA_PROPS } from './india_assets.js';
 import { G, addScore } from './engine.js';
 import { ASSETS } from './assets.js';
 import { Pix, blit, frameW, frameH } from './sprites.js';
-import { spawnDebris, spawnDust, spawnPop, impact } from './effects.js';
-import { spawnZone } from './shots.js';
+import { spawnDebris, spawnDust, spawnSmoke, spawnPop, impact } from './effects.js';
 
 // kind -> { hp, w, h, shadowR, score, drop, debris }
 export const PROP_TYPES = {
@@ -27,40 +26,79 @@ export const PROP_TYPES = {
   // `art` borrows another prop's sprite until this one has its own generation.
   // the level's only 1-up, one lane back behind a stall you have to break first
   mithai: { hp: 10, w: 26, h: 20, shadowR: 11, score: 200, drop: 'life', art: 'crate', debris: ['#f0d0a0', '#e8a840', '#c86030'] },
-  // it drops nothing: it BECOMES terrain, which is better, because the designer
-  // places it and both sides can be pushed into it
-  drum: { hp: 18, w: 30, h: 40, shadowR: 14, score: 60, drop: null, art: 'tyres',
-    burst: { kind: 'chutney', r: 30, life: 720 }, debris: ['#2a6a9a', '#4a8aba', '#d8d0b0'] },
   // the heavy's prop: a handcart in the market, a boat pole on the ghat
   thelacart: { hp: 30, w: 54, h: 40, shadowR: 24, score: 120, drop: null, art: 'cart', debris: ['#c08a3a', '#8a5a20', '#d8d0b8'] },
   thelapole: { hp: 30, w: 70, h: 14, shadowR: 10, score: 120, drop: null, art: 'sign', debris: ['#a8804a', '#6a4a24', '#d0b888'] },
   // break it and the dhobi loses 34 px of the longest reach in the game
   dhobislab: { hp: 40, w: 46, h: 18, shadowR: 20, score: 160, drop: null, art: 'table', debris: ['#8a8a8a', '#b8b8b0', '#5a5a58'] },
-  // the dredger's deck winch: break it and the bucket never lifts again
-  winch: { hp: 80, w: 54, h: 40, shadowR: 22, score: 600, drop: null, art: 'cart', debris: ['#3a3a42', '#8a7a5a', '#c8b890'] },
 
   // ---- THE NIGHT TRAIN ----
   nr_trolley:{hp:20,w:54,h:58,shadowR:0,score:60,drop:'shake',debris:['#987653','#62504b']},
   nr_case:{hp:20,w:42,h:28,shadowR:0,score:60,drop:'shake',debris:['#344b64','#bc9561']},
   nr_table:{hp:18,w:56,h:44,shadowR:0,score:40,drop:'plate',debris:['#987653','#62504b']},
-  nr_urn:{hp:22,w:28,h:48,shadowR:0,score:80,drop:null,burst:{kind:'fire',r:40,life:150},debris:['#dcbb72','#664d25']},
+  // the pantry car's urn: the big heal before the inspector's office, no fire left on the floor
+  nr_urn:{hp:22,w:28,h:48,shadowR:0,score:80,drop:'shake',glass:true,debris:['#dcbb72','#664d25','#f0d890']},
+  nr_crate:{hp:20,w:44,h:30,shadowR:0,score:60,drop:'shake',debris:['#6b4a2a','#c9a14a']},
+  // Carried loads: the coolie's dropped trunk and the smuggler's crate. No drops; the crate spills cash itself.
+  nr_trunk:{hp:14,w:42,h:28,shadowR:0,score:40,drop:null,art:'nr_case',debris:['#344b64','#bc9561']},
+  nr_cargo:{hp:20,w:44,h:30,shadowR:0,score:100,drop:null,art:'nr_crate',debris:['#6b4a2a','#c9a14a']},
   nr_contraband:{hp:28,w:44,h:30,shadowR:0,score:200,drop:'life',debris:['#344b64','#bc9561']},
 };
 
-for(const [name,[w,h]]of Object.entries(INDIA_PROPS)){const hp={ic_vendorcart:64,ic_cookingstation:36,ic_pressurevalve:18,ic_cabinet:30,ic_execdesk:40,ic_partition:24}[name]||24;PROP_TYPES[name]={hp,w,h,shadowR:w*.3,score:70,drop:['ic_cart','ic_stall','ic_monitor','ic_cargo'].includes(name)?'shake':null,debris:['#796049','#b39971','#3b4144']};}
+// Stage breakables drop food; boss furniture and carried rigs (desk, partitions, cabinet) drop nothing.
+const INDIA_DROPS={ic_cart:'shake',ic_stall:'shake',ic_cargo:'shake',ic_monitor:'shake',ic_server:'shake',ic_shelf:'plate'};
+const INDIA_GLASS=new Set(['ic_monitor','ic_server','ic_partition']);
+for(const [name,[w,h]]of Object.entries(INDIA_PROPS)){const hp={ic_cabinet:30,ic_execdesk:40,ic_partition:24}[name]||24;PROP_TYPES[name]={hp,w,h,shadowR:w*.3,score:70,drop:INDIA_DROPS[name]||null,glass:INDIA_GLASS.has(name),debris:['#796049','#b39971','#3b4144']};}
+// Debris in each prop's own materials, so the burst reads as that object coming apart.
+Object.assign(PROP_TYPES.ic_cart,{debris:['#8a6034','#c89a58','#4a3420']});
+Object.assign(PROP_TYPES.ic_stall,{debris:['#6fa35a','#e0a030','#8a6034','#c84a2a']});
+Object.assign(PROP_TYPES.ic_boiler,{debris:['#b08040','#e0c080','#5a4020']});
+Object.assign(PROP_TYPES.ic_cargo,{debris:['#a07a48','#d8b878','#5a4428']});
+Object.assign(PROP_TYPES.ic_monitor,{debris:['#d8d0b8','#3a5a58','#9ad0c8']});
+Object.assign(PROP_TYPES.ic_server,{debris:['#2a3034','#5a6870','#7ac0e0']});
+Object.assign(PROP_TYPES.ic_shelf,{debris:['#3a4040','#d8d0b8','#8a6a44']});
+Object.assign(PROP_TYPES.ic_cabinet,{debris:['#4a5a3a','#7a8a5a','#d8d0b8']});
+// The porter's separate cart spills produce when its front is broken.
+PROP_TYPES.ic_thela={...PROP_TYPES.ic_cart,hp:30,art:'ic_cart',drop:'plate',debris:['#e0a030','#6fa35a','#796049']};
+
+// Use scenery crashes rather than body slams; the attack owns the contact sound.
+for(const kind of ['crate','table','cart','mithai','thelacart','thelapole','nr_table','nr_crate','nr_cargo','ic_cart','ic_stall','ic_cargo','ic_thela','ic_execdesk'])PROP_TYPES[kind].breakSound='break_wood';
+for(const kind of ['nr_urn','nr_trolley','ic_boiler','ic_cabinet','ic_server'])PROP_TYPES[kind].breakSound='break_metal';
+
+// Delhi's play copies are larger than the approved cinematic props. Hit bounds follow
+// their opaque body, not the padded PNG canvas; fragments use the selected PNG itself.
+export const DELHI_PROP_FOOTPRINT={
+  ic_stall:{w:93,h:44,shadowR:27.9},ic_cart:{w:90,h:47,shadowR:27},
+  ic_cargo:{w:56,h:42,shadowR:16.8},ic_thela:{w:124.5,h:47,shadowR:31},
+};
+const delhiPlayProps=()=>G.stage?.id==='delhi'&&G.state!=='intro';
+const mirroredCart=pr=>pr.face<0&&(delhiPlayProps()&&pr.prop==='ic_thela'||pr.indiaBossProp&&pr.role==='cabinet');
 
 // ---- procedural art (swapped for AI PNGs later without touching this file) --
 const ART = {};
-
-function crate(broken) {
-  const P = new Pix(30, 32);
-  if (broken) {
-    P.rect(2, 22, 26, 10, '#7c4420');
-    P.rect(2, 22, 26, 2, '#b0682e');
-    for (let i = 0; i < 5; i++) P.rect(3 + i * 6, 24 + (i % 2), 4, 6, '#8a4a20');
-    P.rect(0, 30, 30, 2, '#5a2e14');
-    return P.c;
+const PORTER_WHEELS = new WeakMap();
+function drawPorterWheels(ctx, pr, image, dx, dy) {
+  let wheel = PORTER_WHEELS.get(image);
+  if (!wheel) {
+    wheel = document.createElement('canvas'); wheel.width = wheel.height = 46;
+    const c = wheel.getContext('2d'); c.imageSmoothingEnabled = false;
+    c.beginPath(); c.arc(23, 23, 23, 0, Math.PI * 2); c.clip();
+    c.drawImage(image, 174, 40, 46, 46, 0, 0, 46, 46);
+    PORTER_WHEELS.set(image, wheel);
   }
+  // The painted rim and cart bed stay fixed; their authored spokes turn underneath.
+  for (const [x, y, r, far] of [[147, 63, 19, true], [197, 63, 23, false]]) {
+    ctx.save();
+    if (far) { ctx.beginPath(); ctx.rect(dx + 56, dy + 32, 36, 16); ctx.clip(); }
+    ctx.translate(dx + x / 2, dy + y / 2);
+    ctx.rotate((pr.wheelTravel || 0) / (r / 2));
+    ctx.drawImage(wheel, -r / 2, -r / 2, r, r);
+    ctx.restore();
+  }
+}
+
+function crate() {
+  const P = new Pix(30, 32);
   P.rect(1, 4, 28, 28, '#8a4a20');
   P.rect(1, 4, 28, 3, '#c08a4a');
   P.rect(1, 4, 3, 28, '#a4602c');
@@ -73,15 +111,8 @@ function crate(broken) {
   return P.c;
 }
 
-function matka(broken) {
+function matka() {
   const P = new Pix(24, 26);
-  if (broken) {
-    P.rect(4, 20, 16, 6, '#8a4426');
-    P.rect(2, 24, 20, 2, '#6a2e18');
-    P.rect(6, 18, 4, 4, '#a4562c');
-    P.rect(15, 19, 3, 3, '#a4562c');
-    return P.c;
-  }
   P.disc(12, 15, 10, '#a4562c');
   P.disc(10, 12, 7, '#c07040');
   P.rect(8, 2, 8, 6, '#8e4622');
@@ -91,11 +122,10 @@ function matka(broken) {
   return P.c;
 }
 
-function tyres(broken) {
+function tyres() {
   const P = new Pix(32, 34);
-  const n = broken ? 1 : 3;
-  for (let i = 0; i < n; i++) {
-    const y = 32 - i * 10 - (broken ? 0 : 0);
+  for (let i = 0; i < 3; i++) {
+    const y = 32 - i * 10;
     P.disc(16, y - 4, 13, '#2a2a2e');
     P.disc(16, y - 4, 7, '#48484e');
     P.disc(16, y - 4, 5, '#1a1a1e');
@@ -104,18 +134,11 @@ function tyres(broken) {
       P.px(ax | 0, ay | 0, '#3c3c42');
     }
   }
-  if (broken) { P.rect(2, 30, 28, 3, '#18181c'); }
   return P.c;
 }
 
-function table(broken) {
+function table() {
   const P = new Pix(44, 30);
-  if (broken) {
-    P.rect(2, 24, 40, 4, '#7a5a2e');
-    P.rect(6, 20, 10, 4, '#8a6a3a');
-    P.rect(24, 21, 12, 3, '#8a6a3a');
-    return P.c;
-  }
   P.rect(0, 6, 44, 5, '#a4844a');
   P.rect(0, 6, 44, 2, '#c0a068');
   P.rect(4, 11, 4, 19, '#7a5a2e');
@@ -127,14 +150,8 @@ function table(broken) {
   return P.c;
 }
 
-function sign(broken) {
+function sign() {
   const P = new Pix(40, 22);
-  if (broken) {
-    P.rect(0, 0, 16, 3, '#6a6a70');
-    P.rect(2, 3, 12, 8, '#8a2020');
-    P.rect(26, 2, 12, 7, '#a08020');
-    return P.c;
-  }
   P.rect(0, 0, 40, 2, '#6a6a70');
   P.rect(2, 2, 36, 16, '#c02a2a');
   P.rect(2, 2, 36, 2, '#f04a4a');
@@ -144,16 +161,8 @@ function sign(broken) {
   return P.c;
 }
 
-function cart(broken) {
+function cart() {
   const P = new Pix(58, 44);
-  if (broken) {
-    P.rect(2, 30, 54, 12, '#8a5a20');
-    P.rect(2, 30, 54, 2, '#c08a3a');
-    P.disc(14, 40, 6, '#2a2a2e');
-    P.rect(24, 24, 14, 7, '#a8a098');
-    for (let i = 0; i < 8; i++) P.px(6 + i * 6, 27 + (i % 4), '#4a7a26');
-    return P.c;
-  }
   // striped awning
   for (let i = 0; i < 8; i++) P.rect(i * 7, 0, 7, 7, i % 2 ? '#e04a30' : '#f0e8d8');
   P.rect(0, 7, 58, 2, '#8a2a18');
@@ -191,20 +200,21 @@ const BUILDERS = { crate, matka, tyres, table, sign, cart, bag };
 
 // Prefer the generated art; the procedural build below is the fallback so a
 // missing PNG shows a real prop rather than nothing.
-function art(kind, broken) {
+function art(kind) {
   const T = PROP_TYPES[kind];
   const src = (T && T.art) || kind;   // a new prop can borrow art until it has its own
-  const png = ASSETS['prop_' + kind + (broken ? '_b' : '')] || ASSETS['prop_' + src + (broken ? '_b' : '')];
+  const delhi = delhiPlayProps();
+  const png = (delhi && (ASSETS['prop_delhi_' + kind] || ASSETS['prop_delhi_' + src]))
+    || ASSETS['prop_' + kind] || ASSETS['prop_' + src];
   if (png) return png;
-  const key = src + (broken ? '_b' : '');
-  if (!ART[key]) {
+  if (!ART[src]) {
     // "Everything degrades to a fallback" has to be true by construction: a kind with
     // no builder used to be a TypeError inside render(), which takes the HUD with it.
-    const c = (BUILDERS[src] || BUILDERS.crate)(broken);
+    const c = (BUILDERS[src] || BUILDERS.crate)();
     c._as = 1;   // code art is authored at 1 logical px
-    ART[key] = c;
+    ART[src] = c;
   }
-  return ART[key];
+  return ART[src];
 }
 
 // ---- lifecycle ----------------------------------------------------------
@@ -218,6 +228,16 @@ export function createProp(kind, x, y, z) {
     hurt(dmg, dir) { hurtProp(pr, dmg, dir); },
     thrown() {},
   };
+  if(DELHI_PROP_FOOTPRINT[kind]){
+    // Stage setup can precede the intro/play transition. Follow the art route when
+    // these bounds are read so the intro retains its original collisions and effects.
+    const bounds=()=>delhiPlayProps()?DELHI_PROP_FOOTPRINT[kind]:T;
+    for(const key of ['w','h','shadowR'])Object.defineProperty(pr,key,{enumerable:true,configurable:true,get:()=>bounds()[key]});
+  }
+  // A stage placement can override its kind's drop: `drop: null` is a score-only breakable,
+  // so health goes where the stage needs it rather than wherever that kind happens to stand.
+  const place = G.stage?.props?.find((d) => d.kind === kind && d.x === x && d.y === y);
+  pr.drop = place && 'drop' in place ? place.drop : T.drop;
   return pr;
 }
 
@@ -228,30 +248,97 @@ function hurtProp(pr, dmg, dir) {
   pr.shakeT = 8;
   const T = PROP_TYPES[pr.prop];
   if (pr.hp > 0) {
-    spawnDebris(pr.x, pr.y - pr.z - pr.h * 0.4, 3, T.debris);
-    G.audio.sfx('armor');
+    spawnDebris(pr.x, pr.y - pr.z - pr.h * 0.4, 4, T.debris);
     impact(false, dmg);
     return;
   }
   pr.broken = true;
   pr.dead = true;   // stops the combat code targeting it again
-  spawnDebris(pr.x, pr.y - pr.z - pr.h * 0.5, 14, T.debris);
-  if (!pr.z) spawnDust(pr.x, pr.y, 4);
+  burstProp(pr, dir);
   addScore(T.score);
   spawnPop(pr.x, pr.y - pr.z - pr.h - 10, '+' + T.score);
   impact(true, 14);
   G.shake = Math.max(G.shake, 5);
-  G.audio.sfx('slam');
-  if (T.drop) {
+  G.audio.sfx(T.breakSound||'break');
+  if (T.glass) G.audio.roomSfx?.('room_glass', 0.4);
+  // The prop is gone, so its drop sits alone on clear floor where the prop stood.
+  const drop = pr.drop !== undefined ? pr.drop : T.drop;
+  if (drop) {
     G.pickups.push({
-      x: pr.x, y: pr.y, kind: T.drop,
-      heal: T.drop === 'shake' ? 30 : T.drop === 'plate' ? 15 : 0, t: 0,
+      x: pr.x, y: pr.y, kind: drop,
+      heal: drop === 'shake' ? 30 : drop === 'plate' ? 15 : 0, t: 0,
     });
   }
-  // The drum does not drop anything - it BECOMES terrain, which is better, because
-  // the designer places it and both sides can be pushed into it.
-  if (T.burst) spawnZone(T.burst.kind, pr.x, pr.y, T.burst.r, T.burst.life);
   if (pr.onBreak) pr.onBreak(pr);
+}
+
+// ---- the break ------------------------------------------------------------
+// Streets of Rage rules: the prop flashes white, comes apart in chunks of its own art
+// that tumble, bounce once and fade, and leaves nothing on the floor. Visual only.
+const WHITE = new WeakMap();
+function whiteOf(f) {
+  let c = WHITE.get(f);
+  if (!c) {
+    c = document.createElement('canvas'); c.width = f.width; c.height = f.height;
+    const x = c.getContext('2d'); x.drawImage(f, 0, 0);
+    x.globalCompositeOperation = 'source-atop'; x.fillStyle = '#fff8e8'; x.fillRect(0, 0, c.width, c.height);
+    c._as = f._as; WHITE.set(f, c);
+  }
+  return c;
+}
+function stepChunk(e) {
+  e.x += e.vx; e.y += e.vy; e.vy += 0.24; e.angle += e.spin;
+  if (e.y + e.r >= e.ground && e.vy > 0) {
+    e.y = e.ground - e.r; e.vx *= 0.6; e.spin *= 0.5;
+    e.vy = e.bounces++ ? 0 : -e.vy * 0.32;
+  }
+}
+function drawChunk(ctx, camX) {
+  const e = this, a = Math.max(0, Math.min(1, (e.life - e.t) / 12));
+  if (!a) return;
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.translate(Math.round(e.x - camX), Math.round(e.y));
+  ctx.rotate(e.angle);
+  if(e.mirror)ctx.scale(-1,1);
+  ctx.drawImage(e.img, e.sx, e.sy, e.sw, e.sh, -e.dw / 2, -e.dh / 2, e.dw, e.dh);
+  ctx.restore();
+}
+// Flickers two frames on, two off through the break's hitstop, then fades as the chunks fly.
+function drawFlash(ctx, camX) {
+  const e = this;
+  if (((G.rawTime - e.born) >> 1) & 1) return;
+  ctx.save();
+  ctx.globalAlpha = 0.8 * Math.max(0, 1 - e.t / e.life);
+  if(e.mirror){ctx.translate(Math.round(e.x-camX),Math.round(e.y));ctx.scale(-1,1);blit(ctx,e.img,-e.w/2,-e.h,e.w,e.h);}
+  else blit(ctx, e.img, Math.round(e.x - camX) - e.w / 2, Math.round(e.y) - e.h, e.w, e.h);
+  ctx.restore();
+}
+export function burstProp(pr, dir = 1) {
+  const T = PROP_TYPES[pr.prop] || {};
+  // Props with authored wreck states (the vendor's kitchen) keep them: shards and dust only.
+  if (T.draw) { spawnDebris(pr.x, pr.y - pr.z - pr.h * 0.5, 18, T.debris); if (!pr.z) spawnDust(pr.x, pr.y, 5); return; }
+  const f = art(pr.prop), k = pr.scale || 1, mirror=mirroredCart(pr);
+  const w = frameW(f) * k, h = frameH(f) * k, base = pr.y - pr.z, x0 = pr.x - w / 2, y0 = base - h;
+  const cols = w > 56 ? 3 : 2, rows = h > 56 ? 3 : 2, sw = f.width / cols, sh = f.height / rows;
+  const r = (i, n) => { const v = Math.sin((pr.x * 12.9898 + pr.y * 78.233 + i * 37.719 + n) * 43758.5453); return v - Math.floor(v); };
+  let i = 0;
+  for (let row = 0; row < rows; row++) for (let col = 0; col < cols; col++, i++) {
+    const dw = w / cols, dh = h / rows, cx = x0 + (col + 0.5) * dw, cy = y0 + (row + 0.5) * dh;
+    const out = (cx - pr.x) / (w / 2);   // -1 left edge .. 1 right edge
+    G.effects.push({
+      type: 'propChunk', x: cx, y: cy, img: f, sx: (mirror?cols-1-col:col) * sw, sy: row * sh, sw, sh, dw, dh, mirror,
+      r: Math.min(dw, dh) * 0.35, ground: pr.y + 1 + r(i, 1) * 3, bounces: 0,
+      vx: out * (1.6 + r(i, 2) * 1.2) + (dir || 1) * 0.9, vy: -1.6 - (rows - row) * 0.7 - r(i, 3) * 1.4,
+      angle: 0, spin: (r(i, 4) - 0.5) * 0.36 + out * 0.08, t: 0, life: 38 + Math.round(r(i, 5) * 10),
+      step: stepChunk, draw: drawChunk,
+    });
+  }
+  // the pop of light the chunks leave from; drawn over them for the first frames
+  G.effects.push({ type: 'propFlash', x: pr.x, y: base, w, h, img: whiteOf(f), mirror, t: 0, life: 5, born: G.rawTime, draw: drawFlash });
+  spawnDebris(pr.x, base - h * 0.5, 18, T.debris);
+  spawnDebris(pr.x, base - h * 0.2, 8, T.debris);
+  if (!pr.z) { spawnDust(pr.x - w * 0.3, pr.y, 3); spawnDust(pr.x + w * 0.3, pr.y, 3); spawnSmoke(pr.x, pr.y - 2, 2); }
 }
 
 export function updateProps() {
@@ -259,12 +346,17 @@ export function updateProps() {
     pr.t++;
     if (pr.flash > 0) pr.flash--;
     if (pr.shakeT > 0) pr.shakeT--;
+    PROP_TYPES[pr.prop]?.update?.(pr);
   }
 }
 
 export function drawProp(ctx, pr, camX) {
   if(pr.hidden)return;
-  const f = art(pr.prop, pr.broken);
+  // Props with authored multi-state art (the vendor's kitchen) draw themselves.
+  if(PROP_TYPES[pr.prop]?.draw){PROP_TYPES[pr.prop].draw(ctx,pr,camX);return;}
+  // A broken prop burst apart (burstProp) and left nothing behind.
+  if (pr.broken) return;
+  const f = art(pr.prop);
   const wob = pr.shakeT > 0 ? ((pr.t & 1) ? 1 : -1) : 0;
   const sx = Math.round(pr.x - camX) + wob, sy = Math.round(pr.y - pr.z);
   const dx = sx - Math.round(frameW(f) / 2), dy = sy - frameH(f);
@@ -279,6 +371,10 @@ export function drawProp(ctx, pr, camX) {
     ctx.rotate(swing);
     ctx.translate(-sx, -py);
   }
+  // A carried prop can be drawn larger than its placed kind (the recovery agent's cabinet).
+  const scale = pr.scale || 1;
+  const mirror=mirroredCart(pr);
+  if (scale !== 1||mirror) { ctx.save(); ctx.translate(sx, sy); ctx.scale(mirror?-scale:scale, scale); ctx.translate(-sx, -sy); }
   if (pr.flash > 0) {
     ctx.save();
     ctx.filter = 'brightness(1.25)';
@@ -287,5 +383,8 @@ export function drawProp(ctx, pr, camX) {
   } else {
     blit(ctx, f, dx, dy);
   }
+  if (delhiPlayProps() && pr.prop === 'ic_thela' && f === ASSETS.prop_delhi_ic_thela)
+    drawPorterWheels(ctx, pr, f, dx, dy);
+  if (scale !== 1||mirror) ctx.restore();
   if (swing) ctx.restore();
 }

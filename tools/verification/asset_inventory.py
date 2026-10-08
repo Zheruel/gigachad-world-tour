@@ -11,19 +11,25 @@ def block(text,name):
 def counts(text,name):return {k:int(v) for k,v in re.findall(r'(\w+)\s*:\s*(\d+)',block(text,name))}
 def runtime_assets():
     paths=set()
-    for name in ['assets.js','aiframes.js','story.js','crowd.js','audio.js','title_motion.js', 'street.js', 'airport.js', 'flight.js', 'level_card.js', 'display_type.js']:
+    for name in ['assets.js','aiframes.js','story.js','crowd.js','audio.js','title_motion.js', 'street.js', 'airport.js', 'flight.js', 'display_type.js']:
         paths.update(p for p in strings(source(name)) if re.fullmatch(r'(assets|audio)/[^\s]+\.(png|json|mp3|wav)',p))
     # Chapter artwork is registered through data maps, not literal FILES rows.
     india=source('india_assets.js')
     paths.update(p for p in strings(india) if re.fullmatch(r'assets/[^\s]+\.png',p))
     for stage, names in re.findall(r"(delhi|refund)\s*:\s*\[([^\]]+)\]",block(india,'INDIA_PANELS')):
-        directory='dirty_delhi/rebuild' if stage=='delhi' else 'refund_tower'
+        directory='dirty_delhi/rebuild' if stage=='delhi' else 'refund_tower/overhaul'
         paths.update(f'assets/stages/{directory}/{name}.png' for name in strings(names))
     for prop in re.findall(r'(ic_\w+)\s*:\s*\[',block(india,'INDIA_PROPS')):
-        paths.update(f'assets/stages/india/props/{prop}{suffix}.png' for suffix in ['', '_b'])
+        # Later INDIA_FILES entries override the shared legacy prop paths.
+        directory = 'refund_tower/overhaul/props' if prop in ['ic_monitor','ic_cubicle','ic_shelf','ic_server','ic_cabinet','ic_execdesk','ic_partition'] else 'india/props'
+        paths.update(f'assets/stages/{directory}/{prop}{suffix}.png' for suffix in ['', '_b'])
     for module in ['delhi_scenery.js','refund_scenery.js']:
         if not (ROOT/'js'/module).is_file():continue
         text=source(module)
+        if module == 'refund_scenery.js':
+            directory = re.search(r"const DIR='([^']+)'",text).group(1)
+            for names, prefix in re.findall(r"Object.fromEntries\(\[(.*?)\]\.map\(n=>\[.*?`\$\{DIR\}/([^`]+)-\$\{n\}\.png`",text,re.S):
+                paths.update(f'{directory}/{prefix}-{name}.png' for name in strings(names))
         paths.update(p for p in strings(text) if re.fullmatch(r'assets/[^\s]+\.png',p))
         names=re.search(r'Object\.fromEntries\(\[(.*?)\]\.map',text,re.S)
         prefix=re.search(r"['\"](assets/[^'\"]+/)['\"]\s*\+\s*name",text)

@@ -4,7 +4,7 @@
   "sourceArchiveSha256": "f22ee05ece336a19da097d7fbd4334d588344efea35a0018368026c3adc33be7",
   "processing": "Boundary silence trimmed at -55 dB; mono 44.1 kHz MP3 96 kbps; -18 LUFS target, -2 dBTP ceiling. Internal pauses retained.",
   "selectionBasis": "Distinct reusable filename-labelled lines; duration and decode checks. Delivery quality and exact transcript require listening review.",
-  "existingVoiceAssets": "Original game Duke WAV recordings consolidated by category, byte-for-byte unchanged; stable legacySlots map current game cues.",
+  "existingVoiceAssets": "Preserved legacy takes are catalogued with legacySlots; stable game slot IDs retain their original recordings.",
   "clips": [
     {
       "id": "duke_bring_it_on",
@@ -275,13 +275,9 @@
       "sourceFilename": "Who Wants Some 1.mp3",
       "sourceSha256": "07f2ff391ad8e4638b700026072d21720c89d5dcddc41572f19e10c638c7e0b2",
       "sha256": "daba366b834562f2f127b47d6bba112a8c0aa5039c11f492e752eb4f89fa2c64",
-      "suggestedUse": "Delhi extortion-barricade entrance after the cart impact.",
+      "suggestedUse": "Attack, combo or elite encounter punctuation; avoid repeating on ordinary hits.",
       "transcriptProvenance": "source-filename",
-      "listeningVerified": false,
-      "runtimeAliases": [
-        "duke_who_wants_some"
-      ],
-      "verificationNote": "Decoded and timed; local Whisper base.en transcript checked against source filename. Normal-speed gameplay mix recorded for audition; not human listening-verified."
+      "listeningVerified": false
     },
     {
       "id": "duke_this_is_some_serious_ass_kickin",
@@ -331,6 +327,32 @@
       "sourceFilename": "Eat Shit and Die 1.mp3",
       "sourceSha256": "ffb44a35bbf0d60dd81928717c40ef41540c14bfc8fe8abfd3b2ea487394c59b",
       "sha256": "524b0752792730b14bceb2460a5834caf479afd29110008011d965b8dbf5bba0",
+      "suggestedUse": "Attack, combo or elite encounter punctuation; avoid repeating on ordinary hits.",
+      "transcriptProvenance": "source-filename",
+      "listeningVerified": false
+    },
+    {
+      "id": "duke_swallow_this",
+      "file": "combat/swallow_this.mp3",
+      "transcript": "Swallow This!",
+      "category": "combat",
+      "duration": 1.553,
+      "sourceFilename": "Swallow This!.mp3",
+      "sourceSha256": "154947696e5d34c689af8db36237d269f770dda14879c44a06a9be8a704c3484",
+      "sha256": "ce217b4a4d17d0b5c7a0eb7db963ecf86bc469f5397c147ba3863d9598d7f229",
+      "suggestedUse": "Attack, combo or elite encounter punctuation; avoid repeating on ordinary hits.",
+      "transcriptProvenance": "source-filename",
+      "listeningVerified": false
+    },
+    {
+      "id": "duke_the_price_is_wrong_bitch",
+      "file": "combat/the_price_is_wrong_bitch.mp3",
+      "transcript": "The Price is Wrong... Bitch!",
+      "category": "combat",
+      "duration": 2.475,
+      "sourceFilename": "The Price is Wrong... Bitch!.mp3",
+      "sourceSha256": "15287ce83c8cde9c848d3c8c23b8ef8b85d0999c57a7273960628fc2c1871b58",
+      "sha256": "3cb4616051e26f6abaa52ea75aa2fd1bd6a6d97ea5238586f5f672a2ba41dcd9",
       "suggestedUse": "Attack, combo or elite encounter punctuation; avoid repeating on ordinary hits.",
       "transcriptProvenance": "source-filename",
       "listeningVerified": false
@@ -435,13 +457,9 @@
       "sourceFilename": "You Been Writin' Checks Your Ass Can't Cash.mp3",
       "sourceSha256": "a3f1d2eb9346ba87e262d6b565ba81e400686c54f4543b827e3cd0316da0f015",
       "sha256": "e10eaf9763871ab21d84ebde04b93fef490fac18d9ff6041cb66f6cb04945095",
-      "suggestedUse": "The Closer account-closed finisher before the decisive combination.",
+      "suggestedUse": "Boss challenge or pre-fight response.",
       "transcriptProvenance": "source-filename",
-      "listeningVerified": false,
-      "runtimeAliases": [
-        "duke_checks_cash"
-      ],
-      "verificationNote": "Decoded and timed; local Whisper base.en transcript checked against source filename. Normal-speed gameplay mix recorded for audition; not human listening-verified."
+      "listeningVerified": false
     },
     {
       "id": "duke_you_re_pissin_me_off",
@@ -613,6 +631,19 @@
       "listeningVerified": false
     },
     {
+      "id": "duke_hmhmhm_payback_time",
+      "file": "threats/hmhmhm_payback_time.mp3",
+      "transcript": "Hmhmhm, Payback Time",
+      "category": "threats",
+      "duration": 2.067,
+      "sourceFilename": "Hmhmhm, Payback Time.mp3",
+      "sourceSha256": "f715b60a44df89ffb35b01f4e2bcaec042bb64fc8ae59e742e2cafa61308720d",
+      "sha256": "97dd76480d9729b008d2992058225dd401e4e203f96a1345e59febe928668170",
+      "suggestedUse": "Boss challenge or pre-fight response.",
+      "transcriptProvenance": "source-filename",
+      "listeningVerified": false
+    },
+    {
       "id": "duke_time_to_blow_this_joint",
       "file": "explosions/time_to_blow_this_joint.mp3",
       "transcript": "Time to Blow This Joint",
@@ -712,13 +743,9 @@
       "sourceFilename": "Time to Turn Up the Heat.mp3",
       "sourceSha256": "61c66d18d75a728c2ce70a169b01114d332d4a0fbb1b47721c1ea11f8642935a",
       "sha256": "5b6dbd5594793b085bfedcafd8d08c8123827ede7ae9901eb47ff02ddb1fe5ff",
-      "suggestedUse": "Vendor kitchen-catastrophe finisher before the combination.",
+      "suggestedUse": "Detonation, environmental destruction or wreck aftermath.",
       "transcriptProvenance": "source-filename",
-      "listeningVerified": false,
-      "runtimeAliases": [
-        "duke_turn_up_heat"
-      ],
-      "verificationNote": "Decoded and timed; local Whisper base.en transcript checked against source filename. Normal-speed gameplay mix recorded for audition; not human listening-verified."
+      "listeningVerified": false
     },
     {
       "id": "duke_time_to_fumigate",
@@ -1249,13 +1276,9 @@
       "sourceFilename": "Something Tells Me This Won't Pass Any Safety Inspections.mp3",
       "sourceSha256": "68cf029c8b4376c3caa309ea24aaba74fd5d52042e1f0786378ae26e6751b022",
       "sha256": "3108a25c17aa192d176bc5af5f6e34ecf561fb43a11ce6a9834876ec5d8c90ee",
-      "suggestedUse": "Dredger wreck aftermath once the largest impacts have settled.",
+      "suggestedUse": "Short contextual response to scenery, damage or a surprise.",
       "transcriptProvenance": "source-filename",
-      "listeningVerified": false,
-      "runtimeAliases": [
-        "duke_safety_inspections"
-      ],
-      "verificationNote": "Decoded and timed; local Whisper base.en transcript checked against source filename. Normal-speed gameplay mix recorded for audition; not human listening-verified."
+      "listeningVerified": false
     },
     {
       "id": "duke_looks_like_i_m_gettin_off_here",
@@ -1643,6 +1666,19 @@
       "sourceFilename": "Killing is my Business... and Business is Good.mp3",
       "sourceSha256": "6c28efd15d421654a06873eacf9a29f8096356da18bf0185904e09bc4cce9cb6",
       "sha256": "18d3def5ff8416a2d641769642b6520984e4c12c7b1e24c980c3111d66d0b17b",
+      "suggestedUse": "Encounter victory, finishing pose or stage completion.",
+      "transcriptProvenance": "source-filename",
+      "listeningVerified": false
+    },
+    {
+      "id": "duke_looks_like_you_ve_gotten_ahead_of_yourself_there",
+      "file": "victory/looks_like_you_ve_gotten_ahead_of_yourself_there.mp3",
+      "transcript": "Looks Like You've Gotten Ahead of Yourself, There",
+      "category": "victory",
+      "duration": 2.498,
+      "sourceFilename": "Looks Like You've Gotten Ahead of Yourself, There.mp3",
+      "sourceSha256": "9b36b42282ab7bfb3fa96988b65d6f27d3eff601bdfe6ea87e89d7b130c1871c",
+      "sha256": "f9b43c4f8cdc14405fd32b784ba011769b45810af1e19775365546a67daf248b",
       "suggestedUse": "Encounter victory, finishing pose or stage completion.",
       "transcriptProvenance": "source-filename",
       "listeningVerified": false

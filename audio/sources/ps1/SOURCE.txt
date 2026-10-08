@@ -1,0 +1,1 @@
+Original 1995 console boot recording (ps1_boot_full.mp3) and its BIOS layers; audio/sfx/gigastation_boot.mp3 is a 0.35-15.3 s trim with a 0.6 s fade.

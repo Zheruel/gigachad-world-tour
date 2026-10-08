@@ -1,6 +1,7 @@
 // Geography changes at cleared route milestones; motion never follows CHAD/camera.
 import {W,H,clamp} from './engine.js';
 import {ASSETS} from './assets.js';
+import {drawVistaLife} from './vista_smoke.js';
 const kinds=['rural','industry','river'];
 const stageAt=x=>x>=7200?2:x>=5280?1:0;
 export function resetTrainVista(tr,x=2880){
@@ -27,6 +28,7 @@ export function drawTrainVista(ctx,tr){
   const width=im.width/2,height=im.height/2,offset=((tr.distance||0)*.16)%width;
   ctx.save();ctx.globalAlpha=alpha;
   for(let x=-offset;x<W;x+=width)ctx.drawImage(im,Math.round(x),-24,width,height);
+  for(let x=-offset-width;x<W;x+=width)drawVistaLife(ctx,kinds[idx],Math.round(x),-24,width/im.width,tr,im);
   ctx.restore();
  };
  paint(blend<1?from:stage,1);
@@ -35,7 +37,8 @@ export function drawTrainVista(ctx,tr){
  if(tr.review?.near!==false){
   const near=(idx,alpha)=>{const im=ASSETS['nr_'+kinds[idx]+'_near'];if(!im)return;
    const width=im.width*.4,height=im.height*.4,offset=((tr.distance||0)*.46)%width;
-   ctx.save();ctx.globalAlpha=alpha;for(let x=-offset;x<W;x+=width)ctx.drawImage(im,Math.round(x),34,width,height);ctx.restore();};
+   ctx.save();ctx.globalAlpha=alpha;for(let x=-offset;x<W;x+=width)ctx.drawImage(im,Math.round(x),34,width,height);
+   for(let x=-offset-width;x<W;x+=width)drawVistaLife(ctx,kinds[idx]+'_near',Math.round(x),34,.4,tr);ctx.restore();};
   near(blend<1?from:stage,1);if(blend<1){const a=clamp(blend,0,1);near(stage,a*a*(3-2*a));}
  }
 }

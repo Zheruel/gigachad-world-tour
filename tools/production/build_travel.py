@@ -8,7 +8,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'assets/sources/travel'
 OUT = ROOT / 'assets/travel'
-GROUPS = {'elevator_cabin': 'elevator', 'elevator_frame': 'elevator', 'city_towers': 'elevator', 'tower_1': 'elevator', 'tower_2': 'elevator', 'tower_3': 'elevator', 'arrival_wall': 'elevator', 'lobby': 'lobby', 'street': 'city', 'car': 'city', 'car_driver': 'city', 'apron': 'airport', 'jet': 'airport', 'jet_closed': 'airport', 'india': 'india', 'loading': 'india'}
+GROUPS = {'elevator_cabin': 'elevator', 'elevator_frame': 'elevator', 'city_towers': 'elevator', 'tower_1': 'elevator', 'tower_2': 'elevator', 'tower_3': 'elevator', 'arrival_wall': 'elevator', 'lobby': 'lobby', 'street': 'city', 'car': 'city', 'car_driver': 'city', 'apron': 'airport', 'jet': 'airport', 'jet_closed': 'airport', 'india': 'india'}
 def source_path(name): return SOURCE / GROUPS[name] / f'{name}.png'
 def output_path(name):
     path = OUT / GROUPS[name] / f'{name}.png'
@@ -38,7 +38,7 @@ def keyed(image):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    for name in ('street','apron','india','loading'):
+    for name in ('street','apron','india'):
         image=Image.open(source_path(name)).convert('RGB')
         if name == 'lobby':
             image=image.crop((0,140,image.width,574))

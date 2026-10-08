@@ -7,9 +7,11 @@ import { drawStage } from './stages.js';
 import { drawProp, createProp } from './props.js';
 import { drawTrainHeroPose, drawTrainEntryPose, drawTicketScanner, drawTicketPanels, drawTrainOverlay } from './train.js';
 import { drawDialogue, updateDialogue } from './room_dialogue.js';
-import { spawnCigarSmoke, drawEffects } from './effects.js';
+import { drawEffects } from './effects.js';
 import { drawPlayer, IDLES } from './player.js';
 import { audio } from './audio.js';
+import { drawCigarReplay, chadCigarAt } from './cigar_smoke.js';
+import { assetURL } from './asset_url.js';
 
 export const STATION_LAST_FRAME = 480;
 
@@ -51,7 +53,7 @@ function loadFrame(path, onload) {
     const img = new Image();
     img.onload = () => { onload(asCanvas(img, path.split('/').pop())); resolve(); };
     img.onerror = () => resolve();
-    img.src = path;
+    img.src = assetURL(path);
   });
 }
 
@@ -63,8 +65,6 @@ export function loadStory() {
   loads.push(loadFrame('assets/story/motorcycle/bike.png', (c) => { BIKE = c; }));
   return Promise.all(loads);
 }
-
-export function motorFrames() { return HERO.slice(); }
 
 export function resetStory() {
   audio.stopEntranceBike();
@@ -142,44 +142,20 @@ export function finishMotorcycleArrival() {
 function clamp01(value) { return Math.max(0, Math.min(1, value)); }
 function smooth(value) { const u = clamp01(value); return u * u * (3 - 2 * u); }
 
-function smokeWisp(ctx, age, x, y, drift, strength, seed) {
-  if (age < 0 || age > 104) return;
-  const k = age / 104;
-  const appear = Math.min(1, age / 7);
-  const fade = Math.pow(1 - k, 1.35) * appear * strength;
-  for (let lobe = 0; lobe < 3; lobe++) {
-    const phase = seed * 1.73 + lobe * 2.2;
-    const wobble = Math.sin(age * .115 + phase) * (1.1 + k * 3.1);
-    ctx.globalAlpha = fade * (.34 - lobe * .065);
-    ctx.fillStyle = lobe === 1 ? '#d7d0c7' : '#f1ebe2';
-    ctx.beginPath();
-    ctx.ellipse(
-      x + drift * age * (.12 + lobe * .015) + wobble + lobe * .8,
-      y - age * (.22 + lobe * .018) - lobe * 1.1,
-      1.1 + k * (4.2 + lobe),
-      .8 + k * (3.1 + lobe * .7),
-      Math.sin(phase) * .18, 0, Math.PI * 2,
-    );
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
-
+// CHAD's cigar smoke is the same system everywhere (cigar_smoke.js), replayed from the clock so
+// scrubbing and skipping land on the same smoke. Riding, the lit end trails wisps behind the
+// bike (each left where the rider was when it came off); standing, idle_cigar runs off E.cigar
+// as it does in play: lit at the Zippo with a drag, two rings on the exhale, then a trickle.
 function cigarSmokeTrail(ctx, t) {
-  // Each wisp is emitted at the rider's position at that historical frame, so old
-  // smoke stays in world space and trails the bike instead of snapping to it.
-  for (let emitted = 34; emitted <= Math.min(t, E.stop); emitted += 11) {
-    const rig = rigPosition(emitted);
-    smokeWisp(ctx, t - emitted, rig.x - 13, GROUND - 63, .72, .54, emitted);
-  }
-  // Standing, the cigar is at his mouth: the idle ember, then the exhale on the line.
-  const mx = HERO_X + 8, my = HERO_Y - 76;
-  for (let emitted = E.cigar + 30; emitted <= Math.min(t, E.knuckles); emitted += 9) {
-    smokeWisp(ctx, t - emitted, mx, my, .7, .48, emitted);
-  }
-  for (let emitted = E.cigar + 90; emitted <= Math.min(t, E.cigar + 130); emitted += 4) {
-    smokeWisp(ctx, t - emitted, mx, my, .92, .82, emitted);
-  }
+  const a = IDLES.find((i) => i.name === 'idle_cigar'), lit = E.cigar + a.hold * 3 + 2, end = E.cigar + a.frames * a.hold;
+  const at = (b) => {
+    if (b >= 34 && b <= E.stop) return { tip: [rigPosition(b).x - 13, GROUND - 63], face: 1, moving: true };
+    if (b < lit || b >= end) return null;
+    return chadCigarAt(Math.min(a.frames - 1, Math.floor((b - E.cigar) / a.hold)), HERO_X, HERO_Y, 1);
+  };
+  drawCigarReplay(ctx, 0, t, at, {
+    drags: [[lit, a.hold - 2]], exhales: [E.cigar + a.hold * 4], trickleEvery: 9, ember: t >= lit,
+  });
 }
 
 function exhaustPuff(ctx, age, x, y) {
@@ -440,7 +416,8 @@ const ST = {
 const BOARD = 'PLATFORM 1 - NIGHT SERVICE TO DELHI';
 let stFlags = {};
 function resetStation() { stFlags = {}; }
-function once(key, t, at, fn) { if (t >= at && !stFlags[key]) { stFlags[key] = true; fn(); } }
+let stQuiet = false;   // a skip marks the remaining cues done without firing them all on one frame
+function once(key, t, at, fn) { if (t >= at && !stFlags[key]) { stFlags[key] = true; if (!stQuiet) fn(); } }
 
 // Follow the gateway's depth axis first; the right turn happens on the station
 // side of the threshold, after the full body has cleared the scanner.
@@ -450,20 +427,48 @@ export function stationEntryPosition(t) {
  return {x,y};
 }
 
-export function updateStationArrival(t) {
+export function updateStationArrival(t, quiet = false) {
+  stQuiet = quiet;
   const p = G.player;
   Object.assign(p,stationEntryPosition(t)); p.face = 1;
-  if(t>=55&&t<123)updateDialogue('TICKET FIRST.',t-55,{remaining:123-t});
+  if(t>=55&&t<140)updateDialogue('TICKET FIRST.',t-55,{remaining:140-t});
   once('charge',t,123,()=>audio.sfx('dash'));
-  once('barrier',t,143,()=>{audio.sfx('heavy');audio.sfx('slam');G.shake=9;});
+  once('barrier',t,143,()=>{audio.sfx('entrance_heavy');audio.sfx('entrance_slam');G.shake=9;});
   if ((t<60||(t>=123&&t<174)||(t>=222&&t<ST.walkEnd)) && t % 26 === 8) audio.sfx('entrance_boot');
   once('stand', t, ST.walkEnd, () => audio.sfx('entrance_stand'));
   once('chime', t, ST.chime, () => audio.sfx('chime'));
   once('whistle', t, ST.whistle, () => { audio.sfx('go'); });
   once('stamp', t, ST.stamp, () => { audio.sfx('slam'); G.shake = Math.max(G.shake, 5); });
   once('voice', t, ST.voice, () => audio.voiceAny(['duke_ride', 'duke_lets_rock', 'duke_come_get_some'], 2100));
-  if (t > ST.board && t < ST.board + BOARD.length * 2 && t % 6 === 0) audio.sfx('blip');
-  if (t > ST.walkEnd + 20 && t % 9 === 0) spawnCigarSmoke(p.x + 12, p.y - 72, 1);
+  if (!quiet && t > ST.board && t < ST.board + BOARD.length * 2 && t % 6 === 0) audio.sfx('dialogue_typing');
+  stQuiet = false;
+}
+
+// He rolls in with a lit cigar clenched in his teeth (chad_entry 0-6, chad_cinema 0-3); on his mark
+// he takes a drag (chad_cinema 6, the cigar in his fist at his lips) and lowers it to his hip to
+// exhale (7); then he is in his gameplay idle, with no cigar in hand. Points are measured on the
+// 224px cells (drawn at half size, feet at the cell's bottom centre) from his feet; the charge
+// (entry 4) hides the cigar behind his forearm. The painted ember stays hidden behind the gate.
+const ST_CIGAR = { drag: [14.5, -79], hip: [25.5, -50], mouth: [14, -80] };
+const ST_TEETH = {
+  entry: [[4.3, -78.5], [4.5, -76.5], [-11.1, -77], [4.5, -56.5], null, [9.3, -74.6], [15.9, -72.5]],
+  cinema: [[12.9, -77], [12.5, -79], [12.5, -77], [12.1, -76.7], , , ST_CIGAR.drag, ST_CIGAR.hip],
+};
+function stationPose(t) {
+  const entry=t<60?Math.floor(t/12)%2:t<108?2:t<135?3:t<174?4:t<206?5:t<222?6:-1;
+  const pose=t>=222&&t<ST.walkEnd?Math.floor((t-222)/8)%4:t>=ST.walkEnd&&t<305?6:t>=305&&t<330?7:-1;
+  return {entry,pose};
+}
+function stationCigar(ctx, t) {
+  const at = (b) => {
+    if (b < 0 || b >= 330) return null;
+    const { entry, pose } = stationPose(b), p = entry >= 0 ? ST_TEETH.entry[entry] : ST_TEETH.cinema[pose];
+    if (!p) return null;
+    const { x, y } = stationEntryPosition(b), X = Math.round(x), Y = Math.round(y), face = entry === 2 ? -1 : 1;
+    const moving = b < 60 || (b >= 123 && b < 174) || (b >= 222 && b < ST.walkEnd);
+    return { tip: [X + p[0], Y + p[1]], mouth: b >= ST.walkEnd ? [X + ST_CIGAR.mouth[0], Y + ST_CIGAR.mouth[1]] : null, face, moving };
+  };
+  drawCigarReplay(ctx, 0, t, at, { drags: [[ST.walkEnd + 2, 22]], exhales: [305], trickleEvery: 9, ember: t >= 305 && t < 330 });
 }
 
 export function drawStationArrival(ctx) {
@@ -476,8 +481,7 @@ export function drawStationArrival(ctx) {
     for(let i=0;i<22;i++)ctx.fillRect(202+(i*19+t*.4)%132,207-(i*7+t*.22)%34,12+i%9,2+i%3);
     ctx.restore();
   }
-  const entry=t<60?Math.floor(t/12)%2:t<108?2:t<135?3:t<174?4:t<206?5:t<222?6:-1;
-  const pose=t>=222&&t<ST.walkEnd?Math.floor((t-222)/8)%4:t>=ST.walkEnd&&t<305?6:t>=305&&t<330?7:-1;
+  const {entry,pose}=stationPose(t);
   if(t>=169)drawTicketScanner(ctx,t);
   if(entry>=0)drawTrainEntryPose(ctx,entry,Math.round(p.x),Math.round(p.y));
   else if(pose>=0)drawTrainHeroPose(ctx,pose,Math.round(p.x),Math.round(p.y));
@@ -485,6 +489,7 @@ export function drawStationArrival(ctx) {
   // Until impact the upright bars are in front of CHAD, not behind his body.
   if(t<169)drawTicketScanner(ctx,t);
   drawTicketPanels(ctx,t);
+  stationCigar(ctx,t);
   drawEffects(ctx, 0);
   drawTrainOverlay(ctx, 0);
   if(t>=143&&t<165){
@@ -492,7 +497,7 @@ export function drawStationArrival(ctx) {
     for(let i=0;i<8;i++)ctx.fillRect(275+(i%2?1:-1)*(39+age*.5),169+(i*7)%25+age*.35,1,1);
     ctx.restore();
   }
-  if(t>=55&&t<123)drawDialogue(ctx,{text:'TICKET FIRST.',x:96,bottom:128,age:t-55,remaining:123-t,width:135});
+  if(t>=55&&t<140)drawDialogue(ctx,{text:'TICKET FIRST.',x:96,bottom:128,age:t-55,remaining:140-t,width:135});
   // the night, and the station's tubes waking one at a time
   ctx.fillStyle = 'rgba(4,4,12,0.22)'; ctx.fillRect(0, 0, W, H);
   if (t >= ST.chime && t < ST.chime + 14 && ((t >> 1) & 1)) { ctx.fillStyle = 'rgba(200,220,255,0.10)'; ctx.fillRect(0, 0, W, H); }

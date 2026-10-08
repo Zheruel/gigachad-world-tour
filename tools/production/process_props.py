@@ -81,7 +81,7 @@ LAIR = {
 }
 
 
-# DIRTY DELHI: the stage's own props, the dredger's rig, and the market shutter. Raw
+# DIRTY DELHI: the stage's own props and the market shutter. Raw
 # selected sources remain under the stage's props folder. Sizes are logical (w, h); only h drives the
 # scale, the width follows the art. `out` overrides the default assets/props/ destination.
 D1_SRC = "assets/sources/production/stages/dirty_delhi/props/"
@@ -90,28 +90,21 @@ D1 = {
     "mithai": (26, 20),
     "thelapole": (84, 14),
     "dhobislab": (46, 18),
-    # the bucket IS the boss's body in js/delhi_bosses.js: 96 tall including the chain stub,
-    # so the steel itself reads about 70 against a 90-tall fighter
-    "dredger_bucket": (72, 96),
-    "dredger_bucket_open": (96, 96),
-    "dredger_winch": (54, 40),
-    "hose_nozzle": (28, 14),
     "shutter": (60, 80),
     # ambience: the ring crowd (backs, a head shorter than a fighter), the ghat's rats
     # and what floats past the pontoon. Not breakable, so they go to assets/ambience/.
 }
 # raw name -> runtime file name (js/assets.js keys)
-D1_NAME = {"dredger_bucket": "bucket", "dredger_bucket_open": "bucket_open", "dredger_winch": "winch"}
+D1_NAME = {}
 D1_OUT = {
     "shutter": "assets/ambience/delhi_shutter_1.png",
 }
-D1_NO_BROKEN = {"dredger_bucket", "dredger_bucket_open", "hose_nozzle", "shutter"}
+D1_NO_BROKEN = {"shutter"}
 # How tall the broken state is, as a fraction of the whole prop. The default 0.45 is
-# rubble on the floor; the wrecked winch is still most of a winch, and the tipped cart
-# still has its wheels in the air.
+# rubble on the floor; the tipped cart still has its wheels in the air.
 # long flat things are sized by WIDTH: a punting pole scaled to 14 tall came out 167 long
 D1_BY_WIDTH = {"thelapole", "dhobislab"}
-D1_BROKEN_H = {"dredger_winch": 0.85, "drum": 0.6, "thelapole": 0.9, "dhobislab": 0.7, "mithai": 0.5}
+D1_BROKEN_H = {"drum": 0.6, "thelapole": 0.9, "dhobislab": 0.7, "mithai": 0.5}
 # the relics for the trophy wall, sized like the others in LAIR
 LAIR.update({
     "relic_dredger": (22, 22),   # the brass permit token on its block

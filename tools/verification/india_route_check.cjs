@@ -15,26 +15,13 @@ const { chromium } = require('playwright');
       const { readProgress } = await import('./js/progress.js');
       const { input } = await import('./js/input.js');
       for (const id of ['delhi', 'refund']) {
-        game.indiaScene(id, 'card');
-        check(id + ' preparation is silent', G.audio.snapshot().music === null);
-        game.press('use'); game.step(45);
-        check(id + ' held F cannot start loading card', G.state === 'chapter-card');
-        game.release('use'); game.step(2); game.press('use'); game.step(1); game.release('use');
-        check(id + ' fresh F starts intro and correct track', G.state === 'intro' && G.audio.snapshot().music === G.stage.music);
+        game.indiaScene(id, 'intro');
+        check(id + ' intro plays correct track', G.state === 'intro' && G.audio.snapshot().music === G.stage.music);
         const time = G.rawTime; G.paused = true; game.step(20);
         check(id + ' intro pauses', G.rawTime === time);
         G.paused = false; game.step(G.stage.introTicks + 3);
         check(id + ' introduction hands off into gameplay', G.state === 'play' && !G.player.dying);
       }
-      game.indiaScene('refund', 'card');
-      const pad = { connected: true, axes: [0, 0, 0, 0], buttons: Array.from({ length: 16 }, () => ({ pressed: false, value: 0 })) };
-      Object.defineProperty(navigator, 'getGamepads', { configurable: true, value: () => [pad] });
-      pad.buttons[4] = { pressed: true, value: 1 }; game.step(20);
-      check('held LB cannot dismiss Refund card', G.state === 'chapter-card');
-      pad.buttons[4] = { pressed: false, value: 0 }; game.step(2);
-      pad.buttons[4] = { pressed: true, value: 1 }; game.step(1);
-      check('fresh LB starts Refund intro', G.state === 'intro');
-      Object.defineProperty(navigator, 'getGamepads', { configurable: true, value: () => [] }); game.resetInput();
 
       for (const [id, gate, previousWave] of [['delhi', 3240, 7], ['delhi', 5800, 10], ['refund', 4050, 6], ['refund', 5800, 10]]) {
         game.stage(game.STAGES.findIndex(s => s.id === id)); G.freezeTime = true;
@@ -67,7 +54,7 @@ const { chromium } = require('playwright');
         game.step(1);
         check(key + ' activation captures whole encounter checkpoint', G.state === 'bossintro' && G.india.retryPoint.bossKey === key && G.india.retryPoint.completedWave === wi - 1);
         if (key === 'closer') check('Closer arrives with one security ally', G.enemies.length === 1 && G.enemies[0].trainType === 'ic_security');
-        game.step(200); G.enemies = []; G.hitstop = 0;
+        game.step(key === 'vendor' ? 400 : key === 'dredger' ? 320 : 505); G.enemies = []; G.hitstop = 0;
         Object.assign(G.player, { hp: 0, dying: true, state: 'down', t: 71, z: 0, vz: 0 });
         G.score += 500; const lives = G.lives; game.step(1);
         check(key + ' death restores consistent player and score baseline', G.lives === lives - 1 && G.player.hp === 100 && G.meter === 50 && G.score === 2000 && !G.boss);
@@ -76,22 +63,22 @@ const { chromium } = require('playwright');
       }
 
       // Actual game-over/continue path must use the same checkpoint restoration.
-      game.step(200); G.enemies = []; G.hitstop = 0; G.lives = 0;
+      game.step(505); G.enemies = []; G.hitstop = 0; G.lives = 0;
       Object.assign(G.player, { hp: 0, dying: true, state: 'down', t: 71, z: 0, vz: 0 }); game.step(1);
       check('exhausted lives enter normal continue screen', G.state === 'over');
       game.press('attack'); game.step(1); game.release('attack'); game.step(24);
       check('continue restarts Closer from full encounter', G.state === 'bossintro' && G.boss.key === 'closer' && G.boss.hp === G.boss.maxhp && G.player.hp === 100 && G.meter === 50);
 
-      game.trainScene('clear', 220); game.step(1); game.press('use'); game.step(1); game.release('use'); game.step(35);
-      check('train victory hands off into silent Delhi card', G.stage.id === 'delhi' && G.state === 'chapter-card' && G.audio.snapshot().music === null);
+      game.trainScene('clear', 280); game.step(1); game.press('use'); game.step(1); game.release('use'); game.step(35);
+      check('train victory goes to Delhi intro and music', G.stage.id === 'delhi' && G.state === 'intro' && G.audio.snapshot().music === G.stage.music);
 
-      game.indiaScene('delhi', 'dredger'); G.boss.hurt(9999, 1, true, false); G.boss.hurt(9999, 1, true, false); G.hitstop = 0;
+      game.indiaScene('delhi', 'dredger'); G.boss.delhi.operatorPhase(G.boss); G.boss.hurt(9999, 1, true, false); G.hitstop = 0;
       game.press('use'); game.step(1250);
       check('Delhi victory waits despite held confirmation', G.state === 'clear');
       const score = G.score; game.press('attack'); game.step(60); game.release('attack');
       check('attack cannot confirm or reaward Delhi victory', G.state === 'clear' && G.score === score);
       game.release('use'); game.step(2); game.press('use'); game.step(1); game.release('use'); game.step(35);
-      check('Delhi victory reaches Refund loading card once', G.stage.id === 'refund' && G.state === 'chapter-card' && G.audio.snapshot().music === null);
+      check('Delhi victory goes to Refund intro and music once', G.stage.id === 'refund' && G.state === 'intro' && G.audio.snapshot().music === G.stage.music && G.stageIndex === game.STAGES.findIndex(s => s.id === 'refund'));
 
       game.indiaScene('refund', 'closer'); G.boss.guard = 0; G.boss.hurt(9999, 1, true, true); G.hitstop = 0;
       check('Closer knockout begins the stage ending', G.india.cinematic?.kind === 'closer-finish');

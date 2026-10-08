@@ -14,4 +14,4 @@ const assert=require('node:assert/strict'),{chromium}=require('playwright');
   g.step(1);
  }
  g.resetInput();return {state:G.state,mortal,deaths,seconds:i/60,visits,phases:[...phases],position:G.player.x,enemies:G.enemies.filter(e=>!e.dead).map(e=>({kind:e.trainType,state:e.state,hp:e.hp,x:e.x,y:e.y})),boss:G.boss&&{hp:G.boss.hp,state:G.boss.state},checkpoint:G.train.checkpoint};
-},!!process.env.TRAIN_MORTAL);console.log(JSON.stringify(report));assert.equal(report.state,'clear','Input-driven combat bot must traverse the complete route');assert.deepEqual(report.phases,['boarding','roof','escape']);}finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});
+},!!process.env.TRAIN_MORTAL);console.log(JSON.stringify(report));assert.equal(report.state,'clear','Input-driven combat bot must traverse the complete route');assert.deepEqual(report.phases,['boarding','inspector-finish','shera-finish','knockout','escape']);}finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});

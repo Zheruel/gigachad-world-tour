@@ -6,6 +6,8 @@ from PIL import Image,ImageDraw
 from build_train_rebuild import keyed
 from build_train_coaches import clean_edge
 from build_boxing_rush import largest_component
+from sprite_edges import harden
+from chad_palette import lock
 ROOT=Path(__file__).resolve().parents[2]
 SRC=ROOT/'assets/sources/production/characters/chad/boxing_polish'
 
@@ -33,7 +35,7 @@ def main():
         # authored into the frames; no image stretching or per-pose fitting.
         ys,xs=np.where(mask[max(0,p.height-30):]);front=xs[xs>xs.max()-p.width*.22];anchor=float(np.median(front))
         p=p.resize((round(p.width*scale),round(p.height*scale)),Image.Resampling.NEAREST)
-        f=Image.new('RGBA',(256,248));f.alpha_composite(p,(round(136-anchor*scale),241-p.height));f=clean_edge(f)
+        f=Image.new('RGBA',(256,248));f.alpha_composite(p,(round(136-anchor*scale),241-p.height));f=lock(harden(clean_edge(f)))
         path=f'chad_boxing_polish_{i:02}.png';f.save(ROOT/'assets/frames'/path);paths.append(path);frames.append(f)
     paths.append('chad_boxing_rush_00.png') # existing registered guard for recovery
     manifestpath=ROOT/'assets/frames/manifest.json';m=json.loads(manifestpath.read_text());m['player']['boxing_rush']=paths;manifestpath.write_text(json.dumps(m,indent=2)+'\n')

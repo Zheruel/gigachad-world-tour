@@ -93,7 +93,7 @@ const FONT = {
   G: ['.##', '#..', '#.#', '#.#', '.##'], H: ['#.#', '#.#', '###', '#.#', '#.#'],
   I: ['###', '.#.', '.#.', '.#.', '###'], J: ['..#', '..#', '..#', '#.#', '.#.'],
   K: ['#.#', '#.#', '##.', '#.#', '#.#'], L: ['#..', '#..', '#..', '#..', '###'],
-  M: ['#.#', '###', '#.#', '#.#', '#.#'], N: ['#.#', '###', '###', '#.#', '#.#'],
+  M: ['#.#', '###', '#.#', '#.#', '#.#'], N: ['#..#', '##.#', '#.##', '#..#', '#..#'],
   O: ['.#.', '#.#', '#.#', '#.#', '.#.'], P: ['##.', '#.#', '##.', '#..', '#..'],
   Q: ['.#.', '#.#', '#.#', '##.', '.##'], R: ['##.', '#.#', '##.', '#.#', '#.#'],
   S: ['.##', '#..', '.#.', '..#', '##.'], T: ['###', '.#.', '.#.', '.#.', '.#.'],
@@ -112,11 +112,13 @@ const FONT = {
   '/': ['..#', '..#', '.#.', '#..', '#..'], '+': ['...', '.#.', '###', '.#.', '...'],
   '?': ['##.', '..#', '.#.', '...', '.#.'], ',': ['...', '...', '...', '.#.', '#..'],
   '*': ['#.#', '.#.', '###', '.#.', '#.#'],
+  '—': ['....', '....', '####', '....', '....'], '–': ['...', '...', '###', '...', '...'],
   // the mars symbol needs 5 columns: circle bottom-left, arrow head top-right
   '♂': ['...##', '...##', '###..', '#.#..', '###..'],
 };
 
-const charW = (ch) => (ch === '♂' ? 6 : 4);
+// Glyphs are 3 columns unless drawn wider (N, the long dash, the mars symbol); one column of spacing.
+const charW = (ch) => (FONT[ch] ? FONT[ch][0].length + 1 : 4);
 
 export function textWidth(str, scale) {
   scale = scale || 1;
@@ -665,6 +667,9 @@ export function blit(ctx, img, dx, dy, dw, dh) {
 export function frameW(img) { return img.width / (img._as || 1); }
 export function frameH(img) { return img.height / (img._as || 1); }
 
+// The red "move, don't block" telegraph: the sprite washed toward red at a fixed strength. The old
+// brightness+sepia+hue filter clipped light palettes (mustard, cream, khaki) to peach and white;
+// a source-atop wash keeps shading and reads red on every palette. Baked once per frame.
 // Rim light: on dark stages a bright 1px halo keeps leather-clad fighters
 // readable against the background. G.stage.rim controls the strength.
 // Silhouettes are baked once per frame+hue; running a canvas filter on every
@@ -717,15 +722,18 @@ function aiSet(key) {
 export const SPR = {
   player: aiSet('player'),
   ...Object.fromEntries(['brawler','runner','enforcer','heavy','kitchen','docker','headset','operator','thrower','security','cabinet','lead','vendor','closer','closer_damaged'].map(name=>['ic_'+name,aiSet('ic_'+name)])),
-  nr_conductor: aiSet('nr_conductor'),
+  nr_conductor: aiSet('nr_conductor'), nr_conductor_free: aiSet('nr_conductor_free'),
+  dl_thekedar: aiSet('dl_thekedar'), dl_grab: aiSet('dl_grab'),
   nr_tough: aiSet('nr_tough'),
-  nr_bruiser: aiSet('nr_bruiser'),
+  nr_bruiser: aiSet('nr_bruiser'),nr_bruiser_unarmed:aiSet('nr_bruiser_unarmed'),
   nr_runner: aiSet('nr_runner'),
   nr_ambusher: aiSet('nr_ambusher'),
   nr_heavy: aiSet('nr_heavy'),nr_heavy_unarmed:aiSet('nr_heavy_unarmed'),
-  nr_guard: aiSet('nr_guard'),
-  nr_vikram: aiSet('nr_vikram'),
-  nr_vikram_roof: aiSet('nr_vikram_roof'),
+  nr_guard: aiSet('nr_guard'),nr_bodyguard:aiSet('nr_bodyguard'),
+  nr_chai: aiSet('nr_chai'),
+  ...Object.fromEntries(['brawler','paan','tte','rack','commando','captain'].map(n=>['nr_'+n,aiSet('nr_'+n)])),
+  nr_neta: aiSet('nr_neta'),
+  nr_neta_guard: aiSet('nr_neta_guard'),
   goonda: aiSet('goonda'),
   batta: aiSet('batta'),
   masala: aiSet('masala'),
@@ -740,9 +748,6 @@ export const SPR = {
   dhobi: aiSet('dhobi'),
   dabbawala: aiSet('dabbawala'),
   bull: aiSet('bull'),
-  dredger: aiSet('dredger'),
-  dredgerLow: aiSet('dredger'),
-  thekedar: aiSet('thekedar'),
   raja: aiSet('raja'),
   rajaRage: aiSet('raja'),
   refund: aiSet('refund'),
@@ -757,6 +762,9 @@ export const SPR = {
   shake: buildPickupShake(),
   plate: buildPickupPlate(),
 };
+// A family whose manifest entry has not landed borrows a sibling's sheet whole.
+const STANDIN = { nr_bodyguard: 'nr_guard' };
+export const liveSet = key => STANDIN[key] && !getAIFrame(key, 'idle') ? SPR[STANDIN[key]] : SPR[key];
 
 // life icon: head crop out of the fallback idle frame
 SPR.lifeIcon = (() => {

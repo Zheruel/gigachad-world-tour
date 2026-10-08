@@ -1,13 +1,14 @@
+const studio=require('./studio_helper.cjs');
 // Deterministic finale contracts plus optional dense in-game visual capture.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 (async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});try{
- const page=await browser.newPage({viewport:{width:1080,height:950}}),errors=[];
+ const page=await browser.newPage({viewport:{width:1600,height:950}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://localhost:8011/review-train.html?scene=escape&t=0');
- await page.waitForFunction(()=>document.querySelector('#status').textContent.startsWith('play'));
+ await studio.openStudio(page,'train/escape');await studio.seek(page,0);
+
  const game=page.frames().find(f=>f.url().includes('?auto=walk'));assert(game);
  const checks=await game.evaluate(async()=>{
-  const {finaleState,FINALE_CUES,FINALE_VOICES,FINALE_BLASTS,FINALE_SECONDARIES}=await import('./js/train_finale.js'),g=__game,G=g.G,out=[];
+  const {finaleState,FINALE_CUES,FINALE_VOICES,FINALE_BLASTS,FINALE_SECONDARIES,FINALE_CHAD_CELLS,FINALE_NETA_CELLS,NETA_BURST}=await import('./js/train_finale.js'),g=__game,G=g.G,out=[];
   const ok=(name,value)=>out.push([name,!!value]);
   const snapshots=Array.from({length:1261},(_,t)=>finaleState(t));
   ok('all timeline positions are finite',snapshots.every(s=>['heroX','heroY','carX','cameraX','fade'].every(k=>Number.isFinite(s[k]))));
@@ -15,8 +16,20 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
   ok('finale has one completion boundary',!finaleState(1259).complete&&finaleState(1260).complete);
   ok('actor has no discontinuous position jump',snapshots.slice(1).every((s,i)=>Math.abs(s.heroX-snapshots[i].heroX)<12&&Math.abs(s.heroY-snapshots[i].heroY)<12));
   ok('roll travels toward the exit',finaleState(584).heroX>finaleState(510).heroX);
-  ok('walk continues away from the wreck',finaleState(1170).heroX>finaleState(810).heroX);
-  ok('hold plants the actor',finaleState(1170).heroX===finaleState(1259).heroX&&finaleState(1170).heroY===finaleState(1259).heroY);
+  ok('strut carries CHAD away from the wreck',finaleState(830).phase==='cigar-walk'&&finaleState(912).heroX>finaleState(830).heroX+60);
+  ok('hold plants the actor',finaleState(912).phase==='cigar-hold'&&[912,1170,1259].every(t=>finaleState(t).heroX===finaleState(1259).heroX&&finaleState(t).heroY===245));
+  ok('hurdle clears Netaji on the roof',snapshots.slice(448,510).every(s=>{const d=s.heroX-s.neta.x;return d<-66||d>46||s.heroY<(d<-30?90:66);}));
+  ok('Netaji rests, stirs, is engulfed, then explodes',finaleState(700).neta.state==='rest'&&finaleState(720).neta.state==='stir'&&finaleState(732).neta.state==='engulf'&&finaleState(NETA_BURST-1).neta.state==='engulf'&&finaleState(NETA_BURST).neta.state==='exploded');
+  ok('Netaji is in the fireball at 732 until the burst',snapshots.slice(732,NETA_BURST).every(s=>Math.abs(s.neta.x-(s.carX+738))<20&&s.neta.y<120));
+  ok('he bursts from the fireball: every piece starts at its centre',finaleState(NETA_BURST).neta.pieces.every(p=>Math.abs(p.x-(finaleState(NETA_BURST).carX+731))<1&&p.y<100));
+  ok('eight pieces, each his own debris cell',snapshots.slice(NETA_BURST).every(s=>s.neta.pieces.length===8&&new Set(s.neta.pieces.map(p=>p.frag)).size===8));
+  ok('pieces fly, then all rest on the roof or the platform by 840',snapshots.slice(840).every(s=>s.neta.pieces.every(p=>p.landed&&(Math.abs(p.y-121)<.01||Math.abs(p.y-241)<.01)))&&finaleState(760).neta.pieces.some(p=>!p.landed));
+  ok('the shades land at CHAD\'s feet and the arm just left of him',(()=>{const s=finaleState(900),sh=s.neta.pieces.find(p=>p.frag===4),arm=s.neta.pieces.find(p=>p.frag===2);return sh.y>240&&Math.abs(sh.x-468)<50&&arm.y>240&&arm.x<468&&arm.x>400;})());
+  ok('each landing has a sound on its tick',finaleState(NETA_BURST).neta.pieces.every((p,i)=>snapshots.slice(NETA_BURST).some((s,k)=>s.neta.pieces[i].landed&&FINALE_CUES.some(c=>c.tick===NETA_BURST+k&&/neta_roof_(thud|click)/.test(c.sound))))&&FINALE_CUES.some(c=>c.tick===NETA_BURST&&c.sound==='finale_gore'));
+  ok('Netaji is always accounted for',snapshots.every(s=>s.neta&&Number.isFinite(s.neta.x)&&Number.isFinite(s.neta.y)));
+  ok('blast 1 flashes for two ticks',[732,733].every(t=>finaleState(t).flash)&&!finaleState(731).flash&&!finaleState(734).flash);
+  ok('blast 1 and blast 7 have their own sounds',FINALE_BLASTS[0].sound==='finale_blast_big'&&FINALE_BLASTS[6].sound!==FINALE_BLASTS[0].sound&&FINALE_BLASTS.slice(1).every((b,i)=>i===5||b.sound!==FINALE_BLASTS[6].sound));
+  ok('CHAD and Netaji cells are named',FINALE_CHAD_CELLS.length===39&&FINALE_NETA_CELLS.length===2&&snapshots.every(s=>FINALE_CHAD_CELLS.includes(s.pose)));
   ok('carriage continues rightward',snapshots.slice(1).every((s,i)=>s.carX>=snapshots[i].carX));
   ok('carriage stops after540',snapshots.slice(540).every(s=>s.carX===-400));
   ok('arrival covers960 logical pixels',Math.abs((finaleState(540).carX-finaleState(0).carX)*.8-960)<1e-8);
@@ -26,13 +39,15 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
   ok('action clock waits for opening track',snapshots.every(s=>s.actionT===Math.max(0,s.t-180)));
   ok('screen-space actor motion stays continuous',snapshots.slice(1).every((s,i)=>Math.abs((s.heroX-s.cameraX)-(snapshots[i].heroX-snapshots[i].cameraX))<12));
   ok('camera has no position snap',snapshots.slice(1).every((s,i)=>Math.abs(s.cameraX-snapshots[i].cameraX)<5));
-  ok('roof performance inherits train displacement',snapshots.slice(0,450).every(s=>Math.abs(s.heroX-s.carX-625)<1e-8&&s.heroY===114));
+  ok('roof performance inherits train displacement',snapshots.slice(0,330).every(s=>Math.abs(s.heroX-s.carX-585)<1e-8&&s.heroY===114)&&snapshots.slice(350,465).every(s=>s.heroX-s.carX===snapshots[350].heroX-snapshots[350].carX&&s.heroY===114));
+  ok('CHAD plants the charge by hand at Netaji\'s shoes',snapshots.slice(350,465).every(s=>s.pose!=='land'||Math.abs(s.heroX+(175-120)*.625-(s.carX+s.chargeX))<=14)&&Math.abs(finaleState(700).chargeX-688)<=14&&snapshots[350].heroX-snapshots[350].carX>snapshots[329].heroX-snapshots[329].carX+40);
   ok('braking is one uninterrupted cue',FINALE_CUES.filter(c=>c.sound==='train_brake').length===1&&FINALE_CUES.some(c=>c.tick===182&&c.sound==='train_brake'));
   ok('passenger carriage and coupler share the train transform',snapshots.every(s=>s.passengerX===s.carX+858&&s.couplerX===s.carX+866));
   ok('remote click precedes first blast',FINALE_CUES.some(c=>c.tick===715)&&FINALE_CUES.some(c=>c.tick===732));
-  ok('authored quotes have stable timing',JSON.stringify(FINALE_VOICES.map(v=>[v.tick,v.name]))===JSON.stringify([[188,'duke_getting_off'],[604,'duke_rest_pieces']]));
+  ok('authored quotes have stable timing',JSON.stringify(FINALE_VOICES.map(v=>[v.tick,v.name]))===JSON.stringify([[188,'duke_getting_off'],[805,'duke_rest_pieces']]));
   ok('eight major blasts follow authored sequence',JSON.stringify(FINALE_BLASTS.map(b=>b.tick))===JSON.stringify([732,780,834,894,960,1026,1098,1170]));
-  ok('twenty secondary blasts support destruction',FINALE_SECONDARIES.length===20&&FINALE_SECONDARIES.every(b=>b.tick>=720&&b.tick<=1200));
+  ok('twenty secondary blasts support destruction',FINALE_SECONDARIES.length===20&&FINALE_SECONDARIES.every(b=>b.tick>FINALE_BLASTS[0].tick&&b.tick<=1230));
+  ok('explosions sound on their first frame: every major bangs, flashes pop, sparks crackle, smoke is silent',[...FINALE_BLASTS,...FINALE_SECONDARIES].every(b=>b.family==='smoke'?!b.sound&&!FINALE_CUES.some(c=>c.tick===b.tick&&c.sound===null):FINALE_CUES.some(c=>c.tick===b.tick&&c.sound===b.sound&&/^finale_/.test(c.sound))));
   ok('both coaches end completely destroyed',['left','right'].every(k=>finaleState(1260).damage[k].every(v=>v===5)));
   ok('damage never repairs itself',snapshots.slice(1).every((s,i)=>['left','right'].every(k=>s.damage[k].every((v,j)=>v>=snapshots[i].damage[k][j]))));
   ok('cigar lights after lighting action',!finaleState(775).cigarLit&&finaleState(776).cigarLit);
@@ -62,30 +77,30 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
   }finally{G.audio.sfx=original;G.audio.roomSfx=originalRoom;G.audio.voice=originalVoice;g.resetInput();}
   return out;
  });
- await game.locator('canvas').click();await page.keyboard.press('KeyQ');
+ await page.locator('#play').click();await page.evaluate(()=>__review.pause());
  await game.waitForFunction(()=>__game.G.audio.has('duke_getting_off')&&__game.G.audio.has('duke_rest_pieces'));
  const audioChecks=await game.evaluate(()=>{const g=__game,G=g.G,out=[];
   g.trainScene('escape',0);g.step(189);out.push(['first quote starts a real sample',G.audio.snapshot().samples>0]);
   const entrySfx=G.audio.sfx;G.audio.sfx=()=>{};try{g.trainScene('escape',0);}finally{G.audio.sfx=entrySfx;}out.push(['replay clears interrupted quote and room sources',G.audio.snapshot().samples===0&&G.audio.snapshot().roomSources===0]);
-  g.trainScene('escape',603);g.step(1);out.push(['remote quote starts a real sample',G.audio.snapshot().samples>0]);
+  g.trainScene('escape',804);g.step(1);out.push(['remote quote starts a real sample',G.audio.snapshot().samples>0]);
   g.trainScene('escape',0);g.step(1260);out.push(['finale completion clears samples and room sources',G.audio.snapshot().samples===0&&G.audio.snapshot().roomSources===0]);
   return out;
  });checks.push(...audioChecks);
- await page.locator('#scene').selectOption('escape');
- await page.locator('#finale-checkpoint').selectOption('540');
+ await studio.load(page,'train/'+'escape');
+ await studio.seek(page,Number('540'));
  assert.equal(await game.evaluate(()=>__game.G.train.cinematic.t),540,'checkpoint seeks shoulder roll');
- await page.locator('#finale-step').click();assert.equal(await game.evaluate(()=>__game.G.train.cinematic.t),543);
- await page.locator('#finale-back').click();assert.equal(await game.evaluate(()=>__game.G.train.cinematic.t),540);
- for(const key of ['finaleActor','finaleCar','finaleEnvironment','finaleGear','finaleCoupling','finaleLeftDamage','finaleRightDamage','finaleDynamite','finaleCigar','fx']){await page.locator('#'+key).uncheck();assert.equal(await game.evaluate(k=>__game.G.train.review[k],key),false);await page.locator('#'+key).check();}
+ await studio.step(page,3);assert.equal(await game.evaluate(()=>__game.G.train.cinematic.t),543);
+ await studio.step(page,-3);assert.equal(await game.evaluate(()=>__game.G.train.cinematic.t),540);
+ for(const key of ['finaleActor','finaleCar','finaleEnvironment','finaleGear','finaleCoupling','finaleLeftDamage','finaleRightDamage','finaleDynamite','finaleCigar','fx']){await studio.settings(page,{layers:{[key]:false}});assert.equal(await game.evaluate(k=>__game.G.train.review[k],key),false);await studio.settings(page,{layers:{[key]:true}});}
  if(process.env.FINALE_CAPTURE){
   const dir=path.resolve('tmp/review/finale');fs.mkdirSync(dir,{recursive:true});
   const times=[...new Set([0,30,60,90,120,150,179,180,210,270,329,330,390,449,...Array.from({length:51},(_,i)=>450+i*3),660,715,719,720,731,732,738,779,780,786,809,810,833,834,840,893,894,900,959,960,966,1025,1026,1032,1097,1098,1104,1169,1170,1176,1215,1259])].sort((a,b)=>a-b);
-  for(const t of times){await page.locator('#time').evaluate((el,t)=>{el.value=t;el.dispatchEvent(new Event('input',{bubbles:true}));},t);await game.evaluate(()=>{__game.G.shake=0;__game.render()});
+  for(const t of times){await studio.seek(page,t);await game.evaluate(()=>{__game.G.shake=0;__game.render()});
    await game.locator('canvas').screenshot({path:path.join(dir,`frame-${String(t).padStart(3,'0')}-960.png`)});
-   await page.locator('#scale').click();await game.locator('canvas').screenshot({path:path.join(dir,`frame-${String(t).padStart(3,'0')}-480.png`)});await page.locator('#scale').click();
+   await page.evaluate(()=>__review.setScale(document.querySelector('#scale').value==='1'?2:1));await game.locator('canvas').screenshot({path:path.join(dir,`frame-${String(t).padStart(3,'0')}-480.png`)});await page.evaluate(()=>__review.setScale(document.querySelector('#scale').value==='1'?2:1));
   }
-  await page.locator('#finale-checkpoint').selectOption('834');
-  for(const key of ['finaleActor','finaleCar','finaleEnvironment','finaleGear','finaleCoupling','finaleLeftDamage','finaleRightDamage','finaleDynamite','finaleCigar','fx']){await page.locator('#'+key).uncheck();await game.locator('canvas').screenshot({path:path.join(dir,`without-${key}.png`)});await page.locator('#'+key).check();}
+  await studio.seek(page,Number('834'));
+  for(const key of ['finaleActor','finaleCar','finaleEnvironment','finaleGear','finaleCoupling','finaleLeftDamage','finaleRightDamage','finaleDynamite','finaleCigar','fx']){await studio.settings(page,{layers:{[key]:false}});await game.locator('canvas').screenshot({path:path.join(dir,`without-${key}.png`)});await studio.settings(page,{layers:{[key]:true}});}
   console.log(`Captured ${times.length} moments at both sizes in ${dir}`);
  }
  if(process.env.FINALE_LIVE){await page.locator('#reset').click();await page.locator('#play').click();await page.waitForTimeout(25200);await page.locator('#play').click();assert(await game.evaluate(()=>__game.G.train.endingDone),'normal-speed replay must complete');assert(await game.evaluate(()=>__game.G.state==='clear'&&__game.G.rawTime-__game.G.stateT>=195),'normal-speed replay must reach completed victory tally');}

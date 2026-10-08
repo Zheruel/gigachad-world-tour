@@ -1,7 +1,11 @@
+import { RIVER_LIFE_FILES, drawRiverLife } from './delhi_life_river.js';
 // Registered scenery detail; actor and boss collision positions are unchanged.
-export const DELHI_SCENERY_FILES = Object.fromEntries([
+export const DELHI_SCENERY_FILES = {...Object.fromEntries([
   'dredger_cab', 'river_glints', 'river_current', 'outfall',
-].map(name => ['ic_delhi_' + name, 'assets/stages/dirty_delhi/rebuild/' + name + '.png']));
+].map(name => ['ic_delhi_' + name, 'assets/stages/dirty_delhi/rebuild/' + name + '.png'])),
+...Object.fromEntries(['ic_stall','ic_cart','ic_boiler','ic_cargo'].flatMap(name =>
+  [name,name+'_b'].map(key => ['prop_delhi_'+key,'assets/stages/dirty_delhi/props/'+key+'.png']))),
+...RIVER_LIFE_FILES};
 
 export function drawDelhiScenery(ctx, camX, assets, time = 0, ambient = true) {
   if (ambient) {
@@ -21,6 +25,7 @@ export function drawDelhiScenery(ctx, camX, assets, time = 0, ambient = true) {
       ctx.drawImage(image,Math.round(x-camX+drift),y+fall,w,h);
       ctx.restore();
     }
+    drawRiverLife(ctx, camX, assets, time);
   }
   // Source landmarks: glass is at (107,36) within this 166x174 assembly.
   // It consequently meets the live reflection target at arena+(352,74).

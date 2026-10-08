@@ -6,6 +6,7 @@ export const FLIGHT_FILES = {
  scenic_vista:'assets/travel/airport/scenic_vista.png',scenic_mountains:'assets/travel/airport/scenic_mountains.png',scenic_vista_near:'assets/travel/airport/scenic_vista_near.png',
  approach_vista:'assets/travel/india/approach_vista.png',approach_vista_near:'assets/travel/india/approach_vista_near.png',
  jet_rear:'assets/travel/airport/jet_rear.png',cloud_sunset:'assets/travel/airport/cloud_sunset.png',cloud_dust:'assets/travel/airport/cloud_dust.png',
+ arrival_jet_rear:'assets/travel/india/arrival_jet_rear.png',cloud_night:'assets/travel/india/cloud_night.png',arrival_terminal_sky:'assets/travel/india/arrival_terminal_sky.png',
 };
 export const FLIGHT_PHASES=['takeoff','flight','india-approach','landing'];
 export function updateFlight(tr) {
@@ -22,14 +23,14 @@ export function landingAt(t) {
 }
 function clouds(ctx,tr,art,india,front) {
  if(tr.streetLayers?.effects===false)return;
- const key=india?'cloud_dust':'cloud_sunset',im=art[key];if(!im)return;
+ const key=india?(art.cloud_night?'cloud_night':'cloud_dust'):'cloud_sunset',im=art[key];if(!im)return;
  const width=front?330:180,height=width*im.height/im.width;
  const x=(front?540:380)-tr.t*(front?2.2:.42),y=front?211:51;
  imageAt(ctx,art,key,x,y,width,height);
 }
 function vista(ctx,tr,art) {
  const india=tr.phase==='india-approach',key=india?'approach_vista':'scenic_vista',p=tr.t/(india?300:360);
- ctx.fillStyle=india?'#9a663c':'#683657';ctx.fillRect(0,0,480,270);
+ ctx.fillStyle=india?'#15102a':'#683657';ctx.fillRect(0,0,480,270);
  if(tr.streetLayers?.architecture!==false){
   imageAt(ctx,art,key,-18-p*12,-20-p*7,540,304);
   if(!india)imageAt(ctx,art,'scenic_mountains',-18-p*19,-20-p*5,540,304);
@@ -38,10 +39,11 @@ function vista(ctx,tr,art) {
   imageAt(ctx,art,key+'_near',-18-p*30,-20-p*2,540,304);
  }
  clouds(ctx,tr,art,india,false);
- const jet=art.jet_rear;
+ // Midnight over Kesarganj: the same rear view, moonlit.
+ const rear=india&&art.arrival_jet_rear?'arrival_jet_rear':'jet_rear',jet=art[rear];
  const x=156+p*12,y=104+(india?p*17:-p*5)+Math.sin(tr.t*.023)*1.2,w=218;
  ctx.save();ctx.translate(x+w/2,y+40);ctx.rotate(Math.sin(tr.t*.009)*.017);ctx.translate(-w/2,-40);
- if(jet)imageAt(ctx,art,'jet_rear',0,0,w,w*jet.height/jet.width);
+ if(jet)imageAt(ctx,art,rear,0,0,w,w*jet.height/jet.width);
  else drawJet(ctx,art,{x:0,y:0,w:218,h:69,gear:0});
  if(tr.streetLayers?.effects!==false){ctx.fillStyle=tr.t%72<7?'#ffe6bf':'#663934';ctx.fillRect(211,70,2,1);}
  ctx.restore();clouds(ctx,tr,art,india,true);
@@ -52,12 +54,20 @@ export function drawFlight(ctx,tr,art,{label}) {
   const a=landingAt(tr.t);
   ctx.save();ctx.translate(a.tx,a.ty);ctx.scale(a.scale,a.scale);
   // Keep the entire skyline in view while dollying toward the parked aircraft.
-  ctx.save();ctx.translate(0,-a.ty/a.scale);ctx.scale(1,1/a.scale);
-  drawAirportEnvironment(ctx,tr,art,true);ctx.restore();
-  drawDepartureJet(ctx,art,{...JET,x:a.x,y:a.y,gear:a.gear,angle:a.angle,open:0});
-  if(tr.t>=150&&tr.t<212&&tr.streetLayers?.effects!==false){
-   const age=tr.t-150;ctx.fillStyle='#b8aa95';ctx.globalAlpha=(212-tr.t)/90;
-   for(let i=0;i<20;i++)ctx.fillRect(Math.round(a.x+(i%2?264:327)-age*(.6+i%3*.25)-i*2),Math.round(220-age*.12-(i%4)*2),3+i%4,2+i%2);ctx.globalAlpha=1;
+  // One uniform dolly for plate and aircraft; the wide shot shows the moonlit sky above the plate.
+  ctx.fillStyle='#120c22';ctx.fillRect(0,-420,1280,420);
+  const sky=art.arrival_terminal_sky;if(sky)imageAt(ctx,art,'arrival_terminal_sky',0,-sky.height/2,1280,sky.height/2);
+  drawAirportEnvironment(ctx,tr,art,true);
+  drawDepartureJet(ctx,art,{...JET,x:a.x,y:a.y,gear:a.gear,angle:a.angle,open:0,night:true,reflect:tr.t>=178});
+  if(tr.t>=150&&tr.t<225&&tr.streetLayers?.effects!==false){
+   // Tyre smoke and wet spray: soft puffs kicked off each main wheel, billowing, drifting back and thinning out.
+   const age=tr.t-150;
+   for(let i=0;i<14;i++){
+    const born=i*2.2,life=age-born;if(life<0||life>44)continue;
+    const u=life/44,x=a.x+(i%2?264:327)-life*(.9+i%3*.3),y=221-life*(.18+i%4*.05),r=4+life*(.42+i%3*.1);
+    const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(200,190,182,${.6*(1-u)*(1-u)})`);g.addColorStop(1,'rgba(150,140,150,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y,r,r*.62,0,0,Math.PI*2);ctx.fill();
+   }
   }
   drawWaitingOfficial(ctx,tr,art);
   ctx.restore();
@@ -70,5 +80,5 @@ export function drawFlight(ctx,tr,art,{label}) {
   drawDepartureJet(ctx,art,{x:8+p*p*145,y:70-lift*170,w:473,h:164,gear:1-ease((t-138)/75),open:0,angle:-.095*ease((t-80)/75)});
   if(tr.streetLayers?.effects!==false){ctx.fillStyle='#efc171';for(let i=0;i<10;i++)ctx.fillRect(Math.round((i*84-scroll*2)%840),236,16,1);}
  }
- label(ctx,tr.phase==='india-approach'||tr.phase==='landing'?'INDIA':'PRIVATE FLIGHT',tr.phase==='takeoff'?'CLEARED FOR TAKEOFF':tr.phase==='flight'?'ABOVE THE CITY':tr.phase==='india-approach'?'DELHI APPROACH':'DELHI / TOUCHDOWN');
+ label(ctx,tr.phase==='india-approach'||tr.phase==='landing'?'INDIA':'PRIVATE FLIGHT',tr.phase==='takeoff'?'CLEARED FOR TAKEOFF':tr.phase==='flight'?'ABOVE THE CITY':tr.phase==='india-approach'?'KESARGANJ APPROACH':'KESARGANJ / TOUCHDOWN');
 }

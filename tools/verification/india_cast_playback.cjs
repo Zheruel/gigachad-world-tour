@@ -1,14 +1,8 @@
-const fs=require('node:fs'),assert=require('node:assert/strict'),{chromium}=require('playwright');
+const fs=require('node:fs'),assert=require('node:assert/strict'),{chromium}=require('playwright'),{openStudio}=require('./studio_helper.cjs');
 (async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});try{
- const page=await browser.newPage({viewport:{width:1100,height:980}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://localhost:8011/review-india.html?stage=delhi&scene=market');
- await page.waitForFunction(()=>document.querySelector('#character')?.options.length>=15);
- fs.mkdirSync('tmp/review/india-cast/playback',{recursive:true});
- const keys=await page.locator('#character option').evaluateAll(xs=>xs.map(x=>x.value).filter(x=>x.startsWith('ic_')));
- const out=[];
- for(const key of keys){await page.locator('#character').selectOption(key);await page.locator('#action').selectOption('walk');await page.locator('#play').click();await page.waitForTimeout(2400);await page.locator('#play').click();
-  const status=await page.locator('#pose-status').textContent();assert(status.includes('8 poses'));out.push({key,status});
-  await page.locator('#pose-live').screenshot({path:`tmp/review/india-cast/playback/${key}.png`});
- }
+ const page=await browser.newPage({viewport:{width:1600,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await openStudio(page,'delhi/market');await page.evaluate(()=>__review.load('tools/assets'));
+ const host=page.locator('#specialist-host');await host.getByLabel('Actor',{exact:false}).waitFor();fs.mkdirSync('tmp/review/india-cast/playback',{recursive:true});
+ const keys=['ic_brawler','ic_runner','ic_enforcer','ic_heavy','ic_kitchen','ic_docker','ic_vendor'];const out=[];
+ for(const key of keys){await host.getByLabel('Actor',{exact:false}).selectOption(key);await host.getByRole('combobox',{name:/^Animation/}).selectOption('walk');await host.getByRole('button',{name:'Play animation',exact:true}).click();await page.waitForTimeout(2400);await host.getByRole('button',{name:'Pause animation',exact:true}).click();const status=await host.locator('.studio-status').textContent();assert(+(/\/(\d+)/.exec(status)?.[1])>=8,status);out.push({key,status});await host.locator('canvas').screenshot({path:`tmp/review/india-cast/playback/${key}.png`});}
  assert.deepEqual(errors,[]);console.log(JSON.stringify({normalSpeed:out,errors}));
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

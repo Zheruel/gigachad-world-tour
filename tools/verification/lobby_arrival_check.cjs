@@ -17,10 +17,11 @@ const { chromium } = require('playwright');
       check('held input cannot override exit',G.travel.arriving&&G.travel.x>83&&G.travel.x<133&&G.travel.actor.z===0);
       g.press('pause');g.step(1);g.release('pause');const before=JSON.stringify(G.travel);g.step(30);
       check('pause freezes door and actor',JSON.stringify(G.travel)===before);
-      g.press('pause');g.step(1);g.release('pause');g.step(190-G.travel.t);
+      g.release('attack');g.release('use');   // a held confirm after unpausing is the menu's, and holds the game (main.js menuGate)
+      g.press('pause');g.step(1);g.release('pause');g.step(1);g.press('attack');g.step(190-G.travel.t);
       check('closes behind CHAD before control returns',!G.travel.arriving&&G.travel.x===133&&G.travel.y===225&&G.travel.gate);
       g.step(5);check('held arrival input stays gated',G.travel.actor.state==='idle');
-      for(const a of ['right','attack','use'])g.release(a);g.step(1);g.press('jump');g.step(1);g.release('jump');
+      for(const a of ['right','attack'])g.release(a);g.step(1);g.press('jump');g.step(1);g.release('jump');
       check('fresh input restores normal controller',G.travel.actor.state==='jump');
       const {TRAVEL_ART}=await import('/js/travel.js');const saved={...TRAVEL_ART};
       for(const key of Object.keys(TRAVEL_ART))delete TRAVEL_ART[key];

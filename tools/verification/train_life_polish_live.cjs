@@ -10,7 +10,7 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{chromium}=requ
  for(const scene of ['hall','platform','ac','conductor','boss-roof']){
   const out=await page.evaluate(async scene=>{
    const g=__game,G=g.G;g.trainScene(scene,scene==='conductor'?300:0);g.resetInput();G.audio.unlock();await reviewAudio.resume();G.state='play';G.fade=G.flash=G.shake=G.hitstop=0;G.enemies=[];G.props=[];G.player.invuln=10000;
-   if(G.boss){G.boss.fightProps=[];Object.assign(G.boss,{state:'windup',pattern:'charge',t:12,shieldActive:false,x:G.camX+340,y:220,face:-1,trainWaiting:false});G.player.x=G.camX+70;G.player.y=220;}
+   if(G.boss){G.boss.fightProps=[];Object.assign(G.boss,{state:'windup',pattern:scene==='conductor'?'swing':'charge',t:12,x:G.camX+340,y:220,face:-1,trainWaiting:false});G.player.x=G.camX+70;G.player.y=220;}
    else G.train.t=scene==='ac'?410:scene==='platform'?15:160;
    const stream=document.querySelector('canvas').captureStream(60),mix=new MediaStream([...stream.getTracks(),...reviewAudio.reviewBus.stream.getAudioTracks()]),rec=new MediaRecorder(mix,{mimeType:'video/webm;codecs=vp9,opus'}),chunks=[];
    rec.ondataavailable=e=>chunks.push(e.data);const done=new Promise(resolve=>rec.onstop=async()=>{const a=new Uint8Array(await new Blob(chunks).arrayBuffer());let raw='';for(let i=0;i<a.length;i+=8192)raw+=String.fromCharCode(...a.subarray(i,i+8192));resolve(btoa(raw));});

@@ -1,3 +1,4 @@
+import { drawRefundForeground } from './refund_scenery.js';
 import { drawResults } from './results.js';
 import { loadTitleMotion, drawTitleMotion } from './title_motion.js';
 import { loadDisplayType, drawDisplayTitle } from './display_type.js';
@@ -43,12 +44,7 @@ function drawLogo(ctx, y0) {
 
 export function drawWelcome(ctx) {
   ctx.fillStyle='#08060d';ctx.fillRect(0,0,W,H);
-  const text=(s,y,color,scale=1)=>drawTextShadow(ctx,s,(W-textWidth(s,scale))/2,y,color,scale);
-  text('GIGACHAD',83,'#efc775',2);
-  text('WORLD TOUR',105,'#a68b69');
-  ctx.fillStyle='#5e432c';ctx.fillRect(W/2-64,126,128,1);
-  text('PRESS ANY KEY OR BUTTON',148,'#fff0ce');
-  text('OR CLICK TO START',168,'#ad9b84');
+  const s='PRESS ANY KEY OR BUTTON';drawTextShadow(ctx,s,(W-textWidth(s,1))/2,H/2-4,'#fff0ce',1);
 }
 
 export function drawTitle(ctx) {
@@ -127,21 +123,29 @@ export function drawBossIntro(ctx, camX) {
     blit(ctx, f, Math.round(worldX - camX - frameW(f) / 2), Math.round(b.y - frameH(f) + 4));
     ctx.restore();
   };
-  const pf = getFrame(SPR.player, 'idle', (G.rawTime >> 4) & 1, 1);
-  blit(ctx, pf, Math.round(G.player.x - camX - frameW(pf) / 2), Math.round(G.player.y - frameH(pf) + 4));
+  const drawChad = () => {
+    const pf = getFrame(SPR.player, 'idle', (G.rawTime >> 4) & 1, 1);
+    blit(ctx, pf, Math.round(G.player.x - camX - frameW(pf) / 2), Math.round(G.player.y - frameH(pf) + 4));
+  };
+  if (!b.delhi) drawChad();
 
   const speech=bossIntroDialogue(b,t,camX);
   const dialogue=()=>{if(speech)drawDialogue(ctx,speech);};
   if (b.delhi) {
     // The Delhi fights draw themselves: the reveal is the mechanic arriving - the
     // crowd closing, the wire, the bucket coming down out of the dark.
-    for (const pr of G.props) if (!pr.broken && pr.x > camX - 40 && pr.x < camX + W + 40) drawProp(ctx, pr, camX);
-    b.delhi.draw(ctx, b, camX);
-    if (b.key === 'vikram') {
+    // Props nearer the camera than the boss cover him (the vendor starts behind his cart).
+    // CHAD sorts among them too: he stands in front of the cart, not behind it.
+    const near = pr => !pr.broken && pr.x > camX - 40 && pr.x < camX + W + 40;
+    const layers = G.props.filter(near).map(pr => [pr.y, () => drawProp(ctx, pr, camX)]);
+    layers.push([b.y + .001, () => b.delhi.draw(ctx, b, camX)], [G.player.y, drawChad]);
+    for (const [, draw] of layers.sort((p, q) => p[0] - q[0])) draw();
+    if(b.key==='closer')drawRefundForeground(ctx,camX);
+    if (b.key === 'neta') {
       if(t>=180){
        ctx.fillStyle='rgba(8,6,12,.9)';ctx.fillRect(0,230,W,40);
-       drawDisplayTitle(ctx,'COMMISSIONER SETH',W/2,234,{height:19,maxWidth:310});
-       drawTextShadow(ctx,'THE PROCESSING FEE',center('THE PROCESSING FEE',1),257,'#d9bc87',1);
+       drawDisplayTitle(ctx,'NETAJI AND SHERA',W/2,234,{height:19,maxWidth:330});
+       drawTextShadow(ctx,'EVERYONE HAS A PRICE',center('EVERYONE HAS A PRICE',1),257,'#d9bc87',1);
       }
       dialogue();
       return;
@@ -149,20 +153,33 @@ export function drawBossIntro(ctx, camX) {
       if(t>=210){drawDisplayTitle(ctx,'HEAD CONDUCTOR',W/2,244,{height:17,maxWidth:270});dialogue();}
       return;
     } else if (b.key === 'vendor' || b.key === 'closer') {
-      if (t >= 58) {
-        ctx.fillStyle = 'rgba(12,8,10,.72)'; ctx.fillRect(74,237,332,30);
-        drawDisplayTitle(ctx,b.def.name,W/2,241,{height:20,maxWidth:308});
+      if (b.key === 'vendor') {
+        // The name lands with the skimmer planted in the floor.
+        if (t >= 296) {
+          ctx.fillStyle = 'rgba(12,8,10,.8)'; ctx.fillRect(0,230,W,40);
+          drawDisplayTitle(ctx,b.def.name,W/2,234,{height:19,maxWidth:310});
+          drawTextShadow(ctx,b.def.title,center(b.def.title,1),257,'#e0b070',1);
+        }
+      } else if (t >= 392) {
+        // The Closer is named once he is out from behind his desk, cracking his knuckles.
+        // The band fades in from above so both fighters keep their feet on the marble.
+        const band = ctx.createLinearGradient(0,236,0,250); band.addColorStop(0,'rgba(14,6,18,0)'); band.addColorStop(1,'rgba(14,6,18,.86)');
+        ctx.fillStyle = band; ctx.fillRect(0,236,W,34);
+        drawDisplayTitle(ctx,b.def.name,W/2,239,{height:17,maxWidth:300});
+        drawTextShadow(ctx,b.def.title,center(b.def.title,1),259,'#ffd772',1);
       }
       dialogue();
       return;
     } else {
-      // the dredger's floodlight snaps on with the winch
-      if (t > 50) { ctx.fillStyle = `rgba(255,240,200,${t < 58 ? 0.3 : 0.06})`; ctx.fillRect(0, 0, W, H); }
-      if (t > 60) {
-        ctx.fillStyle = 'rgba(4,8,10,0.86)'; ctx.fillRect(0, 202, W, 68);
-        drawTextShadow(ctx, 'WHAT EATS THE RIVER', center('WHAT EATS THE RIVER', 1), 214, '#a8c0c8', 1);
-        drawTextShadow(ctx, 'THE DREDGER', center('THE DREDGER', 3), 228, '#e8f0f0', 3);
+      // The Thekedar is named at his levers; the floodlight snaps on as he yanks the grab down.
+      if (t >= 190) { ctx.fillStyle = `rgba(255,240,200,${t < 198 ? 0.3 : 0.06})`; ctx.fillRect(0, 0, W, H); }
+      if (t >= 100) {
+        ctx.fillStyle = 'rgba(4,8,10,.9)'; ctx.fillRect(0, 230, W, 40);
+        drawDisplayTitle(ctx, 'THE THEKEDAR', W / 2, 234, { height: 19, maxWidth: 310 });
+        drawTextShadow(ctx, 'AT THE LEVERS OF THE DREDGER', center('AT THE LEVERS OF THE DREDGER', 1), 257, '#a8c0c8', 1);
       }
+      dialogue();
+      return;
     }
   } else if (b.key === 'raja') {
     // Raja arrives as part of the road: brakes sideways, kills the meter,
@@ -245,8 +262,8 @@ const CREDITS = [
   'REFUND TOWER',
   '',
   'HEAD CONDUCTOR',
-  'COMMISSIONER SETH',
-  'THE VENDOR',
+  'NETAJI AND SHERA',
+  'GHEE PAPPU',
   'THE DREDGER',
   'THE CLOSER',
   '',

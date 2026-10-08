@@ -1,6 +1,6 @@
 #!/bin/bash
 # build_sfx.sh - rebuild audio/sfx/*.wav from audio/sources/streets_of_rage_2/ using the slot map
-# in audio/sfx/manifest.json. Run after editing the map (see sfxlab.html).
+# in audio/sfx/manifest.json. Run after editing the map (see review.html?scenario=tools/audio).
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 PY=./.venv/bin/python
@@ -10,6 +10,7 @@ m = json.load(open('audio/sfx/manifest.json'))
 selected=set(sys.argv[1:])
 for slot, src in m['map'].items():
     if selected and slot not in selected: continue
+    if slot in m.get('authored',{}): continue
     subprocess.run([
         'ffmpeg', '-y', '-loglevel', 'error', '-i', f"audio/sources/streets_of_rage_2/{src}.wav",
         '-ac', '1', '-ar', '22050', '-sample_fmt', 's16',
@@ -29,4 +30,10 @@ for slot, recipe in m.get('composites', {}).items():
     filters.append(''.join(labels)+f"amix=inputs={len(labels)}:duration=longest:normalize=0,alimiter=limit=0.85[out]")
     subprocess.run(command+['-filter_complex',';'.join(filters),'-map','[out]','-ac','1','-ar','22050','-sample_fmt','s16',f'audio/sfx/{slot}.wav'],check=True)
     print(f'{slot} <- layered sources')
+builders={}
+for slot,recipe in m.get('authored',{}).items():
+    if selected and slot not in selected: continue
+    builders.setdefault(recipe['builder'],[]).append(slot)
+for builder,names in builders.items():
+    subprocess.run([sys.executable,builder,*names],check=True)
 PYEOF

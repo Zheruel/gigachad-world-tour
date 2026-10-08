@@ -4,6 +4,8 @@ import json
 import numpy as np
 from PIL import Image, ImageFilter, ImageDraw
 from build_boxing_rush import largest_component
+from sprite_edges import harden
+from chad_palette import lock
 ROOT=Path(__file__).resolve().parents[2]
 CHAD=ROOT/'assets/sources/production/characters/chad/combat_variety'
 TRAIN=ROOT/'assets/sources/production/stages/night_train/rebuild'
@@ -68,6 +70,8 @@ def register(poses,scale,size,anchor='boot'):
 def save_frames(m,key,state,frames,prefix):
     names=[]
     for i,f in enumerate(frames):
+        # Last step for CHAD: binary alpha + sel-out edges, then the gold 48-colour palette (chad_style.md).
+        if key=='player':frames[i]=f=lock(harden(f))
         name=f'{prefix}_{i:02}.png';path=ROOT/'assets/frames'/name;path.parent.mkdir(parents=True,exist_ok=True);f.save(path);names.append(name)
     m.setdefault(key,{})[state]=names
 
@@ -83,60 +87,6 @@ def main():
     if (CHAD/'overhand.png').exists():
         q=cells(CHAD/'overhand.png',2,1);frames+=register(q,184/q[0].height,(256,248),'front')
     save_frames(m,'player','boxing_variety',frames,'chad_boxing_variety');review('boxing',frames)
-    if (TRAIN/'conductor_variety.png').exists():
-        p=cells(TRAIN/'conductor_variety.png',4,4);frames=register(p,184/np.median([f.height for f in p[:4]]),(320,240))
-        for state,ids in {'baton_polish':[4,5,6,7],'whistle_polish':[8,9,10],'guard_polish':[11],'stagger_polish':[12,13,14,15]}.items():
-            save_frames(m,'nr_conductor',state,[frames[i] for i in ids],'nr_conductor/variety_'+state)
-        review('inspector',frames)
-    if (TRAIN/'conductor_stride.png').exists():
-        p=cells(TRAIN/'conductor_stride.png',4,2);frames=register(p,184/np.median([f.height for f in p]),(320,240),'torso')
-        save_frames(m,'nr_conductor','walk',frames,'nr_conductor/stride');review('stride',frames)
-    if (TRAIN/'conductor_shield_charge.png').exists():
-        p=cells(TRAIN/'conductor_shield_charge.png',4,2);frames=register(p,184/np.median([f.height for f in p[:4]]),(320,240),'torso')
-        save_frames(m,'nr_conductor','shield',frames[:4],'nr_conductor/shield_variety')
-        save_frames(m,'nr_conductor','charge_polish',frames[4:],'nr_conductor/charge_variety');review('shield-charge',frames)
-    for source,state,cols,rows in [('inspector_finisher','inspector_pair',3,2),('seth_finisher','seth_pair',4,2)]:
-        im=Image.open(TRAIN/(source+'.png')).convert('RGBA');frames=[]
-        # Measured crown-to-sole reference: CHAD 377px; upright Seth 338px.
-        scale=184/(377 if source=='inspector_finisher' else 338)
-        for i in range(cols*rows):
-            bounds=(round(i%cols*im.width/cols),round(i//cols*im.height/rows),round((i%cols+1)*im.width/cols),round((i//cols+1)*im.height/rows))
-            if source=='seth_finisher' and i>=4:
-                xe=[0,449,815,1370,im.width];bounds=(xe[i%4],444,xe[i%4+1],im.height)
-                if i==7:bounds=(1318,444,im.width,im.height)
-            if source=='inspector_finisher' and i>=3:
-                xe=[0,510,995,im.width];bounds=(xe[i%3],512,xe[i%3+1],im.height)
-            c=clean(im.crop(bounds))
-            # Reject neighbouring-cell fragments touching the crop border.
-            a=np.array(c);mask=a[:,:,3]>24
-            from collections import deque
-            seen=np.zeros(mask.shape,dtype=bool)
-            for yy,xx in zip(*np.where(mask)):
-                if seen[yy,xx]:continue
-                q=deque([(yy,xx)]);seen[yy,xx]=True;pts=[];edge=False
-                while q:
-                    y,x=q.popleft();pts.append((y,x));edge|=x==0 or x==mask.shape[1]-1
-                    for dy,dx in [(1,0),(-1,0),(0,1),(0,-1)]:
-                        ny,nx=y+dy,x+dx
-                        if 0<=ny<mask.shape[0] and 0<=nx<mask.shape[1] and mask[ny,nx] and not seen[ny,nx]:seen[ny,nx]=True;q.append((ny,nx))
-                if len(pts)<90 or edge and len(pts)<7000:
-                    for y,x in pts:a[y,x]=0
-            c=Image.fromarray(a)
-            b=c.getbbox();a=np.array(c)[:,:,3]>24
-            # Authored belt-centre anchors; navy victim clothing must not affect CHAD registration.
-            hips=[181,674,1168,180,697,1085] if source=='inspector_finisher' else [173,610,1014,1437,137,613,944,1439]
-            anchor=hips[i]-bounds[0]
-            c=c.resize((round(c.width*scale),round(c.height*scale)),Image.Resampling.LANCZOS)
-            f=Image.new('RGBA',(640,248));f.alpha_composite(c,(round(160-anchor*scale),round(241-b[3]*scale)));frames.append(clean(f))
-        save_frames(m,'player',state,frames,'chad_'+state);review(state,frames)
-    im=Image.open(TRAIN/'inspector_finisher.png').convert('RGBA')
-    flight=clean(im.crop((1220,535,1536,840)));a=np.array(flight);a[~largest_component(a[:,:,3]>24)]=0;flight=Image.fromarray(a);flight=flight.crop(flight.getbbox())
-    scale=184/377;flight=flight.resize((round(flight.width*scale),round(flight.height*scale)),Image.Resampling.LANCZOS)
-    f=Image.new('RGBA',(320,240));f.alpha_composite(flight,((320-flight.width)//2,233-flight.height));save_frames(m,'nr_conductor','finisher_flight',[clean(f)],'nr_conductor/finisher_flight')
-    im=Image.open(TRAIN/'seth_finisher.png').convert('RGBA')
-    flight=clean(im.crop((1042,533,1370,733)));a=np.array(flight);a[~largest_component(a[:,:,3]>24)]=0;flight=Image.fromarray(a);flight=flight.crop(flight.getbbox())
-    scale=184/338;flight=flight.resize((round(flight.width*scale),round(flight.height*scale)),Image.Resampling.LANCZOS)
-    f=Image.new('RGBA',(320,224));f.alpha_composite(flight,((320-flight.width)//2,217-flight.height));save_frames(m,'nr_vikram_roof','finisher_flight',[clean(f)],'nr_vikram_roof/finisher_flight')
     desk=Image.open(TRAIN/'office_desk_broken.png').convert('RGBA')
     desk=clean(desk);desk.resize(Image.open(ROOT/'assets/stages/night_train/rebuild/office_desk.png').size,Image.Resampling.LANCZOS).save(ROOT/'assets/stages/night_train/rebuild/office_desk_broken.png')
     if (CHAD/'fragments.png').exists():
@@ -145,17 +95,5 @@ def main():
             scale=110/max(c.size);c=c.resize((round(c.width*scale),round(c.height*scale)),Image.Resampling.LANCZOS)
             atlas.alpha_composite(c,(i%4*128+(128-c.width)//2,i//4*128+(128-c.height)//2))
         clean(atlas).save(ROOT/'assets/fx/arcade_fragments.png')
-    targets=[ROOT/'assets/frames'/name for name in set(sum(m['nr_conductor'].values(),[]))]
-    targets.append(ROOT/'assets/stages/night_train/rebuild/conductor_intro.png')
-    for dest in targets:
-        im=Image.open(dest).convert('RGBA');a=np.array(im);rgb=a[:,:,:3].astype(int)
-        alpha=a[:,:,3];inner=np.array(Image.fromarray(alpha).filter(ImageFilter.MinFilter(5)))>220
-        edge=(alpha>0)&~inner;neutral=(rgb.min(2)>105)&(np.ptp(rgb,axis=2)<30)
-        total=np.zeros_like(rgb,dtype=float);count=np.zeros(alpha.shape)
-        for dy in range(-3,4):
-            for dx in range(-3,4):
-                valid=np.roll(inner,(dy,dx),(0,1));total+=np.roll(rgb,(dy,dx),(0,1))*valid[:,:,None];count+=valid
-        fix=edge&neutral&(count>0);a[fix,:3]=(total[fix]/count[fix,None]).astype('uint8');a[a[:,:,3]==0,:3]=0
-        Image.fromarray(a).save(dest)
     path.write_text(json.dumps(m,indent=2)+'\n')
 if __name__=='__main__':main()

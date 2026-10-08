@@ -1,9 +1,8 @@
 #!/bin/bash
 # gen_lair_pets.sh - what lives in the tank.
 #
-# The tiger moved out to tools/production/gen_lair_tiger.sh: his rest poses have to be generated
-# against a frame of his own finished walk strip, and that needs a slice in the middle of
-# the script rather than one more generation alongside these.
+# The room's pet is the lion: his strips are built by tools/production/build_lair_lion.py
+# (sources in assets/sources/production/lair/lion_*.png).
 #
 # Walk and swim cycles are one horizontal strip per cycle, sliced and registered
 # by tools/production/build_lair_extras.py.

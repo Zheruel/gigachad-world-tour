@@ -3,6 +3,7 @@ const keyHeld = Object.create(null);
 const padHeld = Object.create(null);
 const pressedThisFrame = Object.create(null);
 const releasedThisFrame = Object.create(null);
+const downCodes = new Set();   // physical keys down, so a shared binding releases only with its last key
 const lastTap = { left: -999, right: -999 }; // frame of last tap for double-tap dash
 let frame = 0;
 let pointerPress = null;
@@ -58,6 +59,7 @@ export function initInput() {
     const a = KEYMAP[e.code];
     if (!a) return;
     e.preventDefault();
+    downCodes.add(e.code);
     for (const act of (Array.isArray(a) ? a : [a])) {
       if (!keyHeld[act] && !padHeld[act]) press(act);
       keyHeld[act] = true;
@@ -66,15 +68,20 @@ export function initInput() {
   window.addEventListener('keyup', (e) => {
     const a = KEYMAP[e.code];
     if (!a) return;
+    downCodes.delete(e.code);
+    // An action stays held while any other key bound to it is still down (ArrowRight + D).
+    const still = new Set([...downCodes].flatMap((c) => [KEYMAP[c]].flat()));
     for (const act of (Array.isArray(a) ? a : [a])) {
+      if (still.has(act)) continue;
       keyHeld[act] = false; releasedThisFrame[act] = true;
     }
   });
   window.addEventListener('blur', () => {
     // a gamepad direction held through an alt-tab stayed held; clear every input, not
     // just the keyboard half
-    for (const k in keyHeld) keyHeld[k] = false;
-    for (const k in padHeld) padHeld[k] = false;
+    downCodes.clear();
+    for (const k in keyHeld) { if (keyHeld[k]) releasedThisFrame[k] = true; keyHeld[k] = false; }
+    for (const k in padHeld) { if (padHeld[k]) releasedThisFrame[k] = true; padHeld[k] = false; }
   });
 }
 
@@ -130,5 +137,5 @@ export function debugRelease(a) { keyHeld[a] = false; }
 export function debugResetInput() {
   for (const table of [keyHeld, padHeld, pressedThisFrame, releasedThisFrame])
     for (const key in table) delete table[key];
-  lastTap.left = lastTap.right = -999; frame = 0; pointerPress = null;
+  downCodes.clear(); lastTap.left = lastTap.right = -999; frame = 0; pointerPress = null;
 }

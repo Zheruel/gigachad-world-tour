@@ -6,6 +6,8 @@
 // anchor semantics of the code-drawn sprites (draw: sx - w/2, sy - h + 4).
 
 import { RS } from './engine.js';
+import { packOfActor, track, urgentPack } from './loading.js';
+import { assetURL } from './asset_url.js';
 
 const AIF = {}; // charKey -> { manifestState: { f: [canvas], fl: [canvas] } }
 
@@ -15,11 +17,6 @@ const AIF = {}; // charKey -> { manifestState: { f: [canvas], fl: [canvas] } }
 // frame - which reads as a waddle no matter how good the poses are. These offsets
 // let the lab correct individual frames by hand (arrow keys in ANIM mode).
 let ANCHORS = {};
-export function anchorOf(file) { return ANCHORS[file] || null; }
-export function setAnchor(file, dx, dy) {
-  if (!dx && !dy) delete ANCHORS[file];
-  else ANCHORS[file] = { dx: dx | 0, dy: dy | 0 };
-}
 export function allAnchors() { return ANCHORS; }
 
 // Logical sprite heights. A fighter is ~1.8m and the stage art shows streets
@@ -28,14 +25,13 @@ export function allAnchors() { return ANCHORS; }
 // biggest man on the street; only the bosses loom over him.
 const HEIGHTS = {
   player: 96,
-  nr_tough:100,nr_bruiser:106,nr_runner:100,nr_ambusher:96,nr_heavy:114,nr_guard:104,nr_vikram:112,nr_vikram_roof:112,
+  nr_tough:100,nr_bruiser:106,nr_runner:100,nr_ambusher:96,nr_heavy:114,nr_guard:104,nr_chai:100,nr_neta:84,nr_neta_guard:123,
   goonda: 80, batta: 82, masala: 79, bandar: 46, pehlwan: 97,
   constable: 86, operator: 80, sepoy: 94,
   // Retained shared families use canvas heights measured by their tallest pose.
   // The new ic_ families instead carry registered source-scale frames below.
   cooker: 82, thela: 107, mudlark: 70, dhobi: 90, dabbawala: 89, bull: 105,
   raja: 104, refund: 106, yadav: 108, rana: 112,
-  dredger: 150, thekedar: 88,
 };
 
 // game frame name -> candidate manifest state names (first hit wins)
@@ -100,7 +96,7 @@ const TORSO_ANCHORED = new Set(['walk', 'run', 'combo_power_a', 'combo_power_b',
 // RAGNAROK contains raised-arm and airborne silhouettes taller than the
 // normal 96px body. Its processed 2x canvas deliberately preserves that extra
 // headroom; scaling every frame back to 96px would make CHAD shrink mid-jump.
-const PRESERVE_SOURCE_SCALE = new Set(['ragnarok_air']);
+const PRESERVE_SOURCE_SCALE = new Set(['ragnarok_air', 'upper', 'combo_power_b']); // taller files carry raised-fist headroom
 
 function normalize(img, logicalH, anchor, torsoAnchor, preserveSourceScale) {
   // AI art is authored at RS device pixels per logical pixel
@@ -153,28 +149,47 @@ function normalize(img, logicalH, anchor, torsoAnchor, preserveSourceScale) {
   return out;
 }
 
-function loadImage(src) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-  });
+// Two review runtimes can request thousands of frames together. Bound active image
+// requests so Chrome and the development server never drop whole sprite families.
+const IMAGE_LIMIT=16,imageQueue=[];let activeImages=0;
+function pumpImages(){
+ while(activeImages<IMAGE_LIMIT&&imageQueue.length){
+  // The pack the player is waiting on (the load screen) jumps the queue.
+  const first=urgentPack()?imageQueue.findIndex(q=>q.pack===urgentPack()):-1;
+  const{src,resolve}=imageQueue.splice(Math.max(0,first),1)[0],img=new Image();activeImages++;
+  const done=value=>{activeImages--;resolve(value);pumpImages();};
+  img.onload=()=>done(img);img.onerror=()=>done(null);img.src=assetURL(src);
+ }
+}
+function loadImage(src,pack){return new Promise(resolve=>{imageQueue.push({src,resolve,pack});pumpImages();});}
+
+// The anchors and manifest are read once and shared by every pack's load.
+let tables=null;
+function loadTables(){
+  return tables||=(async()=>{
+    try {
+      const r = await fetch('assets/frames/anchors.json', { cache: 'no-cache' });
+      if (r.ok) ANCHORS = await r.json();
+    } catch (e) { ANCHORS = {}; }
+    try {
+      const res = await fetch('assets/frames/manifest.json', { cache: 'no-cache' });
+      return res.ok ? await res.json() : null;
+    } catch (e) { return null; }
+  })();
 }
 
-export async function loadAIFrames() {
-  try {
-    const r = await fetch('assets/frames/anchors.json', { cache: 'no-cache' });
-    if (r.ok) ANCHORS = await r.json();
-  } catch (e) { ANCHORS = {}; }
-  let manifest;
-  try {
-    const res = await fetch('assets/frames/manifest.json', { cache: 'no-cache' });
-    if (!res.ok) return;
-    manifest = await res.json();
-  } catch (e) { return; }
+// One pack's actors (js/loading.js), or every actor when no pack is named.
+export async function loadAIFrames(pack) {
+  const manifest = await loadTables();
+  if (!manifest) return;
+  // Multi-arena review pages need only their actors, not every chapter's bank.
+  const reviewActors = location.pathname.endsWith('/tools/review/runtime.html')
+    ? new URLSearchParams(location.search).get('reviewActors') : null;
+  const actorFilter = reviewActors ? new Set(reviewActors.split(',')) : null;
   const jobs = [];
   for (const charKey of Object.keys(manifest)) {
+    if (actorFilter && !actorFilter.has(charKey)) continue;
+    if (pack && packOfActor(charKey) !== pack) continue;
     const states = manifest[charKey];
     if (!states || typeof states !== 'object') continue;
     const targetH = HEIGHTS[charKey] || 48;
@@ -183,13 +198,13 @@ export async function loadAIFrames() {
       const files = states[state];
       if (!Array.isArray(files) || !files.length) continue;
       jobs.push((async () => {
-        const imgs = await Promise.all(files.map((f) => loadImage('assets/frames/' + f)));
+        const imgs = await Promise.all(files.map((f) => track(packOfActor(charKey), loadImage('assets/frames/' + f, packOfActor(charKey)))));
         const frames = [];
         for (let k = 0; k < imgs.length; k++) {
           const img = imgs[k];
           if (!img) continue; // failed file: skip, fall back for that frame
           let n;
-          if(charKey==='thekedar' || charKey.startsWith('nr_') || charKey.startsWith('ic_') || (charKey==='player' && ['boxing_rush','boxing_variety','super_barrage','super_electric','electric_finish','inspector_pair','seth_pair'].includes(state))) {n=mkCanvas(img.width,img.height);n.getContext('2d').drawImage(img,0,0);n._as=RS;}
+          if(charKey.startsWith('nr_') || charKey.startsWith('dl_') || charKey.startsWith('ic_') || (charKey==='player' && ['boxing_rush','boxing_variety','super_barrage','super_electric','electric_finish','puri_cram','puri_cigar','dredge_catch','dredge_spin','dredge_light'].includes(state))) {n=mkCanvas(img.width,img.height);n.getContext('2d').drawImage(img,0,0);n._as=RS;}
           else n = normalize(img, targetH, ANCHORS[files[k]], TORSO_ANCHORED.has(state), PRESERVE_SOURCE_SCALE.has(state));
           if (n) { n._file = files[k]; frames.push(n); }
         }
@@ -201,6 +216,9 @@ export async function loadAIFrames() {
   }
   await Promise.all(jobs);
 }
+
+// True only when this exact manifest state loaded: no alias chain, for art that is landing one state at a time.
+export function hasAIState(charKey, state) { return !!AIF[charKey]?.[state]; }
 
 // Resolve a game frame name to loaded AI frames, or null (-> code sprite).
 export function getAIFrame(charKey, gameName) {

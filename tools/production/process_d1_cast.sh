@@ -39,9 +39,6 @@ slice sandh_charge  sandh_charge 4 ; slice sandh_hurt    sandh_hurt   3
 
 slice dabbawala_run  dabbawala_run  4 ; slice dabbawala_drop dabbawala_drop 3
 
-slice thekedar_idle  thekedar_idle  4 ; slice thekedar_swing thekedar_swing 3
-slice thekedar_hurt  thekedar_hurt  3
-
 # ---- one process_char per family, ONE scale across all of its poses ------
 # height = logical x RS. --ref is the pose the scale is measured from.
 proc() {  # proc <char> <height> <fill> <ref>
@@ -59,7 +56,6 @@ proc mudlark   140 1.000 idle1
 proc dhobi     180 1.000 idle1
 proc sandh     210 0.702 walk1     # canvas is the rear, not the walk
 proc dabbawala 178 0.944 run1      # canvas is the tiffin tower coming apart
-proc thekedar  176 1.000 idle1
 
 $PY tools/production/build_manifest.py --prune
 echo "=== cast processed ==="

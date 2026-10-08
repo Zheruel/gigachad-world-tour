@@ -43,8 +43,7 @@ class Dev(http.server.SimpleHTTPRequestHandler):
             super().do_GET()
 
     def do_HEAD(self):
-        if self.headers.get("Range"):
-            self.range_response(body=False)
+        if self.headers.get("Range") and self.range_response(body=False) is not None:
             return
         super().do_HEAD()
 

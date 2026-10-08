@@ -8,14 +8,13 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=requ
   for(const kind of ['normal','heavy','super','crowd','animal']){
    setup();let victims=[];
    if(kind==='crowd'){for(let i=0;i<6;i++){const e=g.spawn('ic_headset',50+i*36,i%2*8);e.hp=1;e.state='idle';e.poise=0;e.hurt(20,1,i%2===1,false);victims.push(e);}}
-   else{const e=g.spawn(kind==='animal'?'bull':'ic_headset',50,0);e.hp=kind==='super'?36:1;e.poise=0;e.state='idle';e.face=-1;victims=[e];if(kind==='super'){startSuper(G.player);for(let i=0;i<76;i++){updatePlayer(G.player);updateEffects();}checks.push(['lethal uppercut keeps cancellable visual followthrough',G.player.state==='idle'&&G.player.boxingAfter?.upper&&e.dead]);}else e.hurt(99,1,kind==='heavy',false);}
+   else{const e=g.spawn(kind==='animal'?'bull':'ic_headset',50,0);e.hp=kind==='super'?36:1;e.poise=0;e.state='idle';e.face=-1;victims=[e];if(kind==='super'){startSuper(G.player);for(let i=0;i<110;i++){updatePlayer(G.player);updateEffects();}checks.push(['lethal super kills and hands control back',G.player.state==='idle'&&e.dead]);}else e.hurt(99,1,kind==='heavy',false);}
    const count=G.effects.length;for(const e of victims)spawnDefeatFX(e,1,true,true);checks.push([kind+' effect fires once',G.effects.length===count]);
    if(kind==='animal')checks.push(['animal creates no blood',G.effects.every(f=>!['koBurst','koChunk','koResidue'].includes(f.type))]);
    for(let t=0;t<=36;t++){if(t%3===0)capture(kind,t);updateEffects();updateEnemies();updatePlayer(G.player);G.time++;G.rawTime++;}
   }
   setup();for(const state of ['idle','attack','down','getup','thrown']){const e={kind:'goonda',state,x:240,y:228,z:0,h:80,t:0};spawnDefeatFX(e,1,true,false);e.dead=true;checks.push([state+' knockout contact registration',!!defeatVictimPose(e)===['idle','attack'].includes(state)]);}
   setup();spawnDefeatFX({kind:'boss',x:250,y:228},1,true,true);checks.push(['boss authored defeat is excluded',G.effects.length===0]);
-  G.player.boxingAfter={t:0,upper:true};G.player.state='walk';updatePlayer(G.player);checks.push(['lethal followthrough yields immediately to movement',!G.player.boxingAfter]);
   setup();for(let i=0;i<20;i++){const e=g.spawn('ic_headset',50,0);e.hp=1;e.state='idle';e.hurt(99,1,true,false);}checks.push(['bounded residue',G.effects.filter(e=>e.type==='koResidue').length===8]);checks.push(['bounded flying pieces',G.effects.filter(e=>e.type==='koChunk').length<=48]);
   const before=JSON.stringify(G.effects);G.paused=true;g.step(20);checks.push(['pause freezes defeat effects',before===JSON.stringify(G.effects)]);G.paused=false;
   const s=JSON.stringify(G.effects);g.render();g.render();checks.push(['render is pure',s===JSON.stringify(G.effects)]);

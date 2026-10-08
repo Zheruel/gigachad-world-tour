@@ -18,7 +18,7 @@ const {chromium} = require('playwright');
   const {readProgress,writeProgress,hasCleared}=await import('/js/progress.js');
   let migrated=readProgress({unlockedStage:0,actBest:{0:200}},game.STAGES);
   check('legacy Delhi score remains Delhi',migrated.actBest[1]===200&&!Object.hasOwn(migrated.actBest,0));
-  check('legacy accessible levels retained',migrated.unlockedStage===1);
+  check('legacy accessible levels retained',migrated.unlockedStage===game.STAGES.findIndex(s=>s.id==='refund'));   // a Delhi best also opens the Refund Centre
   check('new save starts with train',readProgress({},game.STAGES).unlockedStage===0&&game.STAGES[0].id==='train');
   const roundtrip=readProgress(writeProgress({...G,...migrated},game.STAGES),game.STAGES);
   check('save migration roundtrip',JSON.stringify(roundtrip)===JSON.stringify(migrated));
@@ -47,12 +47,11 @@ const {chromium} = require('playwright');
   for(const [p,n] of [['jet-board',180],['takeoff',270],['flight',360],['india-approach',300],['landing',300],['disembark',150],['papers',460]]){
    check('natural phase '+p,G.travel.phase===p);game.step(n-G.travel.t);
   }
-  G.travel.x=968;G.travel.y=208;game.step(1);tap('use');game.step(35);check('arrival exit reaches train loading',G.state==='loading'&&G.stage.id==='train'&&!G.travel);
-  game.step(150);check('loading holds until F',G.state==='loading');tap('use');game.step(30);check('loading reaches station entrance',G.state==='intro'&&G.stage.id==='train');
+  G.travel.x=968;G.travel.y=208;game.step(1);tap('use');game.step(35);check('arrival exit reaches train intro with its music',G.state==='intro'&&G.stage.id==='train'&&!G.travel&&G.audio.snapshot().music===G.stage.music);
   game.step(510);check('station starts normal gameplay',G.state==='play'&&G.stage.id==='train'&&!!G.train);
   const saved={...TRAVEL_ART};for(const k of Object.keys(TRAVEL_ART))delete TRAVEL_ART[k];
   for(const p of ['elevator','lobby','curb','drive','apron','takeoff','flight','landing']){game.travel(p);game.step(3);game.render();}
-  game.travel('arrival-exit');G.travel.x=968;G.travel.y=208;game.step(1);tap('use');game.step(35);game.render();check('missing artwork cannot trap arrival',G.state==='loading');Object.assign(TRAVEL_ART,saved);
+  game.travel('arrival-exit');G.travel.x=968;G.travel.y=208;game.step(1);tap('use');game.step(35);game.render();check('missing artwork cannot trap arrival',G.state==='intro'&&G.stage.id==='train');Object.assign(TRAVEL_ART,saved);
   game.travel('elevator');tap('pause');tap('back');game.step(35);check('exit clears pending state',G.state==='title'&&!G.travel&&G.pendingDestination===null);
   game.travel('drive');game.step(2);tap('attack');check('repeat departure remains unskippable',G.travel.phase==='drive');
   const timing={};for(const phase of ['elevator','lobby','drive','apron','landing']){game.travel(phase);const start=performance.now();for(let i=0;i<60;i++)game.render();timing[phase]=(performance.now()-start)/60;}
@@ -68,8 +67,8 @@ const {chromium} = require('playwright');
  assert(await page.evaluate(()=>window.__game.G.travel.phase==='curb'),'gamepad boarding');
  if(process.argv.includes('--screenshots')){
   await page.evaluate(()=>{Object.defineProperty(navigator,'getGamepads',{value:()=>[]});});
-  for(const [phase,t] of [['elevator',350],['lobby',90],['curb',1],['drive',240],['apron',1],['takeoff',350],['flight',120],['landing',460],['loading',0]]){
-   await page.evaluate(([p,t])=>{const g=window.__game;g.G.freezeTime=false;if(p==='loading')g.loading();else g.travel(p);g.step(t);g.G.freezeTime=true;g.G.fade=0;g.render();},[phase,t]);
+  for(const [phase,t] of [['elevator',350],['lobby',90],['curb',1],['drive',240],['apron',1],['takeoff',350],['flight',120],['landing',460]]){
+   await page.evaluate(([p,t])=>{const g=window.__game;g.G.freezeTime=false;g.travel(p);g.step(t);g.G.freezeTime=true;g.G.fade=0;g.render();},[phase,t]);
    await page.screenshot({path:'/private/tmp/gachi-'+phase+'.png'});
   }
  }

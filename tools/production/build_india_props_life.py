@@ -9,7 +9,7 @@ from build_train_coaches import clean_edge
 ROOT=Path(__file__).resolve().parents[2]
 SRC=ROOT/'assets/sources/production/stages'
 OUT=ROOT/'assets/stages'
-SIZES={'ic_stall':(64,48),'ic_cart':(66,44),'ic_boiler':(30,52),'ic_cargo':(50,42),'ic_monitor':(30,30),'ic_cubicle':(64,56),'ic_shelf':(42,80),'ic_server':(40,76),'ic_vendorcart':(68,50),'ic_cookingstation':(76,64),'ic_pressurevalve':(22,30),'ic_cabinet':(42,64),'ic_execdesk':(86,52),'ic_partition':(54,88)}
+SIZES={'ic_stall':(64,48),'ic_cart':(66,44),'ic_boiler':(30,52),'ic_cargo':(50,42),'ic_monitor':(30,30),'ic_cubicle':(64,56),'ic_shelf':(42,80),'ic_server':(40,76),'ic_cabinet':(42,64),'ic_execdesk':(86,52),'ic_partition':(54,88)}
 
 def clean(im):
     im=clean_edge(keyed(im))
@@ -53,6 +53,7 @@ def props():
     for row,names in enumerate([['ic_monitor','ic_cubicle'],['ic_shelf','ic_server'],['ic_execdesk','ic_partition']]):
         for pair,name in enumerate(names):groups.append((name,[grid(im,pair*2+j,row) for j in range(2)]))
     for name,pair in groups:
+        if name not in SIZES:continue  # the old vendor's kitchen props, retired
         pair=[prop_silhouette(c) for c in pair]
         w,h=SIZES[name]
         # The intact object sets physical scale. Debris may spread beyond that

@@ -10,6 +10,8 @@ const POLICIES = (process.env.POLICIES || 'attack-heavy,varied').split(',');
 const BOSS_ONLY=process.env.BOSS_ONLY==='1';
 const BOSS_KEY=process.env.BOSS_KEY||'';
 const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
+const GAME_URL=process.env.GAME_URL||'http://localhost:8011';
+const INPUT_MODE=process.env.INPUT_MODE||'';
 
 (async()=>{
   fs.mkdirSync(OUT,{recursive:true});
@@ -19,10 +21,11 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
     for(const stage of STAGES)for(const policy of POLICIES){
       const page=await browser.newPage({viewport:{width:1000,height:620}}),errors=[];
       page.on('pageerror',e=>errors.push(e.message));
-      await page.goto('http://localhost:8011/?auto=walk');
+      await page.goto(`${GAME_URL}/?auto=walk`);
       await page.waitForFunction(()=>window.__game?.G.state==='play');
-      const result=await page.evaluate(async({stage,policy,bossOnly,bossKey,maxTicks})=>{
+      const result=await page.evaluate(async({stage,policy,bossOnly,bossKey,maxTicks,inputMode})=>{
         const g=__game,G=g.G;
+        const {getCloserTiming}=await import('./js/refund_boss_timing.js');
         let seed=541;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
         // Audio detune/noise and wall-clock voice cooldowns must not consume the
         // gameplay seed. Sound still plays; only this diagnostic scopes its RNG.
@@ -44,7 +47,7 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
         }
         const isolatedBoss=bossOnly?G.boss:null;
         const technical=policy!=='attack-heavy',parryFocused=policy==='parry-focused';
-        const pad=technical, held=new Set();
+        const pad=technical&&inputMode!=='keyboard', held=new Set();
         const padMap={attack:0,jump:1,parry:2,super:3,use:4,pause:9,up:12,down:13,left:14,right:15};
         if(pad)Object.defineProperty(navigator,'getGamepads',{configurable:true,value:()=>[{
           connected:true,axes:[0,0],buttons:Array.from({length:16},(_,i)=>({pressed:[...held].some(a=>padMap[a]===i),value:[...held].some(a=>padMap[a]===i)?1:0})),
@@ -60,7 +63,7 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
         let encounter=null,clearTick=null,lastProgress=0,progressSignature='',lastParry=-100,grace=0;
         let lastActionState='',chosen=null,lastChosenTick=0,lastCheckpoint='',playerRef=G.player,dodgeLane=null,dodgeUntil=0;
         const stuck=[];
-        const simple=e=>e?{key:e.key||e.trainType||e.kind,state:e.state,pattern:e.pattern,t:e.t,x:Math.round(e.x),y:Math.round(e.y),z:Math.round(e.z||0),hp:e.hp,guard:e.guard,phase:e.phase,phaseTwo:e.phaseTwo,...(e.key==='dredger'?{winchGone:e.winchGone,pumpGone:e.pumpGone,cabBroken:e.cab?.broken,crewSpawned:e.crewSpawned,restarts:e.restarts}:{} )}:null;
+        const simple=e=>e?{key:e.key||e.trainType||e.kind,state:e.state,pattern:e.pattern,t:e.t,x:Math.round(e.x),y:Math.round(e.y),z:Math.round(e.z||0),hp:e.hp,guard:e.guard,phase:e.phase,phaseTwo:e.phaseTwo,...(e.key==='dredger'?{glass:e.glass,grab:e.grab?.state,crewSpawned:e.crewSpawned,crewCalled:e.crewCalled}:{} )}:null;
         function capture(label){g.render();if(captures.length<35)captures.push({label,ticks,png:document.querySelector('#game').toDataURL('image/png')});}
         function logState(){
           const key=[G.state,G.waveIndex,G.boss?.key,G.boss?.phase,G.india?.cinematic?.kind,G.india?.retryPoint?.id].join(':');
@@ -78,17 +81,16 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
           const food=G.pickups.filter(q=>q.heal>0);
           if(p.hp<(G.waveActive?60:90)&&food.length){return food.sort((a,b)=>Math.abs(a.x-p.x)-Math.abs(b.x-p.x))[0];}
           if(b?.key==='dredger'&&b.phase==='machine'){
-            const crew=alive.find(e=>Math.abs(e.x-p.x)<90);
+            // The grab only gives on the deck; otherwise clear the crew, or wait mid-arena for the swing.
+            if(b.z<10)return b;
+            const crew=alive.find(e=>Math.abs(e.x-p.x)<90)||alive[0];
             if(crew)return crew;
-            if(technical&&b.pump&&!b.pump.broken)return b.pump;
-            if(!b.winchGone)return b.winch;
-            if(b.z<36)return b;
+            return technical?{x:G.camLock+240,y:226,kind:'prop'}:null;
           }
           if(technical&&b?.key==='vendor'&&b.valveActive&&!b.valve.broken)return b.valve;
           // The varied route deliberately breaks nearby furniture and protection.
-          if(technical&&b?.key==='vendor'&&!b.cartGone)return b.cart;
           if(chosen&&!chosen.dead&&!chosen.broken&&ticks-lastChosenTick<100&&chosen.state!=='spawn')return chosen;
-          const list=[...alive,...(b&&(b.key!=='dredger'||b.phase!=='machine'||b.z<36)?[b]:[])];
+          const list=[...alive,...(b&&(b.key!=='dredger'||b.phase!=='machine'||b.z<10)?[b]:[])];
           list.sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y)*2+(a.z>24?80:0))-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)*2+(b.z>24?80:0)));
           chosen=list[0]||null;lastChosenTick=ticks;return chosen;
         }
@@ -96,14 +98,19 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
           if(e.dead||e.protectedStagger||e.superLocked)return false;
           if(Math.abs(e.y-G.player.y)>18||Math.abs(e.x-G.player.x)>Math.max(85,e.range||0))return false;
           if(e.key){
+            if(e.key==='vendor'&&e.state==='string'){
+              // Two plain swings (deflected), then the parryable overhead; the beats shrink by phase and the
+              // last order adds a second overhead (js/vendor_boss.js stringBeats).
+              const P=(e.phase||1)-1,k=[1,.8,.72][P];return [4,24,56,...(P===2?[92]:[])].some(h=>e.t>=Math.round(h*k)-4&&e.t<Math.round(h*k)+2);
+            }
             if(e.state==='ladle')return e.t>=5&&e.t<12||e.t>=27&&e.t<34||!e.cartGone&&e.t>=49&&e.t<56;
             if(e.state==='overhead')return e.t>=11&&e.t<18;
-            if(e.state==='wrench')return e.t>=3&&e.t<10||e.t>=23&&e.t<30;
+            if(e.state==='wrench')return e.t>=3&&e.t<10||e.t>=34&&e.t<41;
             if(e.state==='utensil')return e.t>=7&&e.t<14;
             if(e.state==='handset')return e.t>=7&&e.t<14;
             if(e.state==='boxing')return e.t>=3&&e.t<10||e.t>=21&&e.t<28||e.phaseTwo&&e.t>=39&&e.t<46;
             if(['rush','shove'].includes(e.state))return !e.hitLanded;
-            if(e.state==='swing')return e.t<6;
+            if(e.state==='swing')return !e.hitLanded&&e.z<40;
             return false;
           }
           return e.state==='attack'&&e.t<8&&e.kind!=='cooker';
@@ -112,8 +119,7 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
           if(G.player!==playerRef){input([]);g.resetInput();held.clear();chosen=null;playerRef=G.player;grace=0;dodgeUntil=0;}
           logState();
           const p=G.player,actions=[],b=G.boss&&!G.boss.dead?G.boss:null;
-          if(G.state==='chapter-card'){if(ticks%3===2)actions.push('use');}
-          else if(G.state==='over'){
+          if(G.state==='over'){
             // Continue is a normal game control, recorded separately from a clean run.
             if(continues<3&&ticks%60===0){actions.push('attack');continues++;held.clear();}
             else if(continues>=3)break;
@@ -121,7 +127,7 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
           else if(G.state==='clear'){
             if(clearTick===null){clearTick=ticks;capture('victory');}
             actions.push('use'); // Held throughout the tally must never continue.
-            if(ticks-clearTick>=240)break;
+            if(ticks-clearTick>=300)break;
           }
           else if(G.state==='play'&&!G.india?.cinematic&&!p.dying){
             const target=choose(),dx=target?target.x-p.x:200,dy=target?target.y-p.y:0,pickup=target&&G.pickups.includes(target);
@@ -136,19 +142,50 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
             const shot=incoming&&Math.abs(incoming.x-p.x)<38?incoming:null;
             const danger=hostile.find(dangerSoon);
             const cooker=hostile.find(e=>!e.dead&&e.kind==='cooker'&&['windup','attack'].includes(e.state)&&Math.abs(e.y-p.y)<16&&Math.abs(e.x-p.x)<190);
-            const machineRed=b?.key==='dredger'&&b.phase==='machine'&&['sweepaim','sweep','dropaim','bucketfall','tell','hose'].includes(b.state);
+            // Jump the scoop; step out of a locked grab shadow (machine drop or the Thekedar's call).
+            const machineRed=b?.key==='dredger'&&b.phase==='machine'&&b.state==='scoop'&&Math.abs(b.y-p.y)<14&&Math.abs(b.x-p.x)<70;
+            const grabLock=b?.key==='dredger'&&(b.phase==='machine'?['droplock','dropfall'].includes(b.state)&&b:['lock','fall'].includes(b.grab?.state)&&b.grab);
             const preparing=parryFocused&&hostile.find(e=>!e.dead&&!e.protectedStagger&&
               Math.abs(e.x-p.x)<(e.key?180:90)&&Math.abs(e.y-p.y)<22&&
               (e.state==='windup'&&!['call','valve'].includes(e.pattern)||['handset','utensil'].includes(e.state)));
             const safeToAct=!pickup&&Math.abs(dx)<44&&Math.abs(dy)<14&&dx*p.face>=0;
             const turnThreat=technical&&(incoming||preparing||danger);
             const pressure=b?.key==='vendor'&&b.pressureT>0&&Math.abs(p.y-b.pressureLane)<17;
-            const belly=b?.key==='vendor'&&(b.state==='vendor-lunge'||b.state==='windup'&&b.pattern==='vendor-lunge');
+            const belly=b?.key==='vendor'&&(['breath','fling'].includes(b.state)||b.state==='windup'&&b.pattern==='breath');
+            // The flop: leave the landing spot, then hop its floor ring.
+            const flop=b?.key==='vendor'&&(b.state==='flop'&&b.t>30&&Math.abs(b.leapTo-p.x)<60||b.wave&&Math.abs(Math.hypot(p.x-b.wave.x,(p.y-b.wave.y)*2.6)-b.wave.r)<22);
             if(technical&&(cooker||pressure||belly)){
-              const lane=cooker?cooker.y:belly?b.attackLane:b.pressureLane;
+              const lane=cooker?cooker.y:belly?(b.state==='fling'?b.flingTo?.y??p.y:b.state==='breath'?b.lane:b.y):b.pressureLane;
               dodgeLane=lane>229?214:244;dodgeUntil=ticks+45;
             }
-            if(parryFocused&&pressure&&neutral){
+            if(technical&&b?.key==='closer'){
+              // The full route keeps its ordinary policy; only the new Closer
+              // choreography receives the same learned answers as the fight bot.
+              actions.length=0;
+              const ally=G.enemies.find(e=>!e.dead&&!e.noCount&&e.state!=='spawn'),foe=pickup?target:ally||b;
+              const fx=foe.x-p.x,fy=foe.y-p.y,ready=['idle','walk','run'].includes(p.state),timing=getCloserTiming(b);
+              const red=b.state==='shove'||b.state==='windup'&&b.pattern==='shove';
+              const string=b.state==='boxing'||b.state==='windup'&&b.pattern==='boxing';
+              const phoneHold=!ally&&(['setup-handset','handset'].includes(b.state)||b.state==='windup'&&b.pattern==='handset');
+              const allyTell=ally&&['windup','attack'].includes(ally.state)&&Math.abs(fx)<85&&Math.abs(fy)<16;
+              const hold=string||phoneHold||allyTell;
+              const open=pickup||ally||b.protectedStagger>0||['recover','call'].includes(b.state)||b.state==='windup'&&b.pattern==='call';
+              if(red){const lane=(b.attackLane??b.y)>229?214:244;if(Math.abs(p.y-lane)>2)actions.push(lane>p.y?'down':'up');}
+              else{
+                if(Math.abs(fy)>(pickup?2:4))actions.push(fy>0?'down':'up');
+                if(!hold&&Math.abs(fx)>(pickup?2:open?30:44))actions.push(fx>0?'right':'left');
+                if(Math.sign(fx)!==p.face&&ready)actions.push(fx>0?'right':'left');
+                if(open&&!hold&&!pickup&&Math.abs(fx)<53&&Math.abs(fy)<12){
+                  if(G.meter>=100&&ready&&(foe!==b||b.protectedStagger>0||b.state==='recover'))actions.push('super');
+                  else if(ticks%4===0||p.state==='parry_counter'&&p.t>=6)actions.push('attack');
+                }
+              }
+              const next=b.state==='boxing'&&timing.hits.find(h=>h.at>b.t),lead=next?.cls==='counter'?3:6;
+              const boxingContact=next&&next.at-b.t<=lead;
+              const allyContact=ally?.state==='attack'&&ally.t<7&&Math.abs(fx)<85&&Math.abs(fy)<16;
+              if(!red&&(boxingContact||allyContact||shot)&&neutral&&ticks-lastParry>14){actions.length=0;actions.push('parry');lastParry=ticks;grace=9;}
+              else if(!red&&grace>0){actions.length=0;actions.push('parry');grace--;}
+            }else if(parryFocused&&pressure&&neutral){
               actions.length=0;actions.push('jump',p.y>228?'up':'down');
             }else if(turnThreat&&['idle','walk','run'].includes(p.state)&&
               Math.sign(turnThreat.x-p.x)!==p.face){
@@ -157,7 +194,7 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
               Math.sign(turnThreat.x-p.x)!==p.face){
               actions.length=0;
               if(shot&&p.state==='parry')actions.push('jump');
-            }else if(technical&&(cooker||machineRed)&&neutral){
+            }else if(technical&&(cooker||machineRed||flop)&&neutral){
               actions.push('jump');
               if(cooker)actions.push(p.y>229?'up':'down');
             }else if(technical&&p.counterT>0&&p.state==='parry_counter'&&p.t>=6&&safeToAct){
@@ -175,7 +212,7 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
               actions.length=0;
               if(preparing.state==='windup'&&preparing.t<wind-10&&p.hitConfirm)actions.push('parry');
             }
-            else if(parryFocused&&b&&!b.protectedStagger&&['ladle','overhead','utensil','rush','vendor-lunge','wrench','toolthrow','hose'].includes(b.state)&&Math.abs(b.x-p.x)<110){
+            else if(parryFocused&&b&&!b.protectedStagger&&['string','ladle','overhead','utensil','rush','vendor-lunge','wrench','sack'].includes(b.state)&&Math.abs(b.x-p.x)<110){
               // Do not start a fresh jab during an already committed boss string.
               // Wait for its next visible contact, then use the earned counter.
               actions.length=0;if(p.state==='attack'&&p.hitConfirm)actions.push('parry');
@@ -186,6 +223,9 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
               else if(ticks%8===0||p.state==='parry_counter'&&p.t>=6||p.state==='grabbing'&&p.t>=9)actions.push('attack');
               if(policy==='attack-heavy'&&G.meter>=100&&target.kind!=='prop'&&['idle','walk','run'].includes(p.state)&&ticks%8===0)actions.push('super');
             }
+            if(technical&&grabLock&&Math.abs(grabLock.x-p.x)<44&&Math.abs(grabLock.y-p.y)<18){
+              actions.length=0;actions.push(grabLock.x>p.x?'left':'right');
+            }
             if(['held','down'].includes(p.state)&&ticks%4===0)actions.push('attack');
             if(technical&&ticks<dodgeUntil){
               for(let i=actions.length-1;i>=0;i--)if(['up','down'].includes(actions[i]))actions.splice(i,1);
@@ -195,6 +235,7 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
           const beforePlayer={state:p.state,t:p.t,hitConfirm:p.hitConfirm,guardWindow:p.guardWindow};
           input(actions);g.step(1);
           if(G.boss?.pattern)patterns.add(G.boss.key+':'+G.boss.pattern);
+          if(G.boss?.key==='vendor'&&['rage','lastorder'].includes(G.boss.state))patterns.add('vendor:'+G.boss.state); // his phase turns
           if(G.player.hp<lastHP){
             damage+=lastHP-G.player.hp;
             if(defenses.length<400)defenses.push({ticks,beforePlayer,damage:lastHP-G.player.hp,actions:[...actions],beforeTarget:simple(chosen),player:{...simple(G.player),face:G.player.face,window:G.player.guardWindow,defense:G.player.lastDefense},boss:simple(G.boss),shots:G.shots.map(s=>({kind:s.kind,x:s.x,y:s.y,vx:s.vx}))});
@@ -229,16 +270,17 @@ const MAX_TICKS=Number(process.env.MAX_TICKS)||66000;
           checks.push(['attack cannot confirm chapter victory',G.state==='clear']);
           checks.push(['score awarded once',G.score===score]);
           input([]);g.step(1);input(['use']);g.step(60);
-          checks.push(['fresh confirmation reaches campaign destination',stage==='delhi'?G.stage.id==='refund'&&G.state==='chapter-card':G.state==='ending']);
+          checks.push(['fresh confirmation reaches campaign destination',stage==='delhi'?G.stage.id==='refund'&&G.state==='intro'&&G.audio.snapshot().music===G.stage.music:G.state==='ending']);
           result.victoryChecks=checks;result.handoff={stage:G.stage.id,state:G.state};
         }
         input([]);
         return result;
-      },{stage,policy,bossOnly:BOSS_ONLY,bossKey:BOSS_KEY,maxTicks:MAX_TICKS});
+      },{stage,policy,bossOnly:BOSS_ONLY,bossKey:BOSS_KEY,maxTicks:MAX_TICKS,inputMode:INPUT_MODE});
       const prefix=BOSS_ONLY?`boss-${BOSS_KEY?BOSS_KEY+'-':''}`:'';
-      for(const c of result.captures){fs.writeFileSync(path.join(OUT,`${prefix}${stage}-${policy}-${c.label}.png`),Buffer.from(c.png.split(',')[1],'base64'));delete c.png;}
+      const runLabel=policy+(INPUT_MODE?'-'+INPUT_MODE:'');
+      for(const c of result.captures){fs.writeFileSync(path.join(OUT,`${prefix}${stage}-${runLabel}-${c.label}.png`),Buffer.from(c.png.split(',')[1],'base64'));delete c.png;}
       result.errors=errors;results.push(result);
-      fs.writeFileSync(path.join(OUT,`${prefix}${stage}-${policy}.json`),JSON.stringify(result,null,2));
+      fs.writeFileSync(path.join(OUT,`${prefix}${stage}-${runLabel}.json`),JSON.stringify(result,null,2));
       console.log(JSON.stringify({...result,trace:undefined,captures:undefined,events:undefined,defenses:undefined}));
       await page.close();
     }

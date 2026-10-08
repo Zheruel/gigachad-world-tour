@@ -10,3 +10,6 @@ __pycache__/
 .DS_Store
 
 tmp/review/
+tools/verification/tmp/
+assets/frames/.manifest.lock
+_site/

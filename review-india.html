@@ -1,6 +1,0 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><title>Opening level explorer…</title>
-<p>This explorer has moved to separate <a href="review-delhi.html">Dirty Delhi</a> and <a href="review-refund.html">Refund Tower</a> pages.</p>
-<script>
-const query=new URLSearchParams(location.search),stage=query.get('stage')==='refund'?'refund':'delhi';
-query.delete('stage');location.replace(`review-${stage}.html${query.size?'?'+query:''}${location.hash}`);
-</script></html>

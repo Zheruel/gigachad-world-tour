@@ -48,20 +48,9 @@ const { chromium } = require('playwright');
       await page.evaluate(i => { const g=window.__game; g.G.freezeTime=false; g.travel('lobby'); g.G.travel.x=420; g.step(1+i*24); g.G.fade=0; g.G.freezeTime=true; g.render(); },i);
       await page.screenshot({ path: `${out}/staff-${i}.png` });
     }
-    await page.goto('http://localhost:8011/review-elevator.html');
-    await page.waitForFunction(() => document.getElementById('readout').textContent.startsWith('Frame'));
-    for (const [id, state] of [['penthouse','hub'],['lobby','travel']]) {
-      await page.locator(`#${id}`).click();
-      assert(await page.evaluate(state => document.getElementById('preview').contentWindow.__game.G.state===state,state));
-      await page.locator('#explore').click();
-      const frame=page.frames().find(f=>f.url().includes('?auto='));
-      await frame.locator('#game').focus();
-      await page.keyboard.press('x'); await page.waitForTimeout(80);
-      assert(await frame.evaluate(() => window.__game.G.player.z>0), `${id} review allows native jumping`);
-      await page.locator('#play').click();
-    }
-    await page.locator('#scale').click();
-    await page.locator('#preview').screenshot({path:`${out}/lobby-1x.png`});
+    const studio=require('./studio_helper.cjs');const frame=await studio.openStudio(page,'trip/penthouse');
+    for(const [id,state]of [['penthouse','hub'],['lobby','travel']]){await studio.load(page,'trip/'+id);assert(await page.evaluate(state=>__review.game.G.state===state,state));await page.evaluate(()=>__review.play());await page.keyboard.press('KeyX');await page.waitForTimeout(80);assert(await frame.evaluate(()=>__game.G.player.z>0),`${id} review allows native jumping`);await page.evaluate(()=>__review.pause());}
+    await page.evaluate(()=>__review.setScale(1));await page.locator('#game').screenshot({path:`${out}/lobby-1x.png`});
     assert.deepEqual(errors, []);
     console.log(JSON.stringify({checks, pointerChecks:2, reviewChecks:4, screenshots:out}));
   } finally { await browser.close(); }

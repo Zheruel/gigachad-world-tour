@@ -46,14 +46,9 @@ const {chromium} = require('playwright');
     await page.evaluate(()=>{const g=window.__game;g.G.travel.t=755;g.render();});
     await page.screenshot({path:`${out}/bar-1x.png`});
     await page.setViewportSize({width:960,height:540});
-    await page.goto('http://localhost:8011/review-elevator.html');
-    await page.waitForFunction(()=>document.querySelector('#readout').textContent.startsWith('Frame'));
-    for(const id of ['reception','bar']) {
-      await page.locator(`#${id}`).click();await page.locator('[data-step="30"]').click();
-      assert.equal(await page.locator('#timeline').inputValue(),'31');
-    }
-    await page.locator('#activity').selectOption('bar:755');
-    assert.equal(await page.locator('#timeline').inputValue(),'755');
+    const studio=require('./studio_helper.cjs');await studio.openStudio(page,'trip/lobby');
+    for(const id of ['lobby']){await studio.load(page,'trip/'+id);await studio.step(page,31);assert.equal(await page.evaluate(()=>__review.snapshot().tick),31);}
+    await studio.load(page,'trip/lobby');await studio.seek(page,755);assert.equal(await page.evaluate(()=>__review.snapshot().tick),755);
     assert.deepEqual(errors,[]);console.log(JSON.stringify({checks,reviewChecks:2,screenshots:out}));
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

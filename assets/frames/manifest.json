@@ -223,24 +223,6 @@
       "chad_boxing_variety_16.png",
       "chad_boxing_variety_17.png"
     ],
-    "inspector_pair": [
-      "chad_inspector_pair_00.png",
-      "chad_inspector_pair_01.png",
-      "chad_inspector_pair_02.png",
-      "chad_inspector_pair_03.png",
-      "chad_inspector_pair_04.png",
-      "chad_inspector_pair_05.png"
-    ],
-    "seth_pair": [
-      "chad_seth_pair_00.png",
-      "chad_seth_pair_01.png",
-      "chad_seth_pair_02.png",
-      "chad_seth_pair_03.png",
-      "chad_seth_pair_04.png",
-      "chad_seth_pair_05.png",
-      "chad_seth_pair_06.png",
-      "chad_seth_pair_07.png"
-    ],
     "super_barrage": [
       "player/super_barrage_00.png",
       "player/super_barrage_01.png",
@@ -284,6 +266,36 @@
       "player/electric_finish_05.png",
       "player/electric_finish_06.png",
       "player/electric_finish_07.png"
+    ],
+    "puri_cram": [
+      "chad_puri_cram1.png",
+      "chad_puri_cram2.png",
+      "chad_puri_cram3.png"
+    ],
+    "puri_cigar": [
+      "chad_puri_cigar1.png",
+      "chad_puri_cigar2.png",
+      "chad_puri_cigar3.png"
+    ],
+    "dredge_catch": [
+      "chad_dredge_catch1.png",
+      "chad_dredge_catch2.png"
+    ],
+    "dredge_spin": [
+      "chad_dredge_spin1.png",
+      "chad_dredge_spin2.png",
+      "chad_dredge_spin3.png",
+      "chad_dredge_spin4.png"
+    ],
+    "dredge_light": [
+      "chad_dredge_light1.png",
+      "chad_dredge_light2.png",
+      "chad_dredge_light3.png",
+      "chad_dredge_light4.png",
+      "chad_dredge_light5.png",
+      "chad_dredge_light6.png",
+      "chad_dredge_light7.png",
+      "chad_dredge_light8.png"
     ]
   },
   "goonda": {
@@ -661,10 +673,10 @@
       "sandh_paw1.png"
     ],
     "walk": [
-      "sandh_walk1.png",
-      "sandh_walk2.png",
-      "sandh_walk3.png",
-      "sandh_walk4.png"
+      "bull/walk_00.png",
+      "bull/walk_01.png",
+      "bull/walk_02.png",
+      "bull/walk_03.png"
     ],
     "atk": [
       "sandh_paw4.png",
@@ -684,7 +696,7 @@
       "sandh_charge4.png"
     ],
     "hurt": [
-      "sandh_hurt1.png",
+      "bull/hurt_00.png",
       "sandh_hurt2.png"
     ],
     "down": [
@@ -715,2103 +727,4712 @@
       "dabbawala_drop3.png"
     ]
   },
-  "thekedar": {
-    "idle": [
-      "thekedar/rebuild_operator_base_09.png"
-    ],
-    "walk": [
-      "thekedar/rebuild_operator_base_00.png",
-      "thekedar/rebuild_operator_base_01.png",
-      "thekedar/rebuild_operator_base_02.png",
-      "thekedar/rebuild_operator_base_03.png",
-      "thekedar/rebuild_operator_base_04.png",
-      "thekedar/rebuild_operator_base_05.png",
-      "thekedar/rebuild_operator_base_06.png",
-      "thekedar/rebuild_operator_base_07.png"
-    ],
-    "atk": [
-      "thekedar/rebuild_operator_actions_00.png",
-      "thekedar/rebuild_operator_actions_01.png",
-      "thekedar/rebuild_operator_actions_02.png",
-      "thekedar/rebuild_operator_actions_03.png",
-      "thekedar/rebuild_operator_actions_04.png",
-      "thekedar/rebuild_operator_actions_05.png"
-    ],
-    "punch": [
-      "thekedar/rebuild_operator_actions_00.png",
-      "thekedar/rebuild_operator_actions_01.png",
-      "thekedar/rebuild_operator_actions_02.png",
-      "thekedar/rebuild_operator_actions_03.png",
-      "thekedar/rebuild_operator_actions_04.png",
-      "thekedar/rebuild_operator_actions_05.png"
-    ],
-    "hurt": [
-      "thekedar/rebuild_operator_base_11.png"
-    ],
-    "down": [
-      "thekedar/rebuild_operator_actions_22.png"
-    ],
-    "run": [
-      "thekedar/rebuild_operator_base_00.png",
-      "thekedar/rebuild_operator_base_01.png",
-      "thekedar/rebuild_operator_base_02.png",
-      "thekedar/rebuild_operator_base_03.png",
-      "thekedar/rebuild_operator_base_04.png",
-      "thekedar/rebuild_operator_base_05.png",
-      "thekedar/rebuild_operator_base_06.png",
-      "thekedar/rebuild_operator_base_07.png"
-    ],
-    "cocky": [
-      "thekedar/rebuild_operator_base_08.png"
-    ],
-    "block": [
-      "thekedar/rebuild_operator_base_10.png"
-    ],
-    "fall": [
-      "thekedar/rebuild_operator_base_11.png"
-    ],
-    "stagger": [
-      "thekedar/rebuild_operator_actions_18.png",
-      "thekedar/rebuild_operator_actions_19.png",
-      "thekedar/rebuild_operator_actions_20.png"
-    ],
-    "cower": [
-      "thekedar/rebuild_operator_actions_18.png",
-      "thekedar/rebuild_operator_actions_19.png",
-      "thekedar/rebuild_operator_actions_20.png"
-    ],
-    "wrench": [
-      "thekedar/rebuild_operator_actions_00.png",
-      "thekedar/rebuild_operator_actions_01.png",
-      "thekedar/rebuild_operator_actions_02.png",
-      "thekedar/rebuild_operator_actions_03.png",
-      "thekedar/rebuild_operator_actions_04.png",
-      "thekedar/rebuild_operator_actions_05.png"
-    ],
-    "toolthrow": [
-      "thekedar/rebuild_operator_actions_06.png",
-      "thekedar/rebuild_operator_actions_07.png",
-      "thekedar/rebuild_operator_actions_08.png",
-      "thekedar/rebuild_operator_actions_09.png",
-      "thekedar/rebuild_operator_actions_10.png",
-      "thekedar/rebuild_operator_actions_11.png"
-    ],
-    "throw": [
-      "thekedar/rebuild_operator_actions_06.png",
-      "thekedar/rebuild_operator_actions_07.png",
-      "thekedar/rebuild_operator_actions_08.png",
-      "thekedar/rebuild_operator_actions_09.png",
-      "thekedar/rebuild_operator_actions_10.png",
-      "thekedar/rebuild_operator_actions_11.png"
-    ],
-    "restart": [
-      "thekedar/rebuild_operator_actions_12.png",
-      "thekedar/rebuild_operator_actions_13.png",
-      "thekedar/rebuild_operator_actions_14.png"
-    ],
-    "call": [
-      "thekedar/rebuild_operator_actions_16.png",
-      "thekedar/rebuild_operator_actions_17.png"
-    ],
-    "getup": [
-      "thekedar/rebuild_operator_actions_23.png",
-      "thekedar/rebuild_operator_actions_21.png"
-    ],
-    "climbdown": [
-      "thekedar/rebuild_operator_climb_00.png",
-      "thekedar/rebuild_operator_climb_01.png",
-      "thekedar/rebuild_operator_climb_02.png",
-      "thekedar/rebuild_operator_climb_03.png"
-    ],
-    "seated": [
-      "thekedar/rebuild_operator_climb_04.png",
-      "thekedar/rebuild_operator_climb_05.png"
-    ],
-    "scared": [
-      "thekedar/rebuild_operator_climb_07.png"
-    ]
-  },
   "nr_tough": {
     "idle": [
-      "nr_tough/performance_0.png",
-      "nr_tough/performance_1.png"
-    ],
-    "walk": [
-      "nr_tough/gait_0.png",
-      "nr_tough/gait_1.png",
-      "nr_tough/gait_2.png",
-      "nr_tough/gait_3.png",
-      "nr_tough/gait_4.png",
-      "nr_tough/gait_5.png",
-      "nr_tough/gait_6.png",
-      "nr_tough/gait_7.png"
-    ],
-    "atk": [
-      "nr_tough/performance_10.png",
-      "nr_tough/performance_11.png",
-      "nr_tough/performance_12.png"
-    ],
-    "hurt": [
-      "nr_tough/performance_13.png"
-    ],
-    "down": [
-      "nr_tough/performance_14.png"
-    ],
-    "jump": [
-      "nr_tough/performance_15.png"
+      "nr_tough/a_00.png",
+      "nr_tough/a_01.png"
     ],
     "block": [
-      "nr_tough/performance_1.png"
+      "nr_tough/a_02.png"
     ],
-    "perch": [
-      "nr_tough/performance_15.png"
+    "jump": [
+      "nr_tough/a_06.png"
+    ],
+    "walk": [
+      "nr_tough/a_04.png",
+      "nr_tough/a_05.png",
+      "nr_tough/a_06.png",
+      "nr_tough/a_07.png",
+      "nr_tough/a_08.png",
+      "nr_tough/a_09.png",
+      "nr_tough/a_10.png",
+      "nr_tough/a_11.png"
+    ],
+    "atk": [
+      "nr_tough/a_03.png",
+      "nr_tough/a_12.png",
+      "nr_tough/a_13.png"
+    ],
+    "hurt": [
+      "nr_tough/b_09.png",
+      "nr_tough/a_14.png"
+    ],
+    "down": [
+      "nr_tough/a_15.png"
     ],
     "getup": [
-      "nr_tough/recovery_0.png",
-      "nr_tough/recovery_1.png",
-      "nr_tough/recovery_2.png",
-      "nr_tough/recovery_3.png"
+      "nr_tough/b_00.png",
+      "nr_tough/b_01.png",
+      "nr_tough/b_02.png",
+      "nr_tough/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_tough/b_04.png",
+      "nr_tough/b_05.png",
+      "nr_tough/b_06.png",
+      "nr_tough/b_07.png"
+    ],
+    "fall": [
+      "nr_tough/b_08.png"
+    ],
+    "grab": [
+      "nr_tough/b_10.png"
+    ],
+    "taunt": [
+      "nr_tough/b_11.png"
     ],
     "super_reaction": [
-      "nr_tough/super_reaction_00.png",
-      "nr_tough/super_reaction_01.png",
-      "nr_tough/super_reaction_02.png",
-      "nr_tough/super_reaction_03.png",
-      "nr_tough/super_reaction_04.png",
-      "nr_tough/super_reaction_05.png",
-      "nr_tough/super_reaction_06.png",
-      "nr_tough/super_reaction_07.png"
+      "nr_tough/b_09.png",
+      "nr_tough/a_14.png",
+      "nr_tough/b_12.png",
+      "nr_tough/b_09.png",
+      "nr_tough/b_13.png",
+      "nr_tough/b_14.png",
+      "nr_tough/b_08.png",
+      "nr_tough/a_15.png"
     ]
   },
   "nr_bruiser": {
     "idle": [
-      "nr_bruiser/performance_0.png",
-      "nr_bruiser/performance_1.png"
-    ],
-    "walk": [
-      "nr_bruiser/gait_0.png",
-      "nr_bruiser/passing_0.png",
-      "nr_bruiser/passing_1.png",
-      "nr_bruiser/gait_3.png",
-      "nr_bruiser/gait_4.png",
-      "nr_bruiser/passing_2.png",
-      "nr_bruiser/passing_3.png",
-      "nr_bruiser/gait_7.png"
-    ],
-    "atk": [
-      "nr_bruiser/performance_10.png",
-      "nr_bruiser/performance_11.png",
-      "nr_bruiser/performance_12.png"
-    ],
-    "hurt": [
-      "nr_bruiser/performance_13.png"
-    ],
-    "down": [
-      "nr_bruiser/performance_14.png"
-    ],
-    "jump": [
-      "nr_bruiser/performance_15.png"
+      "nr_bruiser/a_00.png",
+      "nr_bruiser/a_01.png"
     ],
     "block": [
-      "nr_bruiser/performance_1.png"
+      "nr_bruiser/a_02.png"
     ],
-    "perch": [
-      "nr_bruiser/performance_15.png"
+    "jump": [
+      "nr_bruiser/a_06.png"
+    ],
+    "walk": [
+      "nr_bruiser/a_04.png",
+      "nr_bruiser/a_05.png",
+      "nr_bruiser/a_06.png",
+      "nr_bruiser/a_07.png",
+      "nr_bruiser/a_04.png",
+      "nr_bruiser/a_05.png",
+      "nr_bruiser/a_06.png",
+      "nr_bruiser/a_07.png"
+    ],
+    "atk": [
+      "nr_bruiser/a_03.png",
+      "nr_bruiser/a_12.png",
+      "nr_bruiser/a_13.png"
+    ],
+    "hurt": [
+      "nr_bruiser/a_14.png"
+    ],
+    "down": [
+      "nr_bruiser/a_15.png"
     ],
     "getup": [
-      "nr_bruiser/recovery_0.png",
-      "nr_bruiser/recovery_1.png",
-      "nr_bruiser/recovery_2.png",
-      "nr_bruiser/recovery_3.png"
+      "nr_bruiser/b_00.png",
+      "nr_bruiser/b_01.png",
+      "nr_bruiser/b_02.png",
+      "nr_bruiser/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_bruiser/b_04.png",
+      "nr_bruiser/b_05.png",
+      "nr_bruiser/b_07.png",
+      "nr_bruiser/b_05.png"
+    ],
+    "fall": [
+      "nr_bruiser/b_08.png"
+    ],
+    "charge": [
+      "nr_bruiser/b_10.png"
+    ],
+    "taunt": [
+      "nr_bruiser/b_11.png"
+    ],
+    "throw": [
+      "nr_bruiser/b_12.png",
+      "nr_bruiser/b_13.png"
     ]
   },
   "nr_runner": {
     "idle": [
-      "nr_runner/performance_0.png",
-      "nr_runner/performance_1.png"
-    ],
-    "walk": [
-      "nr_runner/gait_0.png",
-      "nr_runner/gait_1.png",
-      "nr_runner/gait_2.png",
-      "nr_runner/gait_3.png",
-      "nr_runner/gait_4.png",
-      "nr_runner/gait_5.png",
-      "nr_runner/gait_6.png",
-      "nr_runner/gait_7.png"
-    ],
-    "atk": [
-      "nr_runner/performance_10.png",
-      "nr_runner/performance_11.png",
-      "nr_runner/performance_12.png"
-    ],
-    "hurt": [
-      "nr_runner/performance_13.png"
-    ],
-    "down": [
-      "nr_runner/performance_14.png"
-    ],
-    "jump": [
-      "nr_runner/performance_15.png"
+      "nr_runner/a_00.png",
+      "nr_runner/a_01.png"
     ],
     "block": [
-      "nr_runner/performance_1.png"
+      "nr_runner/a_02.png"
     ],
-    "perch": [
-      "nr_runner/performance_15.png"
+    "jump": [
+      "nr_runner/b_10.png"
+    ],
+    "walk": [
+      "nr_runner/a_04.png",
+      "nr_runner/a_05.png",
+      "nr_runner/a_06.png",
+      "nr_runner/a_07.png",
+      "nr_runner/a_08.png",
+      "nr_runner/a_09.png",
+      "nr_runner/a_10.png",
+      "nr_runner/a_11.png"
+    ],
+    "atk": [
+      "nr_runner/a_03.png",
+      "nr_runner/a_12.png",
+      "nr_runner/a_13.png"
+    ],
+    "hurt": [
+      "nr_runner/a_14.png"
+    ],
+    "down": [
+      "nr_runner/a_15.png"
     ],
     "getup": [
-      "nr_runner/recovery_0.png",
-      "nr_runner/recovery_1.png",
-      "nr_runner/recovery_2.png",
-      "nr_runner/recovery_3.png"
+      "nr_runner/b_00.png",
+      "nr_runner/b_02.png",
+      "nr_runner/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_runner/b_04.png",
+      "nr_runner/b_05.png",
+      "nr_runner/b_06.png",
+      "nr_runner/b_07.png"
+    ],
+    "fall": [
+      "nr_runner/b_08.png"
+    ],
+    "dodge": [
+      "nr_runner/b_10.png"
+    ],
+    "taunt": [
+      "nr_runner/b_11.png"
+    ],
+    "run": [
+      "nr_runner/b_12.png",
+      "nr_runner/b_13.png",
+      "nr_runner/b_14.png",
+      "nr_runner/b_13.png"
+    ],
+    "lunge": [
+      "nr_runner/b_15.png"
     ]
   },
   "nr_ambusher": {
     "idle": [
-      "nr_ambusher/performance_0.png",
-      "nr_ambusher/performance_1.png"
-    ],
-    "walk": [
-      "nr_ambusher/gait_0.png",
-      "nr_ambusher/gait_1.png",
-      "nr_ambusher/gait_2.png",
-      "nr_ambusher/gait_3.png",
-      "nr_ambusher/gait_4.png",
-      "nr_ambusher/gait_5.png",
-      "nr_ambusher/gait_6.png",
-      "nr_ambusher/gait_7.png"
-    ],
-    "atk": [
-      "nr_ambusher/performance_9.png",
-      "nr_ambusher/performance_10.png",
-      "nr_ambusher/performance_11.png"
-    ],
-    "hurt": [
-      "nr_ambusher/performance_12.png"
-    ],
-    "down": [
-      "nr_ambusher/performance_13.png"
-    ],
-    "jump": [
-      "nr_ambusher/performance_15.png"
+      "nr_ambusher/a_00.png",
+      "nr_ambusher/a_01.png"
     ],
     "block": [
-      "nr_ambusher/performance_1.png"
+      "nr_ambusher/a_02.png"
     ],
-    "perch": [
-      "nr_ambusher/aerial_0.png",
-      "nr_ambusher/aerial_1.png"
+    "jump": [
+      "nr_ambusher/a_06.png"
+    ],
+    "walk": [
+      "nr_ambusher/a_04.png",
+      "nr_ambusher/a_05.png",
+      "nr_ambusher/a_06.png",
+      "nr_ambusher/a_07.png",
+      "nr_ambusher/a_08.png",
+      "nr_ambusher/a_09.png",
+      "nr_ambusher/a_10.png",
+      "nr_ambusher/a_11.png"
+    ],
+    "atk": [
+      "nr_ambusher/a_03.png",
+      "nr_ambusher/a_12.png",
+      "nr_ambusher/a_13.png"
+    ],
+    "hurt": [
+      "nr_ambusher/a_14.png"
+    ],
+    "down": [
+      "nr_ambusher/a_15.png"
     ],
     "getup": [
-      "nr_ambusher/recovery_0.png",
-      "nr_ambusher/recovery_1.png",
-      "nr_ambusher/recovery_2.png",
-      "nr_ambusher/recovery_3.png"
+      "nr_ambusher/b_00.png",
+      "nr_ambusher/b_01.png",
+      "nr_ambusher/b_02.png",
+      "nr_ambusher/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_ambusher/b_04.png",
+      "nr_ambusher/b_05.png",
+      "nr_ambusher/b_07.png",
+      "nr_ambusher/b_05.png"
+    ],
+    "fall": [
+      "nr_ambusher/b_08.png"
+    ],
+    "perch": [
+      "nr_ambusher/b_10.png",
+      "nr_ambusher/b_11.png"
     ],
     "climb": [
-      "nr_ambusher/aerial_2.png",
-      "nr_ambusher/aerial_3.png"
+      "nr_ambusher/b_12.png",
+      "nr_ambusher/b_12.png"
     ],
     "drop": [
-      "nr_ambusher/aerial_4.png",
-      "nr_ambusher/aerial_4.png",
-      "nr_ambusher/aerial_5.png"
+      "nr_ambusher/b_13.png",
+      "nr_ambusher/b_13.png",
+      "nr_ambusher/b_14.png"
     ],
     "land": [
-      "nr_ambusher/aerial_6.png",
-      "nr_ambusher/aerial_7.png"
+      "nr_ambusher/b_14.png",
+      "nr_ambusher/b_15.png"
     ]
   },
   "nr_heavy": {
     "idle": [
-      "nr_heavy/performance_0.png",
-      "nr_heavy/performance_1.png"
-    ],
-    "walk": [
-      "nr_heavy/gait_0.png",
-      "nr_heavy/gait_1.png",
-      "nr_heavy/gait_2.png",
-      "nr_heavy/gait_3.png",
-      "nr_heavy/gait_4.png",
-      "nr_heavy/gait_5.png",
-      "nr_heavy/gait_6.png",
-      "nr_heavy/gait_7.png"
-    ],
-    "atk": [
-      "nr_heavy/performance_9.png",
-      "nr_heavy/performance_10.png",
-      "nr_heavy/performance_11.png"
-    ],
-    "hurt": [
-      "nr_heavy/performance_12.png"
-    ],
-    "down": [
-      "nr_heavy/performance_13.png"
-    ],
-    "jump": [
-      "nr_heavy/performance_15.png"
+      "nr_heavy/a_00.png",
+      "nr_heavy/a_01.png"
     ],
     "block": [
-      "nr_heavy/performance_1.png"
+      "nr_heavy/a_02.png"
     ],
-    "perch": [
-      "nr_heavy/performance_15.png"
+    "jump": [
+      "nr_heavy/a_06.png"
+    ],
+    "walk": [
+      "nr_heavy/a_04.png",
+      "nr_heavy/a_05.png",
+      "nr_heavy/a_06.png",
+      "nr_heavy/a_07.png",
+      "nr_heavy/a_08.png",
+      "nr_heavy/a_09.png",
+      "nr_heavy/a_10.png",
+      "nr_heavy/a_11.png"
+    ],
+    "atk": [
+      "nr_heavy/a_03.png",
+      "nr_heavy/a_12.png",
+      "nr_heavy/a_13.png"
+    ],
+    "hurt": [
+      "nr_heavy/a_14.png"
+    ],
+    "down": [
+      "nr_heavy/b_00.png"
     ],
     "getup": [
-      "nr_heavy/recovery_0.png",
-      "nr_heavy/recovery_1.png",
-      "nr_heavy/recovery_2.png",
-      "nr_heavy/recovery_3.png"
+      "nr_heavy/b_00.png",
+      "nr_heavy/b_01.png",
+      "nr_heavy/b_02.png",
+      "nr_heavy/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_heavy/b_04.png",
+      "nr_heavy/b_05.png",
+      "nr_heavy/b_06.png",
+      "nr_heavy/b_07.png"
+    ],
+    "fall": [
+      "nr_heavy/b_08.png"
+    ],
+    "charge": [
+      "nr_heavy/b_10.png",
+      "nr_heavy/b_11.png"
+    ],
+    "stunned": [
+      "nr_heavy/b_12.png"
+    ],
+    "taunt": [
+      "nr_heavy/b_13.png"
+    ],
+    "perch": [
+      "nr_heavy/a_03.png"
     ]
   },
   "nr_guard": {
     "idle": [
-      "nr_guard/performance_0.png",
-      "nr_guard/performance_1.png"
-    ],
-    "walk": [
-      "nr_guard/gait_0.png",
-      "nr_guard/gait_1.png",
-      "nr_guard/gait_2.png",
-      "nr_guard/gait_3.png",
-      "nr_guard/gait_4.png",
-      "nr_guard/gait_5.png",
-      "nr_guard/gait_6.png",
-      "nr_guard/gait_7.png"
-    ],
-    "atk": [
-      "nr_guard/performance_10.png",
-      "nr_guard/performance_11.png",
-      "nr_guard/performance_12.png"
-    ],
-    "hurt": [
-      "nr_guard/performance_13.png"
-    ],
-    "down": [
-      "nr_guard/performance_14.png"
-    ],
-    "jump": [
-      "nr_guard/performance_15.png"
+      "nr_guard/a_00.png",
+      "nr_guard/a_01.png"
     ],
     "block": [
-      "nr_guard/performance_1.png"
-    ],
-    "perch": [
-      "nr_guard/performance_15.png"
-    ],
-    "getup": [
-      "nr_guard/recovery_0.png",
-      "nr_guard/recovery_1.png",
-      "nr_guard/recovery_2.png",
-      "nr_guard/recovery_3.png"
-    ]
-  },
-  "nr_vikram": {
-    "idle": [
-      "nr_vikram/0.png",
-      "nr_vikram/1.png"
-    ],
-    "walk": [
-      "nr_vikram/contact_0.png",
-      "nr_vikram/passing_0.png",
-      "nr_vikram/passing_1.png",
-      "nr_vikram/contact_1.png",
-      "nr_vikram/contact_2.png",
-      "nr_vikram/passing_2.png",
-      "nr_vikram/passing_3.png",
-      "nr_vikram/contact_3.png"
-    ],
-    "atk": [
-      "nr_vikram/6.png",
-      "nr_vikram/7.png",
-      "nr_vikram/8.png"
-    ],
-    "hurt": [
-      "nr_vikram/9.png"
-    ],
-    "down": [
-      "nr_vikram/10.png"
+      "nr_guard/b_12.png"
     ],
     "jump": [
-      "nr_vikram/11.png"
+      "nr_guard/a_06.png"
     ],
-    "perch": [
-      "nr_vikram/11.png"
+    "walk": [
+      "nr_guard/a_04.png",
+      "nr_guard/a_05.png",
+      "nr_guard/a_06.png",
+      "nr_guard/a_07.png",
+      "nr_guard/a_08.png",
+      "nr_guard/a_09.png",
+      "nr_guard/a_10.png",
+      "nr_guard/a_11.png"
     ],
-    "block": [
-      "nr_vikram/action_11.png"
+    "atk": [
+      "nr_guard/a_03.png",
+      "nr_guard/a_12.png",
+      "nr_guard/a_13.png"
     ],
-    "pistol": [
-      "nr_vikram/action_0.png",
-      "nr_vikram/action_1.png",
-      "nr_vikram/action_2.png",
-      "nr_vikram/action_3.png",
-      "nr_vikram/action_4.png"
+    "hurt": [
+      "nr_guard/a_14.png"
     ],
-    "grab": [
-      "nr_vikram/action_5.png",
-      "nr_vikram/action_6.png",
-      "nr_vikram/action_7.png"
-    ],
-    "climb": [
-      "nr_vikram/action_8.png",
-      "nr_vikram/action_9.png"
+    "down": [
+      "nr_guard/a_15.png"
     ],
     "getup": [
-      "nr_vikram/recovery_0.png",
-      "nr_vikram/recovery_1.png",
-      "nr_vikram/recovery_2.png",
-      "nr_vikram/recovery_3.png"
-    ],
-    "guard_polish": [
-      "nr_vikram/polish_0.png"
-    ],
-    "recover_polish": [
-      "nr_vikram/polish_1.png"
+      "nr_guard/b_00.png",
+      "nr_guard/b_01.png",
+      "nr_guard/b_02.png",
+      "nr_guard/b_03.png"
     ],
     "stagger_polish": [
-      "nr_vikram/polish_2.png"
+      "nr_guard/b_04.png",
+      "nr_guard/b_05.png",
+      "nr_guard/b_06.png",
+      "nr_guard/b_07.png"
     ],
-    "injured_retreat": [
-      "nr_vikram/injured_retreat_00.png",
-      "nr_vikram/injured_retreat_01.png",
-      "nr_vikram/injured_retreat_02.png",
-      "nr_vikram/injured_retreat_03.png",
-      "nr_vikram/injured_retreat_04.png",
-      "nr_vikram/injured_retreat_05.png",
-      "nr_vikram/injured_retreat_06.png",
-      "nr_vikram/injured_retreat_07.png",
-      "nr_vikram/injured_retreat_08.png",
-      "nr_vikram/injured_retreat_09.png",
-      "nr_vikram/injured_retreat_10.png",
-      "nr_vikram/injured_retreat_11.png",
-      "nr_vikram/injured_retreat_12.png",
-      "nr_vikram/injured_retreat_13.png",
-      "nr_vikram/injured_retreat_14.png",
-      "nr_vikram/injured_retreat_15.png"
+    "fall": [
+      "nr_guard/b_08.png"
     ],
-    "injured_climb": [
-      "nr_vikram/injured_climb_00.png",
-      "nr_vikram/injured_climb_01.png",
-      "nr_vikram/injured_climb_02.png",
-      "nr_vikram/injured_climb_03.png"
-    ]
-  },
-  "nr_vikram_roof": {
-    "idle": [
-      "nr_vikram_roof/0.png",
-      "nr_vikram_roof/1.png"
+    "call": [
+      "nr_guard/b_10.png"
     ],
-    "walk": [
-      "nr_vikram_roof/contact_0.png",
-      "nr_vikram_roof/passing_0.png",
-      "nr_vikram_roof/passing_1.png",
-      "nr_vikram_roof/contact_1.png",
-      "nr_vikram_roof/contact_2.png",
-      "nr_vikram_roof/passing_2.png",
-      "nr_vikram_roof/passing_3.png",
-      "nr_vikram_roof/contact_3.png"
+    "taunt": [
+      "nr_guard/b_11.png"
     ],
-    "atk": [
-      "nr_vikram_roof/6.png",
-      "nr_vikram_roof/7.png",
-      "nr_vikram_roof/8.png"
+    "guardbreak": [
+      "nr_guard/b_13.png"
     ],
-    "hurt": [
-      "nr_vikram_roof/9.png"
-    ],
-    "down": [
-      "nr_vikram_roof/10.png"
-    ],
-    "jump": [
-      "nr_vikram_roof/11.png"
-    ],
-    "perch": [
-      "nr_vikram_roof/11.png"
-    ],
-    "block": [
-      "nr_vikram_roof/6.png"
-    ],
-    "getup": [
-      "nr_vikram_roof/recovery_0.png",
-      "nr_vikram_roof/recovery_1.png",
-      "nr_vikram_roof/recovery_2.png",
-      "nr_vikram_roof/recovery_3.png"
-    ],
-    "sweep": [
-      "nr_vikram_roof/sweep_0.png",
-      "nr_vikram_roof/sweep_1.png",
-      "nr_vikram_roof/sweep_2.png"
-    ],
-    "guard_polish": [
-      "nr_vikram_roof/polish_0.png"
-    ],
-    "recover_polish": [
-      "nr_vikram_roof/polish_1.png"
-    ],
-    "stagger_polish": [
-      "nr_vikram_roof/polish_2.png"
-    ],
-    "charge_polish": [
-      "nr_vikram_roof/charge_polish_0.png",
-      "nr_vikram_roof/charge_polish_1.png",
-      "nr_vikram_roof/charge_polish_2.png",
-      "nr_vikram_roof/charge_polish_3.png"
-    ],
-    "finisher_flight": [
-      "nr_vikram_roof/finisher_flight_00.png"
+    "jab": [
+      "nr_guard/b_14.png",
+      "nr_guard/b_15.png"
     ]
   },
   "nr_heavy_unarmed": {
-    "idle": [
-      "nr_heavy_unarmed/performance_0.png",
-      "nr_heavy_unarmed/performance_1.png"
+    "getup": [
+      "nr_heavy_unarmed/b_00.png",
+      "nr_heavy_unarmed/b_01.png",
+      "nr_heavy_unarmed/b_02.png",
+      "nr_heavy_unarmed/b_03.png"
     ],
-    "walk": [
-      "nr_heavy_unarmed/gait_0.png",
-      "nr_heavy_unarmed/gait_1.png",
-      "nr_heavy_unarmed/gait_2.png",
-      "nr_heavy_unarmed/gait_3.png",
-      "nr_heavy_unarmed/gait_4.png",
-      "nr_heavy_unarmed/gait_5.png",
-      "nr_heavy_unarmed/gait_6.png",
-      "nr_heavy_unarmed/gait_7.png"
+    "stagger_polish": [
+      "nr_heavy_unarmed/b_04.png",
+      "nr_heavy_unarmed/b_05.png",
+      "nr_heavy_unarmed/b_06.png",
+      "nr_heavy_unarmed/b_07.png"
     ],
-    "atk": [
-      "nr_heavy_unarmed/performance_6.png",
-      "nr_heavy_unarmed/performance_7.png",
-      "nr_heavy_unarmed/performance_8.png"
-    ],
-    "hurt": [
-      "nr_heavy_unarmed/performance_9.png"
-    ],
-    "down": [
-      "nr_heavy_unarmed/performance_10.png"
+    "fall": [
+      "nr_heavy_unarmed/b_08.png"
     ],
     "jump": [
-      "nr_heavy_unarmed/performance_11.png"
+      "nr_heavy_unarmed/a_06.png"
+    ],
+    "down": [
+      "nr_heavy_unarmed/b_00.png"
+    ],
+    "idle": [
+      "nr_heavy_unarmed/c_00.png",
+      "nr_heavy_unarmed/c_01.png"
+    ],
+    "walk": [
+      "nr_heavy_unarmed/c_02.png",
+      "nr_heavy_unarmed/c_03.png",
+      "nr_heavy_unarmed/c_04.png",
+      "nr_heavy_unarmed/c_05.png",
+      "nr_heavy_unarmed/c_06.png",
+      "nr_heavy_unarmed/c_07.png",
+      "nr_heavy_unarmed/c_08.png",
+      "nr_heavy_unarmed/c_09.png"
+    ],
+    "atk": [
+      "nr_heavy_unarmed/c_10.png",
+      "nr_heavy_unarmed/c_11.png",
+      "nr_heavy_unarmed/c_12.png"
+    ],
+    "punch": [
+      "nr_heavy_unarmed/c_10.png",
+      "nr_heavy_unarmed/c_11.png",
+      "nr_heavy_unarmed/c_12.png"
+    ],
+    "hurt": [
+      "nr_heavy_unarmed/c_13.png"
     ],
     "block": [
-      "nr_heavy_unarmed/performance_1.png"
+      "nr_heavy_unarmed/c_14.png"
     ],
-    "perch": [
-      "nr_heavy_unarmed/performance_11.png"
+    "taunt": [
+      "nr_heavy_unarmed/c_15.png"
     ],
-    "getup": [
-      "nr_heavy_unarmed/recovery_0.png",
-      "nr_heavy_unarmed/recovery_1.png",
-      "nr_heavy_unarmed/recovery_2.png",
-      "nr_heavy_unarmed/recovery_3.png"
+    "rage": [
+      "nr_heavy_unarmed/b_14.png"
+    ],
+    "smash": [
+      "nr_heavy_unarmed/b_15.png"
     ]
   },
   "nr_conductor": {
     "idle": [
-      "nr_conductor/performance_0.png",
-      "nr_conductor/performance_1.png"
-    ],
-    "walk": [
-      "nr_conductor/stride_00.png",
-      "nr_conductor/stride_01.png",
-      "nr_conductor/stride_02.png",
-      "nr_conductor/stride_03.png",
-      "nr_conductor/stride_04.png",
-      "nr_conductor/stride_05.png",
-      "nr_conductor/stride_06.png",
-      "nr_conductor/stride_07.png"
-    ],
-    "atk": [
-      "nr_conductor/performance_8.png",
-      "nr_conductor/performance_9.png",
-      "nr_conductor/performance_11.png"
-    ],
-    "hurt": [
-      "nr_conductor/performance_14.png"
-    ],
-    "down": [
-      "nr_conductor/performance_15.png"
-    ],
-    "jump": [
-      "nr_conductor/performance_12.png"
+      "nr_conductor/box_00.png",
+      "nr_conductor/box_01.png"
     ],
     "block": [
-      "nr_conductor/performance_2.png"
+      "nr_conductor/box_02.png"
     ],
-    "whistle": [
-      "nr_conductor/performance_3.png"
+    "count": [
+      "nr_conductor/box_03.png"
     ],
-    "charge": [
-      "nr_conductor/performance_12.png",
-      "nr_conductor/performance_13.png"
+    "walk": [
+      "nr_conductor/walk_00.png",
+      "nr_conductor/walk_01.png",
+      "nr_conductor/walk_02.png",
+      "nr_conductor/stride_box_01.png",
+      "nr_conductor/stride_box_07.png"
     ],
-    "rise": [
-      "nr_conductor/office_4.png",
-      "nr_conductor/office_5.png",
-      "nr_conductor/office_6.png"
+    "hurt": [
+      "nr_conductor/box_12.png",
+      "nr_conductor/box_13.png"
+    ],
+    "victory": [
+      "nr_conductor/box_14.png"
+    ],
+    "stamp": [
+      "nr_conductor/extra_01.png",
+      "nr_conductor/attacks_01.png",
+      "nr_conductor/attacks_02.png"
+    ],
+    "seize": [
+      "nr_conductor/seize_03.png",
+      "nr_conductor/seize_01.png"
+    ],
+    "swing": [
+      "nr_conductor/attacks_06.png",
+      "nr_conductor/attacks_07.png",
+      "nr_conductor/attacks_08.png"
+    ],
+    "chain": [
+      "nr_conductor/attacks_09.png",
+      "nr_conductor/attacks_10.png"
+    ],
+    "rehook": [
+      "nr_conductor/attacks_11.png",
+      "nr_conductor/attacks_12.png"
+    ],
+    "point": [
+      "nr_conductor/attacks_15.png"
+    ],
+    "pickup": [
+      "nr_conductor/box_15.png"
+    ],
+    "dive": [
+      "nr_conductor/attacks_13.png"
+    ],
+    "sprawl": [
+      "nr_conductor/attacks_14.png"
     ],
     "getup": [
-      "nr_conductor/recovery_0.png",
-      "nr_conductor/recovery_1.png",
-      "nr_conductor/recovery_2.png",
-      "nr_conductor/recovery_3.png"
-    ],
-    "shield": [
-      "nr_conductor/shield_variety_00.png",
-      "nr_conductor/shield_variety_01.png",
-      "nr_conductor/shield_variety_02.png",
-      "nr_conductor/shield_variety_03.png"
-    ],
-    "baton_polish": [
-      "nr_conductor/variety_baton_polish_00.png",
-      "nr_conductor/variety_baton_polish_01.png",
-      "nr_conductor/variety_baton_polish_02.png",
-      "nr_conductor/variety_baton_polish_03.png"
-    ],
-    "whistle_polish": [
-      "nr_conductor/variety_whistle_polish_00.png",
-      "nr_conductor/variety_whistle_polish_01.png",
-      "nr_conductor/variety_whistle_polish_02.png"
+      "nr_conductor/misc_00.png",
+      "nr_conductor/misc_01.png",
+      "nr_conductor/misc_02.png",
+      "nr_conductor/misc_03.png"
     ],
     "stagger_polish": [
-      "nr_conductor/variety_stagger_polish_00.png",
-      "nr_conductor/variety_stagger_polish_01.png",
-      "nr_conductor/variety_stagger_polish_02.png",
-      "nr_conductor/variety_stagger_polish_03.png"
+      "nr_conductor/misc_04.png",
+      "nr_conductor/misc_05.png",
+      "nr_conductor/misc_06.png",
+      "nr_conductor/misc_07.png"
     ],
-    "guard_polish": [
-      "nr_conductor/variety_guard_polish_00.png"
+    "down": [
+      "nr_conductor/misc_08.png"
     ],
-    "charge_polish": [
-      "nr_conductor/charge_variety_00.png",
-      "nr_conductor/charge_variety_01.png",
-      "nr_conductor/charge_variety_02.png",
-      "nr_conductor/charge_variety_03.png"
+    "void": [
+      "nr_conductor/misc_09.png"
     ],
-    "finisher_flight": [
-      "nr_conductor/finisher_flight_00.png"
+    "finisher": [
+      "nr_conductor/finisher_00.png",
+      "nr_conductor/finisher_01.png",
+      "nr_conductor/finisher_02.png",
+      "nr_conductor/finisher_03.png",
+      "nr_conductor/finisher_04.png",
+      "nr_conductor/finisher_05.png",
+      "nr_conductor/finisher_06.png",
+      "nr_conductor/finisher_07.png",
+      "nr_conductor/finisher_08.png",
+      "nr_conductor/finisher_09.png",
+      "nr_conductor/finisher_10.png",
+      "nr_conductor/finisher_11.png"
     ],
-    "luggage_motion": [
-      "nr_conductor/luggage_motion_00.png",
-      "nr_conductor/luggage_motion_01.png",
-      "nr_conductor/luggage_motion_02.png",
-      "nr_conductor/luggage_motion_03.png",
-      "nr_conductor/luggage_motion_04.png",
-      "nr_conductor/luggage_motion_05.png",
-      "nr_conductor/luggage_motion_06.png",
-      "nr_conductor/luggage_motion_07.png",
-      "nr_conductor/luggage_motion_08.png",
-      "nr_conductor/luggage_motion_09.png",
-      "nr_conductor/luggage_motion_10.png",
-      "nr_conductor/luggage_motion_11.png"
-    ],
-    "step_attacks": [
-      "nr_conductor/step_attacks_00.png",
-      "nr_conductor/step_attacks_01.png",
-      "nr_conductor/step_attacks_02.png",
-      "nr_conductor/step_attacks_03.png",
-      "nr_conductor/step_attacks_04.png",
-      "nr_conductor/step_attacks_05.png",
-      "nr_conductor/step_attacks_06.png",
-      "nr_conductor/step_attacks_07.png",
-      "nr_conductor/step_attacks_08.png",
-      "nr_conductor/step_attacks_09.png",
-      "nr_conductor/step_attacks_10.png",
-      "nr_conductor/step_attacks_11.png"
+    "finisher_gore": [
+      "nr_conductor/finisher_00.png",
+      "nr_conductor/finisher_01.png",
+      "nr_conductor/finisher_02.png",
+      "nr_conductor/finisher_03.png",
+      "nr_conductor/finisher_04.png",
+      "nr_conductor/finisher_05.png",
+      "nr_conductor/finisher_06.png",
+      "nr_conductor/finisher_integrated_07.png",
+      "nr_conductor/finisher_integrated_08.png",
+      "nr_conductor/finisher_integrated_09.png",
+      "nr_conductor/finisher_integrated_10.png",
+      "nr_conductor/finisher_integrated_11.png"
     ]
   },
   "ic_brawler": {
-    "walk": [
-      "ic_brawler/gait_00.png",
-      "ic_brawler/gait_01.png",
-      "ic_brawler/gait_02.png",
-      "ic_brawler/gait_03.png",
-      "ic_brawler/gait_04.png",
-      "ic_brawler/gait_05.png",
-      "ic_brawler/gait_06.png",
-      "ic_brawler/gait_07.png"
-    ],
-    "run": [
-      "ic_brawler/gait_00.png",
-      "ic_brawler/gait_01.png",
-      "ic_brawler/gait_02.png",
-      "ic_brawler/gait_03.png",
-      "ic_brawler/gait_04.png",
-      "ic_brawler/gait_05.png",
-      "ic_brawler/gait_06.png",
-      "ic_brawler/gait_07.png"
+    "revamp_idle": [
+      "ic_brawler/delhi_locomotion_00.png"
     ],
     "idle": [
-      "ic_brawler/performance_08.png"
+      "ic_brawler/delhi_locomotion_00.png",
+      "ic_brawler/delhi_locomotion_01.png"
     ],
     "block": [
-      "ic_brawler/performance_10.png"
+      "ic_brawler/delhi_locomotion_02.png"
     ],
-    "atk": [
-      "ic_brawler/performance_11.png",
-      "ic_brawler/performance_12.png",
-      "ic_brawler/performance_13.png"
-    ],
-    "punch": [
-      "ic_brawler/performance_11.png",
-      "ic_brawler/performance_12.png",
-      "ic_brawler/performance_13.png"
-    ],
-    "kick": [
-      "ic_brawler/performance_14.png",
-      "ic_brawler/performance_15.png"
+    "walk": [
+      "ic_brawler/delhi_locomotion_04.png",
+      "ic_brawler/delhi_locomotion_05.png",
+      "ic_brawler/delhi_locomotion_06.png",
+      "ic_brawler/delhi_locomotion_07.png",
+      "ic_brawler/delhi_locomotion_08.png",
+      "ic_brawler/delhi_locomotion_09.png",
+      "ic_brawler/delhi_locomotion_10.png",
+      "ic_brawler/delhi_locomotion_11.png",
+      "ic_brawler/delhi_locomotion_12.png",
+      "ic_brawler/delhi_locomotion_13.png",
+      "ic_brawler/delhi_locomotion_14.png",
+      "ic_brawler/delhi_locomotion_15.png"
     ],
     "hurt": [
-      "ic_brawler/performance_16.png",
-      "ic_brawler/performance_17.png"
+      "ic_brawler/delhi_reactions_01.png",
+      "ic_brawler/delhi_reactions_02.png"
     ],
-    "stagger": [
-      "ic_brawler/performance_16.png",
-      "ic_brawler/performance_17.png"
+    "stagger_polish": [
+      "ic_brawler/delhi_reactions_03.png",
+      "ic_brawler/delhi_reactions_04.png",
+      "ic_brawler/delhi_reactions_05.png",
+      "ic_brawler/delhi_reactions_06.png"
     ],
     "fall": [
-      "ic_brawler/performance_18.png"
+      "ic_brawler/delhi_reactions_07.png",
+      "ic_brawler/delhi_reactions_08.png"
     ],
     "down": [
-      "ic_brawler/performance_19.png"
+      "ic_brawler/delhi_reactions_10.png"
+    ],
+    "dead": [
+      "ic_brawler/delhi_reactions_10.png"
     ],
     "getup": [
-      "ic_brawler/performance_20.png",
-      "ic_brawler/performance_21.png",
-      "ic_brawler/performance_08.png"
+      "ic_brawler/delhi_reactions_10.png",
+      "ic_brawler/delhi_reactions_11.png",
+      "ic_brawler/delhi_reactions_12.png",
+      "ic_brawler/delhi_reactions_13.png",
+      "ic_brawler/delhi_reactions_14.png",
+      "ic_brawler/delhi_locomotion_00.png"
+    ],
+    "super_reaction": [
+      "ic_brawler/delhi_reactions_01.png",
+      "ic_brawler/delhi_reactions_02.png",
+      "ic_brawler/delhi_reactions_03.png",
+      "ic_brawler/delhi_reactions_04.png",
+      "ic_brawler/delhi_reactions_07.png",
+      "ic_brawler/delhi_reactions_08.png",
+      "ic_brawler/delhi_reactions_09.png",
+      "ic_brawler/delhi_reactions_10.png"
+    ],
+    "atk": [
+      "ic_brawler/delhi_combat_01.png",
+      "ic_brawler/delhi_combat_02.png",
+      "ic_brawler/delhi_combat_07.png"
+    ],
+    "string_full": [
+      "ic_brawler/delhi_combat_01.png",
+      "ic_brawler/delhi_combat_02.png",
+      "ic_brawler/delhi_combat_03.png",
+      "ic_brawler/delhi_combat_04.png",
+      "ic_brawler/delhi_combat_05.png",
+      "ic_brawler/delhi_combat_06.png",
+      "ic_brawler/delhi_combat_07.png"
+    ],
+    "shove": [
+      "ic_brawler/delhi_combat_08.png",
+      "ic_brawler/delhi_combat_09.png",
+      "ic_brawler/delhi_combat_10.png",
+      "ic_brawler/delhi_combat_11.png"
     ],
     "grab": [
-      "ic_brawler/performance_22.png"
+      "ic_brawler/delhi_grab_00.png",
+      "ic_brawler/delhi_grab_01.png"
     ],
-    "throw": [
-      "ic_brawler/performance_22.png",
-      "ic_brawler/performance_23.png"
+    "taunt": [
+      "ic_brawler/delhi_combat_14.png",
+      "ic_brawler/delhi_combat_15.png"
     ],
-    "ram": [
-      "ic_brawler/performance_11.png",
-      "ic_brawler/performance_12.png",
-      "ic_brawler/performance_13.png"
-    ],
-    "beam": [
-      "ic_brawler/performance_14.png",
-      "ic_brawler/performance_15.png",
-      "ic_brawler/performance_15.png",
-      "ic_brawler/performance_13.png"
-    ],
-    "call": [
-      "ic_brawler/performance_14.png",
-      "ic_brawler/performance_15.png",
-      "ic_brawler/performance_15.png"
-    ],
-    "seated": [
-      "ic_brawler/performance_20.png"
+    "stance_settle": [
+      "ic_brawler/delhi_settle_01.png",
+      "ic_brawler/delhi_settle_02.png",
+      "ic_brawler/delhi_settle_03.png",
+      "ic_brawler/delhi_settle_04.png",
+      "ic_brawler/delhi_settle_05.png"
     ]
   },
   "ic_runner": {
-    "walk": [
-      "ic_runner/gait_00.png",
-      "ic_runner/gait_01.png",
-      "ic_runner/gait_02.png",
-      "ic_runner/gait_03.png",
-      "ic_runner/gait_04.png",
-      "ic_runner/gait_05.png",
-      "ic_runner/gait_06.png",
-      "ic_runner/gait_07.png"
-    ],
-    "run": [
-      "ic_runner/gait_00.png",
-      "ic_runner/gait_01.png",
-      "ic_runner/gait_02.png",
-      "ic_runner/gait_03.png",
-      "ic_runner/gait_04.png",
-      "ic_runner/gait_05.png",
-      "ic_runner/gait_06.png",
-      "ic_runner/gait_07.png"
+    "revamp_idle": [
+      "ic_runner/delhi_locomotion_00.png"
     ],
     "idle": [
-      "ic_runner/performance_08.png"
+      "ic_runner/delhi_locomotion_00.png",
+      "ic_runner/delhi_locomotion_01.png"
     ],
     "block": [
-      "ic_runner/performance_10.png"
+      "ic_runner/delhi_locomotion_02.png"
     ],
-    "atk": [
-      "ic_runner/performance_11.png",
-      "ic_runner/performance_12.png",
-      "ic_runner/performance_13.png"
-    ],
-    "punch": [
-      "ic_runner/performance_11.png",
-      "ic_runner/performance_12.png",
-      "ic_runner/performance_13.png"
-    ],
-    "kick": [
-      "ic_runner/performance_14.png",
-      "ic_runner/performance_15.png"
+    "walk": [
+      "ic_runner/delhi_locomotion_04.png",
+      "ic_runner/delhi_locomotion_05.png",
+      "ic_runner/delhi_locomotion_06.png",
+      "ic_runner/delhi_locomotion_07.png",
+      "ic_runner/delhi_locomotion_08.png",
+      "ic_runner/delhi_locomotion_09.png",
+      "ic_runner/delhi_locomotion_10.png",
+      "ic_runner/delhi_locomotion_11.png",
+      "ic_runner/delhi_locomotion_12.png",
+      "ic_runner/delhi_locomotion_13.png",
+      "ic_runner/delhi_locomotion_14.png",
+      "ic_runner/delhi_locomotion_15.png",
+      "ic_runner/delhi_locomotion_16.png"
     ],
     "hurt": [
-      "ic_runner/performance_16.png",
-      "ic_runner/performance_17.png"
+      "ic_runner/delhi_reactions_01.png",
+      "ic_runner/delhi_reactions_02.png"
     ],
-    "stagger": [
-      "ic_runner/performance_16.png",
-      "ic_runner/performance_17.png"
+    "stagger_polish": [
+      "ic_runner/delhi_reactions_03.png",
+      "ic_runner/delhi_reactions_04.png",
+      "ic_runner/delhi_reactions_05.png",
+      "ic_runner/delhi_reactions_06.png"
     ],
     "fall": [
-      "ic_runner/performance_18.png"
+      "ic_runner/delhi_reactions_07.png",
+      "ic_runner/delhi_reactions_08.png"
     ],
     "down": [
-      "ic_runner/performance_19.png"
+      "ic_runner/delhi_reactions_10.png"
+    ],
+    "dead": [
+      "ic_runner/delhi_reactions_10.png"
     ],
     "getup": [
-      "ic_runner/performance_20.png",
-      "ic_runner/performance_21.png",
-      "ic_runner/performance_08.png"
+      "ic_runner/delhi_reactions_10.png",
+      "ic_runner/delhi_reactions_11.png",
+      "ic_runner/delhi_reactions_12.png",
+      "ic_runner/delhi_reactions_13.png",
+      "ic_runner/delhi_reactions_14.png",
+      "ic_runner/delhi_locomotion_00.png"
     ],
-    "grab": [
-      "ic_runner/performance_22.png"
+    "super_reaction": [
+      "ic_runner/delhi_reactions_01.png",
+      "ic_runner/delhi_reactions_02.png",
+      "ic_runner/delhi_reactions_03.png",
+      "ic_runner/delhi_reactions_04.png",
+      "ic_runner/delhi_reactions_07.png",
+      "ic_runner/delhi_reactions_08.png",
+      "ic_runner/delhi_reactions_09.png",
+      "ic_runner/delhi_reactions_10.png"
     ],
-    "throw": [
-      "ic_runner/performance_22.png",
-      "ic_runner/performance_23.png"
+    "atk": [
+      "ic_runner/delhi_combat_01.png",
+      "ic_runner/delhi_combat_04.png",
+      "ic_runner/delhi_combat_07.png"
     ],
-    "ram": [
-      "ic_runner/performance_11.png",
-      "ic_runner/performance_12.png",
-      "ic_runner/performance_13.png"
+    "kick": [
+      "ic_runner/delhi_combat_01.png",
+      "ic_runner/delhi_combat_02.png",
+      "ic_runner/delhi_combat_03.png",
+      "ic_runner/delhi_combat_04.png",
+      "ic_runner/delhi_combat_05.png",
+      "ic_runner/delhi_combat_06.png",
+      "ic_runner/delhi_combat_07.png"
     ],
-    "beam": [
-      "ic_runner/performance_14.png",
-      "ic_runner/performance_15.png",
-      "ic_runner/performance_15.png",
-      "ic_runner/performance_13.png"
+    "snatch": [
+      "ic_runner/delhi_combat_08.png",
+      "ic_runner/delhi_combat_09.png"
     ],
-    "call": [
-      "ic_runner/performance_14.png",
-      "ic_runner/performance_15.png",
-      "ic_runner/performance_15.png"
+    "taunt": [
+      "ic_runner/delhi_combat_10.png"
     ],
-    "seated": [
-      "ic_runner/performance_20.png"
+    "dodge": [
+      "ic_runner/delhi_combat_11.png"
+    ],
+    "run": [
+      "ic_runner/delhi_combat_12.png",
+      "ic_runner/delhi_combat_13.png",
+      "ic_runner/delhi_combat_14.png",
+      "ic_runner/delhi_combat_15.png"
+    ],
+    "carry": [
+      "ic_runner/delhi_combat_12.png",
+      "ic_runner/delhi_combat_13.png",
+      "ic_runner/delhi_combat_14.png",
+      "ic_runner/delhi_combat_15.png"
+    ],
+    "stance_settle": [
+      "ic_runner/delhi_settle_01.png",
+      "ic_runner/delhi_settle_02.png",
+      "ic_runner/delhi_settle_03.png",
+      "ic_runner/delhi_settle_04.png",
+      "ic_runner/delhi_settle_05.png"
     ]
   },
   "ic_enforcer": {
-    "walk": [
-      "ic_enforcer/gait_00.png",
-      "ic_enforcer/gait_01.png",
-      "ic_enforcer/gait_02.png",
-      "ic_enforcer/gait_03.png",
-      "ic_enforcer/gait_04.png",
-      "ic_enforcer/gait_05.png",
-      "ic_enforcer/gait_06.png",
-      "ic_enforcer/gait_07.png"
-    ],
-    "run": [
-      "ic_enforcer/gait_00.png",
-      "ic_enforcer/gait_01.png",
-      "ic_enforcer/gait_02.png",
-      "ic_enforcer/gait_03.png",
-      "ic_enforcer/gait_04.png",
-      "ic_enforcer/gait_05.png",
-      "ic_enforcer/gait_06.png",
-      "ic_enforcer/gait_07.png"
+    "revamp_idle": [
+      "ic_enforcer/delhi_locomotion_00.png"
     ],
     "idle": [
-      "ic_enforcer/performance_08.png"
+      "ic_enforcer/delhi_locomotion_00.png",
+      "ic_enforcer/delhi_locomotion_01.png"
     ],
     "block": [
-      "ic_enforcer/performance_10.png"
+      "ic_enforcer/delhi_locomotion_02.png"
     ],
-    "atk": [
-      "ic_enforcer/performance_11.png",
-      "ic_enforcer/performance_12.png",
-      "ic_enforcer/performance_13.png"
-    ],
-    "punch": [
-      "ic_enforcer/performance_11.png",
-      "ic_enforcer/performance_12.png",
-      "ic_enforcer/performance_13.png"
-    ],
-    "kick": [
-      "ic_enforcer/performance_14.png",
-      "ic_enforcer/performance_15.png"
+    "walk": [
+      "ic_enforcer/delhi_locomotion_04.png",
+      "ic_enforcer/delhi_locomotion_05.png",
+      "ic_enforcer/delhi_locomotion_06.png",
+      "ic_enforcer/delhi_locomotion_07.png",
+      "ic_enforcer/delhi_locomotion_08.png",
+      "ic_enforcer/delhi_locomotion_09.png",
+      "ic_enforcer/delhi_locomotion_10.png",
+      "ic_enforcer/delhi_locomotion_11.png",
+      "ic_enforcer/delhi_locomotion_12.png",
+      "ic_enforcer/delhi_locomotion_13.png",
+      "ic_enforcer/delhi_locomotion_14.png",
+      "ic_enforcer/delhi_locomotion_15.png",
+      "ic_enforcer/delhi_locomotion_16.png",
+      "ic_enforcer/delhi_locomotion_17.png"
     ],
     "hurt": [
-      "ic_enforcer/performance_16.png",
-      "ic_enforcer/performance_17.png"
+      "ic_enforcer/delhi_reactions_01.png",
+      "ic_enforcer/delhi_reactions_02.png"
     ],
-    "stagger": [
-      "ic_enforcer/performance_16.png",
-      "ic_enforcer/performance_17.png"
+    "stagger_polish": [
+      "ic_enforcer/delhi_reactions_03.png",
+      "ic_enforcer/delhi_reactions_04.png",
+      "ic_enforcer/delhi_reactions_05.png",
+      "ic_enforcer/delhi_reactions_06.png"
     ],
     "fall": [
-      "ic_enforcer/performance_18.png"
+      "ic_enforcer/delhi_reactions_07.png",
+      "ic_enforcer/delhi_reactions_08.png"
     ],
     "down": [
-      "ic_enforcer/performance_19.png"
+      "ic_enforcer/delhi_reactions_10.png"
+    ],
+    "dead": [
+      "ic_enforcer/delhi_reactions_10.png"
     ],
     "getup": [
-      "ic_enforcer/performance_20.png",
-      "ic_enforcer/performance_21.png",
-      "ic_enforcer/performance_08.png"
+      "ic_enforcer/delhi_reactions_10.png",
+      "ic_enforcer/delhi_reactions_11.png",
+      "ic_enforcer/delhi_reactions_12.png",
+      "ic_enforcer/delhi_reactions_13.png",
+      "ic_enforcer/delhi_reactions_14.png",
+      "ic_enforcer/delhi_locomotion_00.png"
     ],
-    "grab": [
-      "ic_enforcer/performance_22.png"
+    "super_reaction": [
+      "ic_enforcer/delhi_reactions_01.png",
+      "ic_enforcer/delhi_reactions_02.png",
+      "ic_enforcer/delhi_reactions_03.png",
+      "ic_enforcer/delhi_reactions_04.png",
+      "ic_enforcer/delhi_reactions_07.png",
+      "ic_enforcer/delhi_reactions_08.png",
+      "ic_enforcer/delhi_reactions_09.png",
+      "ic_enforcer/delhi_reactions_10.png"
     ],
-    "throw": [
-      "ic_enforcer/performance_22.png",
-      "ic_enforcer/performance_23.png"
+    "atk": [
+      "ic_enforcer/delhi_combat_01.png",
+      "ic_enforcer/delhi_combat_03.png",
+      "ic_enforcer/delhi_combat_06.png"
     ],
-    "ram": [
-      "ic_enforcer/performance_11.png",
-      "ic_enforcer/performance_12.png",
-      "ic_enforcer/performance_13.png"
+    "drive": [
+      "ic_enforcer/delhi_combat_01.png",
+      "ic_enforcer/delhi_combat_02.png",
+      "ic_enforcer/delhi_combat_03.png",
+      "ic_enforcer/delhi_combat_04.png",
+      "ic_enforcer/delhi_combat_05.png",
+      "ic_enforcer/delhi_combat_06.png"
     ],
-    "beam": [
-      "ic_enforcer/performance_14.png",
-      "ic_enforcer/performance_15.png",
-      "ic_enforcer/performance_15.png",
-      "ic_enforcer/performance_13.png"
+    "charge": [
+      "ic_enforcer/delhi_combat_07.png",
+      "ic_enforcer/delhi_combat_08.png"
     ],
-    "call": [
-      "ic_enforcer/performance_14.png",
-      "ic_enforcer/performance_15.png",
-      "ic_enforcer/performance_15.png"
+    "slam": [
+      "ic_enforcer/delhi_combat_09.png",
+      "ic_enforcer/delhi_combat_10.png",
+      "ic_enforcer/delhi_combat_11.png",
+      "ic_enforcer/delhi_combat_12.png"
     ],
-    "seated": [
-      "ic_enforcer/performance_20.png"
+    "stuck": [
+      "ic_enforcer/delhi_combat_13.png",
+      "ic_enforcer/delhi_combat_14.png"
+    ],
+    "taunt": [
+      "ic_enforcer/delhi_combat_15.png"
+    ],
+    "stance_settle": [
+      "ic_enforcer/delhi_settle_01.png",
+      "ic_enforcer/delhi_settle_02.png",
+      "ic_enforcer/delhi_settle_03.png",
+      "ic_enforcer/delhi_settle_04.png",
+      "ic_enforcer/delhi_settle_05.png"
     ]
   },
   "ic_heavy": {
-    "walk": [
-      "ic_heavy/gait_00.png",
-      "ic_heavy/gait_01.png",
-      "ic_heavy/gait_02.png",
-      "ic_heavy/gait_03.png",
-      "ic_heavy/gait_04.png",
-      "ic_heavy/gait_05.png",
-      "ic_heavy/gait_06.png",
-      "ic_heavy/gait_07.png"
-    ],
-    "run": [
-      "ic_heavy/gait_00.png",
-      "ic_heavy/gait_01.png",
-      "ic_heavy/gait_02.png",
-      "ic_heavy/gait_03.png",
-      "ic_heavy/gait_04.png",
-      "ic_heavy/gait_05.png",
-      "ic_heavy/gait_06.png",
-      "ic_heavy/gait_07.png"
+    "revamp_idle": [
+      "ic_heavy/delhi_locomotion_00.png"
     ],
     "idle": [
-      "ic_heavy/performance_08.png"
+      "ic_heavy/delhi_unarmed_00.png",
+      "ic_heavy/delhi_unarmed_01.png"
     ],
     "block": [
-      "ic_heavy/performance_10.png"
+      "ic_heavy/delhi_unarmed_02.png"
     ],
-    "atk": [
-      "ic_heavy/performance_11.png",
-      "ic_heavy/performance_12.png",
-      "ic_heavy/performance_13.png"
-    ],
-    "punch": [
-      "ic_heavy/performance_11.png",
-      "ic_heavy/performance_12.png",
-      "ic_heavy/performance_13.png"
-    ],
-    "kick": [
-      "ic_heavy/performance_14.png",
-      "ic_heavy/performance_15.png"
+    "walk": [
+      "ic_heavy/delhi_unarmed_04.png",
+      "ic_heavy/delhi_unarmed_05.png",
+      "ic_heavy/delhi_unarmed_06.png",
+      "ic_heavy/delhi_unarmed_07.png",
+      "ic_heavy/delhi_unarmed_08.png",
+      "ic_heavy/delhi_unarmed_09.png",
+      "ic_heavy/delhi_unarmed_10.png",
+      "ic_heavy/delhi_unarmed_11.png",
+      "ic_heavy/delhi_unarmed_12.png",
+      "ic_heavy/delhi_unarmed_13.png",
+      "ic_heavy/delhi_unarmed_14.png",
+      "ic_heavy/delhi_unarmed_15.png",
+      "ic_heavy/delhi_unarmed_16.png",
+      "ic_heavy/delhi_unarmed_17.png",
+      "ic_heavy/delhi_unarmed_18.png",
+      "ic_heavy/delhi_unarmed_19.png"
     ],
     "hurt": [
-      "ic_heavy/performance_16.png",
-      "ic_heavy/performance_17.png"
+      "ic_heavy/delhi_reactions_01.png",
+      "ic_heavy/delhi_reactions_02.png"
     ],
-    "stagger": [
-      "ic_heavy/performance_16.png",
-      "ic_heavy/performance_17.png"
+    "stagger_polish": [
+      "ic_heavy/delhi_reactions_03.png",
+      "ic_heavy/delhi_reactions_04.png",
+      "ic_heavy/delhi_reactions_05.png",
+      "ic_heavy/delhi_reactions_06.png"
     ],
     "fall": [
-      "ic_heavy/performance_18.png"
+      "ic_heavy/delhi_reactions_07.png",
+      "ic_heavy/delhi_reactions_08.png"
     ],
     "down": [
-      "ic_heavy/performance_19.png"
+      "ic_heavy/delhi_reactions_10.png"
+    ],
+    "dead": [
+      "ic_heavy/delhi_reactions_10.png"
     ],
     "getup": [
-      "ic_heavy/performance_20.png",
-      "ic_heavy/performance_21.png",
-      "ic_heavy/performance_08.png"
+      "ic_heavy/delhi_reactions_10.png",
+      "ic_heavy/delhi_reactions_11.png",
+      "ic_heavy/delhi_reactions_12.png",
+      "ic_heavy/delhi_reactions_13.png",
+      "ic_heavy/delhi_reactions_14.png",
+      "ic_heavy/delhi_unarmed_00.png"
     ],
-    "grab": [
-      "ic_heavy/performance_22.png"
+    "super_reaction": [
+      "ic_heavy/delhi_reactions_01.png",
+      "ic_heavy/delhi_reactions_02.png",
+      "ic_heavy/delhi_reactions_03.png",
+      "ic_heavy/delhi_reactions_04.png",
+      "ic_heavy/delhi_reactions_07.png",
+      "ic_heavy/delhi_reactions_08.png",
+      "ic_heavy/delhi_reactions_09.png",
+      "ic_heavy/delhi_reactions_10.png"
     ],
-    "throw": [
-      "ic_heavy/performance_22.png",
-      "ic_heavy/performance_23.png"
+    "push": [
+      "ic_heavy/delhi_locomotion_04.png",
+      "ic_heavy/delhi_locomotion_05.png",
+      "ic_heavy/delhi_locomotion_06.png",
+      "ic_heavy/delhi_locomotion_07.png",
+      "ic_heavy/delhi_locomotion_08.png",
+      "ic_heavy/delhi_locomotion_09.png",
+      "ic_heavy/delhi_locomotion_10.png",
+      "ic_heavy/delhi_locomotion_11.png",
+      "ic_heavy/delhi_locomotion_12.png",
+      "ic_heavy/delhi_locomotion_13.png",
+      "ic_heavy/delhi_locomotion_14.png",
+      "ic_heavy/delhi_locomotion_15.png",
+      "ic_heavy/delhi_locomotion_16.png",
+      "ic_heavy/delhi_locomotion_17.png",
+      "ic_heavy/delhi_locomotion_18.png",
+      "ic_heavy/delhi_locomotion_19.png"
+    ],
+    "push_idle": [
+      "ic_heavy/delhi_locomotion_00.png",
+      "ic_heavy/delhi_locomotion_01.png"
+    ],
+    "atk": [
+      "ic_heavy/delhi_combat_02.png",
+      "ic_heavy/delhi_combat_03.png",
+      "ic_heavy/delhi_combat_05.png"
+    ],
+    "shove": [
+      "ic_heavy/delhi_combat_02.png",
+      "ic_heavy/delhi_combat_03.png",
+      "ic_heavy/delhi_combat_04.png",
+      "ic_heavy/delhi_combat_05.png"
+    ],
+    "barge": [
+      "ic_heavy/delhi_combat_06.png",
+      "ic_heavy/delhi_combat_07.png",
+      "ic_heavy/delhi_combat_08.png",
+      "ic_heavy/delhi_combat_09.png"
     ],
     "ram": [
-      "ic_heavy/performance_11.png",
-      "ic_heavy/performance_12.png",
-      "ic_heavy/performance_13.png"
+      "ic_heavy/delhi_combat_10.png",
+      "ic_heavy/delhi_combat_11.png",
+      "ic_heavy/delhi_combat_12.png",
+      "ic_heavy/delhi_combat_13.png"
     ],
-    "beam": [
-      "ic_heavy/performance_14.png",
-      "ic_heavy/performance_15.png",
-      "ic_heavy/performance_15.png",
-      "ic_heavy/performance_13.png"
+    "stuck": [
+      "ic_heavy/delhi_combat_13.png",
+      "ic_heavy/delhi_combat_14.png"
     ],
     "call": [
-      "ic_heavy/performance_14.png",
-      "ic_heavy/performance_15.png",
-      "ic_heavy/performance_15.png"
+      "ic_heavy/delhi_combat_15.png"
     ],
-    "seated": [
-      "ic_heavy/performance_20.png"
+    "taunt": [
+      "ic_heavy/delhi_combat_15.png"
     ]
   },
   "ic_kitchen": {
-    "walk": [
-      "ic_kitchen/gait_00.png",
-      "ic_kitchen/gait_01.png",
-      "ic_kitchen/gait_02.png",
-      "ic_kitchen/gait_03.png",
-      "ic_kitchen/gait_04.png",
-      "ic_kitchen/gait_05.png",
-      "ic_kitchen/gait_06.png",
-      "ic_kitchen/gait_07.png"
-    ],
-    "run": [
-      "ic_kitchen/gait_00.png",
-      "ic_kitchen/gait_01.png",
-      "ic_kitchen/gait_02.png",
-      "ic_kitchen/gait_03.png",
-      "ic_kitchen/gait_04.png",
-      "ic_kitchen/gait_05.png",
-      "ic_kitchen/gait_06.png",
-      "ic_kitchen/gait_07.png"
+    "revamp_idle": [
+      "ic_kitchen/delhi_locomotion_00.png"
     ],
     "idle": [
-      "ic_kitchen/performance_08.png"
+      "ic_kitchen/delhi_locomotion_00.png",
+      "ic_kitchen/delhi_locomotion_01.png"
     ],
     "block": [
-      "ic_kitchen/performance_10.png"
+      "ic_kitchen/delhi_locomotion_02.png"
     ],
-    "atk": [
-      "ic_kitchen/performance_11.png",
-      "ic_kitchen/performance_12.png",
-      "ic_kitchen/performance_13.png"
-    ],
-    "punch": [
-      "ic_kitchen/performance_11.png",
-      "ic_kitchen/performance_12.png",
-      "ic_kitchen/performance_13.png"
-    ],
-    "kick": [
-      "ic_kitchen/performance_14.png",
-      "ic_kitchen/performance_15.png"
+    "walk": [
+      "ic_kitchen/delhi_locomotion_04.png",
+      "ic_kitchen/delhi_locomotion_05.png",
+      "ic_kitchen/delhi_locomotion_06.png",
+      "ic_kitchen/delhi_locomotion_07.png",
+      "ic_kitchen/delhi_locomotion_08.png",
+      "ic_kitchen/delhi_locomotion_09.png",
+      "ic_kitchen/delhi_locomotion_10.png",
+      "ic_kitchen/delhi_locomotion_11.png",
+      "ic_kitchen/delhi_locomotion_12.png",
+      "ic_kitchen/delhi_locomotion_13.png",
+      "ic_kitchen/delhi_locomotion_14.png",
+      "ic_kitchen/delhi_locomotion_15.png",
+      "ic_kitchen/delhi_locomotion_16.png",
+      "ic_kitchen/delhi_locomotion_17.png",
+      "ic_kitchen/delhi_locomotion_18.png",
+      "ic_kitchen/delhi_locomotion_19.png"
     ],
     "hurt": [
-      "ic_kitchen/performance_16.png",
-      "ic_kitchen/performance_17.png"
+      "ic_kitchen/delhi_reactions_01.png",
+      "ic_kitchen/delhi_reactions_02.png"
     ],
-    "stagger": [
-      "ic_kitchen/performance_16.png",
-      "ic_kitchen/performance_17.png"
+    "stagger_polish": [
+      "ic_kitchen/delhi_reactions_03.png",
+      "ic_kitchen/delhi_reactions_04.png",
+      "ic_kitchen/delhi_reactions_05.png",
+      "ic_kitchen/delhi_reactions_06.png"
     ],
     "fall": [
-      "ic_kitchen/performance_18.png"
+      "ic_kitchen/delhi_reactions_07.png",
+      "ic_kitchen/delhi_reactions_08.png"
     ],
     "down": [
-      "ic_kitchen/performance_19.png"
+      "ic_kitchen/delhi_reactions_10.png"
+    ],
+    "dead": [
+      "ic_kitchen/delhi_reactions_10.png"
     ],
     "getup": [
-      "ic_kitchen/performance_20.png",
-      "ic_kitchen/performance_21.png",
-      "ic_kitchen/performance_08.png"
+      "ic_kitchen/delhi_reactions_10.png",
+      "ic_kitchen/delhi_reactions_11.png",
+      "ic_kitchen/delhi_reactions_12.png",
+      "ic_kitchen/delhi_reactions_13.png",
+      "ic_kitchen/delhi_reactions_14.png",
+      "ic_kitchen/delhi_locomotion_00.png"
     ],
-    "grab": [
-      "ic_kitchen/performance_22.png"
+    "super_reaction": [
+      "ic_kitchen/delhi_reactions_01.png",
+      "ic_kitchen/delhi_reactions_02.png",
+      "ic_kitchen/delhi_reactions_03.png",
+      "ic_kitchen/delhi_reactions_04.png",
+      "ic_kitchen/delhi_reactions_07.png",
+      "ic_kitchen/delhi_reactions_08.png",
+      "ic_kitchen/delhi_reactions_09.png",
+      "ic_kitchen/delhi_reactions_10.png"
     ],
-    "throw": [
-      "ic_kitchen/performance_22.png",
-      "ic_kitchen/performance_23.png"
+    "atk": [
+      "ic_kitchen/delhi_combat_01.png",
+      "ic_kitchen/delhi_combat_03.png",
+      "ic_kitchen/delhi_combat_05.png"
     ],
-    "ram": [
-      "ic_kitchen/performance_11.png",
-      "ic_kitchen/performance_12.png",
-      "ic_kitchen/performance_13.png"
+    "ladle": [
+      "ic_kitchen/delhi_combat_01.png",
+      "ic_kitchen/delhi_combat_02.png",
+      "ic_kitchen/delhi_combat_03.png",
+      "ic_kitchen/delhi_combat_04.png",
+      "ic_kitchen/delhi_combat_05.png"
     ],
-    "beam": [
-      "ic_kitchen/performance_14.png",
-      "ic_kitchen/performance_15.png",
-      "ic_kitchen/performance_15.png",
-      "ic_kitchen/performance_13.png"
+    "whistle": [
+      "ic_kitchen/delhi_combat_06.png",
+      "ic_kitchen/delhi_combat_07.png",
+      "ic_kitchen/delhi_combat_08.png"
     ],
-    "call": [
-      "ic_kitchen/performance_14.png",
-      "ic_kitchen/performance_15.png",
-      "ic_kitchen/performance_15.png"
+    "jet": [
+      "ic_kitchen/delhi_combat_09.png",
+      "ic_kitchen/delhi_combat_10.png",
+      "ic_kitchen/delhi_combat_11.png"
     ],
-    "seated": [
-      "ic_kitchen/performance_20.png"
+    "reseal": [
+      "ic_kitchen/delhi_combat_12.png",
+      "ic_kitchen/delhi_combat_13.png",
+      "ic_kitchen/delhi_combat_14.png"
+    ],
+    "taunt": [
+      "ic_kitchen/delhi_combat_15.png"
+    ],
+    "stance_settle": [
+      "ic_kitchen/delhi_settle_01.png",
+      "ic_kitchen/delhi_settle_02.png",
+      "ic_kitchen/delhi_settle_03.png",
+      "ic_kitchen/delhi_settle_04.png",
+      "ic_kitchen/delhi_settle_05.png"
     ]
   },
   "ic_docker": {
-    "walk": [
-      "ic_docker/gait_00.png",
-      "ic_docker/gait_01.png",
-      "ic_docker/gait_02.png",
-      "ic_docker/gait_03.png",
-      "ic_docker/gait_04.png",
-      "ic_docker/gait_05.png",
-      "ic_docker/gait_06.png",
-      "ic_docker/gait_07.png"
-    ],
-    "run": [
-      "ic_docker/gait_00.png",
-      "ic_docker/gait_01.png",
-      "ic_docker/gait_02.png",
-      "ic_docker/gait_03.png",
-      "ic_docker/gait_04.png",
-      "ic_docker/gait_05.png",
-      "ic_docker/gait_06.png",
-      "ic_docker/gait_07.png"
+    "revamp_idle": [
+      "ic_docker/delhi_locomotion_00.png"
     ],
     "idle": [
-      "ic_docker/performance_08.png"
+      "ic_docker/delhi_locomotion_00.png",
+      "ic_docker/delhi_locomotion_01.png"
     ],
     "block": [
-      "ic_docker/performance_10.png"
+      "ic_docker/delhi_locomotion_02.png"
     ],
-    "atk": [
-      "ic_docker/performance_11.png",
-      "ic_docker/performance_12.png",
-      "ic_docker/performance_13.png"
-    ],
-    "punch": [
-      "ic_docker/performance_11.png",
-      "ic_docker/performance_12.png",
-      "ic_docker/performance_13.png"
-    ],
-    "kick": [
-      "ic_docker/performance_14.png",
-      "ic_docker/performance_15.png"
+    "walk": [
+      "ic_docker/delhi_locomotion_04.png",
+      "ic_docker/delhi_locomotion_05.png",
+      "ic_docker/delhi_locomotion_06.png",
+      "ic_docker/delhi_locomotion_07.png",
+      "ic_docker/delhi_locomotion_08.png",
+      "ic_docker/delhi_locomotion_09.png",
+      "ic_docker/delhi_locomotion_10.png",
+      "ic_docker/delhi_locomotion_11.png",
+      "ic_docker/delhi_locomotion_12.png",
+      "ic_docker/delhi_locomotion_13.png",
+      "ic_docker/delhi_locomotion_14.png",
+      "ic_docker/delhi_locomotion_15.png",
+      "ic_docker/delhi_locomotion_16.png",
+      "ic_docker/delhi_locomotion_17.png"
     ],
     "hurt": [
-      "ic_docker/performance_16.png",
-      "ic_docker/performance_17.png"
+      "ic_docker/delhi_reactions_01.png",
+      "ic_docker/delhi_reactions_02.png"
     ],
-    "stagger": [
-      "ic_docker/performance_16.png",
-      "ic_docker/performance_17.png"
+    "stagger_polish": [
+      "ic_docker/delhi_reactions_03.png",
+      "ic_docker/delhi_reactions_04.png",
+      "ic_docker/delhi_reactions_05.png",
+      "ic_docker/delhi_reactions_06.png"
     ],
     "fall": [
-      "ic_docker/performance_18.png"
+      "ic_docker/delhi_reactions_07.png",
+      "ic_docker/delhi_reactions_08.png"
     ],
     "down": [
-      "ic_docker/performance_19.png"
+      "ic_docker/delhi_reactions_10.png"
+    ],
+    "dead": [
+      "ic_docker/delhi_reactions_10.png"
     ],
     "getup": [
-      "ic_docker/performance_20.png",
-      "ic_docker/performance_21.png",
-      "ic_docker/performance_08.png"
+      "ic_docker/delhi_reactions_10.png",
+      "ic_docker/delhi_reactions_11.png",
+      "ic_docker/delhi_reactions_12.png",
+      "ic_docker/delhi_reactions_13.png",
+      "ic_docker/delhi_reactions_14.png",
+      "ic_docker/delhi_locomotion_00.png"
     ],
-    "grab": [
-      "ic_docker/performance_22.png"
+    "super_reaction": [
+      "ic_docker/delhi_reactions_01.png",
+      "ic_docker/delhi_reactions_02.png",
+      "ic_docker/delhi_reactions_03.png",
+      "ic_docker/delhi_reactions_04.png",
+      "ic_docker/delhi_reactions_07.png",
+      "ic_docker/delhi_reactions_08.png",
+      "ic_docker/delhi_reactions_09.png",
+      "ic_docker/delhi_reactions_10.png"
+    ],
+    "atk": [
+      "ic_docker/delhi_combat_01.png",
+      "ic_docker/delhi_combat_04.png",
+      "ic_docker/delhi_combat_07.png"
+    ],
+    "wrench": [
+      "ic_docker/delhi_combat_01.png",
+      "ic_docker/delhi_combat_02.png",
+      "ic_docker/delhi_combat_03.png",
+      "ic_docker/delhi_combat_04.png",
+      "ic_docker/delhi_combat_05.png",
+      "ic_docker/delhi_combat_06.png",
+      "ic_docker/delhi_combat_07.png"
     ],
     "throw": [
-      "ic_docker/performance_22.png",
-      "ic_docker/performance_23.png"
+      "ic_docker/delhi_combat_08.png",
+      "ic_docker/delhi_combat_09.png",
+      "ic_docker/delhi_combat_10.png",
+      "ic_docker/delhi_combat_11.png",
+      "ic_docker/delhi_combat_12.png",
+      "ic_docker/delhi_combat_13.png"
     ],
-    "ram": [
-      "ic_docker/performance_11.png",
-      "ic_docker/performance_12.png",
-      "ic_docker/performance_13.png"
+    "lever": [
+      "ic_docker/delhi_combat_14.png"
     ],
-    "beam": [
-      "ic_docker/performance_14.png",
-      "ic_docker/performance_15.png",
-      "ic_docker/performance_15.png",
-      "ic_docker/performance_13.png"
+    "taunt": [
+      "ic_docker/delhi_combat_15.png"
     ],
-    "call": [
-      "ic_docker/performance_14.png",
-      "ic_docker/performance_15.png",
-      "ic_docker/performance_15.png"
-    ],
-    "seated": [
-      "ic_docker/performance_20.png"
+    "stance_settle": [
+      "ic_docker/delhi_settle_01.png",
+      "ic_docker/delhi_settle_02.png",
+      "ic_docker/delhi_settle_03.png",
+      "ic_docker/delhi_settle_04.png",
+      "ic_docker/delhi_settle_05.png"
     ]
   },
   "ic_headset": {
-    "walk": [
-      "ic_headset/gait_00.png",
-      "ic_headset/gait_01.png",
-      "ic_headset/gait_02.png",
-      "ic_headset/gait_03.png",
-      "ic_headset/gait_04.png",
-      "ic_headset/gait_05.png",
-      "ic_headset/gait_06.png",
-      "ic_headset/gait_07.png"
-    ],
-    "run": [
-      "ic_headset/gait_00.png",
-      "ic_headset/gait_01.png",
-      "ic_headset/gait_02.png",
-      "ic_headset/gait_03.png",
-      "ic_headset/gait_04.png",
-      "ic_headset/gait_05.png",
-      "ic_headset/gait_06.png",
-      "ic_headset/gait_07.png"
-    ],
     "idle": [
-      "ic_headset/performance_08.png"
+      "ic_headset/refund_locomotion_00.png",
+      "ic_headset/refund_locomotion_01.png"
+    ],
+    "revamp_idle": [
+      "ic_headset/refund_locomotion_00.png"
     ],
     "block": [
-      "ic_headset/performance_10.png"
+      "ic_headset/refund_locomotion_02.png"
     ],
-    "atk": [
-      "ic_headset/performance_11.png",
-      "ic_headset/performance_12.png",
-      "ic_headset/performance_13.png"
+    "walk": [
+      "ic_headset/refund_walkpolish_02.png",
+      "ic_headset/refund_walkpolish_03.png",
+      "ic_headset/refund_walkpolish_04.png",
+      "ic_headset/refund_walkpolish_05.png",
+      "ic_headset/refund_walkpolish_06.png",
+      "ic_headset/refund_walkpolish_07.png",
+      "ic_headset/refund_walkpolish_08.png",
+      "ic_headset/refund_walkpolish_09.png",
+      "ic_headset/refund_walkpolish_10.png",
+      "ic_headset/refund_walkpolish_11.png",
+      "ic_headset/refund_walkpolish_12.png",
+      "ic_headset/refund_walkpolish_13.png",
+      "ic_headset/refund_walkpolish_14.png",
+      "ic_headset/refund_walkpolish_15.png",
+      "ic_headset/refund_walkpolish_16.png",
+      "ic_headset/refund_walkpolish_17.png",
+      "ic_headset/refund_walkpolish_18.png",
+      "ic_headset/refund_walkpolish_19.png",
+      "ic_headset/refund_walkpolish_20.png",
+      "ic_headset/refund_walkpolish_21.png"
     ],
-    "punch": [
-      "ic_headset/performance_11.png",
-      "ic_headset/performance_12.png",
-      "ic_headset/performance_13.png"
-    ],
-    "kick": [
-      "ic_headset/performance_14.png",
-      "ic_headset/performance_15.png"
+    "run": [
+      "ic_headset/refund_walkpolish_02.png",
+      "ic_headset/refund_walkpolish_03.png",
+      "ic_headset/refund_walkpolish_04.png",
+      "ic_headset/refund_walkpolish_05.png",
+      "ic_headset/refund_walkpolish_06.png",
+      "ic_headset/refund_walkpolish_07.png",
+      "ic_headset/refund_walkpolish_08.png",
+      "ic_headset/refund_walkpolish_09.png",
+      "ic_headset/refund_walkpolish_10.png",
+      "ic_headset/refund_walkpolish_11.png",
+      "ic_headset/refund_walkpolish_12.png",
+      "ic_headset/refund_walkpolish_13.png",
+      "ic_headset/refund_walkpolish_14.png",
+      "ic_headset/refund_walkpolish_15.png",
+      "ic_headset/refund_walkpolish_16.png",
+      "ic_headset/refund_walkpolish_17.png",
+      "ic_headset/refund_walkpolish_18.png",
+      "ic_headset/refund_walkpolish_19.png",
+      "ic_headset/refund_walkpolish_20.png",
+      "ic_headset/refund_walkpolish_21.png"
     ],
     "hurt": [
-      "ic_headset/performance_16.png",
-      "ic_headset/performance_17.png"
+      "ic_headset/refund_reactions_01.png",
+      "ic_headset/refund_reactions_02.png"
     ],
-    "stagger": [
-      "ic_headset/performance_16.png",
-      "ic_headset/performance_17.png"
+    "stagger_polish": [
+      "ic_headset/refund_reactions_03.png",
+      "ic_headset/refund_reactions_04.png",
+      "ic_headset/refund_reactions_05.png",
+      "ic_headset/refund_reactions_06.png"
     ],
     "fall": [
-      "ic_headset/performance_18.png"
+      "ic_headset/refund_reactions_07.png",
+      "ic_headset/refund_reactions_08.png",
+      "ic_headset/refund_reactions_09.png"
+    ],
+    "jump": [
+      "ic_headset/refund_reactions_07.png",
+      "ic_headset/refund_reactions_08.png"
     ],
     "down": [
-      "ic_headset/performance_19.png"
+      "ic_headset/refund_reactions_10.png"
+    ],
+    "dead": [
+      "ic_headset/refund_reactions_10.png"
     ],
     "getup": [
-      "ic_headset/performance_20.png",
-      "ic_headset/performance_21.png",
-      "ic_headset/performance_08.png"
+      "ic_headset/refund_reactions_10.png",
+      "ic_headset/refund_reactions_16.png",
+      "ic_headset/refund_reactions_17.png",
+      "ic_headset/refund_reactions_11.png",
+      "ic_headset/refund_reactions_12.png",
+      "ic_headset/refund_reactions_13.png",
+      "ic_headset/refund_reactions_14.png",
+      "ic_headset/refund_locomotion_00.png"
+    ],
+    "super_reaction": [
+      "ic_headset/refund_reactions_01.png",
+      "ic_headset/refund_reactions_02.png",
+      "ic_headset/refund_reactions_03.png",
+      "ic_headset/refund_reactions_04.png",
+      "ic_headset/refund_reactions_07.png",
+      "ic_headset/refund_reactions_08.png",
+      "ic_headset/refund_reactions_09.png",
+      "ic_headset/refund_reactions_10.png"
+    ],
+    "atk": [
+      "ic_headset/refund_combat_01.png",
+      "ic_headset/refund_combat_02.png",
+      "ic_headset/refund_combat_03.png"
+    ],
+    "string": [
+      "ic_headset/refund_combat_01.png",
+      "ic_headset/refund_combat_02.png",
+      "ic_headset/refund_combat_03.png",
+      "ic_headset/refund_combat_04.png",
+      "ic_headset/refund_combat_05.png",
+      "ic_headset/refund_combat_06.png",
+      "ic_headset/refund_combat_07.png",
+      "ic_headset/refund_combat_08.png",
+      "ic_headset/refund_combat_09.png"
+    ],
+    "shove": [
+      "ic_headset/refund_combat_10.png",
+      "ic_headset/refund_combat_11.png",
+      "ic_headset/refund_combat_12.png"
+    ],
+    "taunt": [
+      "ic_headset/refund_combat_13.png"
     ],
     "grab": [
-      "ic_headset/performance_22.png"
-    ],
-    "throw": [
-      "ic_headset/performance_22.png",
-      "ic_headset/performance_23.png"
-    ],
-    "ram": [
-      "ic_headset/performance_11.png",
-      "ic_headset/performance_12.png",
-      "ic_headset/performance_13.png"
-    ],
-    "beam": [
-      "ic_headset/performance_14.png",
-      "ic_headset/performance_15.png",
-      "ic_headset/performance_15.png",
-      "ic_headset/performance_13.png"
-    ],
-    "call": [
-      "ic_headset/performance_14.png",
-      "ic_headset/performance_15.png",
-      "ic_headset/performance_15.png"
-    ],
-    "seated": [
-      "ic_headset/performance_20.png"
+      "ic_headset/refund_combat_14.png",
+      "ic_headset/refund_combat_15.png"
     ]
   },
   "ic_operator": {
-    "walk": [
-      "ic_operator/gait_00.png",
-      "ic_operator/gait_01.png",
-      "ic_operator/gait_02.png",
-      "ic_operator/gait_03.png",
-      "ic_operator/gait_04.png",
-      "ic_operator/gait_05.png",
-      "ic_operator/gait_06.png",
-      "ic_operator/gait_07.png"
-    ],
-    "run": [
-      "ic_operator/gait_00.png",
-      "ic_operator/gait_01.png",
-      "ic_operator/gait_02.png",
-      "ic_operator/gait_03.png",
-      "ic_operator/gait_04.png",
-      "ic_operator/gait_05.png",
-      "ic_operator/gait_06.png",
-      "ic_operator/gait_07.png"
-    ],
     "idle": [
-      "ic_operator/performance_08.png"
+      "ic_operator/refund_locomotion_00.png",
+      "ic_operator/refund_locomotion_01.png"
+    ],
+    "revamp_idle": [
+      "ic_operator/refund_locomotion_00.png"
     ],
     "block": [
-      "ic_operator/performance_10.png"
+      "ic_operator/refund_locomotion_02.png"
     ],
-    "atk": [
-      "ic_operator/performance_11.png",
-      "ic_operator/performance_12.png",
-      "ic_operator/performance_13.png"
+    "walk": [
+      "ic_operator/refund_walkpolish_02.png",
+      "ic_operator/refund_walkpolish_03.png",
+      "ic_operator/refund_walkpolish_04.png",
+      "ic_operator/refund_walkpolish_05.png",
+      "ic_operator/refund_walkpolish_06.png",
+      "ic_operator/refund_walkpolish_07.png",
+      "ic_operator/refund_walkpolish_08.png",
+      "ic_operator/refund_walkpolish_09.png",
+      "ic_operator/refund_walkpolish_10.png",
+      "ic_operator/refund_walkpolish_11.png",
+      "ic_operator/refund_walkpolish_12.png",
+      "ic_operator/refund_walkpolish_13.png",
+      "ic_operator/refund_walkpolish_14.png",
+      "ic_operator/refund_walkpolish_15.png",
+      "ic_operator/refund_walkpolish_16.png",
+      "ic_operator/refund_walkpolish_17.png",
+      "ic_operator/refund_walkpolish_18.png",
+      "ic_operator/refund_walkpolish_19.png",
+      "ic_operator/refund_walkpolish_20.png",
+      "ic_operator/refund_walkpolish_21.png"
     ],
-    "punch": [
-      "ic_operator/performance_11.png",
-      "ic_operator/performance_12.png",
-      "ic_operator/performance_13.png"
-    ],
-    "kick": [
-      "ic_operator/performance_14.png",
-      "ic_operator/performance_15.png"
+    "run": [
+      "ic_operator/refund_walkpolish_02.png",
+      "ic_operator/refund_walkpolish_03.png",
+      "ic_operator/refund_walkpolish_04.png",
+      "ic_operator/refund_walkpolish_05.png",
+      "ic_operator/refund_walkpolish_06.png",
+      "ic_operator/refund_walkpolish_07.png",
+      "ic_operator/refund_walkpolish_08.png",
+      "ic_operator/refund_walkpolish_09.png",
+      "ic_operator/refund_walkpolish_10.png",
+      "ic_operator/refund_walkpolish_11.png",
+      "ic_operator/refund_walkpolish_12.png",
+      "ic_operator/refund_walkpolish_13.png",
+      "ic_operator/refund_walkpolish_14.png",
+      "ic_operator/refund_walkpolish_15.png",
+      "ic_operator/refund_walkpolish_16.png",
+      "ic_operator/refund_walkpolish_17.png",
+      "ic_operator/refund_walkpolish_18.png",
+      "ic_operator/refund_walkpolish_19.png",
+      "ic_operator/refund_walkpolish_20.png",
+      "ic_operator/refund_walkpolish_21.png"
     ],
     "hurt": [
-      "ic_operator/performance_16.png",
-      "ic_operator/performance_17.png"
+      "ic_operator/refund_reactions_01.png",
+      "ic_operator/refund_reactions_02.png"
     ],
-    "stagger": [
-      "ic_operator/performance_16.png",
-      "ic_operator/performance_17.png"
+    "stagger_polish": [
+      "ic_operator/refund_reactions_03.png",
+      "ic_operator/refund_reactions_04.png",
+      "ic_operator/refund_reactions_05.png",
+      "ic_operator/refund_reactions_06.png"
     ],
     "fall": [
-      "ic_operator/performance_18.png"
+      "ic_operator/refund_reactions_07.png",
+      "ic_operator/refund_reactions_08.png",
+      "ic_operator/refund_reactions_09.png"
+    ],
+    "jump": [
+      "ic_operator/refund_reactions_07.png",
+      "ic_operator/refund_reactions_08.png"
     ],
     "down": [
-      "ic_operator/performance_19.png"
+      "ic_operator/refund_reactions_10.png"
+    ],
+    "dead": [
+      "ic_operator/refund_reactions_10.png"
     ],
     "getup": [
-      "ic_operator/performance_20.png",
-      "ic_operator/performance_21.png",
-      "ic_operator/performance_08.png"
+      "ic_operator/refund_reactions_10.png",
+      "ic_operator/refund_reactions_16.png",
+      "ic_operator/refund_reactions_17.png",
+      "ic_operator/refund_reactions_11.png",
+      "ic_operator/refund_reactions_12.png",
+      "ic_operator/refund_reactions_13.png",
+      "ic_operator/refund_reactions_14.png",
+      "ic_operator/refund_locomotion_00.png"
     ],
-    "grab": [
-      "ic_operator/performance_22.png"
+    "super_reaction": [
+      "ic_operator/refund_reactions_01.png",
+      "ic_operator/refund_reactions_02.png",
+      "ic_operator/refund_reactions_03.png",
+      "ic_operator/refund_reactions_04.png",
+      "ic_operator/refund_reactions_07.png",
+      "ic_operator/refund_reactions_08.png",
+      "ic_operator/refund_reactions_09.png",
+      "ic_operator/refund_reactions_10.png"
     ],
-    "throw": [
-      "ic_operator/performance_22.png",
-      "ic_operator/performance_23.png"
+    "atk": [
+      "ic_operator/refund_combat_01.png",
+      "ic_operator/refund_combat_04.png",
+      "ic_operator/refund_combat_08.png"
     ],
-    "ram": [
-      "ic_operator/performance_11.png",
-      "ic_operator/performance_12.png",
-      "ic_operator/performance_13.png"
+    "kick": [
+      "ic_operator/refund_combat_01.png",
+      "ic_operator/refund_combat_02.png",
+      "ic_operator/refund_combat_03.png",
+      "ic_operator/refund_combat_04.png",
+      "ic_operator/refund_combat_05.png",
+      "ic_operator/refund_combat_06.png",
+      "ic_operator/refund_combat_07.png",
+      "ic_operator/refund_combat_08.png"
     ],
-    "beam": [
-      "ic_operator/performance_14.png",
-      "ic_operator/performance_15.png",
-      "ic_operator/performance_15.png",
-      "ic_operator/performance_13.png"
+    "dodge": [
+      "ic_operator/refund_combat_09.png",
+      "ic_operator/refund_combat_10.png",
+      "ic_operator/refund_combat_11.png",
+      "ic_operator/refund_combat_12.png"
     ],
-    "call": [
-      "ic_operator/performance_14.png",
-      "ic_operator/performance_15.png",
-      "ic_operator/performance_15.png"
-    ],
-    "seated": [
-      "ic_operator/performance_20.png"
+    "taunt": [
+      "ic_operator/refund_combat_13.png"
     ]
   },
   "ic_thrower": {
-    "walk": [
-      "ic_thrower/gait_00.png",
-      "ic_thrower/gait_01.png",
-      "ic_thrower/gait_02.png",
-      "ic_thrower/gait_03.png",
-      "ic_thrower/gait_04.png",
-      "ic_thrower/gait_05.png",
-      "ic_thrower/gait_06.png",
-      "ic_thrower/gait_07.png"
-    ],
-    "run": [
-      "ic_thrower/gait_00.png",
-      "ic_thrower/gait_01.png",
-      "ic_thrower/gait_02.png",
-      "ic_thrower/gait_03.png",
-      "ic_thrower/gait_04.png",
-      "ic_thrower/gait_05.png",
-      "ic_thrower/gait_06.png",
-      "ic_thrower/gait_07.png"
-    ],
     "idle": [
-      "ic_thrower/performance_08.png"
+      "ic_thrower/refund_locomotion_00.png",
+      "ic_thrower/refund_locomotion_01.png"
+    ],
+    "revamp_idle": [
+      "ic_thrower/refund_locomotion_00.png"
     ],
     "block": [
-      "ic_thrower/performance_10.png"
+      "ic_thrower/refund_locomotion_02.png"
     ],
-    "atk": [
-      "ic_thrower/performance_14.png",
-      "ic_thrower/performance_15.png",
-      "ic_thrower/performance_13.png"
+    "walk": [
+      "ic_thrower/refund_walkpolish_02.png",
+      "ic_thrower/refund_walkpolish_03.png",
+      "ic_thrower/refund_walkpolish_04.png",
+      "ic_thrower/refund_walkpolish_05.png",
+      "ic_thrower/refund_walkpolish_06.png",
+      "ic_thrower/refund_walkpolish_07.png",
+      "ic_thrower/refund_walkpolish_08.png",
+      "ic_thrower/refund_walkpolish_09.png",
+      "ic_thrower/refund_walkpolish_10.png",
+      "ic_thrower/refund_walkpolish_11.png",
+      "ic_thrower/refund_walkpolish_12.png",
+      "ic_thrower/refund_walkpolish_13.png",
+      "ic_thrower/refund_walkpolish_14.png",
+      "ic_thrower/refund_walkpolish_15.png",
+      "ic_thrower/refund_walkpolish_16.png",
+      "ic_thrower/refund_walkpolish_17.png",
+      "ic_thrower/refund_walkpolish_18.png",
+      "ic_thrower/refund_walkpolish_19.png",
+      "ic_thrower/refund_walkpolish_20.png",
+      "ic_thrower/refund_walkpolish_21.png"
     ],
-    "punch": [
-      "ic_thrower/performance_11.png",
-      "ic_thrower/performance_12.png",
-      "ic_thrower/performance_13.png"
-    ],
-    "kick": [
-      "ic_thrower/performance_14.png",
-      "ic_thrower/performance_15.png"
+    "run": [
+      "ic_thrower/refund_walkpolish_02.png",
+      "ic_thrower/refund_walkpolish_03.png",
+      "ic_thrower/refund_walkpolish_04.png",
+      "ic_thrower/refund_walkpolish_05.png",
+      "ic_thrower/refund_walkpolish_06.png",
+      "ic_thrower/refund_walkpolish_07.png",
+      "ic_thrower/refund_walkpolish_08.png",
+      "ic_thrower/refund_walkpolish_09.png",
+      "ic_thrower/refund_walkpolish_10.png",
+      "ic_thrower/refund_walkpolish_11.png",
+      "ic_thrower/refund_walkpolish_12.png",
+      "ic_thrower/refund_walkpolish_13.png",
+      "ic_thrower/refund_walkpolish_14.png",
+      "ic_thrower/refund_walkpolish_15.png",
+      "ic_thrower/refund_walkpolish_16.png",
+      "ic_thrower/refund_walkpolish_17.png",
+      "ic_thrower/refund_walkpolish_18.png",
+      "ic_thrower/refund_walkpolish_19.png",
+      "ic_thrower/refund_walkpolish_20.png",
+      "ic_thrower/refund_walkpolish_21.png"
     ],
     "hurt": [
-      "ic_thrower/performance_16.png",
-      "ic_thrower/performance_17.png"
+      "ic_thrower/refund_reactions_01.png",
+      "ic_thrower/refund_reactions_02.png"
     ],
-    "stagger": [
-      "ic_thrower/performance_16.png",
-      "ic_thrower/performance_17.png"
+    "stagger_polish": [
+      "ic_thrower/refund_reactions_03.png",
+      "ic_thrower/refund_reactions_04.png",
+      "ic_thrower/refund_reactions_05.png",
+      "ic_thrower/refund_reactions_06.png"
     ],
     "fall": [
-      "ic_thrower/performance_18.png"
+      "ic_thrower/refund_reactions_07.png",
+      "ic_thrower/refund_reactions_08.png",
+      "ic_thrower/refund_reactions_09.png"
+    ],
+    "jump": [
+      "ic_thrower/refund_reactions_07.png",
+      "ic_thrower/refund_reactions_08.png"
     ],
     "down": [
-      "ic_thrower/performance_19.png"
+      "ic_thrower/refund_reactions_10.png"
+    ],
+    "dead": [
+      "ic_thrower/refund_reactions_10.png"
     ],
     "getup": [
-      "ic_thrower/performance_20.png",
-      "ic_thrower/performance_21.png",
-      "ic_thrower/performance_08.png"
+      "ic_thrower/refund_reactions_10.png",
+      "ic_thrower/refund_reactions_16.png",
+      "ic_thrower/refund_reactions_17.png",
+      "ic_thrower/refund_reactions_11.png",
+      "ic_thrower/refund_reactions_12.png",
+      "ic_thrower/refund_reactions_13.png",
+      "ic_thrower/refund_reactions_14.png",
+      "ic_thrower/refund_locomotion_00.png"
     ],
-    "grab": [
-      "ic_thrower/performance_22.png"
+    "super_reaction": [
+      "ic_thrower/refund_reactions_01.png",
+      "ic_thrower/refund_reactions_02.png",
+      "ic_thrower/refund_reactions_03.png",
+      "ic_thrower/refund_reactions_04.png",
+      "ic_thrower/refund_reactions_07.png",
+      "ic_thrower/refund_reactions_08.png",
+      "ic_thrower/refund_reactions_09.png",
+      "ic_thrower/refund_reactions_10.png"
+    ],
+    "atk": [
+      "ic_thrower/refund_combat_08.png",
+      "ic_thrower/refund_combat_09.png",
+      "ic_thrower/refund_combat_11.png"
     ],
     "throw": [
-      "ic_thrower/performance_22.png",
-      "ic_thrower/performance_23.png"
+      "ic_thrower/refund_combat_01.png",
+      "ic_thrower/refund_combat_02.png",
+      "ic_thrower/refund_combat_03.png",
+      "ic_thrower/refund_combat_04.png",
+      "ic_thrower/refund_combat_05.png"
     ],
-    "ram": [
-      "ic_thrower/performance_11.png",
-      "ic_thrower/performance_12.png",
-      "ic_thrower/performance_13.png"
+    "reload": [
+      "ic_thrower/refund_combat_06.png",
+      "ic_thrower/refund_combat_07.png",
+      "ic_thrower/refund_combat_00.png"
     ],
-    "beam": [
-      "ic_thrower/performance_14.png",
-      "ic_thrower/performance_15.png",
-      "ic_thrower/performance_15.png",
-      "ic_thrower/performance_13.png"
+    "keyboard": [
+      "ic_thrower/refund_combat_08.png",
+      "ic_thrower/refund_combat_09.png",
+      "ic_thrower/refund_combat_10.png",
+      "ic_thrower/refund_combat_11.png"
     ],
-    "call": [
-      "ic_thrower/performance_14.png",
-      "ic_thrower/performance_15.png",
-      "ic_thrower/performance_15.png"
-    ],
-    "seated": [
-      "ic_thrower/performance_20.png"
+    "taunt": [
+      "ic_thrower/refund_combat_12.png"
     ]
   },
   "ic_security": {
-    "walk": [
-      "ic_security/gait_00.png",
-      "ic_security/gait_01.png",
-      "ic_security/gait_02.png",
-      "ic_security/gait_03.png",
-      "ic_security/gait_04.png",
-      "ic_security/gait_05.png",
-      "ic_security/gait_06.png",
-      "ic_security/gait_07.png"
-    ],
-    "run": [
-      "ic_security/gait_00.png",
-      "ic_security/gait_01.png",
-      "ic_security/gait_02.png",
-      "ic_security/gait_03.png",
-      "ic_security/gait_04.png",
-      "ic_security/gait_05.png",
-      "ic_security/gait_06.png",
-      "ic_security/gait_07.png"
-    ],
     "idle": [
-      "ic_security/performance_08.png"
+      "ic_security/refund_locomotion_00.png",
+      "ic_security/refund_locomotion_01.png"
+    ],
+    "revamp_idle": [
+      "ic_security/refund_locomotion_00.png"
     ],
     "block": [
-      "ic_security/performance_10.png"
+      "ic_security/refund_locomotion_02.png"
     ],
-    "atk": [
-      "ic_security/performance_11.png",
-      "ic_security/performance_12.png",
-      "ic_security/performance_13.png"
+    "walk": [
+      "ic_security/refund_walkpolish_02.png",
+      "ic_security/refund_walkpolish_03.png",
+      "ic_security/refund_walkpolish_04.png",
+      "ic_security/refund_walkpolish_05.png",
+      "ic_security/refund_walkpolish_06.png",
+      "ic_security/refund_walkpolish_07.png",
+      "ic_security/refund_walkpolish_08.png",
+      "ic_security/refund_walkpolish_09.png",
+      "ic_security/refund_walkpolish_10.png",
+      "ic_security/refund_walkpolish_11.png",
+      "ic_security/refund_walkpolish_12.png",
+      "ic_security/refund_walkpolish_13.png",
+      "ic_security/refund_walkpolish_14.png",
+      "ic_security/refund_walkpolish_15.png",
+      "ic_security/refund_walkpolish_16.png",
+      "ic_security/refund_walkpolish_17.png",
+      "ic_security/refund_walkpolish_18.png",
+      "ic_security/refund_walkpolish_19.png",
+      "ic_security/refund_walkpolish_20.png",
+      "ic_security/refund_walkpolish_21.png"
     ],
-    "punch": [
-      "ic_security/performance_11.png",
-      "ic_security/performance_12.png",
-      "ic_security/performance_13.png"
-    ],
-    "kick": [
-      "ic_security/performance_14.png",
-      "ic_security/performance_15.png"
+    "run": [
+      "ic_security/refund_walkpolish_02.png",
+      "ic_security/refund_walkpolish_03.png",
+      "ic_security/refund_walkpolish_04.png",
+      "ic_security/refund_walkpolish_05.png",
+      "ic_security/refund_walkpolish_06.png",
+      "ic_security/refund_walkpolish_07.png",
+      "ic_security/refund_walkpolish_08.png",
+      "ic_security/refund_walkpolish_09.png",
+      "ic_security/refund_walkpolish_10.png",
+      "ic_security/refund_walkpolish_11.png",
+      "ic_security/refund_walkpolish_12.png",
+      "ic_security/refund_walkpolish_13.png",
+      "ic_security/refund_walkpolish_14.png",
+      "ic_security/refund_walkpolish_15.png",
+      "ic_security/refund_walkpolish_16.png",
+      "ic_security/refund_walkpolish_17.png",
+      "ic_security/refund_walkpolish_18.png",
+      "ic_security/refund_walkpolish_19.png",
+      "ic_security/refund_walkpolish_20.png",
+      "ic_security/refund_walkpolish_21.png"
     ],
     "hurt": [
-      "ic_security/performance_16.png",
-      "ic_security/performance_17.png"
+      "ic_security/refund_reactions_01.png",
+      "ic_security/refund_reactions_02.png"
     ],
-    "stagger": [
-      "ic_security/performance_16.png",
-      "ic_security/performance_17.png"
+    "stagger_polish": [
+      "ic_security/refund_reactions_03.png",
+      "ic_security/refund_reactions_04.png",
+      "ic_security/refund_reactions_05.png",
+      "ic_security/refund_reactions_06.png"
     ],
     "fall": [
-      "ic_security/performance_18.png"
+      "ic_security/refund_reactions_07.png",
+      "ic_security/refund_reactions_08.png",
+      "ic_security/refund_reactions_09.png"
+    ],
+    "jump": [
+      "ic_security/refund_reactions_07.png",
+      "ic_security/refund_reactions_08.png"
     ],
     "down": [
-      "ic_security/performance_19.png"
+      "ic_security/refund_reactions_10.png"
+    ],
+    "dead": [
+      "ic_security/refund_reactions_10.png"
     ],
     "getup": [
-      "ic_security/performance_20.png",
-      "ic_security/performance_21.png",
-      "ic_security/performance_08.png"
+      "ic_security/refund_reactions_10.png",
+      "ic_security/refund_reactions_16.png",
+      "ic_security/refund_reactions_17.png",
+      "ic_security/refund_reactions_11.png",
+      "ic_security/refund_reactions_12.png",
+      "ic_security/refund_reactions_13.png",
+      "ic_security/refund_reactions_14.png",
+      "ic_security/refund_locomotion_00.png"
     ],
-    "grab": [
-      "ic_security/performance_22.png"
+    "super_reaction": [
+      "ic_security/refund_reactions_01.png",
+      "ic_security/refund_reactions_02.png",
+      "ic_security/refund_reactions_03.png",
+      "ic_security/refund_reactions_04.png",
+      "ic_security/refund_reactions_07.png",
+      "ic_security/refund_reactions_08.png",
+      "ic_security/refund_reactions_09.png",
+      "ic_security/refund_reactions_10.png"
     ],
-    "throw": [
-      "ic_security/performance_22.png",
-      "ic_security/performance_23.png"
+    "atk": [
+      "ic_security/refund_combat_01.png",
+      "ic_security/refund_combat_04.png",
+      "ic_security/refund_combat_07.png"
     ],
-    "ram": [
-      "ic_security/performance_11.png",
-      "ic_security/performance_12.png",
-      "ic_security/performance_13.png"
+    "lathi": [
+      "ic_security/refund_combat_01.png",
+      "ic_security/refund_combat_02.png",
+      "ic_security/refund_combat_03.png",
+      "ic_security/refund_combat_04.png",
+      "ic_security/refund_combat_05.png",
+      "ic_security/refund_combat_06.png",
+      "ic_security/refund_combat_07.png"
     ],
-    "beam": [
-      "ic_security/performance_14.png",
-      "ic_security/performance_15.png",
-      "ic_security/performance_15.png",
-      "ic_security/performance_13.png"
+    "jab": [
+      "ic_security/refund_combat_08.png",
+      "ic_security/refund_combat_09.png",
+      "ic_security/refund_combat_10.png",
+      "ic_security/refund_combat_11.png"
     ],
-    "call": [
-      "ic_security/performance_14.png",
-      "ic_security/performance_15.png",
-      "ic_security/performance_15.png"
-    ],
-    "seated": [
-      "ic_security/performance_20.png"
+    "taunt": [
+      "ic_security/refund_combat_13.png"
     ]
   },
   "ic_cabinet": {
-    "walk": [
-      "ic_cabinet/gait_00.png",
-      "ic_cabinet/gait_01.png",
-      "ic_cabinet/gait_02.png",
-      "ic_cabinet/gait_03.png",
-      "ic_cabinet/gait_04.png",
-      "ic_cabinet/gait_05.png",
-      "ic_cabinet/gait_06.png",
-      "ic_cabinet/gait_07.png"
-    ],
-    "run": [
-      "ic_cabinet/gait_00.png",
-      "ic_cabinet/gait_01.png",
-      "ic_cabinet/gait_02.png",
-      "ic_cabinet/gait_03.png",
-      "ic_cabinet/gait_04.png",
-      "ic_cabinet/gait_05.png",
-      "ic_cabinet/gait_06.png",
-      "ic_cabinet/gait_07.png"
-    ],
     "idle": [
-      "ic_cabinet/performance_08.png"
+      "ic_cabinet/refund_locomotion_00.png",
+      "ic_cabinet/refund_locomotion_01.png"
+    ],
+    "revamp_idle": [
+      "ic_cabinet/refund_locomotion_00.png"
     ],
     "block": [
-      "ic_cabinet/performance_10.png"
+      "ic_cabinet/refund_locomotion_02.png"
     ],
-    "atk": [
-      "ic_cabinet/performance_11.png",
-      "ic_cabinet/performance_12.png",
-      "ic_cabinet/performance_13.png"
+    "walk": [
+      "ic_cabinet/refund_walkpolish_02.png",
+      "ic_cabinet/refund_walkpolish_03.png",
+      "ic_cabinet/refund_walkpolish_04.png",
+      "ic_cabinet/refund_walkpolish_05.png",
+      "ic_cabinet/refund_walkpolish_06.png",
+      "ic_cabinet/refund_walkpolish_07.png",
+      "ic_cabinet/refund_walkpolish_08.png",
+      "ic_cabinet/refund_walkpolish_09.png",
+      "ic_cabinet/refund_walkpolish_10.png",
+      "ic_cabinet/refund_walkpolish_11.png",
+      "ic_cabinet/refund_walkpolish_12.png",
+      "ic_cabinet/refund_walkpolish_13.png",
+      "ic_cabinet/refund_walkpolish_14.png",
+      "ic_cabinet/refund_walkpolish_15.png",
+      "ic_cabinet/refund_walkpolish_16.png",
+      "ic_cabinet/refund_walkpolish_17.png",
+      "ic_cabinet/refund_walkpolish_18.png",
+      "ic_cabinet/refund_walkpolish_19.png",
+      "ic_cabinet/refund_walkpolish_20.png",
+      "ic_cabinet/refund_walkpolish_21.png"
     ],
-    "punch": [
-      "ic_cabinet/performance_11.png",
-      "ic_cabinet/performance_12.png",
-      "ic_cabinet/performance_13.png"
-    ],
-    "kick": [
-      "ic_cabinet/performance_14.png",
-      "ic_cabinet/performance_15.png"
+    "run": [
+      "ic_cabinet/refund_walkpolish_02.png",
+      "ic_cabinet/refund_walkpolish_03.png",
+      "ic_cabinet/refund_walkpolish_04.png",
+      "ic_cabinet/refund_walkpolish_05.png",
+      "ic_cabinet/refund_walkpolish_06.png",
+      "ic_cabinet/refund_walkpolish_07.png",
+      "ic_cabinet/refund_walkpolish_08.png",
+      "ic_cabinet/refund_walkpolish_09.png",
+      "ic_cabinet/refund_walkpolish_10.png",
+      "ic_cabinet/refund_walkpolish_11.png",
+      "ic_cabinet/refund_walkpolish_12.png",
+      "ic_cabinet/refund_walkpolish_13.png",
+      "ic_cabinet/refund_walkpolish_14.png",
+      "ic_cabinet/refund_walkpolish_15.png",
+      "ic_cabinet/refund_walkpolish_16.png",
+      "ic_cabinet/refund_walkpolish_17.png",
+      "ic_cabinet/refund_walkpolish_18.png",
+      "ic_cabinet/refund_walkpolish_19.png",
+      "ic_cabinet/refund_walkpolish_20.png",
+      "ic_cabinet/refund_walkpolish_21.png"
     ],
     "hurt": [
-      "ic_cabinet/performance_16.png",
-      "ic_cabinet/performance_17.png"
+      "ic_cabinet/refund_reactions_01.png",
+      "ic_cabinet/refund_reactions_02.png"
     ],
-    "stagger": [
-      "ic_cabinet/performance_16.png",
-      "ic_cabinet/performance_17.png"
+    "stagger_polish": [
+      "ic_cabinet/refund_reactions_03.png",
+      "ic_cabinet/refund_reactions_04.png",
+      "ic_cabinet/refund_reactions_05.png",
+      "ic_cabinet/refund_reactions_06.png"
     ],
     "fall": [
-      "ic_cabinet/performance_18.png"
+      "ic_cabinet/refund_reactions_07.png",
+      "ic_cabinet/refund_reactions_08.png",
+      "ic_cabinet/refund_reactions_09.png"
+    ],
+    "jump": [
+      "ic_cabinet/refund_reactions_07.png",
+      "ic_cabinet/refund_reactions_08.png"
     ],
     "down": [
-      "ic_cabinet/performance_19.png"
+      "ic_cabinet/refund_reactions_10.png"
+    ],
+    "dead": [
+      "ic_cabinet/refund_reactions_10.png"
     ],
     "getup": [
-      "ic_cabinet/performance_20.png",
-      "ic_cabinet/performance_21.png",
-      "ic_cabinet/performance_08.png"
+      "ic_cabinet/refund_reactions_10.png",
+      "ic_cabinet/refund_reactions_16.png",
+      "ic_cabinet/refund_reactions_17.png",
+      "ic_cabinet/refund_reactions_11.png",
+      "ic_cabinet/refund_reactions_12.png",
+      "ic_cabinet/refund_reactions_13.png",
+      "ic_cabinet/refund_reactions_14.png",
+      "ic_cabinet/refund_locomotion_00.png"
     ],
-    "grab": [
-      "ic_cabinet/performance_22.png"
+    "super_reaction": [
+      "ic_cabinet/refund_reactions_01.png",
+      "ic_cabinet/refund_reactions_02.png",
+      "ic_cabinet/refund_reactions_03.png",
+      "ic_cabinet/refund_reactions_04.png",
+      "ic_cabinet/refund_reactions_07.png",
+      "ic_cabinet/refund_reactions_08.png",
+      "ic_cabinet/refund_reactions_09.png",
+      "ic_cabinet/refund_reactions_10.png"
     ],
-    "throw": [
-      "ic_cabinet/performance_22.png",
-      "ic_cabinet/performance_23.png"
+    "atk": [
+      "ic_cabinet/refund_combat_05.png",
+      "ic_cabinet/refund_combat_07.png",
+      "ic_cabinet/refund_combat_09.png"
+    ],
+    "punch": [
+      "ic_cabinet/refund_combat_05.png",
+      "ic_cabinet/refund_combat_06.png",
+      "ic_cabinet/refund_combat_07.png",
+      "ic_cabinet/refund_combat_08.png",
+      "ic_cabinet/refund_combat_09.png"
     ],
     "ram": [
-      "ic_cabinet/performance_11.png",
-      "ic_cabinet/performance_12.png",
-      "ic_cabinet/performance_13.png"
+      "ic_cabinet/refund_combat_01.png",
+      "ic_cabinet/refund_combat_02.png",
+      "ic_cabinet/refund_combat_03.png",
+      "ic_cabinet/refund_combat_04.png"
     ],
-    "beam": [
-      "ic_cabinet/performance_14.png",
-      "ic_cabinet/performance_15.png",
-      "ic_cabinet/performance_15.png",
-      "ic_cabinet/performance_13.png"
+    "stuck": [
+      "ic_cabinet/refund_combat_10.png",
+      "ic_cabinet/refund_combat_11.png",
+      "ic_cabinet/refund_combat_12.png"
+    ],
+    "taunt": [
+      "ic_cabinet/refund_combat_13.png"
     ],
     "call": [
-      "ic_cabinet/performance_14.png",
-      "ic_cabinet/performance_15.png",
-      "ic_cabinet/performance_15.png"
+      "ic_cabinet/refund_combat_13.png",
+      "ic_cabinet/refund_combat_14.png",
+      "ic_cabinet/refund_combat_15.png"
     ],
-    "seated": [
-      "ic_cabinet/performance_20.png"
+    "push": [
+      "ic_cabinet/refund_pushpolish_02.png",
+      "ic_cabinet/refund_pushpolish_03.png",
+      "ic_cabinet/refund_pushpolish_04.png",
+      "ic_cabinet/refund_pushpolish_05.png",
+      "ic_cabinet/refund_pushpolish_06.png",
+      "ic_cabinet/refund_pushpolish_07.png",
+      "ic_cabinet/refund_pushpolish_08.png",
+      "ic_cabinet/refund_pushpolish_09.png",
+      "ic_cabinet/refund_pushpolish_10.png",
+      "ic_cabinet/refund_pushpolish_11.png",
+      "ic_cabinet/refund_pushpolish_12.png",
+      "ic_cabinet/refund_pushpolish_13.png",
+      "ic_cabinet/refund_pushpolish_14.png",
+      "ic_cabinet/refund_pushpolish_15.png",
+      "ic_cabinet/refund_pushpolish_16.png",
+      "ic_cabinet/refund_pushpolish_17.png",
+      "ic_cabinet/refund_pushpolish_18.png",
+      "ic_cabinet/refund_pushpolish_19.png",
+      "ic_cabinet/refund_pushpolish_20.png",
+      "ic_cabinet/refund_pushpolish_21.png"
+    ],
+    "push_idle": [
+      "ic_cabinet/refund_pushpolish_01.png",
+      "ic_cabinet/refund_pushpolish_01.png"
     ]
   },
   "ic_lead": {
-    "walk": [
-      "ic_lead/gait_00.png",
-      "ic_lead/gait_01.png",
-      "ic_lead/gait_02.png",
-      "ic_lead/gait_03.png",
-      "ic_lead/gait_04.png",
-      "ic_lead/gait_05.png",
-      "ic_lead/gait_06.png",
-      "ic_lead/gait_07.png"
-    ],
-    "run": [
-      "ic_lead/gait_00.png",
-      "ic_lead/gait_01.png",
-      "ic_lead/gait_02.png",
-      "ic_lead/gait_03.png",
-      "ic_lead/gait_04.png",
-      "ic_lead/gait_05.png",
-      "ic_lead/gait_06.png",
-      "ic_lead/gait_07.png"
-    ],
     "idle": [
-      "ic_lead/performance_08.png"
+      "ic_lead/refund_locomotion_00.png",
+      "ic_lead/refund_locomotion_01.png"
+    ],
+    "revamp_idle": [
+      "ic_lead/refund_locomotion_00.png"
     ],
     "block": [
-      "ic_lead/performance_10.png"
+      "ic_lead/refund_locomotion_02.png"
     ],
-    "atk": [
-      "ic_lead/performance_11.png",
-      "ic_lead/performance_12.png",
-      "ic_lead/performance_13.png"
+    "walk": [
+      "ic_lead/refund_walkpolish_02.png",
+      "ic_lead/refund_walkpolish_03.png",
+      "ic_lead/refund_walkpolish_04.png",
+      "ic_lead/refund_walkpolish_05.png",
+      "ic_lead/refund_walkpolish_06.png",
+      "ic_lead/refund_walkpolish_07.png",
+      "ic_lead/refund_walkpolish_08.png",
+      "ic_lead/refund_walkpolish_09.png",
+      "ic_lead/refund_walkpolish_10.png",
+      "ic_lead/refund_walkpolish_11.png",
+      "ic_lead/refund_walkpolish_12.png",
+      "ic_lead/refund_walkpolish_13.png",
+      "ic_lead/refund_walkpolish_14.png",
+      "ic_lead/refund_walkpolish_15.png",
+      "ic_lead/refund_walkpolish_16.png",
+      "ic_lead/refund_walkpolish_17.png",
+      "ic_lead/refund_walkpolish_18.png",
+      "ic_lead/refund_walkpolish_19.png",
+      "ic_lead/refund_walkpolish_20.png",
+      "ic_lead/refund_walkpolish_21.png"
     ],
-    "punch": [
-      "ic_lead/performance_11.png",
-      "ic_lead/performance_12.png",
-      "ic_lead/performance_13.png"
-    ],
-    "kick": [
-      "ic_lead/performance_14.png",
-      "ic_lead/performance_15.png"
+    "run": [
+      "ic_lead/refund_walkpolish_02.png",
+      "ic_lead/refund_walkpolish_03.png",
+      "ic_lead/refund_walkpolish_04.png",
+      "ic_lead/refund_walkpolish_05.png",
+      "ic_lead/refund_walkpolish_06.png",
+      "ic_lead/refund_walkpolish_07.png",
+      "ic_lead/refund_walkpolish_08.png",
+      "ic_lead/refund_walkpolish_09.png",
+      "ic_lead/refund_walkpolish_10.png",
+      "ic_lead/refund_walkpolish_11.png",
+      "ic_lead/refund_walkpolish_12.png",
+      "ic_lead/refund_walkpolish_13.png",
+      "ic_lead/refund_walkpolish_14.png",
+      "ic_lead/refund_walkpolish_15.png",
+      "ic_lead/refund_walkpolish_16.png",
+      "ic_lead/refund_walkpolish_17.png",
+      "ic_lead/refund_walkpolish_18.png",
+      "ic_lead/refund_walkpolish_19.png",
+      "ic_lead/refund_walkpolish_20.png",
+      "ic_lead/refund_walkpolish_21.png"
     ],
     "hurt": [
-      "ic_lead/performance_16.png",
-      "ic_lead/performance_17.png"
+      "ic_lead/refund_reactions_01.png",
+      "ic_lead/refund_reactions_02.png"
     ],
-    "stagger": [
-      "ic_lead/performance_16.png",
-      "ic_lead/performance_17.png"
+    "stagger_polish": [
+      "ic_lead/refund_reactions_03.png",
+      "ic_lead/refund_reactions_04.png",
+      "ic_lead/refund_reactions_05.png",
+      "ic_lead/refund_reactions_06.png"
     ],
     "fall": [
-      "ic_lead/performance_18.png"
+      "ic_lead/refund_reactions_07.png",
+      "ic_lead/refund_reactions_08.png",
+      "ic_lead/refund_reactions_09.png"
+    ],
+    "jump": [
+      "ic_lead/refund_reactions_07.png",
+      "ic_lead/refund_reactions_08.png"
     ],
     "down": [
-      "ic_lead/performance_19.png"
+      "ic_lead/refund_reactions_10.png"
+    ],
+    "dead": [
+      "ic_lead/refund_reactions_10.png"
     ],
     "getup": [
-      "ic_lead/performance_20.png",
-      "ic_lead/performance_21.png",
-      "ic_lead/performance_08.png"
+      "ic_lead/refund_reactions_10.png",
+      "ic_lead/refund_reactions_16.png",
+      "ic_lead/refund_reactions_17.png",
+      "ic_lead/refund_reactions_11.png",
+      "ic_lead/refund_reactions_12.png",
+      "ic_lead/refund_reactions_13.png",
+      "ic_lead/refund_reactions_14.png",
+      "ic_lead/refund_locomotion_00.png"
     ],
-    "grab": [
-      "ic_lead/performance_22.png"
+    "super_reaction": [
+      "ic_lead/refund_reactions_01.png",
+      "ic_lead/refund_reactions_02.png",
+      "ic_lead/refund_reactions_03.png",
+      "ic_lead/refund_reactions_04.png",
+      "ic_lead/refund_reactions_07.png",
+      "ic_lead/refund_reactions_08.png",
+      "ic_lead/refund_reactions_09.png",
+      "ic_lead/refund_reactions_10.png"
     ],
-    "throw": [
-      "ic_lead/performance_22.png",
-      "ic_lead/performance_23.png"
+    "atk": [
+      "ic_lead/refund_combat_01.png",
+      "ic_lead/refund_combat_02.png",
+      "ic_lead/refund_combat_03.png"
     ],
-    "ram": [
-      "ic_lead/performance_11.png",
-      "ic_lead/performance_12.png",
-      "ic_lead/performance_13.png"
-    ],
-    "beam": [
-      "ic_lead/performance_14.png",
-      "ic_lead/performance_15.png",
-      "ic_lead/performance_15.png",
-      "ic_lead/performance_13.png"
+    "string": [
+      "ic_lead/refund_combat_01.png",
+      "ic_lead/refund_combat_02.png",
+      "ic_lead/refund_combat_03.png",
+      "ic_lead/refund_combat_04.png",
+      "ic_lead/refund_combat_05.png",
+      "ic_lead/refund_combat_06.png",
+      "ic_lead/refund_combat_07.png",
+      "ic_lead/refund_combat_08.png",
+      "ic_lead/refund_combat_09.png"
     ],
     "call": [
-      "ic_lead/performance_14.png",
-      "ic_lead/performance_15.png",
-      "ic_lead/performance_15.png"
+      "ic_lead/refund_combat_10.png",
+      "ic_lead/refund_combat_11.png",
+      "ic_lead/refund_combat_12.png",
+      "ic_lead/refund_combat_13.png",
+      "ic_lead/refund_combat_14.png",
+      "ic_lead/refund_combat_15.png"
     ],
-    "seated": [
-      "ic_lead/performance_20.png"
+    "taunt": [
+      "ic_lead/refund_combat_10.png"
     ]
   },
   "ic_vendor": {
-    "walk": [
-      "ic_vendor/rebuild_vendor_base_00.png",
-      "ic_vendor/rebuild_vendor_base_01.png",
-      "ic_vendor/rebuild_vendor_base_02.png",
-      "ic_vendor/rebuild_vendor_base_03.png",
-      "ic_vendor/rebuild_vendor_base_04.png",
-      "ic_vendor/rebuild_vendor_base_05.png",
-      "ic_vendor/rebuild_vendor_base_06.png",
-      "ic_vendor/rebuild_vendor_base_07.png"
-    ],
-    "run": [
-      "ic_vendor/rebuild_vendor_base_00.png",
-      "ic_vendor/rebuild_vendor_base_01.png",
-      "ic_vendor/rebuild_vendor_base_02.png",
-      "ic_vendor/rebuild_vendor_base_03.png",
-      "ic_vendor/rebuild_vendor_base_04.png",
-      "ic_vendor/rebuild_vendor_base_05.png",
-      "ic_vendor/rebuild_vendor_base_06.png",
-      "ic_vendor/rebuild_vendor_base_07.png"
-    ],
     "idle": [
-      "ic_vendor/rebuild_vendor_base_08.png"
+      "ic_vendor/idle_00.png",
+      "ic_vendor/idle_01.png",
+      "ic_vendor/idle_02.png",
+      "ic_vendor/idle_03.png"
     ],
-    "block": [
-      "ic_vendor/rebuild_vendor_base_09.png"
-    ],
-    "atk": [
-      "ic_vendor/rebuild_vendor_ladle_00.png",
-      "ic_vendor/rebuild_vendor_ladle_01.png",
-      "ic_vendor/rebuild_vendor_ladle_02.png"
-    ],
-    "punch": [
-      "ic_vendor/rebuild_vendor_ladle_00.png",
-      "ic_vendor/rebuild_vendor_ladle_01.png",
-      "ic_vendor/rebuild_vendor_ladle_02.png"
-    ],
-    "kick": [
-      "ic_vendor/rebuild_vendor_specials_18.png",
-      "ic_vendor/rebuild_vendor_specials_19.png",
-      "ic_vendor/rebuild_vendor_specials_20.png",
-      "ic_vendor/rebuild_vendor_specials_21.png",
-      "ic_vendor/rebuild_vendor_specials_22.png",
-      "ic_vendor/rebuild_vendor_specials_23.png"
+    "walk": [
+      "ic_vendor/walk_00.png",
+      "ic_vendor/walk_01.png",
+      "ic_vendor/walk_02.png",
+      "ic_vendor/walk_03.png",
+      "ic_vendor/walk_04.png",
+      "ic_vendor/walk_05.png",
+      "ic_vendor/walk_06.png",
+      "ic_vendor/walk_07.png"
     ],
     "hurt": [
-      "ic_vendor/rebuild_vendor_base_10.png"
+      "ic_vendor/hurt_00.png",
+      "ic_vendor/hurt_01.png"
     ],
-    "stagger": [
-      "ic_vendor/rebuild_vendor_base_10.png",
-      "ic_vendor/rebuild_vendor_base_11.png"
+    "stagger_polish": [
+      "ic_vendor/stagger_polish_00.png",
+      "ic_vendor/stagger_polish_01.png",
+      "ic_vendor/stagger_polish_02.png",
+      "ic_vendor/stagger_polish_03.png"
+    ],
+    "taunt": [
+      "ic_vendor/taunt_00.png"
+    ],
+    "block": [
+      "ic_vendor/block_00.png"
+    ],
+    "lick": [
+      "ic_vendor/lick_00.png",
+      "ic_vendor/lick_01.png",
+      "ic_vendor/lick_02.png",
+      "ic_vendor/lick_03.png"
+    ],
+    "string": [
+      "ic_vendor/string_00.png",
+      "ic_vendor/string_01.png",
+      "ic_vendor/string_02.png",
+      "ic_vendor/string_03.png",
+      "ic_vendor/string_04.png",
+      "ic_vendor/string_05.png",
+      "ic_vendor/string_06.png"
+    ],
+    "naan": [
+      "ic_vendor/naan_00.png",
+      "ic_vendor/naan_01.png"
+    ],
+    "scoop": [
+      "ic_vendor/scoop_00.png",
+      "ic_vendor/scoop_01.png",
+      "ic_vendor/scoop_02.png"
+    ],
+    "hotfoot": [
+      "ic_vendor/hotfoot_00.png",
+      "ic_vendor/hotfoot_01.png"
+    ],
+    "blind": [
+      "ic_vendor/blind_00.png",
+      "ic_vendor/blind_01.png"
+    ],
+    "rage": [
+      "ic_vendor/rage_00.png",
+      "ic_vendor/rage_01.png",
+      "ic_vendor/rage_02.png",
+      "ic_vendor/rage_03.png"
+    ],
+    "breath": [
+      "ic_vendor/breath_normal_v2_00.png",
+      "ic_vendor/breath_normal_v2_01.png",
+      "ic_vendor/breath_normal_v2_02.png"
+    ],
+    "flop": [
+      "ic_vendor/flop_00.png",
+      "ic_vendor/flop_01.png",
+      "ic_vendor/flop_02.png"
     ],
     "fall": [
-      "ic_vendor/rebuild_vendor_specials_14.png"
+      "ic_vendor/fall_00.png"
     ],
     "down": [
-      "ic_vendor/rebuild_vendor_specials_15.png"
+      "ic_vendor/down_00.png"
     ],
     "getup": [
-      "ic_vendor/rebuild_vendor_base_11.png",
-      "ic_vendor/rebuild_vendor_base_08.png"
+      "ic_vendor/getup_00.png",
+      "ic_vendor/getup_01.png"
     ],
-    "grab": [
-      "ic_vendor/rebuild_vendor_specials_00.png"
+    "flopup": [
+      "ic_vendor/flopup_normal_v2_00.png",
+      "ic_vendor/flopup_normal_v2_01.png",
+      "ic_vendor/flopup_normal_v2_02.png"
     ],
-    "throw": [
-      "ic_vendor/rebuild_vendor_ladle_09.png",
-      "ic_vendor/rebuild_vendor_ladle_10.png",
-      "ic_vendor/rebuild_vendor_ladle_11.png",
-      "ic_vendor/rebuild_vendor_ladle_12.png",
-      "ic_vendor/rebuild_vendor_ladle_13.png",
-      "ic_vendor/rebuild_vendor_ladle_14.png"
+    "heavy": [
+      "ic_vendor/heavy_00.png"
     ],
-    "ram": [
-      "ic_vendor/rebuild_vendor_specials_00.png",
-      "ic_vendor/rebuild_vendor_specials_01.png",
-      "ic_vendor/rebuild_vendor_specials_02.png",
-      "ic_vendor/rebuild_vendor_specials_03.png",
-      "ic_vendor/rebuild_vendor_specials_04.png",
-      "ic_vendor/rebuild_vendor_specials_05.png"
+    "guardbreak": [
+      "ic_vendor/guardbreak_00.png"
     ],
-    "beam": [
-      "ic_vendor/rebuild_vendor_specials_06.png",
-      "ic_vendor/rebuild_vendor_specials_07.png",
-      "ic_vendor/rebuild_vendor_specials_08.png",
-      "ic_vendor/rebuild_vendor_specials_09.png",
-      "ic_vendor/rebuild_vendor_specials_10.png",
-      "ic_vendor/rebuild_vendor_specials_11.png"
+    "idle3": [
+      "ic_vendor/idle3_00.png",
+      "ic_vendor/idle3_01.png",
+      "ic_vendor/idle3_02.png",
+      "ic_vendor/idle3_03.png"
     ],
-    "call": [
-      "ic_vendor/rebuild_vendor_base_08.png"
+    "walk3": [
+      "ic_vendor/walk3_00.png",
+      "ic_vendor/walk3_01.png",
+      "ic_vendor/walk3_02.png",
+      "ic_vendor/walk3_03.png",
+      "ic_vendor/walk3_04.png",
+      "ic_vendor/walk3_05.png",
+      "ic_vendor/walk3_06.png",
+      "ic_vendor/walk3_07.png"
     ],
-    "seated": [
-      "ic_vendor/rebuild_vendor_base_11.png"
+    "lastorder": [
+      "ic_vendor/lastorder_00.png",
+      "ic_vendor/lastorder_01.png"
     ],
-    "ladle": [
-      "ic_vendor/rebuild_vendor_ladle_00.png",
-      "ic_vendor/rebuild_vendor_ladle_01.png",
-      "ic_vendor/rebuild_vendor_ladle_02.png",
-      "ic_vendor/rebuild_vendor_ladle_03.png",
-      "ic_vendor/rebuild_vendor_ladle_04.png",
-      "ic_vendor/rebuild_vendor_ladle_05.png",
-      "ic_vendor/rebuild_vendor_ladle_06.png",
-      "ic_vendor/rebuild_vendor_ladle_07.png",
-      "ic_vendor/rebuild_vendor_ladle_08.png"
+    "tug": [
+      "ic_vendor/tug_00.png"
     ],
-    "utensil": [
-      "ic_vendor/rebuild_vendor_ladle_09.png",
-      "ic_vendor/rebuild_vendor_ladle_10.png",
-      "ic_vendor/rebuild_vendor_ladle_11.png",
-      "ic_vendor/rebuild_vendor_ladle_12.png",
-      "ic_vendor/rebuild_vendor_ladle_13.png",
-      "ic_vendor/rebuild_vendor_ladle_14.png"
+    "bump": [
+      "ic_vendor/bump_00.png",
+      "ic_vendor/bump_01.png",
+      "ic_vendor/bump_02.png"
     ],
-    "rush": [
-      "ic_vendor/rebuild_vendor_specials_00.png",
-      "ic_vendor/rebuild_vendor_specials_01.png",
-      "ic_vendor/rebuild_vendor_specials_02.png",
-      "ic_vendor/rebuild_vendor_specials_03.png",
-      "ic_vendor/rebuild_vendor_specials_04.png",
-      "ic_vendor/rebuild_vendor_specials_05.png"
+    "intro": [
+      "ic_vendor/intro_00.png",
+      "ic_vendor/intro_01.png",
+      "ic_vendor/intro_02.png",
+      "ic_vendor/intro_03.png",
+      "ic_vendor/intro_04.png",
+      "ic_vendor/intro_05.png",
+      "ic_vendor/intro_06.png",
+      "ic_vendor/intro_07.png",
+      "ic_vendor/intro_08.png",
+      "ic_vendor/intro_09.png",
+      "ic_vendor/intro_10.png",
+      "ic_vendor/intro_11.png",
+      "ic_vendor/intro_12.png",
+      "ic_vendor/intro_13.png",
+      "ic_vendor/intro_14.png",
+      "ic_vendor/intro_15.png",
+      "ic_vendor/intro_16.png",
+      "ic_vendor/intro_17.png",
+      "ic_vendor/intro_18.png"
     ],
-    "valve": [
-      "ic_vendor/rebuild_vendor_specials_06.png",
-      "ic_vendor/rebuild_vendor_specials_07.png",
-      "ic_vendor/rebuild_vendor_specials_08.png",
-      "ic_vendor/rebuild_vendor_specials_09.png",
-      "ic_vendor/rebuild_vendor_specials_10.png",
-      "ic_vendor/rebuild_vendor_specials_11.png"
+    "fry": [
+      "ic_vendor/fry_00.png",
+      "ic_vendor/fry_01.png",
+      "ic_vendor/fry_02.png",
+      "ic_vendor/fry_03.png",
+      "ic_vendor/fry_04.png",
+      "ic_vendor/fry_05.png",
+      "ic_vendor/fry_06.png",
+      "ic_vendor/fry_07.png"
     ],
-    "lunge": [
-      "ic_vendor/rebuild_vendor_specials_12.png",
-      "ic_vendor/rebuild_vendor_specials_13.png",
-      "ic_vendor/rebuild_vendor_specials_14.png",
-      "ic_vendor/rebuild_vendor_specials_15.png",
-      "ic_vendor/rebuild_vendor_specials_16.png",
-      "ic_vendor/rebuild_vendor_specials_17.png"
+    "dip": [
+      "ic_vendor/dip_00.png",
+      "ic_vendor/dip_01.png",
+      "ic_vendor/dip_02.png",
+      "ic_vendor/dip_03.png",
+      "ic_vendor/dip_04.png",
+      "ic_vendor/dip_05.png"
     ],
-    "overhead": [
-      "ic_vendor/rebuild_vendor_specials_18.png",
-      "ic_vendor/rebuild_vendor_specials_19.png",
-      "ic_vendor/rebuild_vendor_specials_20.png",
-      "ic_vendor/rebuild_vendor_specials_21.png",
-      "ic_vendor/rebuild_vendor_specials_22.png",
-      "ic_vendor/rebuild_vendor_specials_23.png"
+    "turn": [
+      "ic_vendor/turn_00.png"
+    ],
+    "finisher": [
+      "ic_vendor/finisher_00.png",
+      "ic_vendor/finisher_01.png",
+      "ic_vendor/finisher_02.png",
+      "ic_vendor/finisher_03.png",
+      "ic_vendor/finisher_04.png",
+      "ic_vendor/finisher_05.png",
+      "ic_vendor/finisher_06.png",
+      "ic_vendor/finisher_07.png",
+      "ic_vendor/finisher_08.png",
+      "ic_vendor/finisher_09.png",
+      "ic_vendor/finisher_10.png",
+      "ic_vendor/finisher_11.png",
+      "ic_vendor/finisher_12.png",
+      "ic_vendor/finisher_13.png",
+      "ic_vendor/finisher_14.png",
+      "ic_vendor/finisher_15.png",
+      "ic_vendor/finisher_16.png",
+      "ic_vendor/finisher_17.png",
+      "ic_vendor/finisher_18.png",
+      "ic_vendor/finisher_19.png",
+      "ic_vendor/finisher_20.png",
+      "ic_vendor/finisher_21.png",
+      "ic_vendor/finisher_22.png",
+      "ic_vendor/finisher_23.png"
+    ],
+    "flop_polish": [
+      "ic_vendor/flop_normal_v2_00.png",
+      "ic_vendor/flop_normal_v2_01.png",
+      "ic_vendor/flop_normal_v2_02.png",
+      "ic_vendor/flop_normal_v2_03.png",
+      "ic_vendor/flop_normal_v2_04.png"
+    ],
+    "haul_polish": [
+      "ic_vendor/haul_polish_00.png",
+      "ic_vendor/haul_polish_01.png",
+      "ic_vendor/haul_polish_02.png",
+      "ic_vendor/haul_polish_03.png"
+    ],
+    "finisher_gore": [
+      "ic_vendor/finisher_00.png",
+      "ic_vendor/finisher_01.png",
+      "ic_vendor/finisher_02.png",
+      "ic_vendor/finisher_03.png",
+      "ic_vendor/finisher_04.png",
+      "ic_vendor/finisher_gore_05.png",
+      "ic_vendor/finisher_06.png",
+      "ic_vendor/finisher_07.png",
+      "ic_vendor/finisher_08.png",
+      "ic_vendor/finisher_09.png",
+      "ic_vendor/finisher_10.png",
+      "ic_vendor/finisher_11.png",
+      "ic_vendor/finisher_12.png",
+      "ic_vendor/finisher_13.png",
+      "ic_vendor/finisher_14.png",
+      "ic_vendor/finisher_15.png",
+      "ic_vendor/finisher_16.png",
+      "ic_vendor/finisher_17.png",
+      "ic_vendor/finisher_18.png",
+      "ic_vendor/finisher_gore_19.png",
+      "ic_vendor/finisher_20.png",
+      "ic_vendor/finisher_21.png",
+      "ic_vendor/finisher_22.png",
+      "ic_vendor/finisher_23.png"
+    ],
+    "cauldron_last": [
+      "ic_vendor/cauldron_last_00.png",
+      "ic_vendor/cauldron_last_01.png",
+      "ic_vendor/cauldron_last_02.png",
+      "ic_vendor/cauldron_last_03.png",
+      "ic_vendor/cauldron_last_04.png",
+      "ic_vendor/cauldron_last_05.png",
+      "ic_vendor/cauldron_last_06.png"
+    ],
+    "inferno_idle": [
+      "ic_vendor/inferno_idle_00.png",
+      "ic_vendor/inferno_idle_01.png",
+      "ic_vendor/inferno_idle_02.png",
+      "ic_vendor/inferno_idle_03.png"
+    ],
+    "cauldron_retrieve": [
+      "ic_vendor/cauldron_retrieve_00.png",
+      "ic_vendor/cauldron_retrieve_01.png",
+      "ic_vendor/cauldron_retrieve_02.png",
+      "ic_vendor/cauldron_retrieve_03.png"
+    ],
+    "cauldron_carry": [
+      "ic_vendor/cauldron_carry_00.png",
+      "ic_vendor/cauldron_carry_01.png",
+      "ic_vendor/cauldron_carry_02.png",
+      "ic_vendor/cauldron_carry_03.png"
+    ],
+    "cauldron_pickup": [
+      "ic_vendor/cauldron_pickup_00.png",
+      "ic_vendor/cauldron_pickup_01.png",
+      "ic_vendor/cauldron_pickup_02.png"
+    ],
+    "devour_smash": [
+      "ic_vendor/devour_smash_00.png",
+      "ic_vendor/devour_smash_01.png",
+      "ic_vendor/devour_smash_02.png",
+      "ic_vendor/devour_smash_03.png",
+      "ic_vendor/devour_smash_04.png",
+      "ic_vendor/devour_smash_05.png",
+      "ic_vendor/devour_smash_06.png",
+      "ic_vendor/devour_smash_07.png"
+    ],
+    "demon_idle3": [
+      "ic_vendor/demon_idle3_00.png",
+      "ic_vendor/demon_idle3_01.png",
+      "ic_vendor/demon_idle3_02.png",
+      "ic_vendor/demon_idle3_03.png"
+    ],
+    "demon_walk3": [
+      "ic_vendor/natural_walk_00.png",
+      "ic_vendor/natural_walk_01.png",
+      "ic_vendor/natural_walk_02.png",
+      "ic_vendor/natural_walk_03.png",
+      "ic_vendor/natural_walk_04.png",
+      "ic_vendor/natural_walk_05.png",
+      "ic_vendor/natural_walk_06.png",
+      "ic_vendor/natural_walk_07.png",
+      "ic_vendor/natural_walk_08.png",
+      "ic_vendor/natural_walk_09.png",
+      "ic_vendor/natural_walk_10.png",
+      "ic_vendor/natural_walk_11.png",
+      "ic_vendor/natural_walk_12.png",
+      "ic_vendor/natural_walk_13.png",
+      "ic_vendor/natural_walk_14.png"
+    ],
+    "demon_string": [
+      "ic_vendor/demon_string_00.png",
+      "ic_vendor/demon_string_01.png",
+      "ic_vendor/demon_string_02.png",
+      "ic_vendor/demon_string_03.png",
+      "ic_vendor/demon_string_04.png",
+      "ic_vendor/demon_string_05.png",
+      "ic_vendor/demon_string_06.png"
+    ],
+    "demon_breath": [
+      "ic_vendor/demon_breath_00.png",
+      "ic_vendor/demon_breath_01.png",
+      "ic_vendor/demon_breath_02.png"
+    ],
+    "demon_flop_polish": [
+      "ic_vendor/demon_flop_polish_00.png",
+      "ic_vendor/demon_flop_polish_01.png",
+      "ic_vendor/demon_flop_polish_02.png",
+      "ic_vendor/demon_flop_polish_03.png",
+      "ic_vendor/demon_flop_polish_04.png"
+    ],
+    "demon_bump": [
+      "ic_vendor/demon_bump_00.png",
+      "ic_vendor/demon_bump_01.png",
+      "ic_vendor/demon_bump_02.png"
+    ],
+    "demon_hurt": [
+      "ic_vendor/demon_hurt_00.png",
+      "ic_vendor/demon_hurt_01.png"
+    ],
+    "demon_stagger_polish": [
+      "ic_vendor/demon_stagger_polish_00.png",
+      "ic_vendor/demon_stagger_polish_01.png",
+      "ic_vendor/demon_stagger_polish_02.png",
+      "ic_vendor/demon_stagger_polish_03.png"
+    ],
+    "demon_block": [
+      "ic_vendor/demon_block_00.png"
+    ],
+    "demon_guardbreak": [
+      "ic_vendor/demon_guardbreak_00.png"
+    ],
+    "demon_flopup": [
+      "ic_vendor/demon_flopup_00.png",
+      "ic_vendor/demon_flopup_01.png",
+      "ic_vendor/demon_flopup_02.png"
+    ],
+    "demon_down": [
+      "ic_vendor/demon_down_00.png"
+    ],
+    "demon_getup": [
+      "ic_vendor/demon_getup_00.png",
+      "ic_vendor/demon_getup_01.png"
+    ],
+    "demon_brutal": [
+      "ic_vendor/demon_brutal_00.png",
+      "ic_vendor/demon_brutal_01.png",
+      "ic_vendor/demon_brutal_02.png",
+      "ic_vendor/demon_brutal_03.png",
+      "ic_vendor/demon_brutal_04.png",
+      "ic_vendor/demon_brutal_05.png",
+      "ic_vendor/demon_brutal_06.png"
+    ],
+    "smash_drive": [
+      "ic_vendor/smash_drive_00.png",
+      "ic_vendor/smash_drive_01.png",
+      "ic_vendor/smash_drive_02.png"
+    ],
+    "demon_yank": [
+      "ic_vendor/demon_yank_00.png",
+      "ic_vendor/demon_yank_01.png",
+      "ic_vendor/demon_yank_02.png"
+    ],
+    "devour_growth": [
+      "ic_vendor/devour_growth_00.png",
+      "ic_vendor/devour_growth_01.png",
+      "ic_vendor/devour_growth_02.png",
+      "ic_vendor/devour_growth_03.png"
+    ],
+    "demon_forearm": [
+      "ic_vendor/demon_forearm_00.png",
+      "ic_vendor/demon_forearm_01.png",
+      "ic_vendor/demon_forearm_02.png",
+      "ic_vendor/demon_forearm_03.png",
+      "ic_vendor/demon_forearm_04.png",
+      "ic_vendor/demon_forearm_05.png"
+    ],
+    "demon_cleaver": [
+      "ic_vendor/demon_cleaver_00.png",
+      "ic_vendor/demon_cleaver_01.png",
+      "ic_vendor/demon_cleaver_02.png",
+      "ic_vendor/demon_cleaver_03.png",
+      "ic_vendor/demon_cleaver_04.png",
+      "ic_vendor/demon_cleaver_05.png",
+      "ic_vendor/demon_cleaver_06.png"
+    ],
+    "chilli_feast": [
+      "ic_vendor/chilli_feast_00.png",
+      "ic_vendor/chilli_feast_01.png",
+      "ic_vendor/chilli_feast_02.png",
+      "ic_vendor/chilli_feast_03.png",
+      "ic_vendor/chilli_feast_04.png"
+    ],
+    "fakeout_crawl": [
+      "ic_vendor/fakeout_crawl_00.png",
+      "ic_vendor/fakeout_crawl_01.png",
+      "ic_vendor/fakeout_crawl_02.png",
+      "ic_vendor/fakeout_crawl_03.png",
+      "ic_vendor/fakeout_crawl_04.png",
+      "ic_vendor/fakeout_crawl_05.png",
+      "ic_vendor/fakeout_crawl_06.png",
+      "ic_vendor/fakeout_crawl_07.png"
+    ],
+    "feast_rise": [
+      "ic_vendor/feast_rise_00.png",
+      "ic_vendor/feast_rise_01.png",
+      "ic_vendor/feast_rise_02.png",
+      "ic_vendor/feast_rise_03.png"
+    ],
+    "meal_lift": [
+      "ic_vendor/meal_lift_00.png",
+      "ic_vendor/meal_lift_01.png",
+      "ic_vendor/meal_lift_02.png"
+    ],
+    "demon_finish3": [
+      "ic_vendor/demon_finish3_00.png",
+      "ic_vendor/demon_finish3_01.png",
+      "ic_vendor/demon_finish3_02.png",
+      "ic_vendor/demon_finish3_03.png",
+      "ic_vendor/demon_finish3_04.png",
+      "ic_vendor/demon_finish3_05.png",
+      "ic_vendor/demon_finish3_06.png",
+      "ic_vendor/demon_finish3_07.png",
+      "ic_vendor/demon_finish3_08.png",
+      "ic_vendor/demon_finish3_09.png",
+      "ic_vendor/demon_finish3_10.png",
+      "ic_vendor/demon_finish3_11.png",
+      "ic_vendor/demon_finish3_12.png"
+    ],
+    "feast_growth": [
+      "ic_vendor/feast_growth_00.png",
+      "ic_vendor/feast_growth_01.png",
+      "ic_vendor/feast_growth_02.png",
+      "ic_vendor/feast_growth_03.png"
+    ],
+    "feast_smash": [
+      "ic_vendor/feast_smash_00.png",
+      "ic_vendor/feast_smash_01.png",
+      "ic_vendor/feast_smash_02.png",
+      "ic_vendor/feast_smash_03.png",
+      "ic_vendor/feast_smash_04.png"
+    ],
+    "weapon_pickup": [
+      "ic_vendor/weapon_pickup_00.png",
+      "ic_vendor/weapon_pickup_01.png",
+      "ic_vendor/weapon_pickup_02.png",
+      "ic_vendor/weapon_pickup_03.png"
+    ],
+    "demon_hammer": [
+      "ic_vendor/demon_hammer_00.png",
+      "ic_vendor/demon_hammer_01.png",
+      "ic_vendor/demon_hammer_02.png",
+      "ic_vendor/demon_hammer_03.png",
+      "ic_vendor/demon_hammer_04.png",
+      "ic_vendor/demon_hammer_05.png"
+    ],
+    "demon_floor_breath": [
+      "ic_vendor/demon_floor_breath_00.png",
+      "ic_vendor/demon_floor_breath_01.png",
+      "ic_vendor/demon_floor_breath_02.png",
+      "ic_vendor/demon_floor_breath_03.png",
+      "ic_vendor/demon_floor_breath_04.png",
+      "ic_vendor/demon_floor_breath_05.png"
+    ],
+    "demon_floor_spew": [
+      "ic_vendor/demon_floor_spew_00.png",
+      "ic_vendor/demon_floor_spew_01.png",
+      "ic_vendor/demon_floor_spew_02.png",
+      "ic_vendor/demon_floor_spew_03.png",
+      "ic_vendor/demon_floor_spew_04.png",
+      "ic_vendor/demon_floor_spew_05.png",
+      "ic_vendor/demon_floor_spew_06.png",
+      "ic_vendor/demon_floor_spew_07.png"
+    ],
+    "demon_walk_stop": [
+      "ic_vendor/natural_stop_00.png",
+      "ic_vendor/natural_stop_01.png"
+    ],
+    "demon_walk_stop_far": [
+      "ic_vendor/natural_stop_far_00.png",
+      "ic_vendor/natural_stop_far_01.png"
+    ],
+    "spicy_throw": [
+      "ic_vendor/spicy_throw_00.png",
+      "ic_vendor/spicy_throw_01.png",
+      "ic_vendor/spicy_throw_02.png",
+      "ic_vendor/spicy_throw_03.png",
+      "ic_vendor/spicy_throw_04.png"
+    ],
+    "demon_puri": [
+      "ic_vendor/demon_puri_00.png",
+      "ic_vendor/demon_puri_01.png",
+      "ic_vendor/demon_puri_02.png",
+      "ic_vendor/demon_puri_03.png",
+      "ic_vendor/demon_puri_04.png",
+      "ic_vendor/demon_puri_05.png"
+    ],
+    "demon_inferno_roar": [
+      "ic_vendor/demon_inferno_roar_00.png",
+      "ic_vendor/demon_inferno_roar_01.png",
+      "ic_vendor/demon_inferno_roar_02.png",
+      "ic_vendor/demon_inferno_roar_03.png"
     ]
   },
   "ic_closer": {
-    "walk": [
-      "ic_closer/gait_00.png",
-      "ic_closer/gait_01.png",
-      "ic_closer/gait_02.png",
-      "ic_closer/gait_03.png",
-      "ic_closer/gait_04.png",
-      "ic_closer/gait_05.png",
-      "ic_closer/gait_06.png",
-      "ic_closer/gait_07.png"
-    ],
-    "run": [
-      "ic_closer/gait_00.png",
-      "ic_closer/gait_01.png",
-      "ic_closer/gait_02.png",
-      "ic_closer/gait_03.png",
-      "ic_closer/gait_04.png",
-      "ic_closer/gait_05.png",
-      "ic_closer/gait_06.png",
-      "ic_closer/gait_07.png"
-    ],
     "idle": [
-      "ic_closer/performance_08.png"
+      "ic_closer/scam_king_boxing_00.png",
+      "ic_closer/scam_king_boxing_01.png"
     ],
     "block": [
-      "ic_closer/performance_10.png"
+      "ic_closer/scam_king_cross_06.png"
     ],
-    "atk": [
-      "ic_closer/performance_11.png",
-      "ic_closer/performance_12.png",
-      "ic_closer/performance_13.png"
+    "walk": [
+      "ic_closer/scam_king_walk_00.png",
+      "ic_closer/scam_king_walk_01.png",
+      "ic_closer/scam_king_walk_02.png",
+      "ic_closer/scam_king_walk_03.png",
+      "ic_closer/scam_king_walk_04.png",
+      "ic_closer/scam_king_walk_05.png",
+      "ic_closer/scam_king_walk_06.png",
+      "ic_closer/scam_king_walk_07.png"
     ],
-    "punch": [
-      "ic_closer/performance_11.png",
-      "ic_closer/performance_12.png",
-      "ic_closer/performance_13.png"
-    ],
-    "kick": [
-      "ic_closer/performance_14.png",
-      "ic_closer/performance_15.png"
-    ],
-    "hurt": [
-      "ic_closer/performance_16.png",
-      "ic_closer/performance_17.png"
-    ],
-    "stagger": [
-      "ic_closer/performance_16.png",
-      "ic_closer/performance_17.png"
-    ],
-    "fall": [
-      "ic_closer/performance_18.png"
-    ],
-    "down": [
-      "ic_closer/performance_19.png"
-    ],
-    "getup": [
-      "ic_closer/performance_20.png",
-      "ic_closer/performance_21.png",
-      "ic_closer/performance_08.png"
-    ],
-    "grab": [
-      "ic_closer/performance_22.png"
-    ],
-    "throw": [
-      "ic_closer/performance_22.png",
-      "ic_closer/performance_23.png"
-    ],
-    "ram": [
-      "ic_closer/performance_11.png",
-      "ic_closer/performance_12.png",
-      "ic_closer/performance_13.png"
-    ],
-    "beam": [
-      "ic_closer/performance_14.png",
-      "ic_closer/performance_15.png",
-      "ic_closer/performance_15.png",
-      "ic_closer/performance_13.png"
-    ],
-    "call": [
-      "ic_closer/action_09.png",
-      "ic_closer/action_10.png",
-      "ic_closer/action_11.png"
-    ],
-    "seated": [
-      "ic_closer/performance_20.png"
+    "run": [
+      "ic_closer/scam_king_walk_00.png",
+      "ic_closer/scam_king_walk_01.png",
+      "ic_closer/scam_king_walk_02.png",
+      "ic_closer/scam_king_walk_03.png",
+      "ic_closer/scam_king_walk_04.png",
+      "ic_closer/scam_king_walk_05.png",
+      "ic_closer/scam_king_walk_06.png",
+      "ic_closer/scam_king_walk_07.png"
     ],
     "boxing": [
-      "ic_closer/action_00.png",
-      "ic_closer/action_01.png",
-      "ic_closer/action_02.png"
+      "ic_closer/scam_king_boxing_00.png",
+      "ic_closer/scam_king_boxing_01.png",
+      "ic_closer/scam_king_boxing_02.png",
+      "ic_closer/scam_king_boxing_03.png",
+      "ic_closer/scam_king_boxing_04.png",
+      "ic_closer/scam_king_boxing_05.png",
+      "ic_closer/scam_king_boxing_06.png",
+      "ic_closer/scam_king_boxing_07.png"
+    ],
+    "cross": [
+      "ic_closer/scam_king_cross_00.png",
+      "ic_closer/scam_king_cross_01.png",
+      "ic_closer/scam_king_cross_02.png",
+      "ic_closer/scam_king_cross_03.png",
+      "ic_closer/scam_king_cross_04.png",
+      "ic_closer/scam_king_cross_05.png"
+    ],
+    "stumble": [
+      "ic_closer/scam_king_cross_07.png"
+    ],
+    "atk": [
+      "ic_closer/scam_king_boxing_02.png",
+      "ic_closer/scam_king_boxing_03.png",
+      "ic_closer/scam_king_boxing_04.png"
+    ],
+    "punch": [
+      "ic_closer/scam_king_boxing_02.png",
+      "ic_closer/scam_king_boxing_03.png",
+      "ic_closer/scam_king_boxing_04.png"
     ],
     "handset": [
-      "ic_closer/action_03.png",
-      "ic_closer/action_04.png",
-      "ic_closer/action_05.png"
+      "ic_closer/scam_king_phone_00.png",
+      "ic_closer/scam_king_phone_01.png",
+      "ic_closer/scam_king_phone_02.png",
+      "ic_closer/scam_king_phone_03.png"
     ],
-    "shove": [
-      "ic_closer/action_06.png",
-      "ic_closer/action_07.png",
-      "ic_closer/action_08.png"
+    "reload": [
+      "ic_closer/scam_king_phone_04.png",
+      "ic_closer/scam_king_phone_05.png"
+    ],
+    "call": [
+      "ic_closer/scam_king_phone_06.png",
+      "ic_closer/scam_king_phone_07.png"
+    ],
+    "deal": [
+      "ic_closer/scam_king_deal_00.png",
+      "ic_closer/scam_king_deal_01.png",
+      "ic_closer/scam_king_deal_02.png",
+      "ic_closer/scam_king_deal_03.png",
+      "ic_closer/scam_king_deal_04.png",
+      "ic_closer/scam_king_deal_05.png",
+      "ic_closer/scam_king_deal_06.png",
+      "ic_closer/scam_king_deal_07.png"
+    ],
+    "hurt": [
+      "ic_closer/scam_king_reactions_00.png",
+      "ic_closer/scam_king_reactions_01.png"
+    ],
+    "stagger": [
+      "ic_closer/scam_king_reactions_02.png",
+      "ic_closer/scam_king_reactions_03.png"
+    ],
+    "fall": [
+      "ic_closer/scam_king_reactions_04.png",
+      "ic_closer/scam_king_reactions_05.png"
+    ],
+    "down": [
+      "ic_closer/scam_king_reactions_06.png"
+    ],
+    "dead": [
+      "ic_closer/scam_king_reactions_06.png"
+    ],
+    "getup": [
+      "ic_closer/scam_king_reactions_07.png",
+      "ic_closer/scam_king_intro_00.png",
+      "ic_closer/scam_king_intro_01.png"
+    ],
+    "taunt": [
+      "ic_closer/scam_king_intro_02.png",
+      "ic_closer/scam_king_intro_03.png",
+      "ic_closer/scam_king_intro_04.png",
+      "ic_closer/scam_king_intro_05.png",
+      "ic_closer/scam_king_intro_06.png",
+      "ic_closer/scam_king_intro_07.png"
+    ],
+    "seated": [
+      "ic_closer/scam_king_seated_00.png",
+      "ic_closer/scam_king_seated_01.png",
+      "ic_closer/scam_king_seated_02.png",
+      "ic_closer/scam_king_seated_03.png",
+      "ic_closer/scam_king_seated_04.png",
+      "ic_closer/scam_king_seated_05.png",
+      "ic_closer/scam_king_seated_06.png",
+      "ic_closer/scam_king_seated_07.png"
+    ],
+    "phasebreak": [
+      "ic_closer/scam_king_phasebreak_00.png",
+      "ic_closer/scam_king_phasebreak_01.png",
+      "ic_closer/scam_king_phasebreak_02.png",
+      "ic_closer/scam_king_phasebreak_03.png",
+      "ic_closer/scam_king_phasebreak_04.png",
+      "ic_closer/scam_king_phasebreak_05.png",
+      "ic_closer/scam_king_phasebreak_06.png",
+      "ic_closer/scam_king_phasebreak_07.png"
     ]
   },
   "ic_closer_damaged": {
-    "walk": [
-      "ic_closer_damaged/gait_00.png",
-      "ic_closer_damaged/gait_01.png",
-      "ic_closer_damaged/gait_02.png",
-      "ic_closer_damaged/gait_03.png",
-      "ic_closer_damaged/gait_04.png",
-      "ic_closer_damaged/gait_05.png",
-      "ic_closer_damaged/gait_06.png",
-      "ic_closer_damaged/gait_07.png"
-    ],
-    "run": [
-      "ic_closer_damaged/gait_00.png",
-      "ic_closer_damaged/gait_01.png",
-      "ic_closer_damaged/gait_02.png",
-      "ic_closer_damaged/gait_03.png",
-      "ic_closer_damaged/gait_04.png",
-      "ic_closer_damaged/gait_05.png",
-      "ic_closer_damaged/gait_06.png",
-      "ic_closer_damaged/gait_07.png"
-    ],
     "idle": [
-      "ic_closer_damaged/performance_08.png"
+      "ic_closer_damaged/scam_king_boxing_00.png",
+      "ic_closer_damaged/scam_king_boxing_01.png"
     ],
     "block": [
-      "ic_closer_damaged/performance_10.png"
+      "ic_closer_damaged/scam_king_cross_06.png"
     ],
-    "atk": [
-      "ic_closer_damaged/performance_11.png",
-      "ic_closer_damaged/performance_12.png",
-      "ic_closer_damaged/performance_13.png"
+    "walk": [
+      "ic_closer_damaged/scam_king_walk_00.png",
+      "ic_closer_damaged/scam_king_walk_01.png",
+      "ic_closer_damaged/scam_king_walk_02.png",
+      "ic_closer_damaged/scam_king_walk_03.png",
+      "ic_closer_damaged/scam_king_walk_04.png",
+      "ic_closer_damaged/scam_king_walk_05.png",
+      "ic_closer_damaged/scam_king_walk_06.png",
+      "ic_closer_damaged/scam_king_walk_07.png"
     ],
-    "punch": [
-      "ic_closer_damaged/performance_11.png",
-      "ic_closer_damaged/performance_12.png",
-      "ic_closer_damaged/performance_13.png"
-    ],
-    "kick": [
-      "ic_closer_damaged/performance_14.png",
-      "ic_closer_damaged/performance_15.png"
-    ],
-    "hurt": [
-      "ic_closer_damaged/performance_16.png",
-      "ic_closer_damaged/performance_17.png"
-    ],
-    "stagger": [
-      "ic_closer_damaged/performance_16.png",
-      "ic_closer_damaged/performance_17.png"
-    ],
-    "fall": [
-      "ic_closer_damaged/performance_18.png"
-    ],
-    "down": [
-      "ic_closer_damaged/performance_19.png"
-    ],
-    "getup": [
-      "ic_closer_damaged/performance_20.png",
-      "ic_closer_damaged/performance_21.png",
-      "ic_closer_damaged/performance_08.png"
-    ],
-    "grab": [
-      "ic_closer_damaged/performance_22.png"
-    ],
-    "throw": [
-      "ic_closer_damaged/performance_22.png",
-      "ic_closer_damaged/performance_23.png"
-    ],
-    "ram": [
-      "ic_closer_damaged/performance_11.png",
-      "ic_closer_damaged/performance_12.png",
-      "ic_closer_damaged/performance_13.png"
-    ],
-    "beam": [
-      "ic_closer_damaged/performance_14.png",
-      "ic_closer_damaged/performance_15.png",
-      "ic_closer_damaged/performance_15.png",
-      "ic_closer_damaged/performance_13.png"
-    ],
-    "call": [
-      "ic_closer_damaged/action_09.png",
-      "ic_closer_damaged/action_10.png",
-      "ic_closer_damaged/action_11.png"
-    ],
-    "seated": [
-      "ic_closer_damaged/performance_20.png"
+    "run": [
+      "ic_closer_damaged/scam_king_walk_00.png",
+      "ic_closer_damaged/scam_king_walk_01.png",
+      "ic_closer_damaged/scam_king_walk_02.png",
+      "ic_closer_damaged/scam_king_walk_03.png",
+      "ic_closer_damaged/scam_king_walk_04.png",
+      "ic_closer_damaged/scam_king_walk_05.png",
+      "ic_closer_damaged/scam_king_walk_06.png",
+      "ic_closer_damaged/scam_king_walk_07.png"
     ],
     "boxing": [
-      "ic_closer_damaged/action_00.png",
-      "ic_closer_damaged/action_01.png",
-      "ic_closer_damaged/action_02.png"
+      "ic_closer_damaged/scam_king_boxing_00.png",
+      "ic_closer_damaged/scam_king_boxing_01.png",
+      "ic_closer_damaged/scam_king_boxing_02.png",
+      "ic_closer_damaged/scam_king_boxing_03.png",
+      "ic_closer_damaged/scam_king_boxing_04.png",
+      "ic_closer_damaged/scam_king_boxing_05.png",
+      "ic_closer_damaged/scam_king_boxing_06.png",
+      "ic_closer_damaged/scam_king_boxing_07.png"
+    ],
+    "cross": [
+      "ic_closer_damaged/scam_king_cross_00.png",
+      "ic_closer_damaged/scam_king_cross_01.png",
+      "ic_closer_damaged/scam_king_cross_02.png",
+      "ic_closer_damaged/scam_king_cross_03.png",
+      "ic_closer_damaged/scam_king_cross_04.png",
+      "ic_closer_damaged/scam_king_cross_05.png"
+    ],
+    "stumble": [
+      "ic_closer_damaged/scam_king_cross_07.png"
+    ],
+    "atk": [
+      "ic_closer_damaged/scam_king_boxing_02.png",
+      "ic_closer_damaged/scam_king_boxing_03.png",
+      "ic_closer_damaged/scam_king_boxing_04.png"
+    ],
+    "punch": [
+      "ic_closer_damaged/scam_king_boxing_02.png",
+      "ic_closer_damaged/scam_king_boxing_03.png",
+      "ic_closer_damaged/scam_king_boxing_04.png"
     ],
     "handset": [
-      "ic_closer_damaged/action_03.png",
-      "ic_closer_damaged/action_04.png",
-      "ic_closer_damaged/action_05.png"
+      "ic_closer_damaged/scam_king_phone_00.png",
+      "ic_closer_damaged/scam_king_phone_01.png",
+      "ic_closer_damaged/scam_king_phone_02.png",
+      "ic_closer_damaged/scam_king_phone_03.png"
+    ],
+    "reload": [
+      "ic_closer_damaged/scam_king_phone_04.png",
+      "ic_closer_damaged/scam_king_phone_05.png"
+    ],
+    "call": [
+      "ic_closer_damaged/scam_king_phone_06.png",
+      "ic_closer_damaged/scam_king_phone_07.png"
+    ],
+    "deal": [
+      "ic_closer_damaged/scam_king_deal_00.png",
+      "ic_closer_damaged/scam_king_deal_01.png",
+      "ic_closer_damaged/scam_king_deal_02.png",
+      "ic_closer_damaged/scam_king_deal_03.png",
+      "ic_closer_damaged/scam_king_deal_04.png",
+      "ic_closer_damaged/scam_king_deal_05.png",
+      "ic_closer_damaged/scam_king_deal_06.png",
+      "ic_closer_damaged/scam_king_deal_07.png"
+    ],
+    "hurt": [
+      "ic_closer_damaged/scam_king_reactions_00.png",
+      "ic_closer_damaged/scam_king_reactions_01.png"
+    ],
+    "stagger": [
+      "ic_closer_damaged/scam_king_reactions_02.png",
+      "ic_closer_damaged/scam_king_reactions_03.png"
+    ],
+    "fall": [
+      "ic_closer_damaged/scam_king_reactions_04.png",
+      "ic_closer_damaged/scam_king_reactions_05.png"
+    ],
+    "down": [
+      "ic_closer_damaged/scam_king_reactions_06.png"
+    ],
+    "dead": [
+      "ic_closer_damaged/scam_king_reactions_06.png"
+    ],
+    "getup": [
+      "ic_closer_damaged/scam_king_reactions_07.png",
+      "ic_closer_damaged/scam_king_intro_00.png",
+      "ic_closer_damaged/scam_king_intro_01.png"
+    ],
+    "taunt": [
+      "ic_closer_damaged/scam_king_intro_02.png",
+      "ic_closer_damaged/scam_king_intro_03.png",
+      "ic_closer_damaged/scam_king_intro_04.png",
+      "ic_closer_damaged/scam_king_intro_05.png",
+      "ic_closer_damaged/scam_king_intro_06.png",
+      "ic_closer_damaged/scam_king_intro_07.png"
+    ],
+    "seated": [
+      "ic_closer_damaged/scam_king_seated_00.png",
+      "ic_closer_damaged/scam_king_seated_01.png",
+      "ic_closer_damaged/scam_king_seated_02.png",
+      "ic_closer_damaged/scam_king_seated_03.png",
+      "ic_closer_damaged/scam_king_seated_04.png",
+      "ic_closer_damaged/scam_king_seated_05.png",
+      "ic_closer_damaged/scam_king_seated_06.png",
+      "ic_closer_damaged/scam_king_seated_07.png"
+    ],
+    "phasebreak": [
+      "ic_closer_damaged/scam_king_phasebreak_00.png",
+      "ic_closer_damaged/scam_king_phasebreak_01.png",
+      "ic_closer_damaged/scam_king_phasebreak_02.png",
+      "ic_closer_damaged/scam_king_phasebreak_03.png",
+      "ic_closer_damaged/scam_king_phasebreak_04.png",
+      "ic_closer_damaged/scam_king_phasebreak_05.png",
+      "ic_closer_damaged/scam_king_phasebreak_06.png",
+      "ic_closer_damaged/scam_king_phasebreak_07.png"
+    ],
+    "finish": [
+      "ic_closer_damaged/scam_king_finisher_00.png",
+      "ic_closer_damaged/scam_king_finisher_01.png",
+      "ic_closer_damaged/scam_king_finisher_02.png",
+      "ic_closer_damaged/scam_king_finisher_03.png",
+      "ic_closer_damaged/scam_king_finisher_04.png",
+      "ic_closer_damaged/scam_king_finisher_05.png",
+      "ic_closer_damaged/scam_king_finisher_06.png",
+      "ic_closer_damaged/scam_king_finisher_07.png"
+    ]
+  },
+  "nr_chai": {
+    "idle": [
+      "nr_chai/a_00.png",
+      "nr_chai/idle_breath.png"
+    ],
+    "block": [
+      "nr_chai/a_02.png"
+    ],
+    "jump": [
+      "nr_chai/a_06.png"
+    ],
+    "walk": [
+      "nr_chai/w_00.png",
+      "nr_chai/w_01.png",
+      "nr_chai/w_02.png",
+      "nr_chai/w_07.png",
+      "nr_chai/e_01.png",
+      "nr_chai/w_06.png"
+    ],
+    "atk": [
+      "nr_chai/a_03.png",
+      "nr_chai/b_13.png",
+      "nr_chai/b_14.png"
+    ],
+    "hurt": [
+      "nr_chai/a_14.png",
+      "nr_chai/b_09.png"
+    ],
+    "down": [
+      "nr_chai/b_00.png"
+    ],
+    "getup": [
+      "nr_chai/b_00.png",
+      "nr_chai/b_01.png",
+      "nr_chai/b_02.png",
+      "nr_chai/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_chai/d_00.png",
+      "nr_chai/d_01.png",
+      "nr_chai/d_02.png",
+      "nr_chai/d_03.png"
+    ],
+    "fall": [
+      "nr_chai/b_08.png"
+    ],
+    "dead": [
+      "nr_chai/f_00.png"
+    ],
+    "swing": [
+      "nr_chai/a_03.png",
+      "nr_chai/c_01.png",
+      "nr_chai/a_12.png",
+      "nr_chai/a_13.png"
+    ],
+    "taunt": [
+      "nr_chai/d_04.png",
+      "nr_chai/d_05.png"
+    ],
+    "reload": [
+      "nr_chai/b_11.png",
+      "nr_chai/b_12.png"
+    ],
+    "hop": [
+      "nr_chai/b_15.png"
+    ],
+    "super_reaction": [
+      "nr_chai/c_07.png",
+      "nr_chai/a_14.png",
+      "nr_chai/c_04.png",
+      "nr_chai/c_07.png",
+      "nr_chai/c_05.png",
+      "nr_chai/b_08.png",
+      "nr_chai/c_06.png",
+      "nr_chai/b_00.png"
+    ]
+  },
+  "dl_thekedar": {
+    "idle": [
+      "dl_thekedar/a_00.png",
+      "dl_thekedar/a_01.png"
+    ],
+    "taunt": [
+      "dl_thekedar/a_02.png"
+    ],
+    "call": [
+      "dl_thekedar/a_03.png",
+      "dl_thekedar/x_cB.png"
+    ],
+    "walk": [
+      "dl_thekedar/a_04.png",
+      "dl_thekedar/a_05.png",
+      "dl_thekedar/a_06.png",
+      "dl_thekedar/a_07.png",
+      "dl_thekedar/a_08.png",
+      "dl_thekedar/a_09.png",
+      "dl_thekedar/a_10.png",
+      "dl_thekedar/a_11.png"
+    ],
+    "hurt": [
+      "dl_thekedar/a_12.png",
+      "dl_thekedar/a_13.png"
+    ],
+    "down": [
+      "dl_thekedar/a_14.png"
+    ],
+    "block": [
+      "dl_thekedar/a_15.png"
+    ],
+    "wrench": [
+      "dl_thekedar/b_00.png",
+      "dl_thekedar/b_01.png",
+      "dl_thekedar/b_02.png",
+      "dl_thekedar/b_03.png"
+    ],
+    "sack": [
+      "dl_thekedar/b_04.png",
+      "dl_thekedar/b_05.png"
+    ],
+    "gloat": [
+      "dl_thekedar/b_06.png"
+    ],
+    "crushed": [
+      "dl_thekedar/b_07.png"
+    ],
+    "leap": [
+      "dl_thekedar/b_08.png"
+    ],
+    "land": [
+      "dl_thekedar/b_09.png"
+    ],
+    "cower": [
+      "dl_thekedar/b_10.png"
+    ],
+    "victory": [
+      "dl_thekedar/b_11.png"
+    ],
+    "cab": [
+      "dl_thekedar/b_12.png",
+      "dl_thekedar/b_13.png",
+      "dl_thekedar/b_14.png",
+      "dl_thekedar/b_15.png"
+    ],
+    "getup": [
+      "dl_thekedar/c_00.png",
+      "dl_thekedar/c_01.png",
+      "dl_thekedar/c_02.png",
+      "dl_thekedar/c_03.png"
+    ],
+    "stagger_polish": [
+      "dl_thekedar/c_04.png",
+      "dl_thekedar/c_05.png",
+      "dl_thekedar/c_06.png",
+      "dl_thekedar/c_07.png"
+    ],
+    "sandblind": [
+      "dl_thekedar/c_08.png",
+      "dl_thekedar/c_09.png"
+    ],
+    "fall": [
+      "dl_thekedar/c_10.png"
+    ],
+    "stuck": [
+      "dl_thekedar/c_11.png"
+    ],
+    "cabmood": [
+      "dl_thekedar/c_12.png",
+      "dl_thekedar/c_13.png",
+      "dl_thekedar/c_14.png",
+      "dl_thekedar/c_15.png"
+    ],
+    "cabjeer": [
+      "dl_thekedar/d_00.png",
+      "dl_thekedar/d_01.png"
+    ],
+    "climb": [
+      "dl_thekedar/d_02.png",
+      "dl_thekedar/d_03.png",
+      "dl_thekedar/d_04.png",
+      "dl_thekedar/d_05.png"
+    ],
+    "flinch": [
+      "dl_thekedar/d_06.png",
+      "dl_thekedar/d_07.png"
+    ],
+    "wobble": [
+      "dl_thekedar/d_08.png"
+    ],
+    "winded": [
+      "dl_thekedar/d_09.png"
+    ],
+    "falloff": [
+      "dl_thekedar/d_10.png"
+    ],
+    "jeer": [
+      "dl_thekedar/d_13.png",
+      "dl_thekedar/d_14.png"
+    ],
+    "gape": [
+      "dl_thekedar/finish_gape.png"
+    ],
+    "wrench_string": [
+      "dl_thekedar/b_00.png",
+      "dl_thekedar/x_wA.png",
+      "dl_thekedar/b_01.png",
+      "dl_thekedar/x_wB.png",
+      "dl_thekedar/x_wC.png",
+      "dl_thekedar/b_02.png",
+      "dl_thekedar/x_wD.png",
+      "dl_thekedar/b_03.png"
+    ],
+    "fidget": [
+      "dl_thekedar/x_iA.png",
+      "dl_thekedar/x_iB.png"
+    ],
+    "sack_release": [
+      "dl_thekedar/x_sA.png"
+    ],
+    "cabx": [
+      "dl_thekedar/cabx_00.png",
+      "dl_thekedar/cabx_01.png",
+      "dl_thekedar/cabx_02.png",
+      "dl_thekedar/cabx_03.png",
+      "dl_thekedar/cabx_04.png",
+      "dl_thekedar/cabx_05.png",
+      "dl_thekedar/cabx_06.png",
+      "dl_thekedar/cabx_07.png",
+      "dl_thekedar/cabx_08.png",
+      "dl_thekedar/cabx_09.png",
+      "dl_thekedar/cabx_10.png",
+      "dl_thekedar/cabx_11.png"
+    ],
+    "reveal": [
+      "dl_thekedar/reveal_0.png",
+      "dl_thekedar/reveal_1.png",
+      "dl_thekedar/reveal_2.png",
+      "dl_thekedar/reveal_3.png",
+      "dl_thekedar/reveal_4.png",
+      "dl_thekedar/reveal_5.png"
+    ],
+    "hook": [
+      "dl_thekedar/hook_whirl_a.png",
+      "dl_thekedar/hook_whirl_b.png",
+      "dl_thekedar/hook_fling.png",
+      "dl_thekedar/hook_slam.png",
+      "dl_thekedar/hook_sweep.png",
+      "dl_thekedar/hook_yank.png",
+      "dl_thekedar/hook_hang.png",
+      "dl_thekedar/hook_tangled.png"
+    ],
+    "idle_h": [
+      "dl_thekedar/a_00_h.png",
+      "dl_thekedar/a_01_h.png"
+    ],
+    "walk_h": [
+      "dl_thekedar/a_04_h.png",
+      "dl_thekedar/a_05_h.png",
+      "dl_thekedar/a_06_h.png",
+      "dl_thekedar/a_07_h.png",
+      "dl_thekedar/a_08_h.png",
+      "dl_thekedar/a_09_h.png",
+      "dl_thekedar/a_10_h.png",
+      "dl_thekedar/a_11_h.png"
+    ],
+    "hurt_h": [
+      "dl_thekedar/a_12_h.png",
+      "dl_thekedar/a_13_h.png"
+    ],
+    "stagger_polish_h": [
+      "dl_thekedar/c_04_h.png",
+      "dl_thekedar/c_05_h.png",
+      "dl_thekedar/c_06_h.png",
+      "dl_thekedar/c_07_h.png"
+    ],
+    "flinch_h": [
+      "dl_thekedar/d_06.png",
+      "dl_thekedar/d_07_h.png"
+    ],
+    "winded_h": [
+      "dl_thekedar/d_09_h.png"
+    ],
+    "block_h": [
+      "dl_thekedar/a_15_h.png"
+    ],
+    "down_h": [
+      "dl_thekedar/a_14_h.png"
+    ],
+    "fall_h": [
+      "dl_thekedar/c_10_h.png"
+    ],
+    "getup_h": [
+      "dl_thekedar/c_00_h.png",
+      "dl_thekedar/c_01_h.png",
+      "dl_thekedar/c_02_h.png",
+      "dl_thekedar/c_03_h.png"
+    ],
+    "taunt_h": [
+      "dl_thekedar/a_02_h.png"
+    ],
+    "land_h": [
+      "dl_thekedar/b_09_h.png"
+    ],
+    "sandblind_h": [
+      "dl_thekedar/c_08_h.png",
+      "dl_thekedar/c_09_h.png"
+    ],
+    "toss": [
+      "dl_thekedar/toss_0.png",
+      "dl_thekedar/toss_1.png"
+    ],
+    "call_h": [
+      "dl_thekedar/a_03_h.png",
+      "dl_thekedar/x_cB.png"
+    ],
+    "gloat_h": [
+      "dl_thekedar/b_06_h.png"
+    ],
+    "gape_h": [
+      "dl_thekedar/finish_gape_h.png"
+    ]
+  },
+  "dl_grab": {
+    "closed": [
+      "dl_grab/closed.png"
+    ],
+    "half": [
+      "dl_grab/half.png"
+    ],
+    "open": [
+      "dl_grab/open.png"
+    ],
+    "dump": [
+      "dl_grab/dump.png"
+    ],
+    "stuck": [
+      "dl_grab/stuck.png"
+    ],
+    "full": [
+      "dl_grab/full.png"
+    ],
+    "battered": [
+      "dl_grab/battered.png"
+    ],
+    "wrecked": [
+      "dl_grab/wrecked.png"
+    ],
+    "blob": [
+      "dl_grab/blob.png"
+    ],
+    "splat": [
+      "dl_grab/splat.png"
+    ],
+    "puddle": [
+      "dl_grab/puddle.png"
+    ],
+    "dry": [
+      "dl_grab/dry.png"
+    ],
+    "wrench": [
+      "dl_grab/wrench.png"
+    ],
+    "wrench_b": [
+      "dl_grab/wrench_b.png"
+    ],
+    "sack": [
+      "dl_grab/sack.png"
+    ],
+    "burst": [
+      "dl_grab/burst.png"
+    ],
+    "pour": [
+      "dl_grab/pour_0.png",
+      "dl_grab/pour_1.png",
+      "dl_grab/pour_2.png",
+      "dl_grab/pour_3.png"
+    ],
+    "muck": [
+      "dl_grab/muck_0.png",
+      "dl_grab/muck_1.png",
+      "dl_grab/muck_2.png"
+    ],
+    "trash": [
+      "dl_grab/trash_0.png",
+      "dl_grab/trash_1.png",
+      "dl_grab/trash_2.png",
+      "dl_grab/trash_3.png",
+      "dl_grab/trash_4.png",
+      "dl_grab/trash_5.png"
+    ],
+    "magnet": [
+      "dl_grab/magnet_0.png",
+      "dl_grab/magnet_1.png",
+      "dl_grab/magnet_2.png"
+    ],
+    "scrap": [
+      "dl_grab/scrap_0.png"
+    ],
+    "hook": [
+      "dl_grab/hook_0.png",
+      "dl_grab/hook_1.png"
+    ],
+    "magnet_loaded": [
+      "dl_grab/magnet_loaded_0.png",
+      "dl_grab/magnet_loaded_1.png"
+    ],
+    "rickshaw": [
+      "dl_grab/rickshaw_0.png"
+    ],
+    "rebar": [
+      "dl_grab/rebar_0.png"
+    ],
+    "fridge": [
+      "dl_grab/fridge_0.png",
+      "dl_grab/fridge_1.png"
+    ],
+    "hatch": [
+      "dl_grab/hatch_0.png"
+    ],
+    "hole": [
+      "dl_grab/hole_0.png"
+    ],
+    "yanked": [
+      "dl_grab/crew_yank_0.png",
+      "dl_grab/crew_yank_1.png",
+      "dl_grab/crew_yank_2.png"
+    ]
+  },
+  "nr_bruiser_unarmed": {
+    "getup": [
+      "nr_bruiser_unarmed/b_00.png",
+      "nr_bruiser_unarmed/b_01.png",
+      "nr_bruiser_unarmed/b_02.png",
+      "nr_bruiser_unarmed/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_bruiser_unarmed/b_04.png",
+      "nr_bruiser_unarmed/b_05.png",
+      "nr_bruiser_unarmed/b_07.png",
+      "nr_bruiser_unarmed/b_05.png"
+    ],
+    "fall": [
+      "nr_bruiser_unarmed/b_08.png"
+    ],
+    "jump": [
+      "nr_bruiser_unarmed/a_06.png"
+    ],
+    "down": [
+      "nr_bruiser_unarmed/a_15.png"
+    ],
+    "idle": [
+      "nr_bruiser_unarmed/c_00.png",
+      "nr_bruiser_unarmed/c_01.png"
+    ],
+    "walk": [
+      "nr_bruiser_unarmed/c_02.png",
+      "nr_bruiser_unarmed/c_03.png",
+      "nr_bruiser_unarmed/c_04.png",
+      "nr_bruiser_unarmed/c_05.png",
+      "nr_bruiser_unarmed/c_06.png",
+      "nr_bruiser_unarmed/c_07.png",
+      "nr_bruiser_unarmed/c_04.png",
+      "nr_bruiser_unarmed/c_05.png"
+    ],
+    "atk": [
+      "nr_bruiser_unarmed/c_10.png",
+      "nr_bruiser_unarmed/c_11.png",
+      "nr_bruiser_unarmed/c_12.png"
+    ],
+    "punch": [
+      "nr_bruiser_unarmed/c_10.png",
+      "nr_bruiser_unarmed/c_11.png",
+      "nr_bruiser_unarmed/c_12.png"
+    ],
+    "hurt": [
+      "nr_bruiser_unarmed/c_13.png"
+    ],
+    "block": [
+      "nr_bruiser_unarmed/c_14.png"
+    ],
+    "taunt": [
+      "nr_bruiser_unarmed/c_15.png"
+    ]
+  },
+  "nr_bodyguard": {
+    "idle": [
+      "nr_bodyguard/a_00.png",
+      "nr_bodyguard/a_01.png"
+    ],
+    "block": [
+      "nr_bodyguard/a_02.png"
+    ],
+    "jump": [
+      "nr_bodyguard/a_06.png"
+    ],
+    "walk": [
+      "nr_bodyguard/a_04.png",
+      "nr_bodyguard/a_05.png",
+      "nr_bodyguard/a_06.png",
+      "nr_bodyguard/a_07.png",
+      "nr_bodyguard/a_08.png",
+      "nr_bodyguard/a_09.png",
+      "nr_bodyguard/a_10.png",
+      "nr_bodyguard/a_11.png"
+    ],
+    "atk": [
+      "nr_bodyguard/a_03.png",
+      "nr_bodyguard/a_12.png",
+      "nr_bodyguard/a_13.png"
+    ],
+    "hurt": [
+      "nr_bodyguard/a_14.png",
+      "nr_bodyguard/b_09.png"
+    ],
+    "down": [
+      "nr_bodyguard/a_15.png"
+    ],
+    "getup": [
+      "nr_bodyguard/b_00.png",
+      "nr_bodyguard/b_01.png",
+      "nr_bodyguard/b_02.png",
+      "nr_bodyguard/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_bodyguard/b_04.png",
+      "nr_bodyguard/b_05.png",
+      "nr_bodyguard/b_06.png",
+      "nr_bodyguard/b_07.png"
+    ],
+    "fall": [
+      "nr_bodyguard/b_08.png"
+    ],
+    "jab": [
+      "nr_bodyguard/b_10.png",
+      "nr_bodyguard/b_11.png"
+    ],
+    "slip": [
+      "nr_bodyguard/b_12.png"
+    ],
+    "counter": [
+      "nr_bodyguard/a_03.png",
+      "nr_bodyguard/b_13.png"
+    ],
+    "taunt": [
+      "nr_bodyguard/b_14.png"
+    ],
+    "grab": [
+      "nr_bodyguard/b_15.png"
+    ]
+  },
+  "nr_brawler": {
+    "idle": [
+      "nr_brawler/a_00.png",
+      "nr_brawler/a_01.png"
+    ],
+    "block": [
+      "nr_brawler/a_02.png"
+    ],
+    "jump": [
+      "nr_brawler/d_01.png"
+    ],
+    "walk": [
+      "nr_brawler/e_00.png",
+      "nr_brawler/e_01.png",
+      "nr_brawler/e_02.png",
+      "nr_brawler/e_03.png",
+      "nr_brawler/e_04.png",
+      "nr_brawler/e_08.png",
+      "nr_brawler/e_05.png",
+      "nr_brawler/e_06.png",
+      "nr_brawler/e_09.png",
+      "nr_brawler/e_07.png"
+    ],
+    "atk": [
+      "nr_brawler/c_10.png",
+      "nr_brawler/a_12.png",
+      "nr_brawler/c_11.png",
+      "nr_brawler/a_00.png"
+    ],
+    "hurt": [
+      "nr_brawler/c_08.png",
+      "nr_brawler/b_09.png"
+    ],
+    "down": [
+      "nr_brawler/c_09.png"
+    ],
+    "getup": [
+      "nr_brawler/b_00.png",
+      "nr_brawler/b_01.png",
+      "nr_brawler/b_02.png",
+      "nr_brawler/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_brawler/b_04.png",
+      "nr_brawler/b_05.png",
+      "nr_brawler/b_06.png",
+      "nr_brawler/b_07.png"
+    ],
+    "fall": [
+      "nr_brawler/b_08.png"
     ],
     "shove": [
-      "ic_closer_damaged/action_06.png",
-      "ic_closer_damaged/action_07.png",
-      "ic_closer_damaged/action_08.png"
+      "nr_brawler/c_15.png",
+      "nr_brawler/b_10.png"
+    ],
+    "taunt": [
+      "nr_brawler/d_08.png",
+      "nr_brawler/d_09.png"
+    ],
+    "kick": [
+      "nr_brawler/c_13.png",
+      "nr_brawler/b_15.png",
+      "nr_brawler/c_14.png"
+    ],
+    "super_reaction": [
+      "nr_brawler/b_09.png",
+      "nr_brawler/c_08.png",
+      "nr_brawler/b_12.png",
+      "nr_brawler/b_09.png",
+      "nr_brawler/b_13.png",
+      "nr_brawler/b_08.png",
+      "nr_brawler/b_08.png",
+      "nr_brawler/c_09.png"
+    ]
+  },
+  "nr_paan": {
+    "idle": [
+      "nr_paan/a_00.png",
+      "nr_paan/a_01.png"
+    ],
+    "block": [
+      "nr_paan/a_02.png"
+    ],
+    "jump": [
+      "nr_paan/a_06.png"
+    ],
+    "walk": [
+      "nr_paan/a_04.png",
+      "nr_paan/a_05.png",
+      "nr_paan/a_06.png",
+      "nr_paan/a_07.png",
+      "nr_paan/a_08.png",
+      "nr_paan/a_09.png",
+      "nr_paan/a_10.png",
+      "nr_paan/a_11.png"
+    ],
+    "atk": [
+      "nr_paan/a_03.png",
+      "nr_paan/a_12.png",
+      "nr_paan/c_10.png"
+    ],
+    "hurt": [
+      "nr_paan/a_14.png",
+      "nr_paan/c_12.png"
+    ],
+    "down": [
+      "nr_paan/a_15.png"
+    ],
+    "getup": [
+      "nr_paan/b_00.png",
+      "nr_paan/b_01.png",
+      "nr_paan/b_02.png",
+      "nr_paan/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_paan/b_04.png",
+      "nr_paan/b_05.png",
+      "nr_paan/b_06.png",
+      "nr_paan/b_07.png"
+    ],
+    "fall": [
+      "nr_paan/b_08.png"
+    ],
+    "pop": [
+      "nr_paan/c_13.png",
+      "nr_paan/c_14.png"
+    ],
+    "chew": [
+      "nr_paan/c_00.png",
+      "nr_paan/c_01.png",
+      "nr_paan/c_02.png"
+    ],
+    "puff": [
+      "nr_paan/c_03.png"
+    ],
+    "spit": [
+      "nr_paan/c_04.png",
+      "nr_paan/c_05.png"
+    ],
+    "wipe": [
+      "nr_paan/c_06.png",
+      "nr_paan/c_07.png"
+    ],
+    "taunt": [
+      "nr_paan/c_08.png",
+      "nr_paan/c_09.png"
+    ],
+    "super_reaction": [
+      "nr_paan/b_09.png",
+      "nr_paan/c_11.png",
+      "nr_paan/a_14.png",
+      "nr_paan/b_09.png",
+      "nr_paan/b_08.png",
+      "nr_paan/b_08.png",
+      "nr_paan/b_08.png",
+      "nr_paan/a_15.png"
+    ]
+  },
+  "nr_tte": {
+    "idle": [
+      "nr_tte/a_00.png",
+      "nr_tte/idle_breath.png"
+    ],
+    "block": [
+      "nr_tte/a_02.png"
+    ],
+    "jump": [
+      "nr_tte/a_06.png"
+    ],
+    "walk": [
+      "nr_tte/c_08.png",
+      "nr_tte/c_09.png",
+      "nr_tte/c_10.png",
+      "nr_tte/c_11.png",
+      "nr_tte/c_12.png",
+      "nr_tte/c_13.png",
+      "nr_tte/c_14.png",
+      "nr_tte/c_15.png"
+    ],
+    "atk": [
+      "nr_tte/a_03.png",
+      "nr_tte/a_12.png",
+      "nr_tte/a_13.png"
+    ],
+    "hurt": [
+      "nr_tte/d_11.png",
+      "nr_tte/b_15.png"
+    ],
+    "down": [
+      "nr_tte/d_00.png"
+    ],
+    "getup": [
+      "nr_tte/d_00.png",
+      "nr_tte/d_15.png",
+      "nr_tte/b_02.png",
+      "nr_tte/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_tte/d_02.png",
+      "nr_tte/d_03.png",
+      "nr_tte/d_04.png",
+      "nr_tte/d_05.png"
+    ],
+    "fall": [
+      "nr_tte/d_01.png"
+    ],
+    "bump": [
+      "nr_tte/b_09.png",
+      "nr_tte/b_10.png",
+      "nr_tte/c_00.png",
+      "nr_tte/d_13.png",
+      "nr_tte/c_01.png"
+    ],
+    "guardbreak": [
+      "nr_tte/b_11.png"
+    ],
+    "disarmed": [
+      "nr_tte/c_04.png",
+      "nr_tte/c_05.png"
+    ],
+    "pickup": [
+      "nr_tte/c_06.png",
+      "nr_tte/b_03.png"
+    ],
+    "slam": [
+      "nr_tte/c_02.png",
+      "nr_tte/d_06.png",
+      "nr_tte/d_07.png",
+      "nr_tte/c_03.png"
+    ],
+    "taunt": [
+      "nr_tte/d_08.png",
+      "nr_tte/d_09.png"
+    ],
+    "trunk": [
+      "nr_tte/t_00.png",
+      "nr_tte/t_01.png",
+      "nr_tte/t_02.png",
+      "nr_tte/t_03.png"
+    ],
+    "shuffle": [
+      "nr_tte/e_00.png",
+      "nr_tte/e_01.png",
+      "nr_tte/e_02.png",
+      "nr_tte/e_03.png",
+      "nr_tte/e_04.png",
+      "nr_tte/e_05.png",
+      "nr_tte/e_06.png",
+      "nr_tte/e_07.png"
+    ],
+    "settrunk": [
+      "nr_tte/g_00.png",
+      "nr_tte/g_01.png"
+    ],
+    "dhurt": [
+      "nr_tte/e_10.png",
+      "nr_tte/e_11.png"
+    ],
+    "dlook": [
+      "nr_tte/e_14.png"
+    ],
+    "tbarge": [
+      "nr_tte/e_14.png",
+      "nr_tte/e_15.png",
+      "nr_tte/e_07.png"
+    ],
+    "super_reaction": [
+      "nr_tte/d_10.png",
+      "nr_tte/d_11.png",
+      "nr_tte/d_12.png",
+      "nr_tte/d_11.png",
+      "nr_tte/d_01.png",
+      "nr_tte/d_01.png",
+      "nr_tte/d_01.png",
+      "nr_tte/d_00.png"
+    ]
+  },
+  "nr_rack": {
+    "idle": [
+      "nr_rack/a_00.png",
+      "nr_rack/a_01.png"
+    ],
+    "block": [
+      "nr_rack/a_02.png"
+    ],
+    "jump": [
+      "nr_rack/c_04.png"
+    ],
+    "walk": [
+      "nr_rack/d_00.png",
+      "nr_rack/d_01.png",
+      "nr_rack/d_02.png",
+      "nr_rack/d_03.png",
+      "nr_rack/d_04.png",
+      "nr_rack/d_05.png",
+      "nr_rack/d_06.png",
+      "nr_rack/d_07.png"
+    ],
+    "atk": [
+      "nr_rack/a_03.png",
+      "nr_rack/a_12.png",
+      "nr_rack/c_08.png"
+    ],
+    "hurt": [
+      "nr_rack/a_14.png",
+      "nr_rack/c_12.png"
+    ],
+    "down": [
+      "nr_rack/f_09.png"
+    ],
+    "getup": [
+      "nr_rack/b_00.png",
+      "nr_rack/b_01.png",
+      "nr_rack/b_02.png",
+      "nr_rack/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_rack/b_04.png",
+      "nr_rack/b_05.png",
+      "nr_rack/b_06.png",
+      "nr_rack/b_07.png"
+    ],
+    "fall": [
+      "nr_rack/b_08.png"
+    ],
+    "hurtlow": [
+      "nr_rack/c_11.png"
+    ],
+    "tip": [
+      "nr_rack/f_13.png"
+    ],
+    "perch": [
+      "nr_rack/c_00.png",
+      "nr_rack/c_01.png",
+      "nr_rack/c_02.png"
+    ],
+    "perchhurt": [
+      "nr_rack/c_03.png"
+    ],
+    "leap": [
+      "nr_rack/c_04.png"
+    ],
+    "pounce": [
+      "nr_rack/c_05.png"
+    ],
+    "hang": [
+      "nr_rack/e_00.png"
+    ],
+    "climb": [
+      "nr_rack/b_11.png"
+    ],
+    "pullup": [
+      "nr_rack/e_01.png"
+    ],
+    "mantle": [
+      "nr_rack/e_02.png",
+      "nr_rack/e_03.png"
+    ],
+    "drop": [
+      "nr_rack/b_12.png"
+    ],
+    "land": [
+      "nr_rack/b_13.png"
+    ],
+    "run": [
+      "nr_rack/b_14.png"
+    ],
+    "swing": [
+      "nr_rack/c_15.png",
+      "nr_rack/c_07.png",
+      "nr_rack/c_08.png"
+    ],
+    "sling": [
+      "nr_rack/c_15.png"
+    ],
+    "taunt": [
+      "nr_rack/f_01.png",
+      "nr_rack/f_05.png"
+    ],
+    "super_reaction": [
+      "nr_rack/c_11.png",
+      "nr_rack/a_14.png",
+      "nr_rack/c_12.png",
+      "nr_rack/a_14.png",
+      "nr_rack/b_08.png",
+      "nr_rack/b_08.png",
+      "nr_rack/c_13.png",
+      "nr_rack/f_09.png"
+    ]
+  },
+  "nr_commando": {
+    "idle": [
+      "nr_commando/a_00.png",
+      "nr_commando/idle_breath.png"
+    ],
+    "block": [
+      "nr_commando/b_11.png"
+    ],
+    "jump": [
+      "nr_commando/a_06.png"
+    ],
+    "walk": [
+      "nr_commando/w_00.png",
+      "nr_commando/w_01.png",
+      "nr_commando/w_02.png",
+      "nr_commando/w_03.png",
+      "nr_commando/w_04.png",
+      "nr_commando/w_05.png",
+      "nr_commando/w_06.png",
+      "nr_commando/w_07.png",
+      "nr_commando/w_08.png",
+      "nr_commando/w_09.png",
+      "nr_commando/w_10.png",
+      "nr_commando/w_11.png",
+      "nr_commando/w_12.png",
+      "nr_commando/w_13.png",
+      "nr_commando/w_14.png",
+      "nr_commando/w_15.png",
+      "nr_commando/w_16.png",
+      "nr_commando/w_17.png",
+      "nr_commando/w_18.png",
+      "nr_commando/w_19.png"
+    ],
+    "atk": [
+      "nr_commando/a_03.png",
+      "nr_commando/a_12.png",
+      "nr_commando/a_13.png"
+    ],
+    "hurt": [
+      "nr_commando/a_14.png",
+      "nr_commando/b_09.png"
+    ],
+    "down": [
+      "nr_commando/a_15.png"
+    ],
+    "getup": [
+      "nr_commando/b_00.png",
+      "nr_commando/b_01.png",
+      "nr_commando/b_02.png",
+      "nr_commando/b_03.png"
+    ],
+    "stagger_polish": [
+      "nr_commando/s_07.png",
+      "nr_commando/s_09.png",
+      "nr_commando/s_10.png",
+      "nr_commando/s_08.png"
+    ],
+    "fall": [
+      "nr_commando/b_08.png"
+    ],
+    "call": [
+      "nr_commando/b_10.png",
+      "nr_commando/a_02.png"
+    ],
+    "cover": [
+      "nr_commando/b_11.png"
+    ],
+    "baton": [
+      "nr_commando/a_03.png",
+      "nr_commando/c_08.png",
+      "nr_commando/c_09.png",
+      "nr_commando/c_15.png",
+      "nr_commando/a_13.png"
+    ],
+    "lunge": [
+      "nr_commando/c_10.png",
+      "nr_commando/d_09.png",
+      "nr_commando/s_15.png"
+    ],
+    "sweep": [
+      "nr_commando/c_11.png",
+      "nr_commando/d_05.png",
+      "nr_commando/c_13.png"
+    ],
+    "taunt": [
+      "nr_commando/t_01.png",
+      "nr_commando/t_02.png",
+      "nr_commando/t_03.png"
+    ],
+    "step": [
+      "nr_commando/u_00.png",
+      "nr_commando/u_01.png",
+      "nr_commando/u_02.png",
+      "nr_commando/u_03.png",
+      "nr_commando/u_04.png",
+      "nr_commando/u_05.png"
+    ],
+    "sidestep": [
+      "nr_commando/s_01.png",
+      "nr_commando/t_04.png",
+      "nr_commando/t_05.png",
+      "nr_commando/s_02.png"
+    ],
+    "recoil": [
+      "nr_commando/s_06.png"
+    ],
+    "batonup": [
+      "nr_commando/t_06.png",
+      "nr_commando/z_03.png"
+    ],
+    "super_reaction": [
+      "nr_commando/b_09.png",
+      "nr_commando/a_14.png",
+      "nr_commando/b_09.png",
+      "nr_commando/b_09.png",
+      "nr_commando/b_08.png",
+      "nr_commando/b_08.png",
+      "nr_commando/b_08.png",
+      "nr_commando/a_15.png"
+    ]
+  },
+  "nr_captain": {
+    "idle": [
+      "nr_captain/a_00.png",
+      "nr_captain/idle_breath.png"
+    ],
+    "block": [
+      "nr_captain/a_02.png"
+    ],
+    "jump": [
+      "nr_captain/c_02.png"
+    ],
+    "walk": [
+      "nr_captain/l_00.png",
+      "nr_captain/l_01.png",
+      "nr_captain/l_02.png",
+      "nr_captain/l_03.png",
+      "nr_captain/l_04.png",
+      "nr_captain/l_05.png",
+      "nr_captain/l_06.png",
+      "nr_captain/l_07.png"
+    ],
+    "atk": [
+      "nr_captain/c_08.png",
+      "nr_captain/a_12.png",
+      "nr_captain/a_13.png"
+    ],
+    "hurt": [
+      "nr_captain/a_14.png",
+      "nr_captain/d_02.png"
+    ],
+    "down": [
+      "nr_captain/d_00.png"
+    ],
+    "getup": [
+      "nr_captain/d_01.png",
+      "nr_captain/v_05.png",
+      "nr_captain/v_06.png",
+      "nr_captain/v_07.png"
+    ],
+    "stagger_polish": [
+      "nr_captain/v_03.png",
+      "nr_captain/v_01.png",
+      "nr_captain/v_02.png",
+      "nr_captain/v_04.png"
+    ],
+    "fall": [
+      "nr_captain/b_08.png"
+    ],
+    "taser": [
+      "nr_captain/b_09.png",
+      "nr_captain/b_10.png",
+      "nr_captain/x_01.png",
+      "nr_captain/y_09.png",
+      "nr_captain/k_06.png",
+      "nr_captain/k_07.png"
+    ],
+    "call": [
+      "nr_captain/v_08.png",
+      "nr_captain/v_09.png",
+      "nr_captain/v_10.png"
+    ],
+    "charge": [
+      "nr_captain/c_09.png",
+      "nr_captain/v_12.png",
+      "nr_captain/v_13.png",
+      "nr_captain/v_14.png"
+    ],
+    "chargeset": [
+      "nr_captain/j_00.png",
+      "nr_captain/j_01.png",
+      "nr_captain/j_02.png"
+    ],
+    "sidestep": [
+      "nr_captain/k_01.png",
+      "nr_captain/k_02.png",
+      "nr_captain/k_03.png",
+      "nr_captain/a_00.png"
+    ],
+    "stunned": [
+      "nr_captain/d_06.png"
+    ],
+    "guardbreak": [
+      "nr_captain/b_13.png",
+      "nr_captain/d_07.png"
+    ],
+    "taunt": [
+      "nr_captain/c_13.png",
+      "nr_captain/t_00.png",
+      "nr_captain/c_14.png"
+    ],
+    "super_reaction": [
+      "nr_captain/d_02.png",
+      "nr_captain/a_14.png",
+      "nr_captain/b_13.png",
+      "nr_captain/d_02.png",
+      "nr_captain/b_08.png",
+      "nr_captain/b_08.png",
+      "nr_captain/b_08.png",
+      "nr_captain/d_00.png"
+    ]
+  },
+  "nr_conductor_free": {
+    "idle": [
+      "nr_conductor/extra_03.png",
+      "nr_conductor/extra_04.png"
+    ],
+    "block": [
+      "nr_conductor/free_02.png"
+    ],
+    "hurt": [
+      "nr_conductor/free_03.png",
+      "nr_conductor/free_13.png"
+    ],
+    "walk": [
+      "nr_conductor/walk_08.png",
+      "nr_conductor/walk_09.png",
+      "nr_conductor/walk_10.png",
+      "nr_conductor/stride_free_00.png",
+      "nr_conductor/stride_free_04.png"
+    ],
+    "stamp": [
+      "nr_conductor/free_09.png",
+      "nr_conductor/free_10.png",
+      "nr_conductor/free_11.png"
+    ],
+    "chain": [
+      "nr_conductor/free_05.png",
+      "nr_conductor/free_06.png"
+    ],
+    "rehook": [
+      "nr_conductor/free_07.png",
+      "nr_conductor/free_08.png"
+    ],
+    "point": [
+      "nr_conductor/free_12.png"
+    ],
+    "pickup": [
+      "nr_conductor/box_15.png"
+    ],
+    "dive": [
+      "nr_conductor/attacks_13.png"
+    ],
+    "sprawl": [
+      "nr_conductor/attacks_14.png"
+    ],
+    "getup": [
+      "nr_conductor/misc_00.png",
+      "nr_conductor/misc_01.png",
+      "nr_conductor/misc_02.png",
+      "nr_conductor/misc_03.png"
+    ],
+    "stagger_polish": [
+      "nr_conductor/misc_04.png",
+      "nr_conductor/misc_05.png",
+      "nr_conductor/misc_06.png",
+      "nr_conductor/misc_07.png"
+    ],
+    "down": [
+      "nr_conductor/misc_08.png"
+    ],
+    "void": [
+      "nr_conductor/misc_09.png"
+    ],
+    "finisher": [
+      "nr_conductor/finisher_00.png",
+      "nr_conductor/finisher_01.png",
+      "nr_conductor/finisher_02.png",
+      "nr_conductor/finisher_03.png",
+      "nr_conductor/finisher_04.png",
+      "nr_conductor/finisher_05.png",
+      "nr_conductor/finisher_06.png",
+      "nr_conductor/finisher_07.png",
+      "nr_conductor/finisher_08.png",
+      "nr_conductor/finisher_09.png",
+      "nr_conductor/finisher_10.png",
+      "nr_conductor/finisher_11.png"
+    ]
+  },
+  "nr_neta_guard": {
+    "idle": [
+      "nr_neta_guard/a_00.png",
+      "nr_neta_guard/a_01.png"
+    ],
+    "block": [
+      "nr_neta_guard/a_02.png"
+    ],
+    "walk": [
+      "nr_neta_guard/e_00.png",
+      "nr_neta_guard/e_01.png",
+      "nr_neta_guard/e_02.png",
+      "nr_neta_guard/e_03.png",
+      "nr_neta_guard/e_04.png",
+      "nr_neta_guard/e_05.png",
+      "nr_neta_guard/e_06.png",
+      "nr_neta_guard/e_07.png"
+    ],
+    "hook": [
+      "nr_neta_guard/a_03.png",
+      "nr_neta_guard/a_12.png",
+      "nr_neta_guard/a_13.png",
+      "nr_neta_guard/f_10.png"
+    ],
+    "hurt": [
+      "nr_neta_guard/a_14.png",
+      "nr_neta_guard/c_15.png"
+    ],
+    "down": [
+      "nr_neta_guard/a_15.png"
+    ],
+    "getup": [
+      "nr_neta_guard/c_00.png",
+      "nr_neta_guard/c_01.png",
+      "nr_neta_guard/c_02.png",
+      "nr_neta_guard/c_03.png"
+    ],
+    "stagger_polish": [
+      "nr_neta_guard/e_08.png",
+      "nr_neta_guard/e_09.png",
+      "nr_neta_guard/e_10.png",
+      "nr_neta_guard/e_11.png"
+    ],
+    "fall": [
+      "nr_neta_guard/c_08.png"
+    ],
+    "guardbreak": [
+      "nr_neta_guard/c_09.png"
+    ],
+    "hammer": [
+      "nr_neta_guard/e_12.png",
+      "nr_neta_guard/e_13.png",
+      "nr_neta_guard/e_14.png",
+      "nr_neta_guard/f_09.png"
+    ],
+    "crash": [
+      "nr_neta_guard/b_06.png"
+    ],
+    "quake": [
+      "nr_neta_guard/b_07.png",
+      "nr_neta_guard/e_15.png",
+      "nr_neta_guard/f_06.png",
+      "nr_neta_guard/f_07.png",
+      "nr_neta_guard/f_08.png"
+    ],
+    "count": [
+      "nr_neta_guard/b_09.png",
+      "nr_neta_guard/b_10.png"
+    ],
+    "catch": [
+      "nr_neta_guard/b_11.png"
+    ],
+    "pocket": [
+      "nr_neta_guard/b_12.png"
+    ],
+    "flex": [
+      "nr_neta_guard/b_13.png"
+    ],
+    "taunt": [
+      "nr_neta_guard/b_14.png"
+    ],
+    "gut": [
+      "nr_neta_guard/b_15.png"
+    ],
+    "kneel": [
+      "nr_neta_guard/c_10.png"
+    ],
+    "point": [
+      "nr_neta_guard/c_14.png"
+    ],
+    "finisher": [
+      "nr_neta_guard/d_00.png",
+      "nr_neta_guard/d_01.png",
+      "nr_neta_guard/d_02.png",
+      "nr_neta_guard/d_03.png",
+      "nr_neta_guard/d_04.png",
+      "nr_neta_guard/d_05.png",
+      "nr_neta_guard/d_06.png",
+      "nr_neta_guard/d_07.png",
+      "nr_neta_guard/d_08.png"
+    ],
+    "battered": [
+      "nr_neta_guard/g_03.png",
+      "nr_neta_guard/g_06.png",
+      "nr_neta_guard/g_08.png",
+      "nr_neta_guard/g_10.png",
+      "nr_neta_guard/d_14.png",
+      "nr_neta_guard/d_15.png",
+      "nr_neta_guard/g_04.png",
+      "nr_neta_guard/g_05.png",
+      "nr_neta_guard/g_07.png",
+      "nr_neta_guard/g_09.png",
+      "nr_neta_guard/g_11.png"
+    ],
+    "turn": [
+      "nr_neta_guard/f_00.png",
+      "nr_neta_guard/f_01.png"
+    ],
+    "charge": [
+      "nr_neta_guard/b_03.png",
+      "nr_neta_guard/b_04.png",
+      "nr_neta_guard/b_05.png",
+      "nr_neta_guard/f_02.png",
+      "nr_neta_guard/f_03.png",
+      "nr_neta_guard/f_04.png",
+      "nr_neta_guard/f_05.png"
+    ],
+    "pay": [
+      "nr_neta_guard/h_00.png",
+      "nr_neta_guard/h_01.png"
+    ],
+    "neck": [
+      "nr_neta_guard/c_12.png",
+      "nr_neta_guard/f_12.png"
+    ],
+    "knuckles": [
+      "nr_neta_guard/c_13.png",
+      "nr_neta_guard/f_13.png"
+    ],
+    "facehit": [
+      "nr_neta_guard/f_14.png"
+    ],
+    "stoop": [
+      "nr_neta_guard/f_15.png"
+    ],
+    "rage_idle": [
+      "nr_neta_guard/ra_00.png",
+      "nr_neta_guard/ra_01.png"
+    ],
+    "rage_block": [
+      "nr_neta_guard/ra_02.png"
+    ],
+    "rage_walk": [
+      "nr_neta_guard/re_00.png",
+      "nr_neta_guard/re_01.png",
+      "nr_neta_guard/re_02.png",
+      "nr_neta_guard/re_03.png",
+      "nr_neta_guard/re_04.png",
+      "nr_neta_guard/re_05.png",
+      "nr_neta_guard/re_06.png",
+      "nr_neta_guard/re_07.png"
+    ],
+    "rage_hook": [
+      "nr_neta_guard/ra_03.png",
+      "nr_neta_guard/ra_12.png",
+      "nr_neta_guard/ra_13.png",
+      "nr_neta_guard/rf_10.png"
+    ],
+    "rage_hurt": [
+      "nr_neta_guard/ra_14.png",
+      "nr_neta_guard/rc_15.png"
+    ],
+    "rage_down": [
+      "nr_neta_guard/ra_15.png"
+    ],
+    "rage_getup": [
+      "nr_neta_guard/rc_00.png",
+      "nr_neta_guard/rc_01.png",
+      "nr_neta_guard/rc_02.png",
+      "nr_neta_guard/rc_03.png"
+    ],
+    "rage_stagger_polish": [
+      "nr_neta_guard/re_08.png",
+      "nr_neta_guard/re_09.png",
+      "nr_neta_guard/re_10.png",
+      "nr_neta_guard/re_11.png"
+    ],
+    "rage_fall": [
+      "nr_neta_guard/rc_08.png"
+    ],
+    "rage_guardbreak": [
+      "nr_neta_guard/rc_09.png"
+    ],
+    "rage_hammer": [
+      "nr_neta_guard/re_12.png",
+      "nr_neta_guard/re_13.png",
+      "nr_neta_guard/re_14.png",
+      "nr_neta_guard/rf_09.png"
+    ],
+    "rage_crash": [
+      "nr_neta_guard/rb_06.png"
+    ],
+    "rage_quake": [
+      "nr_neta_guard/rb_07.png",
+      "nr_neta_guard/re_15.png",
+      "nr_neta_guard/rf_06.png",
+      "nr_neta_guard/rf_07.png",
+      "nr_neta_guard/rf_08.png"
+    ],
+    "rage_gut": [
+      "nr_neta_guard/rb_15.png"
+    ],
+    "rage_kneel": [
+      "nr_neta_guard/rc_10.png"
+    ],
+    "rage_turn": [
+      "nr_neta_guard/rf_00.png",
+      "nr_neta_guard/rf_01.png"
+    ],
+    "rage_charge": [
+      "nr_neta_guard/rb_03.png",
+      "nr_neta_guard/rb_04.png",
+      "nr_neta_guard/rb_05.png",
+      "nr_neta_guard/rf_02.png",
+      "nr_neta_guard/rf_03.png",
+      "nr_neta_guard/rf_04.png",
+      "nr_neta_guard/rf_05.png"
+    ],
+    "rage_neck": [
+      "nr_neta_guard/rc_12.png",
+      "nr_neta_guard/rf_12.png"
+    ],
+    "rage_knuckles": [
+      "nr_neta_guard/rc_13.png",
+      "nr_neta_guard/rf_13.png"
+    ],
+    "rage_facehit": [
+      "nr_neta_guard/rf_14.png"
+    ],
+    "rage_out": [
+      "nr_neta_guard/re_08.png",
+      "nr_neta_guard/re_09.png"
+    ],
+    "palmcatch": [
+      "nr_neta_guard/palm_00.png",
+      "nr_neta_guard/palm_01.png",
+      "nr_neta_guard/palm_02.png",
+      "nr_neta_guard/palm_03.png"
+    ],
+    "shove": [
+      "nr_neta_guard/shove_00.png",
+      "nr_neta_guard/shove_01.png"
+    ],
+    "stumble": [
+      "nr_neta_guard/shove_02.png"
+    ],
+    "stumble_recover": [
+      "nr_neta_guard/shove_03.png"
+    ],
+    "hug": [
+      "nr_neta_guard/hug_00.png",
+      "nr_neta_guard/hug_01.png",
+      "nr_neta_guard/hug_02.png",
+      "nr_neta_guard/hug_03.png",
+      "nr_neta_guard/hug_04.png",
+      "nr_neta_guard/hug_05.png"
+    ],
+    "roar": [
+      "nr_neta_guard/roar_00.png",
+      "nr_neta_guard/roar_02.png"
+    ],
+    "rage_roar": [
+      "nr_neta_guard/roar_01.png",
+      "nr_neta_guard/roar_02.png"
+    ],
+    "chain": [
+      "nr_neta_guard/chain_00.png",
+      "nr_neta_guard/chain_01.png",
+      "nr_neta_guard/chain_02.png",
+      "nr_neta_guard/chain_03.png",
+      "nr_neta_guard/chain_04.png"
+    ],
+    "hurl": [
+      "nr_neta_guard/hurl_00.png",
+      "nr_neta_guard/hurl_01.png",
+      "nr_neta_guard/hurl_02.png"
+    ],
+    "rage_palmcatch": [
+      "nr_neta_guard/rage_palm_00.png",
+      "nr_neta_guard/rage_palm_01.png",
+      "nr_neta_guard/rage_palm_02.png",
+      "nr_neta_guard/rage_palm_03.png"
+    ],
+    "rage_shove": [
+      "nr_neta_guard/rage_shove_00.png",
+      "nr_neta_guard/rage_shove_01.png"
+    ],
+    "rage_stumble": [
+      "nr_neta_guard/rage_shove_02.png"
+    ],
+    "rage_stumble_recover": [
+      "nr_neta_guard/rage_shove_03.png"
+    ],
+    "rage_hug": [
+      "nr_neta_guard/rage_hug_00.png",
+      "nr_neta_guard/rage_hug_01.png",
+      "nr_neta_guard/rage_hug_02.png",
+      "nr_neta_guard/rage_hug_03.png",
+      "nr_neta_guard/rage_hug_04.png",
+      "nr_neta_guard/rage_hug_05.png"
+    ],
+    "rage_finish": [
+      "nr_neta_guard/fin_00.png",
+      "nr_neta_guard/fin_01.png",
+      "nr_neta_guard/fin_02.png",
+      "nr_neta_guard/fin_03.png",
+      "nr_neta_guard/fin_04.png",
+      "nr_neta_guard/fin_05.png",
+      "nr_neta_guard/fin_06.png",
+      "nr_neta_guard/fin_07.png",
+      "nr_neta_guard/fin_08.png",
+      "nr_neta_guard/fin_09.png",
+      "nr_neta_guard/fin_10.png"
+    ],
+    "rage_decap": [
+      "nr_neta_guard/fin_00.png",
+      "nr_neta_guard/fin_01.png",
+      "nr_neta_guard/fin_02.png",
+      "nr_neta_guard/fin_03.png",
+      "nr_neta_guard/fin_04.png",
+      "nr_neta_guard/decap_05.png",
+      "nr_neta_guard/decap_06.png",
+      "nr_neta_guard/decap_07.png",
+      "nr_neta_guard/decap_08.png",
+      "nr_neta_guard/decap_09.png",
+      "nr_neta_guard/decap_10.png"
+    ]
+  },
+  "nr_neta": {
+    "idle": [
+      "nr_neta/a_00.png",
+      "nr_neta/a_01.png"
+    ],
+    "block": [
+      "nr_neta/a_02.png"
+    ],
+    "aim": [
+      "nr_neta/a_03.png"
+    ],
+    "walk": [
+      "nr_neta/m_walk_00.png",
+      "nr_neta/m_walk_01.png",
+      "nr_neta/m_walk_02.png",
+      "nr_neta/m_walk_03.png",
+      "nr_neta/m_walk_04.png",
+      "nr_neta/m_walk_05.png",
+      "nr_neta/m_walk_06.png",
+      "nr_neta/m_walk_07.png"
+    ],
+    "fire": [
+      "nr_neta/g_00.png"
+    ],
+    "hurt": [
+      "nr_neta/m_hurt_00.png",
+      "nr_neta/m_hurt_01.png"
+    ],
+    "down": [
+      "nr_neta/a_15.png"
+    ],
+    "getup": [
+      "nr_neta/m_getup_00.png",
+      "nr_neta/m_getup_01.png",
+      "nr_neta/m_getup_02.png",
+      "nr_neta/m_getup_03.png"
+    ],
+    "stagger_polish": [
+      "nr_neta/b_04.png",
+      "nr_neta/b_05.png",
+      "nr_neta/b_06.png",
+      "nr_neta/b_07.png"
+    ],
+    "fall": [
+      "nr_neta/b_08.png"
+    ],
+    "cower": [
+      "nr_neta/b_09.png"
+    ],
+    "lob": [
+      "nr_neta/m_lob_00.png"
+    ],
+    "scurry": [
+      "nr_neta/f_08.png",
+      "nr_neta/f_09.png",
+      "nr_neta/f_10.png",
+      "nr_neta/f_11.png"
+    ],
+    "panic": [
+      "nr_neta/g_03.png"
+    ],
+    "swing": [
+      "nr_neta/c_00.png",
+      "nr_neta/c_01.png",
+      "nr_neta/c_02.png"
+    ],
+    "grit": [
+      "nr_neta/k_02.png",
+      "nr_neta/k_01.png"
+    ],
+    "backpedal": [
+      "nr_neta/m_backpedal_00.png",
+      "nr_neta/m_backpedal_01.png",
+      "nr_neta/m_backpedal_02.png",
+      "nr_neta/m_backpedal_03.png"
+    ],
+    "reload": [
+      "nr_neta/c_06.png",
+      "nr_neta/l_00.png",
+      "nr_neta/l_01.png",
+      "nr_neta/l_02.png",
+      "nr_neta/l_03.png"
+    ],
+    "kneel": [
+      "nr_neta/g_06.png",
+      "nr_neta/g_07.png",
+      "nr_neta/l_08.png"
+    ],
+    "whip": [
+      "nr_neta/g_02.png",
+      "nr_neta/l_09.png"
+    ],
+    "guardbreak": [
+      "nr_neta/m_guardbreak_00.png"
+    ],
+    "laugh": [
+      "nr_neta/g_08.png",
+      "nr_neta/l_07.png"
+    ],
+    "shove": [
+      "nr_neta/g_05.png",
+      "nr_neta/l_04.png",
+      "nr_neta/l_05.png",
+      "nr_neta/l_06.png"
+    ],
+    "dust": [
+      "nr_neta/l_11.png"
+    ],
+    "balance": [
+      "nr_neta/l_13.png"
+    ],
+    "point": [
+      "nr_neta/c_13.png"
+    ],
+    "fan": [
+      "nr_neta/g_09.png"
+    ],
+    "slap": [
+      "nr_neta/c_15.png"
+    ],
+    "flee": [
+      "nr_neta/d_00.png",
+      "nr_neta/d_01.png",
+      "nr_neta/d_02.png",
+      "nr_neta/d_03.png",
+      "nr_neta/d_04.png",
+      "nr_neta/d_05.png",
+      "nr_neta/d_06.png",
+      "nr_neta/d_07.png",
+      "nr_neta/d_08.png"
+    ],
+    "climb": [
+      "nr_neta/h_04.png",
+      "nr_neta/h_05.png",
+      "nr_neta/h_06.png",
+      "nr_neta/h_07.png"
+    ],
+    "pant": [
+      "nr_neta/g_14.png"
+    ],
+    "cornered": [
+      "nr_neta/g_01.png"
+    ],
+    "sit": [
+      "nr_neta/d_15.png"
+    ],
+    "ko": [
+      "nr_neta/e_00.png",
+      "nr_neta/e_01.png",
+      "nr_neta/e_02.png",
+      "nr_neta/e_03.png",
+      "nr_neta/e_04.png",
+      "nr_neta/e_05.png",
+      "nr_neta/e_06.png",
+      "nr_neta/e_07.png",
+      "nr_neta/e_08.png",
+      "nr_neta/e_09.png"
+    ],
+    "wobble": [
+      "nr_neta/i_02.png",
+      "nr_neta/m_wobble_01.png"
+    ],
+    "clutch": [
+      "nr_neta/e_13.png"
+    ],
+    "wag": [
+      "nr_neta/e_14.png"
+    ],
+    "mop": [
+      "nr_neta/e_15.png"
+    ],
+    "climb_start": [
+      "nr_neta/m_climb_start_00.png",
+      "nr_neta/m_climb_start_01.png",
+      "nr_neta/m_climb_start_02.png"
+    ],
+    "climb_back": [
+      "nr_neta/m_climb_back_00.png",
+      "nr_neta/m_climb_back_01.png",
+      "nr_neta/m_climb_back_02.png",
+      "nr_neta/m_climb_back_03.png"
+    ],
+    "swing_full": [
+      "nr_neta/m_swing_full_00.png",
+      "nr_neta/m_swing_full_01.png",
+      "nr_neta/m_swing_full_02.png",
+      "nr_neta/m_swing_full_03.png",
+      "nr_neta/m_swing_full_04.png"
+    ],
+    "whip_full": [
+      "nr_neta/m_whip_full_00.png",
+      "nr_neta/m_whip_full_01.png",
+      "nr_neta/m_whip_full_02.png"
+    ],
+    "flee_run": [
+      "nr_neta/m_flee_run_00.png",
+      "nr_neta/m_flee_run_01.png",
+      "nr_neta/m_flee_run_02.png",
+      "nr_neta/m_flee_run_03.png",
+      "nr_neta/m_flee_run_04.png",
+      "nr_neta/m_flee_run_05.png"
+    ],
+    "flee_glance": [
+      "nr_neta/m_flee_glance_00.png"
+    ],
+    "shout": [
+      "nr_neta/m_shout_00.png",
+      "nr_neta/m_shout_01.png",
+      "nr_neta/m_shout_02.png"
+    ],
+    "run": [
+      "nr_neta/m_run_00.png",
+      "nr_neta/m_run_01.png",
+      "nr_neta/m_run_02.png",
+      "nr_neta/m_run_03.png",
+      "nr_neta/m_run_04.png",
+      "nr_neta/m_run_05.png",
+      "nr_neta/m_run_06.png",
+      "nr_neta/m_run_07.png"
+    ],
+    "dizzy": [
+      "nr_neta/m_dizzy_00.png",
+      "nr_neta/m_dizzy_01.png",
+      "nr_neta/m_dizzy_02.png",
+      "nr_neta/m_dizzy_03.png"
+    ],
+    "shove_full": [
+      "nr_neta/m_shove_full_00.png",
+      "nr_neta/m_shove_full_01.png",
+      "nr_neta/m_shove_full_02.png",
+      "nr_neta/m_shove_full_03.png"
+    ],
+    "grit_full": [
+      "nr_neta/m_grit_full_00.png",
+      "nr_neta/m_grit_full_01.png",
+      "nr_neta/m_grit_full_02.png"
+    ],
+    "recoil": [
+      "nr_neta/m_recoil_00.png"
+    ],
+    "beg": [
+      "nr_neta/m_beg_00.png",
+      "nr_neta/m_beg_01.png",
+      "nr_neta/m_beg_02.png",
+      "nr_neta/m_beg_03.png"
+    ],
+    "draw": [
+      "nr_neta/m_draw_00.png"
+    ],
+    "r_tremble": [
+      "nr_neta/m_r_tremble_00.png",
+      "nr_neta/m_r_tremble_01.png",
+      "nr_neta/m_r_tremble_02.png",
+      "nr_neta/m_r_tremble_03.png"
+    ],
+    "r_aim": [
+      "nr_neta/m_r_aim_00.png",
+      "nr_neta/m_r_aim_01.png",
+      "nr_neta/m_r_aim_02.png",
+      "nr_neta/m_r_aim_03.png"
+    ],
+    "r_click": [
+      "nr_neta/m_r_click_00.png",
+      "nr_neta/m_r_click_01.png",
+      "nr_neta/m_r_click_02.png",
+      "nr_neta/m_r_click_03.png"
+    ],
+    "r_fumble": [
+      "nr_neta/m_r_fumble_00.png",
+      "nr_neta/m_r_fumble_01.png",
+      "nr_neta/m_r_fumble_02.png",
+      "nr_neta/m_r_fumble_03.png",
+      "nr_neta/m_r_fumble_04.png",
+      "nr_neta/m_r_fumble_05.png"
+    ],
+    "r_whimper": [
+      "nr_neta/m_r_whimper_00.png",
+      "nr_neta/m_r_whimper_01.png",
+      "nr_neta/m_r_whimper_02.png",
+      "nr_neta/m_r_whimper_03.png"
+    ],
+    "r_cower": [
+      "nr_neta/m_r_cower_00.png",
+      "nr_neta/m_r_cower_01.png",
+      "nr_neta/m_r_cower_02.png",
+      "nr_neta/m_r_cower_03.png"
+    ],
+    "r_tantrum": [
+      "nr_neta/m_r_tantrum_00.png",
+      "nr_neta/m_r_tantrum_01.png",
+      "nr_neta/m_r_tantrum_02.png",
+      "nr_neta/m_r_tantrum_03.png",
+      "nr_neta/m_r_tantrum_04.png"
+    ],
+    "r_wheeze": [
+      "nr_neta/m_r_wheeze_00.png",
+      "nr_neta/m_r_wheeze_01.png",
+      "nr_neta/m_r_wheeze_02.png",
+      "nr_neta/m_r_wheeze_03.png"
+    ],
+    "r_crawl": [
+      "nr_neta/m_r_crawl_00.png",
+      "nr_neta/m_r_crawl_01.png",
+      "nr_neta/m_r_crawl_02.png",
+      "nr_neta/m_r_crawl_03.png",
+      "nr_neta/m_r_crawl_04.png",
+      "nr_neta/m_r_crawl_05.png"
+    ],
+    "r_trip": [
+      "nr_neta/m_r_trip_00.png",
+      "nr_neta/m_r_trip_01.png",
+      "nr_neta/m_r_trip_02.png",
+      "nr_neta/m_r_trip_03.png",
+      "nr_neta/m_r_trip_04.png"
+    ],
+    "r_bribe": [
+      "nr_neta/m_r_bribe_00.png",
+      "nr_neta/m_r_bribe_01.png",
+      "nr_neta/m_r_bribe_02.png",
+      "nr_neta/m_r_bribe_03.png"
+    ],
+    "r_laugh": [
+      "nr_neta/m_r_laugh_00.png",
+      "nr_neta/m_r_laugh_01.png",
+      "nr_neta/m_r_laugh_02.png",
+      "nr_neta/m_r_laugh_03.png"
+    ],
+    "r_downed": [
+      "nr_neta/m_r_downed_00.png",
+      "nr_neta/m_r_downed_01.png",
+      "nr_neta/m_r_downed_02.png",
+      "nr_neta/m_r_downed_03.png"
+    ],
+    "r_shot": [
+      "nr_neta/m_r_shot_00.png",
+      "nr_neta/m_r_shot_01.png",
+      "nr_neta/m_r_shot_02.png",
+      "nr_neta/m_r_shot_03.png",
+      "nr_neta/m_r_shot_04.png",
+      "nr_neta/m_r_shot_05.png"
+    ],
+    "r_swing": [
+      "nr_neta/m_r_swing_00.png",
+      "nr_neta/m_r_swing_01.png",
+      "nr_neta/m_r_swing_02.png",
+      "nr_neta/m_r_swing_03.png",
+      "nr_neta/m_r_swing_04.png",
+      "nr_neta/m_r_swing_05.png"
+    ],
+    "r_grit": [
+      "nr_neta/m_r_grit_00.png",
+      "nr_neta/m_r_grit_01.png",
+      "nr_neta/m_r_grit_02.png",
+      "nr_neta/m_r_grit_03.png",
+      "nr_neta/m_r_grit_04.png",
+      "nr_neta/m_r_grit_05.png"
+    ],
+    "r_shove": [
+      "nr_neta/m_r_shove_00.png",
+      "nr_neta/m_r_shove_01.png",
+      "nr_neta/m_r_shove_02.png",
+      "nr_neta/m_r_shove_03.png",
+      "nr_neta/m_r_shove_04.png",
+      "nr_neta/m_r_shove_05.png"
     ]
   }
 }

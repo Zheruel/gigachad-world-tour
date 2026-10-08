@@ -1,8 +1,7 @@
-import { AIRPORT_FILES, AIRPORT_PHASES, AIRPORT, enterAirportPhase, updateAirport, nearJet, nearArrivalExit, drawAirport } from './airport.js';
+import { AIRPORT_FILES, AIRPORT_PHASES, AIRPORT, enterAirportPhase, updateAirport, nearJet, nearArrivalExit, drawAirport, clampArrivalActor, releaseArrivalHold } from './airport.js';
 import { FLIGHT_FILES, FLIGHT_PHASES, updateFlight, drawFlight } from './flight.js';
 import { STREET_FILES, STREET, enterStreetPhase, updateStreet, nearStreetCar, drawStreet } from './street.js';
 import { drawDialogue } from './room_dialogue.js';
-import { drawLevelCard } from './level_card.js';
 import { updateLobbyRoom } from './lobby_audio.js';
 import { LOBBY_DOOR, nearLobbyDoor, drawLobbyDoor, drawLobbyDoorArrow } from './lobby_door.js';
 import { lobbyStaffAt, porterAt, RECEPTION_DESK } from './lobby_staff.js';
@@ -10,13 +9,14 @@ import { drawContactShadow } from './contact_shadow.js';
 import { drawDirectionArrow } from './direction_arrow.js';
 import { ASSETS } from './assets.js';
 // The departure is a small scene machine; it never advances combat or stage waves.
-import { G, W, H, clamp } from './engine.js';
+import { G, W, H, clamp, resetCombo } from './engine.js';
 import { createPlayer, updatePlayer, drawPlayer } from './player.js';
 import { updateEffects, drawEffects } from './effects.js';
 import { input } from './input.js';
 import { drawTextShadow, textWidth } from './sprites.js';
 import { audio } from './audio.js';
 import { drawElevatorCabin, CABIN_BOUNDS } from './elevator.js';
+import { assetURL } from './asset_url.js';
 export { ELEVATOR_X, ELEVATOR_BOUNDS, drawElevatorDoor } from './elevator.js';
 
 export const TRAVEL_FILES = {
@@ -31,8 +31,6 @@ export const TRAVEL_FILES = {
   wheel_rims: 'assets/travel/city/wheel_rims.png',
   jet: 'assets/travel/airport/jet.png',
   jet_closed: 'assets/travel/airport/jet_closed.png',
-  loading: 'assets/travel/india/loading.png',
-  loading_train:'assets/travel/india/level-cards/station-grit.png',
   elevator_cabin: 'assets/travel/elevator/elevator_cabin.png',
   tower_1: 'assets/travel/elevator/tower_1.png',
   tower_2: 'assets/travel/elevator/tower_2.png',
@@ -61,7 +59,7 @@ export function loadTravel() {
     const timeout = setTimeout(finish, 8000);
     img.onload = () => { img._as = 2; TRAVEL_ART[key] = img; finish(); };
     img.onerror = finish;
-    img.src = path;
+    img.src = assetURL(path);
   }))).then(() => { travelReady = true; });
   return loading;
 }
@@ -112,7 +110,7 @@ export function beginTravel(targetStage, startPhase = 'elevator') {
   G.travel = { targetStage, destination: 'india', phase: '', t: 0, gate: true, greeted: false };
   G.pendingDestination = null;
   G.effects = []; G.shots = []; G.zones = [];
-  G.combo = 0; G.hitstop = 0; G.shake = 0;
+  resetCombo(); G.hitstop = 0; G.shake = 0;
   G.paused = false;
   phase(TRAVEL_PHASES.includes(startPhase) ? startPhase : 'elevator');
   if (!['lobby','curb'].includes(startPhase)) audio.music(null);
@@ -166,7 +164,9 @@ export function updateTravel() {
       : { left: 24, right: WIDTHS[tr.phase] - 24, back: 196, front: 244 };
     tr.actor.x = tr.x; tr.actor.y = tr.y;
     if (!tr.gate) updatePlayer(tr.actor, bounds);
+    if (tr.phase === 'arrival-exit') clampArrivalActor(tr.actor);
     tr.x = tr.actor.x; tr.y = tr.actor.y;
+    if (tr.phase === 'arrival-exit') releaseArrivalHold(tr);
     tr.walking = tr.actor.moved > .12;
     tr.facing = tr.actor.face;
     const targetCam=tr.phase === 'elevator' ? 0 : clamp(tr.x - (tr.phase==='apron'?300:180), 0, WIDTHS[tr.phase] - W);
@@ -348,8 +348,4 @@ export function drawTravel(ctx) {
   else if (['curb', 'car-board', 'drive'].includes(tr.phase)) carScene(ctx, tr);
   else if (AIRPORT_PHASES.includes(tr.phase)) drawAirport(ctx,tr,TRAVEL_ART,{hero:travelHero,prompt,label});
   else drawFlight(ctx,tr,TRAVEL_ART,{label});
-}
-
-export function drawTravelLoading(ctx, ready) {
-  drawLevelCard(ctx,TRAVEL_ART[G.stage?.loadingArt || 'loading']||TRAVEL_ART.loading,{ready});
 }

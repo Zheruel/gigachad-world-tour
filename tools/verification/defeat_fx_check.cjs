@@ -8,5 +8,5 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),crypto=require(
   const e=g.spawn(kind,50,0);e.hp=1;e.poise=0;e.state='idle';e.superApplying=mode==='super';e.hurt(80,1,mode!=='normal',false);const a=[];
   for(let i=0;i<90;i++){G.time++;G.rawTime++;updateEnemies();a.push([e.state,e.t,e.x,e.y,e.z,e.vx,e.vz,e.hp,e.dead,e.removeMe,G.score,G.hitstop,G.player.hp,draws]);}out[kind+':'+mode]=a;
  }return out;});const hash=crypto.createHash('sha256').update(JSON.stringify(traces)).digest('hex');fs.mkdirSync('tmp/review/defeat-fx',{recursive:true});
- if(process.env.KO_RECORD_BASELINE)fs.writeFileSync('tmp/review/defeat-fx/baseline.json',JSON.stringify({hash,traces}));else assert.equal(hash,'87aee424935c0afd180437bf3ed788274ef20ca7cf6294cfade142e93248c290');console.log(JSON.stringify({cases:15,ticks:1350,hash}));
+ if(process.env.KO_RECORD_BASELINE)fs.writeFileSync('tmp/review/defeat-fx/baseline.json',JSON.stringify({hash,traces}));else assert.equal(hash,'92d13179db14332e420bb34656178802a726eaf663f39980cebaafc4287ad7a8');console.log(JSON.stringify({cases:15,ticks:1350,hash}));
 }finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});

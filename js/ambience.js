@@ -4,6 +4,7 @@ import { G, W } from './engine.js';
 import { blit, frameW, frameH } from './sprites.js';
 import { fx } from './fx.js';
 import { spawnSteam, spawnSmoke, spawnDust } from './effects.js';
+import { assetURL } from './asset_url.js';
 
 const ART = {};
 const SETS = { laundry: 4, awning: 4, fan: 4, shutter: 1 };
@@ -15,7 +16,7 @@ export function loadAmbience() {
       const img = new Image();
       img.onload = () => { img._as = 2; ART[name][i] = img; resolve(); };
       img.onerror = () => resolve();
-      img.src = `assets/ambience/delhi_${name}_${i + 1}.png`;
+      img.src = assetURL(`assets/ambience/delhi_${name}_${i + 1}.png`);
     }));
   }));
 }

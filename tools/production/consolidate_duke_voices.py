@@ -37,7 +37,6 @@ def main():
         else:s=s.replace('const SFX_PATHS = {','const SFX_PATHS = {\n'+line)
     s=s.replace('// The announcer and the extra Duke lines are files the game looks for and does not ship:', '// Rank announcements and Duke cues keep stable IDs; explicit paths preserve the original performances:')
     p.write_text(s)
-    p=ROOT/'js/review-lair.js';s=p.read_text().replace('audio/voice/duke_look_good.wav',aliases['duke_look_good']);p.write_text(s)
     # All known consumers now resolve canonical files. Remove only the byte-identical retired copies.
     for source in retire:source.unlink()
     print(f'Consolidated {len(entries)} original game takes; {len(catalog["clips"])} total Duke recordings. Stable aliases preserved.')

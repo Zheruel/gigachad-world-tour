@@ -1,4 +1,5 @@
 import { drawTextShadow, textWidth } from './sprites.js';
+import { assetURL } from './asset_url.js';
 
 export const DISPLAY_FILES={
  'CHAD WINS':'assets/ui/headings/chad-wins.png',
@@ -11,9 +12,6 @@ export const DISPLAY_FILES={
  'WORLD TOUR':'assets/ui/headings/world-tour.png',
  'STAGE CLEAR':'assets/ui/headings/stage-clear.png',
  'GAME OVER':'assets/ui/headings/game-over.png',
- 'ACT 1 / INDIA':'assets/ui/headings/act-one-india.png',
- 'ACT 2 / INDIA':'assets/ui/headings/act-two-india.png',
- 'ACT 3 / INDIA':'assets/ui/headings/act-three-india.png',
  'REFUND TOWER':'assets/ui/headings/refund-tower.png',
  'THE CLOSER':'assets/ui/headings/the-closer.png',
 };
@@ -23,7 +21,7 @@ export function loadDisplayType(){
   const im=new Image();let settled=false;
   const done=value=>{if(settled)return;settled=true;clearTimeout(timeout);artwork[key]=value;resolve();};
   const timeout=setTimeout(()=>done(null),8000);
-  im.onload=()=>done(im);im.onerror=()=>done(null);im.src=path.startsWith('/')?path:'/'+path;
+  im.onload=()=>done(im);im.onerror=()=>done(null);im.src=new URL('../'+assetURL(path),import.meta.url).href;
  }))).then(()=>artwork);
 }
 
