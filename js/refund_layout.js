@@ -1,7 +1,7 @@
 // Coordinates measured on the selected room plates, in logical pixels.
 export const REFUND_SEATS=[
  [[245,410,616],201],[[214,475,612],203],
- [[260,415,605],196],[[246,405,564],180],
+ [[260,415,605],196],[[246,405,564],187],
 ];
 export const REFUND_SCREENS=[
  [[245,133,16,12],[410,133,16,12],[616,133,16,12]],
@@ -24,7 +24,7 @@ export const REFUND_RACKS=[[156,59,37],[201,59,37],[244,59,37],[286,59,37],[378,
 // [room, family, centre x/y, width/height, independent phase]
 export const REFUND_FANS=[
  [0,'wall',312,95,22,29,0],[1,'wall',266,85,29,30,3],
- [1,'ceiling',474,26,111,33,2],[2,'wall',774,51,30,39,5],
+ [1,'ceiling',474,26,111,33,2],
  [3,'cooling',456,51,36,35,1],[4,'cooling',593,45,32,31,0],
  [4,'cooling',630,45,32,31,3],[4,'cooling',666,45,32,31,6],
  [5,'wall',497,74,20,27,2],

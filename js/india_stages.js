@@ -37,13 +37,13 @@ export const INDIA_STAGES=[
   wave(6060,[],{boss:true,camX:6000}),
  ],
  },
- {...common,id:'refund',num:'1-3',name:'REFUND TOWER',sub:'ACT III - YOUR CALL IS IMPORTANT',arrival:'breach',music:'refund_a',bossMusic:'refund_boss',boss:'closer',introTicks:940,final:true,
+ {...common,id:'refund',num:'1-3',name:'REFUND TOWER',sub:'ACT III - YOUR CALL IS IMPORTANT',arrival:'breach',music:'refund_a',bossMusic:'refund_boss',boss:'closer',introTicks:1076,final:true,
  lanes:[{x0:0,x1:6480,top:215,bot:245,solidBack:true}],
  // Breakables, one a floor: monitors and server racks hold a lassi, records shelves a plate;
  // the executive cabinet drops nothing but can be knocked into the Closer's crew. Each food prop
  // stands on the walk just past a fight, not in it: after the IT guy's two floors, the servers and records,
  // and a lassi at the Closer's door.
- props:[{kind:'ic_shelf',x:1700,y:217},{kind:'ic_monitor',x:2100,y:224},{kind:'ic_monitor',x:2600,y:224},{kind:'ic_shelf',x:3050,y:217},{kind:'ic_server',x:3950,y:220},{kind:'ic_shelf',x:4620,y:217},{kind:'ic_cabinet',x:5550,y:219},{kind:'ic_monitor',x:5840,y:222}],
+ props:[{kind:'ic_shelf',x:1700,y:217},{kind:'ic_monitor',x:2100,y:224},{kind:'ic_monitor',x:2600,y:224},{kind:'ic_shelf',x:3050,y:217},{kind:'ic_server',x:3950,y:220},{kind:'ic_shelf',x:4620,y:217},{kind:'ic_execdesk',x:5550,y:221},{kind:'ic_partition',x:5840,y:219}],
  waves:[
   // Runtime keys: headset = the caller, operator = the night-shift kid, thrower = the IT guy,
   // security = the old guard, cabinet = the recovery agent, lead = the team lead.

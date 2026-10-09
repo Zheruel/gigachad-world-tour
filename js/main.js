@@ -768,7 +768,7 @@ function update() {
     if (G.parrySlow & 1) return false;
   }
   G.time++;
-  if (G.bossSpeech) { const s = G.bossSpeech; if (++s.age >= s.life || G.boss !== s.boss || s.boss.dead) G.bossSpeech = null; }
+  if (G.bossSpeech) { const s = G.bossSpeech; if (++s.age >= s.life || G.boss !== s.boss || s.boss.dead) G.bossSpeech = null; else updateDialogue(s.text, s.age, { remaining: s.life - s.age }); }
   updateCombo();
 
   // the cut onto the train holds the world still for a second of black

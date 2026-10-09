@@ -184,7 +184,7 @@ export function drawOfficeWorkers(ctx,camX,frame,actor){
     }
     ctx.restore();return;
    }
-   const room=Math.floor(n.keyboardX/810),height=room===0?'high':room===3?'low':'medium';
+   const room=Math.floor(n.keyboardX/810),height=room===0?'high':'medium';
    const typed=`ic_office_life_${height}`;
    const key=a.pose==='seated'?(ASSETS[typed]?typed:'ic_office_life'):'ic_office_stand';
    const upgraded=ASSETS[key]?.height===900;

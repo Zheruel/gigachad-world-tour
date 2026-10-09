@@ -13,9 +13,9 @@ const out3=q=>1-(1-clamp(q,0,1))**3;
 const hash=n=>{const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);};
 function once(key,t,at,fn){const s=G.india;if(t>=at&&!s.cues.has(key)){s.cues.add(key);fn();}}
 export const CB={line:16,tug:150,yank:176,drag:184,slam:202,splat:212,crack:234,buckle:250,boom:264,land:284,called:296,getup:326,kneel:332,
- toss:360,neck:378,walk:402,grab:430,lift:448,wind:474,release:488,crash:502,sprawl:518,ring:522,step:540,reach:556,pickup:568,
- hello:574,crush:664,open:682,flee:670,settle:772,end:940};
-const LINE='Sir, your refund is ready. Just read me the gift card numb-',CALLED='You called?',HELLO='Sir, your refund is ready!';
+ toss:496,neck:514,walk:538,grab:566,lift:584,wind:610,release:624,crash:638,sprawl:654,ring:658,step:676,reach:692,pickup:704,
+ hello:710,crush:800,open:818,flee:806,settle:908,end:1076};
+const LINE='Sir, your refund is ready. Just read me the gift card numb-',HELLO='Sir, your refund is ready!';
 // Stage geometry, logical px: the desk-one caller, the cable's way through the bricks (CHAD pulls from behind), the phone left on the wrecked desk.
 const SEAT={x:269,y:201},JACK={x:58,y:201},ANCHOR={x:50,y:104},WALL_X=72,KNEEL={x:196,y:212},GRAB_X=144,PHONE={x:212,y:157},HOLE={x:62,y:205};
 const CHAD_PHONE_X=160,DESK={x:246,y:203,z:46},SPRAWL={x:266,y:215},HEADSET_REST={x:50,y:226},TOSS_HAND={x:58,y:142};
@@ -83,7 +83,6 @@ export function updateRefundEntrance(t){
   // Out of the chair for good: play resumes with this seat empty (initOfficeWorkers agrees once the wall is down).
   if(t>=CB.yank&&caller.phase!=='gone'){caller.phase='gone';caller.leftAt=s.t;}}
  if(t>=CB.line&&t<CB.tug)updateDialogue(LINE,t-CB.line,{remaining:CB.tug-t});
- if(t>=CB.called&&t<CB.toss)updateDialogue(CALLED,t-CB.called-2,{remaining:CB.toss-t});
  if(t>=CB.hello&&t<CB.crush){updateDialogue(HELLO,t-CB.hello,{remaining:CB.crush-t});
   // The pitch comes down the line: a small squawk between keystrokes.
   if((t-CB.hello)%6===3&&t-CB.hello<2*HELLO.length)a.sfx('phone_squawk');}
@@ -101,6 +100,7 @@ export function updateRefundEntrance(t){
  once('cb-land',t,CB.land,()=>{a.sfx('neta_roof_drop');G.shake=3;spawnDust(KNEEL.x-6,KNEEL.y,6);});
  once('cb-boot',t,CB.boom+18,()=>a.roomSfx('entrance_boot',.42));
  once('cb-groan',t,CB.getup,()=>a.sfx('neta_roof_whimper'));
+ once('cb-checks',t,CB.called,()=>a.voice('duke_checks_cash',3300,true));
  once('cb-toss',t,CB.toss+2,()=>a.sfx('whiff'));
  once('cb-headset',t,CB.toss+14,()=>{a.sfx('cond_clatter');spawnDust(HEADSET_REST.x,HEADSET_REST.y,2);});
  once('cb-neck',t,CB.neck+12,()=>a.sfx('bone_crack'));
@@ -300,9 +300,8 @@ export function drawRefundEntrance(ctx,t,frame,fallback){
  if(t>=CB.toss&&t<CB.toss+14){const q=(t-CB.toss)/14;headset(ctx,mix(TOSS_HAND.x,HEADSET_REST.x,q),mix(TOSS_HAND.y,HEADSET_REST.y,q)-Math.sin(q*Math.PI)*20,camX,q*7);}
  else if(t>=CB.toss+14)headset(ctx,HEADSET_REST.x,HEADSET_REST.y,camX,.3);
  drawRefundEntranceSet(ctx,camX,true);
- // Speech: the caller's pitch, CHAD's answer, and the same pitch again out of the handset.
+ // Speech: the caller's pitch and the same pitch again out of the handset (CHAD's answer is the Duke voice line).
  if(t>=CB.line&&t<CB.tug)drawDialogue(ctx,{text:LINE,x:SEAT.x-4-camX,bottom:SEAT.y-76,age:t-CB.line,remaining:Math.max(0,(CB.tug-t)*4),width:190});
- if(t>=CB.called&&t<CB.toss)drawDialogue(ctx,{text:CALLED,x:104-camX,bottom:KNEEL.y-94,age:t-CB.called-2,remaining:CB.toss-t,width:100});
  if(t>=CB.hello&&t<CB.crush){
   // The handset at CHAD's ear speaks: the pointer lands on the earpiece and signal arcs pulse off it.
   const hx=CHAD_PHONE_X+5-camX,hy=KNEEL.y-76;

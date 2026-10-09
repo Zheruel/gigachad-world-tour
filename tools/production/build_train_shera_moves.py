@@ -16,8 +16,9 @@ from keying import components
 
 KEY = 'nr_neta_guard'
 RAGE = {'ra': 'a', 'rb': 'b', 'rc': 'c', 're': 'e', 'rf': 'f'}
-# Calm-only states (cash business, the finisher and the battered roof epilogue) get no enraged twin.
-CALM_ONLY = {'finisher', 'battered', 'pay', 'count', 'catch', 'pocket', 'taunt', 'point', 'stoop', 'flex'}
+# Calm-only states (cash business, the finisher and the battered roof epilogue) get no enraged twin. Flex is not one:
+# it is also the enraged quake tell.
+CALM_ONLY = {'finisher', 'battered', 'pay', 'count', 'catch', 'pocket', 'taunt', 'point', 'stoop'}
 # Enraged states the fight asks for by name, picked from the edited sheets.
 RAGE_PICK = {'rage_hurt': [('ra', 14), ('rc', 15)], 'rage_out': [('re', 8), ('re', 9)]}
 
@@ -133,4 +134,8 @@ def register(manifest):
         print(name, len(poses), 'poses, k', round(k, 3))
     import build_shera_finisher  # finisher victim cells (rage_finish), owned by the finisher builder
     build_shera_finisher.register(manifest)
+    # Headless finisher cells (build_shera_decap.py) stay registered when the sheets are rebuilt.
+    decap = [f'decap_{i:02d}.png' if (folder / f'decap_{i:02d}.png').exists() else f'fin_{i:02d}.png' for i in range(11)]
+    if any(f.startswith('decap_') for f in decap):
+        manifest[KEY]['rage_decap'] = [f'{KEY}/{f}' for f in decap]
     return manifest

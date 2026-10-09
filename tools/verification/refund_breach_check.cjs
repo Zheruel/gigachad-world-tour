@@ -40,7 +40,7 @@ const assert=require('node:assert/strict'),fs=require('fs'),studio=require('./st
   return checks;
  });
  // Actual main-loop handoff, with default group queue and no test-only spawns.
- await studio.load(page,'refund/full');await studio.seek(page,945);
+ await studio.load(page,'refund/full');await studio.seek(page,await f.evaluate(()=>import('/js/refund_intro.js').then(m=>m.CB.end+5)));
  const handoff=await f.evaluate(()=>({state:__game.G.state,workers:__game.G.india.office.slice(0,3).map(n=>n.phase),x:__game.G.player.x}));
  checks.push(['full game intro hands control to CHAD at the authored position',handoff.state==='play'&&handoff.x===160&&handoff.workers.every(p=>p==='gone')]);
  await f.evaluate(()=>{__game.G.player.invuln=999;});

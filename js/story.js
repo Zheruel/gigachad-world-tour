@@ -449,10 +449,11 @@ export function updateStationArrival(t, quiet = false) {
 // exhale (7); then he is in his gameplay idle, with no cigar in hand. Points are measured on the
 // 224px cells (drawn at half size, feet at the cell's bottom centre) from his feet; the charge
 // (entry 4) hides the cigar behind his forearm. The painted ember stays hidden behind the gate.
-const ST_CIGAR = { drag: [14.5, -79], hip: [25.5, -50], mouth: [14, -80] };
+// tools/production/build_train_chad_identity.py prints each cell's ember when it rebuilds the sheets.
+const ST_CIGAR = { drag: [9.8, -81.8], hip: [23.8, -46.2], mouth: [6, -79] };
 const ST_TEETH = {
-  entry: [[4.3, -78.5], [4.5, -76.5], [-11.1, -77], [4.5, -56.5], null, [9.3, -74.6], [15.9, -72.5]],
-  cinema: [[12.9, -77], [12.5, -79], [12.5, -77], [12.1, -76.7], , , ST_CIGAR.drag, ST_CIGAR.hip],
+  entry: [[2.5, -78.4], [4.5, -80.2], [-11.5, -82.5], [5.8, -63.2], null, [7.5, -82.8], [12.7, -80.3]],
+  cinema: [[10.5, -78.9], [11.6, -79.5], [10.3, -78.7], [9.5, -79.2], , , ST_CIGAR.drag, ST_CIGAR.hip],
 };
 function stationPose(t) {
   const entry=t<60?Math.floor(t/12)%2:t<108?2:t<135?3:t<174?4:t<206?5:t<222?6:-1;
